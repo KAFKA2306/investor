@@ -32,7 +32,7 @@ Verify only selected APIs:
 VERIFY_TARGETS=estat,kabucom bun run verify:api
 ```
 
-To print a minimal verification scenario:
+To run the minimal vegetable proof scenario:
 
 ```bash
 bun run verify:scenario

@@ -1,0 +1,46 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-02-22",
+  "models": [
+    {
+      "id": "amazon-chronos",
+      "vendor": "Amazon",
+      "name": "Chronos",
+      "category": "time-series-forecasting",
+      "tags": ["transformer", "zero-shot", "foundation-model"],
+      "context7LibraryId": "/amazon-science/chronos-forecasting",
+      "github": "https://github.com/amazon-science/chronos-forecasting",
+      "arxiv": "https://arxiv.org/abs/2403.07815"
+    },
+    {
+      "id": "google-timesfm",
+      "vendor": "Google",
+      "name": "TimesFM",
+      "category": "time-series-forecasting",
+      "tags": ["transformer", "zero-shot", "foundation-model"],
+      "context7LibraryId": "/google-research/timesfm",
+      "github": "https://github.com/google-research/timesfm",
+      "arxiv": "https://arxiv.org/abs/2310.10688"
+    },
+    {
+      "id": "microsoft-timeraf",
+      "vendor": "Microsoft",
+      "name": "TimeRAF",
+      "category": "time-series-forecasting",
+      "tags": ["zero-shot", "retrieval-augmented", "foundation-model"],
+      "context7LibraryId": "/microsoft/finnts",
+      "github": "https://github.com/microsoft/finnts",
+      "arxiv": "https://arxiv.org/abs/2412.20810"
+    },
+    {
+      "id": "meta-ts-foundation-watch",
+      "vendor": "Meta",
+      "name": "Watchlist (no confirmed official TS foundation model here yet)",
+      "category": "time-series-forecasting",
+      "tags": ["watchlist"],
+      "context7LibraryId": "",
+      "github": "",
+      "arxiv": ""
+    }
+  ]
+}

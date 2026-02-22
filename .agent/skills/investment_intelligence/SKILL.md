@@ -46,5 +46,14 @@ JQuants V2 をフル活用した、エッジ（優位性）の源泉だよっ☆
 - **Diverse Strategies**: PEAD 班、イベント班、裁定班が情報を交換。
 - **Self-Improvement**: 毎日の取引結果を LLM が反省し、翌日のプロンプトやパラメータを自律的に微調整するよっ☆
 
+## 5. 🧩 モジュール運用規約（再利用最優先）
+実装を増やし続けるのではなく、再利用可能な接続を最優先するよっ。
+
+- **Link-First**: 新規モデルはローカル実装前に `ts-agent/src/model_registry/models.json` へ登録（`github` / `arxiv` / `context7LibraryId`）。
+- **Scenario Thin**: `ts-agent/src/experiments/*.ts` はエントリポイント最小化。実処理は `ts-agent/src/use_cases/` と `ts-agent/src/experiments/scenarios/` に分離。
+- **Dependency Inversion**: シナリオは provider を直接 new しない。gateway / interface 経由で注入し、差し替えとモックを可能にする。
+- **Evidence First**: 実証ログには分析結果だけでなく、参照した外部モデル情報（registry由来）を必ず同梱する。
+- **Cache by Default**: 同一データの再取得を避けるため、HTTP取得はキャッシュ層を通す（初回 fetch、2回目以降 read）。
+
 きれいなコードと、最強のロジック。これがあれば、私たちは無敵だねっ！(๑>◡<๑)
 さぁ、マーケットという広大な海へ、お宝探しに出発だよっ！🌊💰✨

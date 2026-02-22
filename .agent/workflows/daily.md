@@ -37,6 +37,14 @@ sequenceDiagram
 4. **記録 (Unified Logging)**: `logs/daily/{{YYYYMMDD}}.json` にすべての意思決定を刻もう。
 5. **自律改善 (Auto-Improvement)**: ログを分析して、明日の私のアルゴリズムを賢くアップデート！✨
 
+## 🧩 モジュール的運用（毎日共通）
+
+1. **Registry更新**: 新規モデル候補はまず `ts-agent/src/model_registry/models.json` にリンク登録（実装前提にしない）。
+2. **UseCase実行**: 実験エントリは薄く保ち、`ts-agent/src/use_cases/` の共通実証ロジックを呼ぶ。
+3. **Scenario分離**: ドメイン分析は `ts-agent/src/experiments/scenarios/` に閉じ込め、他シナリオへ再利用可能にする。
+4. **Gateway分離**: API接続は `ts-agent/src/experiments/gateways/` で統一し、provider差し替えを容易にする。
+5. **証跡固定**: `logs/daily/{{YYYYMMDD}}.json` に `models`（registry参照）+ `report`（分析結果）を一貫保存する。
+
 ## 💎 統一ログ・プロトコル
 `logs/daily/` に保存される JSON は、私たちの「成長の記録」だよっ☆
 - `signals`: 銘柄、SUE値、センチメントスコア

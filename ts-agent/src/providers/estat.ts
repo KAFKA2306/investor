@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { core } from "../core/index.ts";
 
 export class EstatProvider {
@@ -21,6 +22,6 @@ export class EstatProvider {
     const response = await fetch(url.toString());
     response.ok || process.exit(1);
 
-    return response.json() as Promise<unknown>;
+    return z.record(z.string(), z.unknown()).parse(await response.json());
   }
 }
