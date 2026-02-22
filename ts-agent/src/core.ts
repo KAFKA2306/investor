@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { core } from "./core/index.ts";
 import type { UnifiedLog } from "./schemas/log.ts";
@@ -26,14 +26,8 @@ export function writeDailyLog(data: UnifiedLog): void {
   console.log(`Unified daily log written to ${logPath}`);
 }
 
-export function readDailyLog(date: string): UnifiedLog | undefined {
+export function readDailyLog(date: string): UnifiedLog {
   const logPath = createLogPath(date);
-  return existsSync(logPath)
-    ? ((content) => {
-        const parsed = UnifiedLogSchema.safeParse(
-          JSON.parse(content) as unknown,
-        );
-        return parsed.success ? parsed.data : undefined;
-      })(readFileSync(logPath, "utf8"))
-    : undefined;
+  const content = readFileSync(logPath, "utf8");
+  return UnifiedLogSchema.parse(JSON.parse(content) as unknown);
 }
