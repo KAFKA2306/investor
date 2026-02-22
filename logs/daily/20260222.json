@@ -1,0 +1,191 @@
+{
+  "schema": "investor.daily-log.v1",
+  "generatedAt": "2026-02-22T12:13:47.607Z",
+  "models": [
+    {
+      "id": "amazon-chronos",
+      "vendor": "Amazon",
+      "name": "Chronos",
+      "context7LibraryId": "/amazon-science/chronos-forecasting",
+      "github": "https://github.com/amazon-science/chronos-forecasting",
+      "arxiv": "https://arxiv.org/abs/2403.07815"
+    },
+    {
+      "id": "google-timesfm",
+      "vendor": "Google",
+      "name": "TimesFM",
+      "context7LibraryId": "/google-research/timesfm",
+      "github": "https://github.com/google-research/timesfm",
+      "arxiv": "https://arxiv.org/abs/2310.10688"
+    },
+    {
+      "id": "microsoft-timeraf",
+      "vendor": "Microsoft",
+      "name": "TimeRAF",
+      "context7LibraryId": "/microsoft/finnts",
+      "github": "https://github.com/microsoft/finnts",
+      "arxiv": "https://arxiv.org/abs/2412.20810"
+    }
+  ],
+  "report": {
+    "scenarioId": "SCN-VEG-001",
+    "analyzedAt": "2026-02-22T12:13:47.607Z",
+    "date": "20260222",
+    "inputs": {
+      "estatStatsDataId": "0000010101",
+      "universe": [
+        "1375",
+        "1332",
+        "2503"
+      ]
+    },
+    "evidence": {
+      "estat": {
+        "hasStatsData": true,
+        "status": "PASS"
+      },
+      "jquants": {
+        "listedCount": 3,
+        "matchedSymbols": [
+          "1375",
+          "1332",
+          "2503"
+        ],
+        "status": "PASS"
+      }
+    },
+    "market": {
+      "vegetablePriceMomentum": 0.0025954852240006555
+    },
+    "analysis": [
+      {
+        "symbol": "1375",
+        "ohlc6": {
+          "open": 1032,
+          "high": 1041,
+          "low": 1030,
+          "close": 1039,
+          "volume": 50100,
+          "turnoverValue": 51909600
+        },
+        "finance": {
+          "netSales": 8201000000,
+          "operatingProfit": -163000000,
+          "profitMargin": -0.019875624923789782
+        },
+        "factors": {
+          "dailyReturn": 0.006782945736434108,
+          "intradayRange": 0.01065891472868217,
+          "closeStrength": 0.8181818181818182,
+          "liquidityPerShare": 1036.1197604790418
+        },
+        "alphaScore": 0.08283045852580277,
+        "signal": "LONG"
+      },
+      {
+        "symbol": "1332",
+        "ohlc6": {
+          "open": 568,
+          "high": 573,
+          "low": 568,
+          "close": 571,
+          "volume": 974200,
+          "turnoverValue": 555522500
+        },
+        "finance": {
+          "netSales": 184255000000,
+          "operatingProfit": 6676000000,
+          "profitMargin": 0.0362323953217009
+        },
+        "factors": {
+          "dailyReturn": 0.00528169014084507,
+          "intradayRange": 0.008802816901408451,
+          "closeStrength": 0.6,
+          "liquidityPerShare": 570.2345514268118
+        },
+        "alphaScore": 0.06884981395123568,
+        "signal": "LONG"
+      },
+      {
+        "symbol": "2503",
+        "ohlc6": {
+          "open": 2297,
+          "high": 2305.5,
+          "low": 2270,
+          "close": 2294.5,
+          "volume": 3579900,
+          "turnoverValue": 8201690550
+        },
+        "finance": {
+          "netSales": 917048000000,
+          "operatingProfit": 0,
+          "profitMargin": 0
+        },
+        "factors": {
+          "dailyReturn": -0.00108837614279495,
+          "intradayRange": 0.01545494122768829,
+          "closeStrength": 0.6901408450704225,
+          "liquidityPerShare": 2291.039009469538
+        },
+        "alphaScore": 0.07215284455223678,
+        "signal": "LONG"
+      }
+    ],
+    "decision": {
+      "strategy": "Vegetable Inflation Rotation",
+      "action": "LONG_BASKET",
+      "topSymbol": "1375",
+      "reason": "野菜価格モメンタムと銘柄財務・日足6指標の合成αが正。",
+      "experimentValue": "USEFUL"
+    },
+    "signals": {
+      "macro": {
+        "vegetablePriceMomentum": 0.0025954852240006555
+      },
+      "symbols": [
+        {
+          "symbol": "1375",
+          "alphaScore": 0.08283045852580277,
+          "signal": "LONG",
+          "sueProxy": -0.019875624923789782
+        },
+        {
+          "symbol": "1332",
+          "alphaScore": 0.06884981395123568,
+          "signal": "LONG",
+          "sueProxy": 0.0362323953217009
+        },
+        {
+          "symbol": "2503",
+          "alphaScore": 0.07215284455223678,
+          "signal": "LONG",
+          "sueProxy": 0
+        }
+      ]
+    },
+    "risks": {
+      "kellyFraction": 0.03730551950487921,
+      "stopLossPct": 0.03,
+      "maxPositions": 3
+    },
+    "results": {
+      "mode": "PROOF",
+      "status": "PASS",
+      "expectedEdge": 0.07461103900975842,
+      "basketDailyReturn": 0.0036587532448280765,
+      "paperPnlPerUnit": 0.0036587532448280765,
+      "proved": true,
+      "selectedSymbols": [
+        "1375",
+        "2503",
+        "1332"
+      ],
+      "generatedAt": "2026-02-22T12:13:47.607Z"
+    },
+    "workflow": {
+      "dataReadiness": "PASS",
+      "alphaReadiness": "PASS",
+      "verdict": "USEFUL"
+    }
+  }
+}

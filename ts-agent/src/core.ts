@@ -21,7 +21,7 @@ function createLogPath(date: string): string {
 
 export function writeDailyLog(data: UnifiedLog): void {
   const validated = UnifiedLogSchema.parse(data);
-  const logPath = createLogPath(validated.date);
+  const logPath = createLogPath(validated.report.date);
   writeFileSync(logPath, JSON.stringify(validated, null, 2), "utf8");
   console.log(`Unified daily log written to ${logPath}`);
 }
