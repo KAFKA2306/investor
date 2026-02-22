@@ -1,0 +1,19 @@
+project:
+  name: investor-ts
+  version: 0.1.0
+
+paths:
+  data: ./data
+  logs: ./logs
+
+providers:
+  yfinance:
+    enabled: true
+  jquants:
+    enabled: true
+  edinet:
+    enabled: true
+  estat:
+    enabled: true
+  ai:
+    enabled: true

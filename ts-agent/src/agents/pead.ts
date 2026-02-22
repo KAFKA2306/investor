@@ -1,0 +1,60 @@
+import { BaseAgent } from "../core/index.ts";
+import { JQuantsProvider } from "../providers/jquants.ts";
+import { LesAgent } from "./les.ts";
+
+interface CalendarEntry {
+  code: string;
+}
+
+interface FinancialStatement {
+  LocalCode: string;
+  NetIncome: number;
+}
+
+export class PeadAgent extends BaseAgent {
+  private readonly jquants = new JQuantsProvider();
+  private readonly les = new LesAgent();
+
+  public async run() {
+    const today = new Date().toISOString().split("T")[0];
+    if (!today) return;
+
+    const calendar = (await this.jquants.getEarningsCalendar({
+      date: today,
+    })) as unknown as CalendarEntry[];
+
+    for (const entry of calendar) {
+      const statements = (await this.jquants.getStatements({
+        code: entry.code,
+      })) as unknown as FinancialStatement[];
+      await this.analyze(statements);
+    }
+  }
+
+  private async analyze(statements: FinancialStatement[]) {
+    if (statements.length < 2) return;
+
+    const latest = statements[0];
+    const previous = statements[1];
+
+    if (!latest || !previous || previous.NetIncome === 0) return;
+
+    const surprise =
+      (latest.NetIncome - previous.NetIncome) / Math.abs(previous.NetIncome);
+
+    const sentiment = await this.les.analyzeSentiment(
+      "Mock financial text content",
+    );
+
+    if (surprise > 0.2 && sentiment > 0.3) {
+      console.log(
+        `[HYBRID PEAD SUCCESS] Code: ${latest.LocalCode}, Surprise: ${surprise}, Sentiment: ${sentiment}`,
+      );
+    }
+  }
+}
+
+if (import.meta.main) {
+  const agent = new PeadAgent();
+  await agent.run();
+}
