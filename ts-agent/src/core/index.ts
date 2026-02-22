@@ -33,7 +33,7 @@ class Core {
   }
 
   private loadConfig(): Config {
-    const configPath = join(import.meta.dir, "config", "default.yaml");
+    const configPath = join(import.meta.dir, "..", "config", "default.yaml");
     const fileContents = readFileSync(configPath, "utf8");
     const data = yaml.load(fileContents);
     const result = ConfigSchema.safeParse(data);
