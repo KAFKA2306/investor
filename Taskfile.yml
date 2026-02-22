@@ -1,0 +1,38 @@
+version: '3'
+
+vars:
+  TS_DIR: ts-agent
+
+tasks:
+  default:
+    desc: 全部まとめてお掃除＆チェックするよっ ✨
+    cmds:
+      - task: lint
+      - task: format
+      - task: check
+
+  setup:
+    desc: 依存関係をインストールして準備するよっ ✨
+    cmds:
+      - cd {{.TS_DIR}} && bun install
+
+  lint:
+    desc: Biome でコードをピカピカにするよっ ✨
+    cmds:
+      - cd {{.TS_DIR}} && bun run lint
+
+  format:
+    desc: Biome でコードを整列させるよっ ✨
+    cmds:
+      - cd {{.TS_DIR}} && bun run format
+
+  check:
+    desc: TypeScript の型チェックで安全確認っ ✨
+    cmds:
+      - cd {{.TS_DIR}} && bun run typecheck
+
+  daily:
+    desc: まいにちの統合ワークフローを開始っ ✨
+    deps: [lint, check]
+    cmds:
+      - cd {{.TS_DIR}} && bun run start
