@@ -6,7 +6,6 @@ import { z } from "zod";
 const ConfigSchema = z.object({
   project: z.object({
     name: z.string(),
-    version: z.string(),
   }),
   paths: z.object({
     data: z.string(),

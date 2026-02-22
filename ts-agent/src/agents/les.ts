@@ -15,8 +15,6 @@ export class LesAgent {
   }
 
   private async callLlm(text: string): Promise<number> {
-    // LLM との内緒の通信っ ✨
-    // 返り値は -1 から 1 のスコアにするよっ ✨
     return text.length > 0 ? 0.6 : 0;
   }
 }
