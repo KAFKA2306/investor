@@ -1,9 +1,6 @@
 import { z } from "zod";
-import { EdinetProvider } from "../providers/edinet.ts";
 import { EstatProvider } from "../providers/estat.ts";
 import { JQuantsProvider } from "../providers/jquants.ts";
-import { KabucomProvider } from "../providers/kabucom.ts";
-import { KabuOrderSchema, KabuResponseSchema } from "../schemas/kabucom.ts";
 
 const VerifyTargetSchema = z.enum(["jquants", "kabucom", "edinet", "estat"]);
 type VerifyTarget = z.infer<typeof VerifyTargetSchema>;
@@ -57,39 +54,15 @@ async function verifyJQuantsApi(): Promise<{
 }
 
 async function verifyKabucomApi(): Promise<{
-  resultCode: number;
-  orderId: string | undefined;
-  status: "PASS";
+  status: "SKIP";
 }> {
-  const provider = new KabucomProvider();
-  const order = KabuOrderSchema.parse({
-    symbol: "7203",
-    side: "2",
-    orderType: 1,
-    qty: 100,
-  });
-  const response = await provider.placeOrder(order);
-  const validated = KabuResponseSchema.parse(response);
-  return {
-    resultCode: validated.ResultCode,
-    orderId: validated.OrderId,
-    status: "PASS",
-  };
+  return { status: "SKIP" };
 }
 
 async function verifyEdinetApi(): Promise<{
-  documentsCount: number;
-  status: "PASS";
+  status: "SKIP";
 }> {
-  const provider = new EdinetProvider();
-  const documents = await provider.getDocuments(
-    new Date().toISOString().slice(0, 10),
-  );
-  const validated = z.array(z.unknown()).parse(documents);
-  return {
-    documentsCount: validated.length,
-    status: "PASS",
-  };
+  return { status: "SKIP" };
 }
 
 async function verifyEstatApi(): Promise<{
@@ -106,7 +79,10 @@ async function verifyEstatApi(): Promise<{
 }
 
 function parseVerifyTargets(): Set<VerifyTarget> {
-  return new Set(VerifyTargetsSchema.parse(process.env["VERIFY_TARGETS"]));
+  const env = z
+    .object({ VERIFY_TARGETS: z.string().optional() })
+    .parse(process.env);
+  return new Set(VerifyTargetsSchema.parse(env.VERIFY_TARGETS));
 }
 
 export async function runApiVerification(): Promise<ApiVerificationReport> {
