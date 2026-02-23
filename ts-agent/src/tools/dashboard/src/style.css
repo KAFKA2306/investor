@@ -267,6 +267,46 @@ header {
   background: rgba(148, 163, 184, 0.2);
 }
 
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.leaderboard-table th {
+  text-align: left;
+  padding: 0.75rem;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  font-weight: 700;
+}
+
+.leaderboard-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.leaderboard-table tr:last-child td {
+  border-bottom: none;
+}
+
+.leaderboard-table tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.pos {
+  color: var(--success);
+}
+
+.neg {
+  color: var(--danger);
+}
+
+.badge-warning {
+  color: #fde047;
+  background: rgba(161, 98, 7, 0.2);
+}
+
 .animate-fade {
   animation: fadeIn 0.25s ease;
 }

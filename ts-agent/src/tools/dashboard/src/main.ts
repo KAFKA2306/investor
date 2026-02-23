@@ -147,10 +147,21 @@ const toBenchSummary = (
   };
 };
 
+interface LeaderboardRow {
+  id: string;
+  type: "ALPHA" | "FOUNDATION" | "BASELINE";
+  sharpe: number;
+  totalReturn: number;
+  maxDrawdown: number;
+  dirAcc: number;
+  verdict: string;
+}
+
 class Dashboard {
   private logs: DailySummary[] = [];
   private benches: BenchSummary[] = [];
   private registry: Array<Record<string, unknown>> = [];
+  private leaderboard: LeaderboardRow[] = [];
   private activeLog: LogPayload | null = null;
   private activeBench: BenchmarkLogPayload | null = null;
   private staticPayloadByDate = new Map<string, LogPayload>();
@@ -168,10 +179,119 @@ class Dashboard {
       this.loadBenchLogs(),
       this.loadRegistry(),
     ]);
+    this.calculateLeaderboard();
+    this.renderLeaderboard();
     const firstLog = this.logs.at(0);
     if (firstLog) {
       await this.selectLog(firstLog.date);
     }
+  }
+
+  private calculateLeaderboard() {
+    // 1. Alpha Strategy (Vegetable) from Daily Logs
+    const alphaReturns = this.logs
+      .map((l) => l.basketDailyReturn)
+      .filter((r) => r !== 0);
+    const alphaMetrics = this.computeMetrics(alphaReturns);
+    const alphaRow: LeaderboardRow = {
+      id: "VEGETABLE_STRATEGY",
+      type: "ALPHA",
+      sharpe: alphaMetrics.sharpe,
+      totalReturn: alphaMetrics.totalReturn,
+      maxDrawdown: alphaMetrics.maxDrawdown,
+      dirAcc: 0, // Not applicable for strategy result
+      verdict: alphaMetrics.sharpe > 1.0 ? "READY" : "CAUTION",
+    };
+
+    // 2. Foundation Models from latest Benchmark
+    const latestBench = Array.from(this.benchPayloadByDate.values()).sort(
+      (a, b) =>
+        (b.report?.date || "").localeCompare(a.report?.date || "")
+    )[0];
+
+    const benchRows: LeaderboardRow[] = [];
+    if (latestBench?.report?.analyst?.baselines) {
+      for (const b of latestBench.report.analyst.baselines) {
+        const metrics = b.metrics || {};
+        benchRows.push({
+          id: b.name,
+          type: b.name.includes("Naive") ? "BASELINE" : "FOUNDATION",
+          sharpe: pickNumber(metrics.sharpeRatio),
+          totalReturn: 0, // We only have daily snapshots in bench
+          maxDrawdown: 0,
+          dirAcc: pickNumber(metrics.directionalAccuracy),
+          verdict: pickNumber(metrics.directionalAccuracy) > 50 ? "READY" : "FAIL",
+        });
+      }
+    }
+
+    this.leaderboard = [alphaRow, ...benchRows].sort((a, b) => b.sharpe - a.sharpe);
+  }
+
+  private computeMetrics(returns: number[]) {
+    if (returns.length === 0)
+      return { sharpe: 0, totalReturn: 0, maxDrawdown: 0 };
+    const totalReturn = returns.reduce((acc, r) => acc * (1 + r), 1) - 1;
+    const avg = returns.reduce((a, b) => a + b, 0) / returns.length;
+    const vol = Math.sqrt(
+      returns.reduce((a, b) => a + (b - avg) ** 2, 0) / returns.length
+    );
+    const annReturn = (1 + avg) ** 252 - 1;
+    const annVol = vol * Math.sqrt(252);
+    const sharpe = annVol > 0 ? annReturn / annVol : 0;
+
+    let peak = 1;
+    let maxDd = 0;
+    let equity = 1;
+    for (const r of returns) {
+      equity *= 1 + r;
+      peak = Math.max(peak, equity);
+      maxDd = Math.min(maxDd, (equity - peak) / peak);
+    }
+    return { sharpe, totalReturn, maxDrawdown: maxDd };
+  }
+
+  private renderLeaderboard() {
+    const el = document.getElementById("leaderboard-table");
+    if (!el) return;
+
+    if (this.leaderboard.length === 0) {
+      el.innerHTML = '<div class="log-sub">比較可能なデータがありません。</div>';
+      return;
+    }
+
+    el.innerHTML = `
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th>Model / Strategy</th>
+            <th>Type</th>
+            <th>Sharpe</th>
+            <th>Return</th>
+            <th>MaxDD</th>
+            <th>DirAcc</th>
+            <th>Verdict</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${this.leaderboard
+            .map(
+              (row) => `
+            <tr>
+              <td><strong>${this.escapeHtml(row.id)}</strong></td>
+              <td><span class="badge badge-neutral">${row.type}</span></td>
+              <td class="${row.sharpe > 1.5 ? "pos" : ""}"><strong>${row.sharpe.toFixed(2)}</strong></td>
+              <td class="${row.totalReturn >= 0 ? "pos" : "neg"}">${(row.totalReturn * 100).toFixed(2)}%</td>
+              <td class="neg">${(row.maxDrawdown * 100).toFixed(1)}%</td>
+              <td>${row.dirAcc > 0 ? row.dirAcc.toFixed(1) + "%" : "--"}</td>
+              <td><span class="badge ${row.verdict === "READY" ? "badge-success" : row.verdict === "CAUTION" ? "badge-warning" : "badge-danger"}">${row.verdict}</span></td>
+            </tr>
+          `
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
   }
 
   private async loadRegistry() {
