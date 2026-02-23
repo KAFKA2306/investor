@@ -21,11 +21,11 @@
 ## 🎭 2. Active Agents
 現在稼働中、または実装済みのエージェントたちだよっ！
 
-| 名称 | 役割 |
+| 名称 | 役割と知能モジュール構成 |
 | :--- | :--- |
-| **PeadAgent** | 決算短信（JQuants）を解析し、サプライズ銘柄を抽出するよ。 |
-| **XIntelligenceAgent** | X (SNS) のデータを解析し、市場の熱気を感じ取るよ。 |
-| **LesAgent** | LES (Large-scale Stock Forecasting with LLMs) フレームワークを実装し、Seed Alpha Factory による因子生成、マルチエージェント評価、動的重み付けを行うよ。 |
+| **PeadAgent** | **[Hybrid PEAD Analysis]** 決算短信（JQuants）のサプライズ（EPSサプライズ）と、LESエージェントによる感情分析を統合し、ポスト決算発表時における株価のドリフトを捕捉するよ。 |
+| **XIntelligenceAgent** | **[Social Sentiment Analytics]** X (SNS) のリアルタイム投稿データを収集・解析し、市場のセンチメントや熱狂度を定量化。データソースに応じた重み付けを行い、市場のボラティリティ転換点を予測するんだっ。 |
+| **LesAgent** | **[Large-scale Stock Forecasting Framework]** ArXiv:2409.06289 に基づく多層エージェント知能。以下の4つのコアプロセスを循環させ、高精度な予測アルファを生成するよっ ✨<br>1. **SAF (Seed Alpha Factory)**: LLM へのプロンプト最適化により、テクニカル・ファンダメンタル・マクロ指標を組み合わせた数式（Alpha Factor）を動的に生成。<br>2. **CSA (Confidence Score Agent)**: 情報係数（IC）の推計に基づき、生成された因子の予測力に対する信頼度を算出。<br>3. **RPA (Risk Preference Agent)**: シャープ・レシオやドローダウンリスクを評価し、リスク調整後のリターン期待値を推定。<br>4. **DWA (Dynamic Weight Optimization)**: CSA と RPA のスコアを統合し、ポートフォリオ構築時の各因子の最適重みを動的に決定するよ。 |
 
 ---
 
