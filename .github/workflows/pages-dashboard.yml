@@ -43,6 +43,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Bundle daily logs for static dashboard
+        run: |
+          mkdir -p dist/logs/daily
+          cp ../../../../logs/daily/*.json dist/logs/daily/
+          node scripts/generate-log-manifest.mjs dist/logs/daily
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

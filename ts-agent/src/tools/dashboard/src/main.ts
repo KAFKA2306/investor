@@ -12,7 +12,6 @@ interface DailySummary {
   expectedEdge: number;
   basketDailyReturn: number;
   topSymbol: string;
-  payload?: LogPayload;
 }
 
 interface AnalysisSymbol {
@@ -57,10 +56,35 @@ interface DashboardReport {
 }
 
 const API_BASE = "/api";
+const STATIC_LOGS_BASE = "./logs/daily";
+
+const pickNumber = (v: unknown): number =>
+  typeof v === "number" ? v : Number.NaN;
+const pickString = (v: unknown): string => (typeof v === "string" ? v : "");
+
+const toSummary = (
+  file: string,
+  payload: Record<string, unknown>,
+): DailySummary => {
+  const report = (payload.report ?? payload) as Record<string, unknown>;
+  const workflow = (report.workflow ?? {}) as Record<string, unknown>;
+  const decision = (report.decision ?? {}) as Record<string, unknown>;
+  const results = (report.results ?? {}) as Record<string, unknown>;
+
+  return {
+    date: pickString(report.date) || file.replace(".json", ""),
+    verdict:
+      pickString(workflow.verdict) || pickString(decision.experimentValue),
+    expectedEdge: pickNumber(results.expectedEdge),
+    basketDailyReturn: pickNumber(results.basketDailyReturn),
+    topSymbol: pickString(decision.topSymbol),
+  };
+};
 
 class Dashboard {
   private logs: DailySummary[] = [];
   private activeLog: LogPayload | null = null;
+  private staticPayloadByDate = new Map<string, LogPayload>();
 
   constructor() {
     this.init();
@@ -80,16 +104,19 @@ class Dashboard {
   async loadLogs() {
     try {
       const res = await fetch(`${API_BASE}/logs`);
+      if (!res.ok) throw new Error(`API /logs failed: ${res.status}`);
       this.logs = (await res.json()) as DailySummary[];
       this.renderSidebar();
     } catch (e) {
-      console.error("Failed to load logs", e);
+      console.warn("API logs unavailable, switching to static logs", e);
+      await this.loadStaticLogs();
     }
   }
 
   async selectLog(date: string) {
     try {
       const res = await fetch(`${API_BASE}/logs/${date}`);
+      if (!res.ok) throw new Error(`API /logs/${date} failed: ${res.status}`);
       this.activeLog = (await res.json()) as LogPayload;
       this.renderActiveLog();
 
@@ -98,8 +125,49 @@ class Dashboard {
         el.classList.toggle("active", el.getAttribute("data-date") === date);
       });
     } catch (e) {
-      console.error(`Failed to load log for ${date}`, e);
+      const payload = this.staticPayloadByDate.get(date);
+      if (!payload) {
+        console.error(`Failed to load log for ${date}`, e);
+        return;
+      }
+      this.activeLog = payload;
+      this.renderActiveLog();
+      document.querySelectorAll(".log-item").forEach((el) => {
+        el.classList.toggle("active", el.getAttribute("data-date") === date);
+      });
     }
+  }
+
+  private async loadStaticLogs() {
+    const manifestRes = await fetch(`${STATIC_LOGS_BASE}/manifest.json`);
+    if (!manifestRes.ok) {
+      throw new Error(`Static manifest fetch failed: ${manifestRes.status}`);
+    }
+
+    const files = (await manifestRes.json()) as string[];
+    const jsonFiles = files
+      .filter((f) => /^\d{8}\.json$/.test(f))
+      .sort()
+      .reverse();
+
+    const settled = await Promise.allSettled(
+      jsonFiles.map(async (file) => {
+        const res = await fetch(`${STATIC_LOGS_BASE}/${file}`);
+        if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
+        const payload = (await res.json()) as LogPayload;
+        const date = payload.report?.date || file.replace(".json", "");
+        this.staticPayloadByDate.set(date, payload);
+        return toSummary(file, payload as unknown as Record<string, unknown>);
+      }),
+    );
+
+    this.logs = settled
+      .filter(
+        (r): r is PromiseFulfilledResult<DailySummary> =>
+          r.status === "fulfilled",
+      )
+      .map((r) => r.value);
+    this.renderSidebar();
   }
 
   renderSidebar() {
