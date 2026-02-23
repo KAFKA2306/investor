@@ -53,7 +53,11 @@ function normalize(x: number, scale: number): number {
 }
 
 function buildFeaturesFromDailyLog(raw: unknown): FeatureRow | null {
-  if (typeof raw !== "object" || raw === null || (raw as any).schema !== "investor.daily-log.v1") {
+  if (
+    typeof raw !== "object" ||
+    raw === null ||
+    (raw as Record<string, unknown>).schema !== "investor.daily-log.v1"
+  ) {
     return null;
   }
 

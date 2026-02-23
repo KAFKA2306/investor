@@ -15,7 +15,7 @@ export const UnifiedStageLogSchema = z.object({
 });
 
 export const UnifiedRunLogSchema = z.object({
-  schema: z.literal("investor.unified-log.v1"),
+  schema: z.literal("investor.unified-log"),
   generatedAt: z.string().datetime(),
   date: YYYYMMDD,
   runId: z.string().min(1),

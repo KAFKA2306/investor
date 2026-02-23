@@ -1,19 +1,11 @@
 import { BaseAgent } from "../core/index.ts";
 import { PeadJquantsGateway } from "../gateways/pead_market_gateway.ts";
+import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
 import { LesAgent } from "./les.ts";
 
-interface CalendarEntry {
-  code: string;
-}
-
-interface FinancialStatement {
-  LocalCode: string;
-  NetIncome: number;
-}
-
 export interface PeadDataProvider {
-  getEarningsCalendar(params: Record<string, string>): Promise<unknown[]>;
-  getStatements(params: Record<string, string>): Promise<unknown[]>;
+  getEarningsCalendar(params: Record<string, string>): Promise<CalendarEntry[]>;
+  getStatements(params: Record<string, string>): Promise<FinancialStatement[]>;
 }
 
 export interface SentimentAnalyzer {

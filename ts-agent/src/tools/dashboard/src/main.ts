@@ -4,7 +4,20 @@ interface LogPayload {
   schema?: string;
   generatedAt?: string;
   models?: Array<Record<string, unknown>>;
-  report?: DashboardReport;
+  report?: DashboardReport | StandardOutcome;
+}
+
+interface StandardOutcome {
+  strategyId: string;
+  strategyName: string;
+  timestamp: string;
+  summary: string;
+  alpha?: { tStat?: number; pValue?: number };
+  verification?: {
+    metrics: { sharpeRatio?: number };
+    upliftOverBaseline?: number;
+  };
+  readiness?: { readinessScore: number; isProductionReady: boolean };
 }
 
 interface DashboardReport {
@@ -147,6 +160,25 @@ const toBenchSummary = (
   };
 };
 
+interface OutcomeSummary {
+  id: string;
+  name: string;
+  date: string;
+  sharpe: number;
+  readiness: number;
+}
+
+const toOutcomeSummary = (payload: LogPayload): OutcomeSummary => {
+  const report = payload.report as StandardOutcome;
+  return {
+    id: report.strategyId,
+    name: report.strategyName,
+    date: report.timestamp.slice(0, 10).replace(/-/g, ""),
+    sharpe: report.verification?.metrics?.sharpeRatio ?? 0,
+    readiness: report.readiness?.readinessScore ?? 0,
+  };
+};
+
 interface LeaderboardRow {
   id: string;
   type: "ALPHA" | "FOUNDATION" | "BASELINE";
@@ -167,6 +199,8 @@ class Dashboard {
   private staticPayloadByDate = new Map<string, LogPayload>();
   private unifiedPayloadByDate = new Map<string, UnifiedRunLogPayload>();
   private benchPayloadByDate = new Map<string, BenchmarkLogPayload>();
+  private outcomes: OutcomeSummary[] = [];
+  private outcomePayloadById = new Map<string, LogPayload>();
 
   constructor() {
     this.init();
@@ -178,6 +212,7 @@ class Dashboard {
       this.loadUnifiedLogs(),
       this.loadBenchLogs(),
       this.loadRegistry(),
+      this.loadOutcomeLogs(),
     ]);
     this.calculateLeaderboard();
     this.renderLeaderboard();
@@ -205,8 +240,7 @@ class Dashboard {
 
     // 2. Foundation Models from latest Benchmark
     const latestBench = Array.from(this.benchPayloadByDate.values()).sort(
-      (a, b) =>
-        (b.report?.date || "").localeCompare(a.report?.date || "")
+      (a, b) => (b.report?.date || "").localeCompare(a.report?.date || ""),
     )[0];
 
     const benchRows: LeaderboardRow[] = [];
@@ -220,12 +254,26 @@ class Dashboard {
           totalReturn: 0, // We only have daily snapshots in bench
           maxDrawdown: 0,
           dirAcc: pickNumber(metrics.directionalAccuracy),
-          verdict: pickNumber(metrics.directionalAccuracy) > 50 ? "READY" : "FAIL",
+          verdict:
+            pickNumber(metrics.directionalAccuracy) > 50 ? "READY" : "FAIL",
         });
       }
     }
 
-    this.leaderboard = [alphaRow, ...benchRows].sort((a, b) => b.sharpe - a.sharpe);
+    // 3. Standardized Outcomes
+    const outcomeRows: LeaderboardRow[] = this.outcomes.map((o) => ({
+      id: o.name,
+      type: "ALPHA",
+      sharpe: o.sharpe,
+      totalReturn: 0,
+      maxDrawdown: 0,
+      dirAcc: 0,
+      verdict: o.readiness >= 75 ? "READY" : "CAUTION",
+    }));
+
+    this.leaderboard = [alphaRow, ...benchRows, ...outcomeRows].sort(
+      (a, b) => b.sharpe - a.sharpe,
+    );
   }
 
   private computeMetrics(returns: number[]) {
@@ -234,7 +282,7 @@ class Dashboard {
     const totalReturn = returns.reduce((acc, r) => acc * (1 + r), 1) - 1;
     const avg = returns.reduce((a, b) => a + b, 0) / returns.length;
     const vol = Math.sqrt(
-      returns.reduce((a, b) => a + (b - avg) ** 2, 0) / returns.length
+      returns.reduce((a, b) => a + (b - avg) ** 2, 0) / returns.length,
     );
     const annReturn = (1 + avg) ** 252 - 1;
     const annVol = vol * Math.sqrt(252);
@@ -256,7 +304,8 @@ class Dashboard {
     if (!el) return;
 
     if (this.leaderboard.length === 0) {
-      el.innerHTML = '<div class="log-sub">比較可能なデータがありません。</div>';
+      el.innerHTML =
+        '<div class="log-sub">比較可能なデータがありません。</div>';
       return;
     }
 
@@ -283,10 +332,10 @@ class Dashboard {
               <td class="${row.sharpe > 1.5 ? "pos" : ""}"><strong>${row.sharpe.toFixed(2)}</strong></td>
               <td class="${row.totalReturn >= 0 ? "pos" : "neg"}">${(row.totalReturn * 100).toFixed(2)}%</td>
               <td class="neg">${(row.maxDrawdown * 100).toFixed(1)}%</td>
-              <td>${row.dirAcc > 0 ? row.dirAcc.toFixed(1) + "%" : "--"}</td>
+              <td>${row.dirAcc > 0 ? `${row.dirAcc.toFixed(1)}%` : "--"}</td>
               <td><span class="badge ${row.verdict === "READY" ? "badge-success" : row.verdict === "CAUTION" ? "badge-warning" : "badge-danger"}">${row.verdict}</span></td>
             </tr>
-          `
+          `,
             )
             .join("")}
         </tbody>
@@ -341,7 +390,8 @@ class Dashboard {
           if (!res.ok)
             throw new Error(`Failed to fetch ${file}: ${res.status}`);
           const payload = (await res.json()) as LogPayload;
-          const date = payload.report?.date || file.replace(".json", "");
+          const report = payload.report as Record<string, unknown>;
+          const date = (report?.date as string) || file.replace(".json", "");
           this.staticPayloadByDate.set(date, payload);
           return toSummary(file, payload as unknown as Record<string, unknown>);
         }),
@@ -384,6 +434,39 @@ class Dashboard {
       });
     } catch (_e) {
       // Unified logs are optional for local preview.
+    }
+  }
+
+  private async loadOutcomeLogs() {
+    try {
+      const manifestRes = await fetch(`${UNIFIED_LOGS_BASE}/manifest.json`);
+      if (!manifestRes.ok) return;
+      const files = (await manifestRes.json()) as string[];
+      const settled = await Promise.allSettled(
+        files.map(async (file) => {
+          const res = await fetch(`${UNIFIED_LOGS_BASE}/${file}`);
+          if (!res.ok) return null;
+          const payload = (await res.json()) as LogPayload;
+          if (payload.schema !== "investor.investment-outcome") return null;
+          return payload;
+        }),
+      );
+
+      this.outcomes = settled
+        .filter((r) => r.status === "fulfilled" && r.value !== null)
+        .map((r) => toOutcomeSummary((r as { value: LogPayload }).value));
+
+      settled.forEach((r) => {
+        if (r.status === "fulfilled" && r.value !== null) {
+          const p = r.value as LogPayload;
+          const report = p.report as StandardOutcome;
+          this.outcomePayloadById.set(report.strategyId, p);
+        }
+      });
+
+      this.renderSidebar();
+    } catch (_e) {
+      // Ignore
     }
   }
 
@@ -446,13 +529,25 @@ class Dashboard {
     });
   }
 
+  private async selectOutcome(id: string) {
+    const payload = this.outcomePayloadById.get(id);
+    if (!payload) return;
+    this.activeLog = payload;
+    this.activeBench = null;
+    this.renderActiveOutcome();
+
+    document.querySelectorAll(".log-item").forEach((el) => {
+      el.classList.toggle("active", el.getAttribute("data-id") === id);
+    });
+  }
+
   private renderSidebar() {
     const dailyList = document.getElementById("log-list");
     if (dailyList) {
       dailyList.innerHTML = this.logs
         .map(
           (log) => `
-        <div class="log-item ${this.activeLog?.report?.date === log.date ? "active" : ""}"
+        <div class="log-item ${(this.activeLog?.report as Record<string, unknown>)?.date === log.date ? "active" : ""}"
              data-date="${this.escapeHtml(log.date)}">
           <div class="log-item-row">
             <span class="log-date">${this.escapeHtml(this.formatDate(log.date))}</span>
@@ -500,11 +595,39 @@ class Dashboard {
         });
       });
     }
+
+    const outcomeList = document.getElementById("outcome-list");
+    if (outcomeList) {
+      outcomeList.innerHTML = this.outcomes
+        .map(
+          (o) => `
+        <div class="log-item" data-id="${this.escapeHtml(o.id)}">
+          <div class="log-item-row">
+            <span class="log-date">${this.escapeHtml(o.name)}</span>
+            <span class="badge ${o.readiness >= 75 ? "badge-success" : "badge-warning"}">Score: ${o.readiness}</span>
+          </div>
+          <div class="log-sub">Sharpe: ${o.sharpe.toFixed(2)} / Date: ${o.date}</div>
+        </div>
+      `,
+        )
+        .join("");
+
+      outcomeList.querySelectorAll(".log-item").forEach((el) => {
+        el.addEventListener("click", () => {
+          const id = el.getAttribute("data-id");
+          if (id) this.selectOutcome(id);
+        });
+      });
+    }
   }
 
   private renderActiveLog() {
     if (!this.activeLog) return;
-    const report = this.activeLog.report || {};
+    if (this.activeLog.schema === "investor.investment-outcome") {
+      this.renderActiveOutcome();
+      return;
+    }
+    const report = this.activeLog.report as DashboardReport;
     // ... (rest of renderActiveLog remains similar)
 
     const updateEl = document.getElementById("last-update");
@@ -730,6 +853,61 @@ class Dashboard {
     if (!el) return;
     el.textContent = text;
     if (color) el.style.color = color;
+  }
+
+  private renderActiveOutcome() {
+    if (
+      !this.activeLog ||
+      this.activeLog.schema !== "investor.investment-outcome"
+    )
+      return;
+    const report = this.activeLog.report as StandardOutcome;
+
+    const updateEl = document.getElementById("last-update");
+    if (updateEl) {
+      updateEl.textContent = `生成: ${new Date(report.timestamp).toLocaleString("ja-JP")}`;
+    }
+
+    this.updateText("stat-edge", "Outcome");
+    this.updateText("stat-return", "STANDARD");
+    this.updateText(
+      "stat-kelly",
+      report.verification?.metrics?.sharpeRatio?.toFixed(2) ?? "--",
+    );
+    this.updateText("stat-top", report.strategyId);
+
+    const workflowEl = document.getElementById("workflow-status");
+    if (workflowEl) {
+      const readiness = report.readiness?.readinessScore ?? 0;
+      workflowEl.innerHTML = `
+        ${this.statusRow("Ready Score", readiness.toString())}
+        ${this.statusRow("Production", report.readiness?.isProductionReady ? "YES" : "NO")}
+        ${this.statusRow("P-Value", report.alpha?.pValue?.toFixed(4) || "--")}
+      `;
+    }
+
+    const analysisEl = document.getElementById("symbol-analysis");
+    if (analysisEl) {
+      analysisEl.innerHTML = `
+        <div class="symbol-card animate-fade" style="grid-column: 1 / -1;">
+          <div class="symbol-head">
+            <span class="symbol-code">${this.escapeHtml(report.strategyName)}</span>
+            <span class="badge badge-success">SUMMARY</span>
+          </div>
+          <p style="margin-top: 10px; line-height: 1.5;">${this.escapeHtml(report.summary)}</p>
+          <div class="symbol-metrics" style="margin-top: 15px;">
+            <div><div class="metric-label">T-Stat</div><div class="metric-value">${report.alpha?.tStat?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">Sharpe</div><div class="metric-value">${report.verification?.metrics?.sharpeRatio?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">Uplift</div><div class="metric-value">${((report.verification?.upliftOverBaseline ?? 0) * 100).toFixed(1)}%</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    const jsonEl = document.getElementById("json-content");
+    if (jsonEl) {
+      jsonEl.innerHTML = `<pre>${this.escapeHtml(JSON.stringify(this.activeLog, null, 2))}</pre>`;
+    }
   }
 
   private escapeHtml(value: unknown): string {

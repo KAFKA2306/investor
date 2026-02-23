@@ -1,34 +1,34 @@
 import { z } from "zod";
+import {
+  AlphaFactorsSchema,
+  FinanceSnapshotSchema,
+  MetricsSchema,
+  Ohlc6Schema,
+} from "./base.ts";
+import { StandardOutcomeSchema } from "./outcome.ts";
 
-export const ModelReferenceLogSchema = z.object({
-  id: z.string(),
-  vendor: z.string(),
-  name: z.string(),
-  context7LibraryId: z.string(),
-  github: z.string().url(),
-  arxiv: z.string().url(),
-});
-
-export const Ohlc6Schema = z.object({
-  open: z.number(),
-  high: z.number(),
-  low: z.number(),
-  close: z.number(),
-  volume: z.number(),
-  turnoverValue: z.number(),
-});
-
-export const FinanceSnapshotSchema = z.object({
-  netSales: z.number(),
-  operatingProfit: z.number(),
-  profitMargin: z.number(),
-});
-
-export const AlphaFactorsSchema = z.object({
-  dailyReturn: z.number(),
-  intradayRange: z.number(),
-  closeStrength: z.number(),
-  liquidityPerShare: z.number(),
+export const ReadinessReportSchema = z.object({
+  generatedAt: z.string().datetime(),
+  dateRange: z.object({
+    from: z.string().regex(/^\d{8}$/),
+    to: z.string().regex(/^\d{8}$/),
+  }),
+  sampleSize: z.number().int().nonnegative(),
+  score: z.object({
+    dataHorizon: z.number(),
+    costAwareness: z.number(),
+    outOfSampleDiscipline: z.number(),
+    modelTraceability: z.number(),
+    reproducibility: z.number(),
+    executionObservability: z.number(),
+    total: z.number(),
+  }),
+  thresholds: z.object({
+    productionReadyMin: z.number(),
+    cautionMin: z.number(),
+  }),
+  verdict: z.enum(["NOT_READY", "CAUTION", "READY"]),
+  recommendations: z.array(z.string()),
 });
 
 export const SymbolAnalysisLogSchema = z.object({
@@ -138,20 +138,13 @@ export const DailyScenarioLogSchema = z.object({
   }),
 });
 
-export const MetricsSchema = z.object({
-  mae: z.number(),
-  rmse: z.number(),
-  smape: z.number(),
-  directionalAccuracy: z.number(),
-  tStat: z.number().optional(), // Statistical significance of alpha
-  pValue: z.number().optional(), // Probability of results due to luck
-  sharpeRatio: z.number().optional(), // Risk-adjusted return
-  abstentionRate: z.number().optional(), // Fraction of deferred predictions
-  safeAccuracy: z.number().optional(), // Correct action rate incl. safe abstentions
-  overconfidenceError: z.number().optional(), // Error rate on high-confidence calls
-  brierScore: z.number().optional(), // Probability calibration quality
-  ece: z.number().optional(), // Expected calibration error
-  premiseCoverage: z.number().optional(), // Ratio of samples with valid prerequisites
+export const ModelReferenceLogSchema = z.object({
+  id: z.string(),
+  vendor: z.string(),
+  name: z.string(),
+  context7LibraryId: z.string(),
+  github: z.string().url(),
+  arxiv: z.string().url(),
 });
 
 export const BenchmarkReportSchema = z.object({
@@ -191,10 +184,20 @@ export const BenchmarkReportSchema = z.object({
 });
 
 export const UnifiedLogSchema = z.object({
-  schema: z.enum(["investor.daily-log.v1", "investor.benchmark-log.v1"]),
+  schema: z.enum([
+    "investor.daily-log.v1",
+    "investor.benchmark-log.v1",
+    "investor.readiness-report.v1",
+    "investor.investment-outcome.v1",
+  ]),
   generatedAt: z.string().datetime(),
-  models: z.array(ModelReferenceLogSchema),
-  report: z.union([DailyScenarioLogSchema, BenchmarkReportSchema]),
+  models: z.array(ModelReferenceLogSchema).optional(),
+  report: z.union([
+    DailyScenarioLogSchema,
+    BenchmarkReportSchema,
+    ReadinessReportSchema,
+    StandardOutcomeSchema,
+  ]),
 });
 
 export type UnifiedLog = z.infer<typeof UnifiedLogSchema>;

@@ -3,7 +3,13 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import yaml from "js-yaml";
 import { z } from "zod";
 import type { UnifiedLog } from "../schemas/log.ts";
-import { UnifiedLogSchema } from "../schemas/log.ts";
+import {
+  type BenchmarkReportSchema,
+  type DailyScenarioLogSchema,
+  type ReadinessReportSchema,
+  UnifiedLogSchema,
+} from "../schemas/log.ts";
+import type { StandardOutcomeSchema } from "../schemas/outcome.ts";
 
 const ConfigSchema = z.object({
   project: z.object({
@@ -94,7 +100,28 @@ function createLogPath(date: string): string {
 
 export function writeDailyLog(data: UnifiedLog): void {
   const validated = UnifiedLogSchema.parse(data);
-  const logPath = createLogPath(validated.report.date);
+  let dateStr = "";
+
+  if (validated.schema === "investor.daily-log.v1") {
+    dateStr = (validated.report as z.infer<typeof DailyScenarioLogSchema>).date;
+  } else if (validated.schema === "investor.benchmark-log.v1") {
+    dateStr = (validated.report as z.infer<typeof BenchmarkReportSchema>).date;
+  } else if (validated.schema === "investor.readiness-report.v1") {
+    dateStr = (validated.report as z.infer<typeof ReadinessReportSchema>)
+      .dateRange.to;
+  } else if (validated.schema === "investor.investment-outcome.v1") {
+    dateStr = (
+      validated.report as z.infer<typeof StandardOutcomeSchema>
+    ).timestamp
+      .split("T")[0]
+      ?.replaceAll("-", "") as string;
+  }
+
+  if (!dateStr) {
+    dateStr = new Date().toISOString().split("T")[0]?.replaceAll("-", "") || "";
+  }
+
+  const logPath = createLogPath(dateStr);
   writeFileSync(logPath, JSON.stringify(validated, null, 2), "utf8");
   console.log(`Unified daily log written to ${logPath}`);
 }

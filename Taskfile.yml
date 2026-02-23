@@ -32,6 +32,12 @@ tasks:
       - cd {{.TS_DIR}}/src/experiments/foundation_models && uv run python check_installation.py
       - echo "✨ Environment is ready!"
 
+  daily:
+    desc: Run the Practical Integrated Workflow (Vegetable Proof + Readiness) 🥕
+    cmds:
+      - cd {{.TS_DIR}} && bun src/experiments/01_vegetable.ts
+      - echo "✨ Daily workflow complete! Check logs for results and readiness score."
+
   run:
     desc: Run the Main Pipeline (LES Reproduction + Benchmarks + Dashboard Update) 🚀
     deps: [check, verify]
@@ -55,3 +61,10 @@ tasks:
     desc: Calculate LLM Readiness Score 🎯
     cmds:
       - cd {{.TS_DIR}} && bun run pipeline:llm-readiness
+
+  start:outcome:
+    desc: Generate Standardized Investment Outcome Log 🏆
+    cmds:
+      - cd {{.TS_DIR}} && bun src/experiments/scenarios/generic_alpha_scenario.ts
+      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/unified
+      - echo "✨ Outcome generated and dashboard manifest updated!"

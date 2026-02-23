@@ -8,6 +8,7 @@ import {
   loadForecastModelReferences,
   type ModelReference,
 } from "../model_registry/registry.ts";
+import { runLlmAgentReadiness } from "../pipeline/evaluate/llm_agent_readiness.ts";
 import { type UnifiedLog, UnifiedLogSchema } from "../schemas/log.ts";
 
 const yyyymmdd = (d: Date): string =>
@@ -63,5 +64,20 @@ export async function runVegetableProof(): Promise<UnifiedLog> {
     `${JSON.stringify(envelope, null, 2)}\n`,
     "utf8",
   );
+
+  const readinessReport = runLlmAgentReadiness(core.config.paths.logs);
+  const readinessEnvelope = UnifiedLogSchema.parse({
+    schema: "investor.readiness-report.v1",
+    generatedAt: nowIso,
+    report: readinessReport,
+  });
+  const readinessDir = join(core.config.paths.logs, "readiness");
+  mkdirSync(readinessDir, { recursive: true });
+  writeFileSync(
+    join(readinessDir, `${reportWithExecution.date}.json`),
+    `${JSON.stringify(readinessEnvelope, null, 2)}\n`,
+    "utf8",
+  );
+
   return envelope;
 }

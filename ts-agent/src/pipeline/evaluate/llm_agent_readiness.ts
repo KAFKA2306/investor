@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z } from "zod";
 import { core } from "../../core/index.ts";
-import { UnifiedLogSchema } from "../../schemas/log.ts";
+import { ReadinessReportSchema, UnifiedLogSchema } from "../../schemas/log.ts";
 
 const YYYMMDD = z.string().regex(/^\d{8}$/);
 
@@ -15,31 +15,7 @@ const DailyPointSchema = z.object({
   action: z.string(),
 });
 
-type DailyPoint = z.infer<typeof DailyPointSchema>;
-
-const ReadinessReportSchema = z.object({
-  generatedAt: z.string().datetime(),
-  dateRange: z.object({
-    from: YYYMMDD,
-    to: YYYMMDD,
-  }),
-  sampleSize: z.number().int().nonnegative(),
-  score: z.object({
-    dataHorizon: z.number(),
-    costAwareness: z.number(),
-    outOfSampleDiscipline: z.number(),
-    modelTraceability: z.number(),
-    reproducibility: z.number(),
-    executionObservability: z.number(),
-    total: z.number(),
-  }),
-  thresholds: z.object({
-    productionReadyMin: z.number(),
-    cautionMin: z.number(),
-  }),
-  verdict: z.enum(["NOT_READY", "CAUTION", "READY"]),
-  recommendations: z.array(z.string()),
-});
+export type DailyPoint = z.infer<typeof DailyPointSchema>;
 
 function clamp01(x: number): number {
   if (x < 0) return 0;
@@ -58,7 +34,7 @@ function loadDailyPoints(logsDir: string): DailyPoint[] {
   const points: DailyPoint[] = [];
   for (const file of files) {
     const raw = readFileSync(join(logsDir, file), "utf8");
-    let logRaw;
+    let logRaw: unknown = null;
     try {
       logRaw = JSON.parse(raw);
     } catch {
@@ -66,7 +42,8 @@ function loadDailyPoints(logsDir: string): DailyPoint[] {
     }
 
     // Only process daily-log schema
-    if (logRaw.schema !== "investor.daily-log.v1") continue;
+    const logObj = logRaw as Record<string, unknown>;
+    if (logObj.schema !== "investor.daily-log.v1") continue;
 
     const result = UnifiedLogSchema.safeParse(logRaw);
     if (!result.success) {
@@ -77,12 +54,12 @@ function loadDailyPoints(logsDir: string): DailyPoint[] {
     if (typeof log.report !== "object" || log.report === null) continue;
 
     // Type guard for daily scenario report
-    if (!("scenarioId" in log.report)) continue;
+    if (!("results" in log.report)) continue;
     const report = log.report;
 
     const results = report.results;
-    const backtest = results.backtest || {};
-    const models = log.models || [];
+    const backtest = (results.backtest || {}) as Record<string, unknown>;
+    const models = (log.models || []) as Array<Record<string, unknown>>;
     const hasModelRefs = models.length > 0;
     const hasBacktestCost =
       typeof backtest.totalCostBps === "number" &&
@@ -114,6 +91,12 @@ export function runLlmAgentReadiness(logsBaseDir: string) {
     throw new Error(`No daily log files found in ${logsDir}`);
   }
 
+  return calculateReadinessFromPoints(points);
+}
+
+export function calculateReadinessFromPoints(
+  points: readonly DailyPoint[],
+): z.infer<typeof ReadinessReportSchema> {
   const sampleSize = points.length;
   const costCoverage =
     points.filter((p) => p.hasBacktestCost).length / Math.max(1, sampleSize);

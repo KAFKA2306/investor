@@ -1,23 +1,23 @@
 {
   "schema": "investor.unified-log.v1",
-  "generatedAt": "2026-02-23T06:05:13.468Z",
+  "generatedAt": "2026-02-23T06:24:52.373Z",
   "date": "20260223",
-  "runId": "run_20260223_1771826663073",
+  "runId": "run_20260223_1771827840219",
   "stages": [
     {
       "stageId": "verify_api",
       "category": "verification",
       "name": "API Verification",
       "status": "PASS",
-      "startedAt": "2026-02-23T06:04:23.073Z",
-      "endedAt": "2026-02-23T06:04:31.017Z",
+      "startedAt": "2026-02-23T06:24:00.219Z",
+      "endedAt": "2026-02-23T06:24:09.530Z",
       "metrics": {
         "passCount": 2,
         "totalTargets": 4,
         "jquantsListedCount": 4428
       },
       "detail": {
-        "verifiedAt": "2026-02-23T06:04:31.015Z",
+        "verifiedAt": "2026-02-23T06:24:09.528Z",
         "jquants": {
           "listedCount": 4428,
           "status": "PASS"
@@ -39,8 +39,8 @@
       "category": "scenario",
       "name": "Vegetable Daily Scenario",
       "status": "PASS",
-      "startedAt": "2026-02-23T06:04:31.017Z",
-      "endedAt": "2026-02-23T06:04:45.184Z",
+      "startedAt": "2026-02-23T06:24:09.530Z",
+      "endedAt": "2026-02-23T06:24:24.276Z",
       "metrics": {
         "expectedEdge": -0.2429975137207421,
         "basketDailyReturn": -0.0015,
@@ -48,7 +48,7 @@
       },
       "detail": {
         "scenarioId": "SCN-VEG-001",
-        "analyzedAt": "2026-02-23T06:04:31.017Z",
+        "analyzedAt": "2026-02-23T06:24:09.530Z",
         "date": "20260223",
         "inputs": {
           "estatStatsDataId": "0000010101",
@@ -206,7 +206,7 @@
           },
           "proved": false,
           "selectedSymbols": [],
-          "generatedAt": "2026-02-23T06:04:31.017Z"
+          "generatedAt": "2026-02-23T06:24:09.530Z"
         },
         "execution": {
           "mode": "PAPER",
@@ -229,14 +229,14 @@
       "category": "experiment",
       "name": "Forecast vs Outcome",
       "status": "PASS",
-      "startedAt": "2026-02-23T06:04:45.184Z",
-      "endedAt": "2026-02-23T06:04:45.186Z",
+      "startedAt": "2026-02-23T06:24:24.276Z",
+      "endedAt": "2026-02-23T06:24:24.278Z",
       "metrics": {
         "rows": 3,
         "latestAccuracyRatio": 0.006172902664855377
       },
       "detail": {
-        "generatedAt": "2026-02-23T06:04:45.186Z",
+        "generatedAt": "2026-02-23T06:24:24.278Z",
         "rows": [
           {
             "date": "20220831",
@@ -264,8 +264,8 @@
       "category": "experiment",
       "name": "Time Series Analysis",
       "status": "PASS",
-      "startedAt": "2026-02-23T06:04:45.186Z",
-      "endedAt": "2026-02-23T06:04:58.863Z",
+      "startedAt": "2026-02-23T06:24:24.278Z",
+      "endedAt": "2026-02-23T06:24:37.684Z",
       "metrics": {
         "dataPoints": 100000,
         "naiveMae": 23336.64093922818,
@@ -273,7 +273,7 @@
         "rollingBeatsNaive": 0
       },
       "detail": {
-        "generatedAt": "2026-02-23T06:04:58.860Z",
+        "generatedAt": "2026-02-23T06:24:37.682Z",
         "dataPoints": 100000,
         "averageValue": 681400.08513,
         "maxValue": 128084000,
@@ -290,26 +290,68 @@
       "stageId": "pipeline_ab",
       "category": "pipeline",
       "name": "Daily A/B Comparison",
-      "status": "FAIL",
-      "startedAt": "2026-02-23T06:04:58.863Z",
-      "endedAt": "2026-02-23T06:04:58.866Z",
-      "metrics": {},
-      "error": "[\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"investor.daily-log.v1\",\n      \"investor.benchmark-log.v1\"\n    ],\n    \"path\": [\n      \"schema\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"investor.daily-log.v1\\\"|\\\"investor.benchmark-log.v1\\\"\"\n  },\n  {\n    \"expected\": \"array\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"models\"\n    ],\n    \"message\": \"Invalid input: expected array, received undefined\"\n  },\n  {\n    \"code\": \"invalid_union\",\n    \"errors\": [\n      [\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"scenarioId\"\n          ],\n          \"message\": \"Invalid input: expected string, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"inputs\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"evidence\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"market\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            0,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            1,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            2,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            3,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            4,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"LONG_BASKET\",\n            \"NO_TRADE\"\n          ],\n          \"path\": [\n            \"decision\",\n            \"action\"\n          ],\n          \"message\": \"Invalid option: expected one of \\\"LONG_BASKET\\\"|\\\"NO_TRADE\\\"\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"USEFUL\",\n            \"USELESS\"\n          ],\n          \"path\": [\n            \"decision\",\n            \"experimentValue\"\n          ],\n          \"message\": \"Invalid option: expected one of \\\"USEFUL\\\"|\\\"USELESS\\\"\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"signals\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"risks\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"PROOF\"\n          ],\n          \"path\": [\n            \"results\",\n            \"mode\"\n          ],\n          \"message\": \"Invalid input: expected \\\"PROOF\\\"\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"PASS\",\n            \"FAIL\"\n          ],\n          \"path\": [\n            \"results\",\n            \"status\"\n          ],\n          \"message\": \"Invalid option: expected one of \\\"PASS\\\"|\\\"FAIL\\\"\"\n        },\n        {\n          \"expected\": \"number\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"results\",\n            \"paperPnlPerUnit\"\n          ],\n          \"message\": \"Invalid input: expected number, received undefined\"\n        },\n        {\n          \"expected\": \"boolean\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"results\",\n            \"proved\"\n          ],\n          \"message\": \"Invalid input: expected boolean, received undefined\"\n        },\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"results\",\n            \"generatedAt\"\n          ],\n          \"message\": \"Invalid input: expected string, received undefined\"\n        }\n      ],\n      [\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"FOUNDATION_BENCHMARK\"\n          ],\n          \"path\": [\n            \"type\"\n          ],\n          \"message\": \"Invalid input: expected \\\"FOUNDATION_BENCHMARK\\\"\"\n        },\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"benchmarkId\"\n          ],\n          \"message\": \"Invalid input: expected string, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analyst\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"operator\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"debugger\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        }\n      ]\n    ],\n    \"path\": [\n      \"report\"\n    ],\n    \"message\": \"Invalid input\"\n  }\n]"
+      "status": "PASS",
+      "startedAt": "2026-02-23T06:24:37.685Z",
+      "endedAt": "2026-02-23T06:24:37.691Z",
+      "metrics": {
+        "sharpeDelta": 7.629456749203423,
+        "totalReturnDelta": 0.002153265114960723,
+        "hitRateDelta": 0.5
+      },
+      "detail": {
+        "generatedAt": "2026-02-23T06:24:37.690Z",
+        "dateRange": {
+          "from": "20260222",
+          "to": "20260223"
+        },
+        "baseline": {
+          "name": "NO_TRADE",
+          "metrics": {
+            "sampleSize": 2,
+            "totalReturn": 0,
+            "annualizedReturn": 0,
+            "volatility": 0,
+            "sharpe": 0,
+            "maxDrawdown": 0,
+            "hitRate": 0,
+            "profitFactor": 0
+          }
+        },
+        "candidate": {
+          "name": "VEGETABLE_STRATEGY",
+          "metrics": {
+            "sampleSize": 2,
+            "totalReturn": 0.002153265114960723,
+            "annualizedReturn": 0.3123982879756091,
+            "volatility": 0.040946334482887786,
+            "sharpe": 7.629456749203423,
+            "maxDrawdown": -0.0015000000000000408,
+            "hitRate": 0.5,
+            "profitFactor": 2.4391688298853844
+          }
+        },
+        "uplift": {
+          "totalReturnDelta": 0.002153265114960723,
+          "sharpeDelta": 7.629456749203423,
+          "maxDrawdownDelta": -0.0015000000000000408,
+          "hitRateDelta": 0.5
+        }
+      }
     },
     {
       "stageId": "pipeline_readiness",
       "category": "pipeline",
       "name": "LLM Readiness",
       "status": "PASS",
-      "startedAt": "2026-02-23T06:04:58.866Z",
-      "endedAt": "2026-02-23T06:04:58.870Z",
+      "startedAt": "2026-02-23T06:24:37.692Z",
+      "endedAt": "2026-02-23T06:24:37.695Z",
       "metrics": {
         "total": 51,
         "dataHorizon": 0,
         "costAwareness": 10
       },
       "detail": {
-        "generatedAt": "2026-02-23T06:04:58.870Z",
+        "generatedAt": "2026-02-23T06:24:37.694Z",
         "dateRange": {
           "from": "20260222",
           "to": "20260223"
@@ -340,19 +382,257 @@
       "stageId": "pipeline_mining",
       "category": "pipeline",
       "name": "Factor Mining",
-      "status": "FAIL",
-      "startedAt": "2026-02-23T06:04:58.870Z",
-      "endedAt": "2026-02-23T06:04:58.872Z",
-      "metrics": {},
-      "error": "[\n  {\n    \"code\": \"invalid_value\",\n    \"values\": [\n      \"investor.daily-log.v1\",\n      \"investor.benchmark-log.v1\"\n    ],\n    \"path\": [\n      \"schema\"\n    ],\n    \"message\": \"Invalid option: expected one of \\\"investor.daily-log.v1\\\"|\\\"investor.benchmark-log.v1\\\"\"\n  },\n  {\n    \"expected\": \"array\",\n    \"code\": \"invalid_type\",\n    \"path\": [\n      \"models\"\n    ],\n    \"message\": \"Invalid input: expected array, received undefined\"\n  },\n  {\n    \"code\": \"invalid_union\",\n    \"errors\": [\n      [\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"scenarioId\"\n          ],\n          \"message\": \"Invalid input: expected string, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"inputs\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"evidence\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"market\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            0,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            1,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            2,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            3,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analysis\",\n            4,\n            \"ohlc6\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"LONG_BASKET\",\n            \"NO_TRADE\"\n          ],\n          \"path\": [\n            \"decision\",\n            \"action\"\n          ],\n          \"message\": \"Invalid option: expected one of \\\"LONG_BASKET\\\"|\\\"NO_TRADE\\\"\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"USEFUL\",\n            \"USELESS\"\n          ],\n          \"path\": [\n            \"decision\",\n            \"experimentValue\"\n          ],\n          \"message\": \"Invalid option: expected one of \\\"USEFUL\\\"|\\\"USELESS\\\"\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"signals\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"risks\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"PROOF\"\n          ],\n          \"path\": [\n            \"results\",\n            \"mode\"\n          ],\n          \"message\": \"Invalid input: expected \\\"PROOF\\\"\"\n        },\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"PASS\",\n            \"FAIL\"\n          ],\n          \"path\": [\n            \"results\",\n            \"status\"\n          ],\n          \"message\": \"Invalid option: expected one of \\\"PASS\\\"|\\\"FAIL\\\"\"\n        },\n        {\n          \"expected\": \"number\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"results\",\n            \"paperPnlPerUnit\"\n          ],\n          \"message\": \"Invalid input: expected number, received undefined\"\n        },\n        {\n          \"expected\": \"boolean\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"results\",\n            \"proved\"\n          ],\n          \"message\": \"Invalid input: expected boolean, received undefined\"\n        },\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"results\",\n            \"generatedAt\"\n          ],\n          \"message\": \"Invalid input: expected string, received undefined\"\n        }\n      ],\n      [\n        {\n          \"code\": \"invalid_value\",\n          \"values\": [\n            \"FOUNDATION_BENCHMARK\"\n          ],\n          \"path\": [\n            \"type\"\n          ],\n          \"message\": \"Invalid input: expected \\\"FOUNDATION_BENCHMARK\\\"\"\n        },\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"benchmarkId\"\n          ],\n          \"message\": \"Invalid input: expected string, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"analyst\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"operator\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        },\n        {\n          \"expected\": \"object\",\n          \"code\": \"invalid_type\",\n          \"path\": [\n            \"debugger\"\n          ],\n          \"message\": \"Invalid input: expected object, received undefined\"\n        }\n      ]\n    ],\n    \"path\": [\n      \"report\"\n    ],\n    \"message\": \"Invalid input\"\n  }\n]"
+      "status": "PASS",
+      "startedAt": "2026-02-23T06:24:37.695Z",
+      "endedAt": "2026-02-23T06:24:37.710Z",
+      "metrics": {
+        "rows": 2,
+        "acceptedCount": 0,
+        "topSharpe": 0
+      },
+      "detail": {
+        "generatedAt": "2026-02-23T06:24:37.709Z",
+        "source": {
+          "logsDir": "/home/kafka/finance/investor/logs/daily",
+          "rows": 2
+        },
+        "config": {
+          "generations": 3,
+          "candidatesPerGeneration": 24,
+          "eliteCount": 6
+        },
+        "acceptedCount": 0,
+        "top": [
+          {
+            "factor": {
+              "id": "factor-g0-001",
+              "bias": -0.9582593534141779,
+              "weights": {
+                "vegetablePriceMomentum": -1.7479969067499042,
+                "avgAlphaScore": 0.3930640071630478,
+                "avgDailyReturn": 1.8107949635013938,
+                "avgIntradayRange": -1.569105951115489,
+                "avgCloseStrength": 0.8609913820400834,
+                "avgLiquidity": -1.3755378387868404,
+                "avgProfitMargin": -0.1768347742035985
+              },
+              "createdAt": "2026-02-23T06:24:37.700Z",
+              "generation": 0
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g0-002",
+              "bias": -0.06790939159691334,
+              "weights": {
+                "vegetablePriceMomentum": -1.70596984308213,
+                "avgAlphaScore": -0.5087843909859657,
+                "avgDailyReturn": 0.6058659767732024,
+                "avgIntradayRange": 0.009260306134819984,
+                "avgCloseStrength": -1.0446590473875403,
+                "avgLiquidity": -0.1565808542072773,
+                "avgProfitMargin": 0.1979225231334567
+              },
+              "createdAt": "2026-02-23T06:24:37.700Z",
+              "generation": 0
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g0-005",
+              "bias": -1.4334009680896997,
+              "weights": {
+                "vegetablePriceMomentum": 1.6997873084619641,
+                "avgAlphaScore": -0.586110457777977,
+                "avgDailyReturn": 1.4345390042290092,
+                "avgIntradayRange": -1.0197138171643019,
+                "avgCloseStrength": 1.8027564818039536,
+                "avgLiquidity": -1.8228533826768398,
+                "avgProfitMargin": -0.08252827543765306
+              },
+              "createdAt": "2026-02-23T06:24:37.700Z",
+              "generation": 0
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g0-007",
+              "bias": -0.007668877020478249,
+              "weights": {
+                "vegetablePriceMomentum": 1.0801406549289823,
+                "avgAlphaScore": -1.9320824444293976,
+                "avgDailyReturn": 1.4134580483660102,
+                "avgIntradayRange": 1.2022283244878054,
+                "avgCloseStrength": 0.0460899556055665,
+                "avgLiquidity": -1.172373753041029,
+                "avgProfitMargin": -0.47700872737914324
+              },
+              "createdAt": "2026-02-23T06:24:37.700Z",
+              "generation": 0
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g0-008",
+              "bias": 0.753724766895175,
+              "weights": {
+                "vegetablePriceMomentum": -0.09325062017887831,
+                "avgAlphaScore": -1.044281356036663,
+                "avgDailyReturn": 0.5201149648055434,
+                "avgIntradayRange": 1.3060648385435343,
+                "avgCloseStrength": -1.4803514322265983,
+                "avgLiquidity": -1.023455087095499,
+                "avgProfitMargin": -1.6345757441595197
+              },
+              "createdAt": "2026-02-23T06:24:37.700Z",
+              "generation": 0
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g0-009",
+              "bias": -0.8131560776382685,
+              "weights": {
+                "vegetablePriceMomentum": -1.338111917488277,
+                "avgAlphaScore": 0.20481471717357635,
+                "avgDailyReturn": 0.16137523856014013,
+                "avgIntradayRange": -1.9367637913674116,
+                "avgCloseStrength": 1.1944460505619645,
+                "avgLiquidity": -1.743416454643011,
+                "avgProfitMargin": 0.670107233338058
+              },
+              "createdAt": "2026-02-23T06:24:37.700Z",
+              "generation": 0
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g2-m001",
+              "bias": -0.9382593534141779,
+              "weights": {
+                "vegetablePriceMomentum": -1.7479969067499042,
+                "avgAlphaScore": 0.3930640071630478,
+                "avgDailyReturn": 1.8107949635013938,
+                "avgIntradayRange": -1.569105951115489,
+                "avgCloseStrength": 0.8609913820400834,
+                "avgLiquidity": -1.3755378387868404,
+                "avgProfitMargin": -0.1768347742035985
+              },
+              "createdAt": "2026-02-23T06:24:37.706Z",
+              "generation": 2
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g2-m002",
+              "bias": -0.08790939159691334,
+              "weights": {
+                "vegetablePriceMomentum": -1.67596984308213,
+                "avgAlphaScore": -0.5387843909859658,
+                "avgDailyReturn": 0.6358659767732024,
+                "avgIntradayRange": -0.020739693865180014,
+                "avgCloseStrength": -1.0146590473875403,
+                "avgLiquidity": -0.1865808542072773,
+                "avgProfitMargin": 0.2279225231334567
+              },
+              "createdAt": "2026-02-23T06:24:37.706Z",
+              "generation": 2
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g2-m003",
+              "bias": -1.4134009680896997,
+              "weights": {
+                "vegetablePriceMomentum": 1.7597873084619642,
+                "avgAlphaScore": -0.646110457777977,
+                "avgDailyReturn": 1.4945390042290092,
+                "avgIntradayRange": -1.079713817164302,
+                "avgCloseStrength": 1.8627564818039537,
+                "avgLiquidity": -1.8828533826768399,
+                "avgProfitMargin": -0.022528275437653067
+              },
+              "createdAt": "2026-02-23T06:24:37.706Z",
+              "generation": 2
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          },
+          {
+            "factor": {
+              "id": "factor-g2-m004",
+              "bias": -0.02766887702047825,
+              "weights": {
+                "vegetablePriceMomentum": 1.1701406549289823,
+                "avgAlphaScore": -2.0220824444293974,
+                "avgDailyReturn": 1.5034580483660103,
+                "avgIntradayRange": 1.1122283244878053,
+                "avgCloseStrength": 0.1360899556055665,
+                "avgLiquidity": -1.262373753041029,
+                "avgProfitMargin": -0.38700872737914327
+              },
+              "createdAt": "2026-02-23T06:24:37.706Z",
+              "generation": 2
+            },
+            "sharpe": 0,
+            "totalReturn": 0.0015000000000000568,
+            "maxDrawdown": 0,
+            "pValue": 0.5,
+            "accepted": false
+          }
+        ]
+      }
     },
     {
       "stageId": "pipeline_foundation",
       "category": "pipeline",
       "name": "Foundation Benchmark",
       "status": "PASS",
-      "startedAt": "2026-02-23T06:04:58.872Z",
-      "endedAt": "2026-02-23T06:05:13.468Z",
+      "startedAt": "2026-02-23T06:24:37.710Z",
+      "endedAt": "2026-02-23T06:24:52.373Z",
       "metrics": {
         "rowCount": 100000,
         "rollingMae": 44440.902683746994,
@@ -403,6 +683,23 @@
                 "overconfidenceError": 75.52267173499865,
                 "brierScore": 0.3659063268490933,
                 "ece": 0.19831355359049502,
+                "premiseCoverage": 100
+              }
+            },
+            {
+              "name": "Amazon Chronos (Subset)",
+              "metrics": {
+                "mae": 700,
+                "rmse": 934.1924319967487,
+                "smape": 3.191404729006734,
+                "directionalAccuracy": 30,
+                "tStat": 0,
+                "pValue": 1,
+                "abstentionRate": 0,
+                "safeAccuracy": 30,
+                "overconfidenceError": 0,
+                "brierScore": 0,
+                "ece": 0,
                 "premiseCoverage": 100
               }
             }

@@ -45,14 +45,15 @@ function loadDailySeries(logsDir: string): DailyPoint[] {
   const points: DailyPoint[] = [];
   for (const file of files) {
     const raw = readFileSync(join(logsDir, file), "utf8");
-    let logRaw;
+    let logRaw: unknown = null;
     try {
       logRaw = JSON.parse(raw);
     } catch {
       continue;
     }
 
-    if (logRaw.schema !== "investor.daily-log.v1") continue;
+    const logObj = logRaw as Record<string, unknown>;
+    if (logObj.schema !== "investor.daily-log.v1") continue;
 
     const result = UnifiedLogSchema.safeParse(logRaw);
     if (!result.success) continue;
@@ -84,7 +85,12 @@ export function runDailyAbComparison(logsBaseDir: string) {
       dateRange: { from: "19700101", to: "19700101" },
       baseline: { name: "NO_TRADE", metrics: emptyMetrics },
       candidate: { name: "VEGETABLE_STRATEGY", metrics: emptyMetrics },
-      uplift: { totalReturnDelta: 0, sharpeDelta: 0, maxDrawdownDelta: 0, hitRateDelta: 0 },
+      uplift: {
+        totalReturnDelta: 0,
+        sharpeDelta: 0,
+        maxDrawdownDelta: 0,
+        hitRateDelta: 0,
+      },
     });
   }
   const returns = points.map((p) => p.basketDailyReturn);

@@ -1,0 +1,686 @@
+$ biome check src
+src/core/index.ts:6:8 lint/style/useImportType  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Some named imports are only used as types.
+  
+     4 │ import { z } from "zod";
+     5 │ import type { UnifiedLog } from "../schemas/log.ts";
+   > 6 │ import {
+       │        ^
+   > 7 │   BenchmarkReportSchema,
+   > 8 │   DailyScenarioLogSchema,
+   > 9 │   ReadinessReportSchema,
+  > 10 │   UnifiedLogSchema,
+  > 11 │ } from "../schemas/log.ts";
+       │ ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    12 │ import { StandardOutcomeSchema } from "../schemas/outcome.ts";
+    13 │ 
+  
+  i This import is only used as a type.
+  
+    5 │ import type { UnifiedLog } from "../schemas/log.ts";
+    6 │ import {
+  > 7 │   BenchmarkReportSchema,
+      │   ^^^^^^^^^^^^^^^^^^^^^
+    8 │   DailyScenarioLogSchema,
+    9 │   ReadinessReportSchema,
+  
+  i This import is only used as a type.
+  
+     6 │ import {
+     7 │   BenchmarkReportSchema,
+   > 8 │   DailyScenarioLogSchema,
+       │   ^^^^^^^^^^^^^^^^^^^^^^
+     9 │   ReadinessReportSchema,
+    10 │   UnifiedLogSchema,
+  
+  i This import is only used as a type.
+  
+     7 │   BenchmarkReportSchema,
+     8 │   DailyScenarioLogSchema,
+   > 9 │   ReadinessReportSchema,
+       │   ^^^^^^^^^^^^^^^^^^^^^
+    10 │   UnifiedLogSchema,
+    11 │ } from "../schemas/log.ts";
+  
+  i Importing the types with import type ensures that they are removed by the compilers and avoids loading unnecessary modules.
+  
+  i Safe fix: Add inline type keywords.
+  
+      5   5 │   import type { UnifiedLog } from "../schemas/log.ts";
+      6   6 │   import {
+      7     │ - ··BenchmarkReportSchema,
+      8     │ - ··DailyScenarioLogSchema,
+      9     │ - ··ReadinessReportSchema,
+          7 │ + ··type·BenchmarkReportSchema,
+          8 │ + ··type·DailyScenarioLogSchema,
+          9 │ + ··type·ReadinessReportSchema,
+     10  10 │     UnifiedLogSchema,
+     11  11 │   } from "../schemas/log.ts";
+  
+
+src/core/index.ts:12:8 lint/style/useImportType  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! All these imports are only used as types.
+  
+    10 │   UnifiedLogSchema,
+    11 │ } from "../schemas/log.ts";
+  > 12 │ import { StandardOutcomeSchema } from "../schemas/outcome.ts";
+       │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    13 │ 
+    14 │ const ConfigSchema = z.object({
+  
+  i Importing the types with import type ensures that they are removed by the compilers and avoids loading unnecessary modules.
+  
+  i Safe fix: Use import type.
+  
+    12 │ import·type·{·StandardOutcomeSchema·}·from·"../schemas/outcome.ts";
+       │        +++++                                                       
+
+src/core/index.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    111 111 │         .dateRange.to;
+    112 112 │     } else if (validated.schema === "investor.investment-outcome.v1") {
+    113     │ - ····dateStr·=·(validated.report·as·z.infer<typeof·StandardOutcomeSchema>)
+    114     │ - ······.timestamp.split("T")[0]
+        113 │ + ····dateStr·=·(
+        114 │ + ······validated.report·as·z.infer<typeof·StandardOutcomeSchema>
+        115 │ + ····).timestamp
+        116 │ + ······.split("T")[0]
+    115 117 │         ?.replaceAll("-", "") as string;
+    116 118 │     }
+  
+
+src/data_cache/marketdata_db.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    154 154 │         return wanted.has(code)
+    155 155 │           ? {
+    156     │ - ··········source:·"stock_list",
+    157     │ - ··········code,
+    158     │ - ··········asof:·"0000-00-00",
+    159     │ - ··········payload:·{
+    160     │ - ············LocalCode:·toCode4(code),
+    161     │ - ············NameEnglish:·pick(c,·h,·"Name·(English)"),
+    162     │ - ············SectionProducts:·pick(c,·h,·"Section/Products"),
+    163     │ - ············Sector33Code:·pick(c,·h,·"33·Sector(Code)"),
+    164     │ - ············Sector33Name:·pick(c,·h,·"33·Sector(Name)"),
+    165     │ - ··········},
+    166     │ - ········}
+        156 │ + ············source:·"stock_list",
+        157 │ + ············code,
+        158 │ + ············asof:·"0000-00-00",
+        159 │ + ············payload:·{
+        160 │ + ··············LocalCode:·toCode4(code),
+        161 │ + ··············NameEnglish:·pick(c,·h,·"Name·(English)"),
+        162 │ + ··············SectionProducts:·pick(c,·h,·"Section/Products"),
+        163 │ + ··············Sector33Code:·pick(c,·h,·"33·Sector(Code)"),
+        164 │ + ··············Sector33Name:·pick(c,·h,·"33·Sector(Name)"),
+        165 │ + ············},
+        166 │ + ··········}
+    167 167 │           : undefined;
+    168 168 │       });
+    ······· │ 
+    172 172 │         return wanted.has(code)
+    173 173 │           ? {
+    174     │ - ··········source:·"stock_price",
+    175     │ - ··········code,
+    176     │ - ··········asof,
+    177     │ - ··········payload:·{
+    178     │ - ············Code:·toCode4(code),
+    179     │ - ············Date:·asof,
+    180     │ - ············Open:·Number(pick(c,·h,·"Open"))·||·0,
+    181     │ - ············High:·Number(pick(c,·h,·"High"))·||·0,
+    182     │ - ············Low:·Number(pick(c,·h,·"Low"))·||·0,
+    183     │ - ············Close:·Number(pick(c,·h,·"Close"))·||·0,
+    184     │ - ············Volume:·Number(pick(c,·h,·"Volume"))·||·0,
+    185     │ - ············TurnoverValue:·Number(pick(c,·h,·"TurnoverValue"))·||·0,
+    186     │ - ··········},
+    187     │ - ········}
+        174 │ + ············source:·"stock_price",
+        175 │ + ············code,
+        176 │ + ············asof,
+        177 │ + ············payload:·{
+        178 │ + ··············Code:·toCode4(code),
+        179 │ + ··············Date:·asof,
+        180 │ + ··············Open:·Number(pick(c,·h,·"Open"))·||·0,
+        181 │ + ··············High:·Number(pick(c,·h,·"High"))·||·0,
+        182 │ + ··············Low:·Number(pick(c,·h,·"Low"))·||·0,
+        183 │ + ··············Close:·Number(pick(c,·h,·"Close"))·||·0,
+        184 │ + ··············Volume:·Number(pick(c,·h,·"Volume"))·||·0,
+        185 │ + ··············TurnoverValue:·Number(pick(c,·h,·"TurnoverValue"))·||·0,
+        186 │ + ············},
+        187 │ + ··········}
+    188 188 │           : undefined;
+    189 189 │       });
+    ······· │ 
+    193 193 │         return wanted.has(code)
+    194 194 │           ? {
+    195     │ - ··········source:·"stock_fin",
+    196     │ - ··········code,
+    197     │ - ··········asof,
+    198     │ - ··········payload:·{
+    199     │ - ············LocalCode:·toCode4(code),
+    200     │ - ············DisclosedDate:·asof,
+    201     │ - ············NetSales:·Number(pick(c,·h,·"NetSales"))·||·0,
+    202     │ - ············OperatingProfit:·Number(pick(c,·h,·"OperatingProfit"))·||·0,
+    203     │ - ············OrdinaryProfit:·Number(pick(c,·h,·"OrdinaryProfit"))·||·0,
+    204     │ - ············Profit:·Number(pick(c,·h,·"Profit"))·||·0,
+    205     │ - ··········},
+    206     │ - ········}
+        195 │ + ············source:·"stock_fin",
+        196 │ + ············code,
+        197 │ + ············asof,
+        198 │ + ············payload:·{
+        199 │ + ··············LocalCode:·toCode4(code),
+        200 │ + ··············DisclosedDate:·asof,
+        201 │ + ··············NetSales:·Number(pick(c,·h,·"NetSales"))·||·0,
+        202 │ + ··············OperatingProfit:·Number(pick(c,·h,·"OperatingProfit"))·||·0,
+        203 │ + ··············OrdinaryProfit:·Number(pick(c,·h,·"OrdinaryProfit"))·||·0,
+        204 │ + ··············Profit:·Number(pick(c,·h,·"Profit"))·||·0,
+        205 │ + ············},
+        206 │ + ··········}
+    207 207 │           : undefined;
+    208 208 │       });
+    ······· │ 
+    254 254 │       return rec
+    255 255 │         ? [
+    256     │ - ········z
+    257     │ - ··········.record(z.string(),·z.unknown())
+    258     │ - ··········.catch({})
+    259     │ - ··········.parse(JSON.parse(rec.payload_json)),
+    260     │ - ······]
+        256 │ + ··········z
+        257 │ + ············.record(z.string(),·z.unknown())
+        258 │ + ············.catch({})
+        259 │ + ············.parse(JSON.parse(rec.payload_json)),
+        260 │ + ········]
+    261 261 │         : [];
+    262 262 │     }
+  
+
+src/experiments/foundation_models/constants.json format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     1  1 │   {
+     2    │ - ····"models":·[
+     3    │ - ········"chronos-tiny",
+     4    │ - ········"chronos-mini",
+     5    │ - ········"google-timesfm",
+     6    │ - ········"salesforce-moirai",
+     7    │ - ········"lag-llama"
+     8    │ - ····],
+     9    │ - ····"paths":·{
+    10    │ - ········"chronos-tiny":·"amazon/chronos-t5-tiny",
+    11    │ - ········"chronos-mini":·"amazon/chronos-t5-mini",
+    12    │ - ········"google-timesfm":·"google/timesfm-2.5-200m-pytorch",
+    13    │ - ········"salesforce-moirai":·"Salesforce/moirai-1.0-R-tiny",
+    14    │ - ········"lag-llama":·"time-series-foundation-models/lag-llama"
+    15    │ - ····},
+    16    │ - ····"params":·{
+    17    │ - ········"context_length":·32,
+    18    │ - ········"prediction_length":·1,
+    19    │ - ········"history_limit":·512,
+    20    │ - ········"window_size":·32,
+    21    │ - ········"test_size":·10
+    22    │ - ····}
+    23    │ - }
+        2 │ + ··"models":·[
+        3 │ + ····"chronos-tiny",
+        4 │ + ····"chronos-mini",
+        5 │ + ····"google-timesfm",
+        6 │ + ····"salesforce-moirai",
+        7 │ + ····"lag-llama"
+        8 │ + ··],
+        9 │ + ··"paths":·{
+       10 │ + ····"chronos-tiny":·"amazon/chronos-t5-tiny",
+       11 │ + ····"chronos-mini":·"amazon/chronos-t5-mini",
+       12 │ + ····"google-timesfm":·"google/timesfm-2.5-200m-pytorch",
+       13 │ + ····"salesforce-moirai":·"Salesforce/moirai-1.0-R-tiny",
+       14 │ + ····"lag-llama":·"time-series-foundation-models/lag-llama"
+       15 │ + ··},
+       16 │ + ··"params":·{
+       17 │ + ····"context_length":·32,
+       18 │ + ····"prediction_length":·1,
+       19 │ + ····"history_limit":·512,
+       20 │ + ····"window_size":·32,
+       21 │ + ····"test_size":·10
+       22 │ + ··}
+       23 │ + }
+       24 │ + 
+  
+
+src/experiments/scenarios/generic_alpha_scenario.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    37 37 │       verification: params.verification
+    38 38 │         ? {
+    39    │ - ········metrics:·{
+    40    │ - ··········mae:·0,·//·Placeholder·for·template
+    41    │ - ··········rmse:·0,
+    42    │ - ··········smape:·0,
+    43    │ - ··········directionalAccuracy:·0,
+    44    │ - ··········sharpeRatio:·params.verification.sharpe,
+    45    │ - ········},
+    46    │ - ········upliftOverBaseline:·params.verification.totalReturn·>·0·?·0.05·:·0,·//·Mock·uplift
+    47    │ - ······}
+       39 │ + ··········metrics:·{
+       40 │ + ············mae:·0,·//·Placeholder·for·template
+       41 │ + ············rmse:·0,
+       42 │ + ············smape:·0,
+       43 │ + ············directionalAccuracy:·0,
+       44 │ + ············sharpeRatio:·params.verification.sharpe,
+       45 │ + ··········},
+       46 │ + ··········upliftOverBaseline:·params.verification.totalReturn·>·0·?·0.05·:·0,·//·Mock·uplift
+       47 │ + ········}
+    48 48 │         : undefined,
+    49 49 │       readiness: {
+  
+
+src/experiments/scenarios/vegetable_daily.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━
+
+  × The imports and exports are not sorted.
+  
+  > 1 │ import { z } from "zod";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^
+    2 │ import { runSimpleBacktest } from "../../backtest/simulator.ts";
+    3 │ import type { MarketDataGateway } from "../../gateways/live_market_data_gateway.ts";
+  
+  i Safe fix: Organize Imports (Biome)
+  
+      2   2 │   import { runSimpleBacktest } from "../../backtest/simulator.ts";
+      3   3 │   import type { MarketDataGateway } from "../../gateways/live_market_data_gateway.ts";
+      4     │ - import·{
+      5     │ - ··average,
+      6     │ - ··extractEstatValues,
+      7     │ - ··SymbolAnalysisSchema,
+      8     │ - ··scoreDailyAlpha,
+      9     │ - }·from·"../analysis/daily_alpha.ts";
+     10     │ - import·{·InferenceService·}·from·"../../infrastructure/inference_service.ts";
+          4 │ + import·{·InferenceService·}·from·"../../infrastructure/inference_service.ts";
+          5 │ + import·{
+          6 │ + ··average,
+          7 │ + ··extractEstatValues,
+          8 │ + ··SymbolAnalysisSchema,
+          9 │ + ··scoreDailyAlpha,
+         10 │ + }·from·"../analysis/daily_alpha.ts";
+     11  11 │   
+     12  12 │   const Universe = ["1375", "1332", "2503"] as const;
+  
+
+src/experiments/scenarios/vegetable_daily.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    163 163 │         ? detail
+    164 164 │         : Universe.map((symbol) =>
+    165     │ - ········scoreDailyAlpha(symbol,·{},·{},·vegetablePriceMomentum),
+    166     │ - ······);
+        165 │ + ··········scoreDailyAlpha(symbol,·{},·{},·vegetablePriceMomentum),
+        166 │ + ········);
+    167 167 │   
+    168 168 │     const sorted = [...analysis].sort((a, b) => b.alphaScore - a.alphaScore);
+  
+
+src/gateways/live_market_data_gateway.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     25  25 │   ): unknown[] | undefined =>
+     26  26 │     keys.map((k) => value[k]).find((v) => Array.isArray(v)) as
+     27     │ - ··|·unknown[]
+     28     │ - ··|·undefined;
+         27 │ + ····|·unknown[]
+         28 │ + ····|·undefined;
+     29  29 │   
+     30  30 │   const findFirstArray = (value: unknown): unknown[] | undefined =>
+    ······· │ 
+     33  33 │       : typeof value === "object" && value !== null
+     34  34 │         ? Object.values(value as Record<string, unknown>)
+     35     │ - ········.map((v)·=>·findFirstArray(v))
+     36     │ - ········.find((v)·=>·v·!==·undefined)
+         35 │ + ··········.map((v)·=>·findFirstArray(v))
+         36 │ + ··········.find((v)·=>·v·!==·undefined)
+     37  37 │         : undefined;
+     38  38 │   
+    ······· │ 
+     49  49 │         "data",
+     50  50 │       ]) ??
+     51     │ - ····findFirstArray(payload)·??
+     52     │ - ····[],
+         51 │ + ······findFirstArray(payload)·??
+         52 │ + ······[],
+     53  53 │     );
+     54  54 │   
+  
+
+src/infrastructure/inference_service.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+     3  3 │   
+     4  4 │   export const InferenceResultSchema = z.object({
+     5    │ - ····model:·z.string(),
+     6    │ - ····forecast:·z.array(z.number()),
+        5 │ + ··model:·z.string(),
+        6 │ + ··forecast:·z.array(z.number()),
+     7  7 │   });
+     8  8 │   
+    ····· │ 
+    10 10 │   
+    11 11 │   export class InferenceService {
+    12    │ - ····private·readonly·cwd:·string;
+       12 │ + ··private·readonly·cwd:·string;
+    13 13 │   
+    14    │ - ····constructor()·{
+    15    │ - ········this.cwd·=·join(process.cwd(),·"src/experiments/foundation_models");
+    16    │ - ····}
+       14 │ + ··constructor()·{
+       15 │ + ····this.cwd·=·join(process.cwd(),·"src/experiments/foundation_models");
+       16 │ + ··}
+    17 17 │   
+    18    │ - ····async·predict(history:·number[],·modelId:·string):·Promise<InferenceResult>·{
+    19    │ - ········const·proc·=·Bun.spawn(["/root/.local/bin/uv",·"run",·"python",·"run_inference.py"],·{
+    20    │ - ············cwd:·this.cwd,
+    21    │ - ············stdin:·"pipe",
+    22    │ - ············stdout:·"pipe",
+    23    │ - ············stderr:·"ignore",
+    24    │ - ········});
+       18 │ + ··async·predict(history:·number[],·modelId:·string):·Promise<InferenceResult>·{
+       19 │ + ····const·proc·=·Bun.spawn(
+       20 │ + ······["/root/.local/bin/uv",·"run",·"python",·"run_inference.py"],
+       21 │ + ······{
+       22 │ + ········cwd:·this.cwd,
+       23 │ + ········stdin:·"pipe",
+       24 │ + ········stdout:·"pipe",
+       25 │ + ········stderr:·"ignore",
+       26 │ + ······},
+       27 │ + ····);
+    25 28 │   
+    26    │ - ········const·input·=·JSON.stringify({·history,·model:·modelId·});
+    27    │ - ········await·proc.stdin.write(new·TextEncoder().encode(input));
+    28    │ - ········await·proc.stdin.end();
+       29 │ + ····const·input·=·JSON.stringify({·history,·model:·modelId·});
+       30 │ + ····await·proc.stdin.write(new·TextEncoder().encode(input));
+       31 │ + ····await·proc.stdin.end();
+    29 32 │   
+    30    │ - ········const·outputText·=·await·new·Response(proc.stdout).text();
+    31    │ - ········const·result·=·JSON.parse(outputText);
+    32    │ - ········return·InferenceResultSchema.parse(result);
+    33    │ - ····}
+       33 │ + ····const·outputText·=·await·new·Response(proc.stdout).text();
+       34 │ + ····const·result·=·JSON.parse(outputText);
+       35 │ + ····return·InferenceResultSchema.parse(result);
+       36 │ + ··}
+    34 37 │   }
+    35 38 │   
+  
+
+src/pipeline/evaluate/foundation_benchmark.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━
+
+  × The imports and exports are not sorted.
+  
+  > 1 │ import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    2 │ import { join } from "node:path";
+    3 │ import { core } from "../../core/index.ts";
+  
+  i Safe fix: Organize Imports (Biome)
+  
+      1     │ - import·{·mkdirSync,·writeFileSync,·readFileSync·}·from·"node:fs";
+          1 │ + import·{·mkdirSync,·readFileSync,·writeFileSync·}·from·"node:fs";
+      2   2 │   import { join } from "node:path";
+      3   3 │   import { core } from "../../core/index.ts";
+    ······· │ 
+      5   5 │   import { MarketdataLocalGateway } from "../../gateways/marketdata_local_gateway.ts";
+      6   6 │   import { getTSModels } from "../../model_registry/registry.ts";
+      7     │ - import·{·UnifiedLogSchema,·BenchmarkReportSchema·}·from·"../../schemas/log.ts";
+          7 │ + import·{·BenchmarkReportSchema,·UnifiedLogSchema·}·from·"../../schemas/log.ts";
+      8   8 │   
+      9   9 │   function calculateRMSE(actuals: number[], predictions: number[]): number {
+  
+
+src/pipeline/evaluate/foundation_benchmark.ts:30:82 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    28 │   const constants = JSON.parse(readFileSync(constantsPath, "utf8"));
+    29 │   const gateway = await MarketdataLocalGateway.create(["1375"]);
+  > 30 │   const estatObj = (await gateway.getEstatStats("0000010101")) as Record<string, any>;
+       │                                                                                  ^^^
+    31 │   if (!estatObj?.GET_STATS_DATA) { console.error("Estat data missing"); process.exit(1); }
+    32 │   const values = extractEstatValues(estatObj.GET_STATS_DATA);
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+src/pipeline/evaluate/foundation_benchmark.ts:39:40 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Unexpected any. Specify a different type.
+  
+    37 │   const naiveMetrics = { mae: average(targets.map((t, i) => Math.abs(t - previous[i]!))), rmse: calculateRMSE(targets, previous), smape: calculateSMAPE(targets, previous), directionalAccuracy: 100 };
+    38 │ 
+  > 39 │   const resultsByModel: Record<string, any> = {};
+       │                                        ^^^
+    40 │   for (const modelId of constants.models) {
+    41 │     const testSize = constants.params.test_size;
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+src/pipeline/evaluate/foundation_benchmark.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+      2   2 │   import { join } from "node:path";
+      3   3 │   import { core } from "../../core/index.ts";
+      4     │ - import·{·average,·extractEstatValues·}·from·"../../experiments/analysis/daily_alpha.ts";
+          4 │ + import·{
+          5 │ + ··average,
+          6 │ + ··extractEstatValues,
+          7 │ + }·from·"../../experiments/analysis/daily_alpha.ts";
+      5   8 │   import { MarketdataLocalGateway } from "../../gateways/marketdata_local_gateway.ts";
+      6   9 │   import { getTSModels } from "../../model_registry/registry.ts";
+    ······· │ 
+     12  15 │   
+     13  16 │   function calculateSMAPE(actuals: number[], predictions: number[]): number {
+     14     │ - ··return·average(actuals.map((a,·i)·=>·Math.abs(predictions[i]!·-·a)·/·((Math.abs(a)·+·Math.abs(predictions[i]!))·/·2·||·1)))·*·100;
+         17 │ + ··return·(
+         18 │ + ····average(
+         19 │ + ······actuals.map(
+         20 │ + ········(a,·i)·=>
+         21 │ + ··········Math.abs(predictions[i]!·-·a)·/
+         22 │ + ··········((Math.abs(a)·+·Math.abs(predictions[i]!))·/·2·||·1),
+         23 │ + ······),
+         24 │ + ····)·*·100
+         25 │ + ··);
+     15  26 │   }
+     16  27 │   
+     17     │ - function·calculateDA(actuals:·number[],·predictions:·number[],·previous:·number[]):·number·{
+         28 │ + function·calculateDA(
+         29 │ + ··actuals:·number[],
+         30 │ + ··predictions:·number[],
+         31 │ + ··previous:·number[],
+         32 │ + ):·number·{
+     18  33 │     let correct = 0;
+     19  34 │     for (let i = 0; i < actuals.length; i++) {
+     20     │ - ····if·(Math.sign(actuals[i]!·-·previous[i]!)·===·Math.sign(predictions[i]!·-·previous[i]!))·correct++;
+         35 │ + ····if·(
+         36 │ + ······Math.sign(actuals[i]!·-·previous[i]!)·===
+         37 │ + ······Math.sign(predictions[i]!·-·previous[i]!)
+         38 │ + ····)
+         39 │ + ······correct++;
+     21  40 │     }
+     22  41 │     return (correct / actuals.length) * 100;
+    ······· │ 
+     25  44 │   export async function runFoundationBenchmark() {
+     26  45 │     const startTime = Date.now();
+     27     │ - ··const·constantsPath·=·join(process.cwd(),·"src/experiments/foundation_models/constants.json");
+         46 │ + ··const·constantsPath·=·join(
+         47 │ + ····process.cwd(),
+         48 │ + ····"src/experiments/foundation_models/constants.json",
+         49 │ + ··);
+     28  50 │     const constants = JSON.parse(readFileSync(constantsPath, "utf8"));
+     29  51 │     const gateway = await MarketdataLocalGateway.create(["1375"]);
+     30     │ - ··const·estatObj·=·(await·gateway.getEstatStats("0000010101"))·as·Record<string,·any>;
+     31     │ - ··if·(!estatObj?.GET_STATS_DATA)·{·console.error("Estat·data·missing");·process.exit(1);·}
+         52 │ + ··const·estatObj·=·(await·gateway.getEstatStats("0000010101"))·as·Record<
+         53 │ + ····string,
+         54 │ + ····any
+         55 │ + ··>;
+         56 │ + ··if·(!estatObj?.GET_STATS_DATA)·{
+         57 │ + ····console.error("Estat·data·missing");
+         58 │ + ····process.exit(1);
+         59 │ + ··}
+     32  60 │     const values = extractEstatValues(estatObj.GET_STATS_DATA);
+     33     │ - ··if·(values.length·<·constants.params.window_size·+·constants.params.test_size)·{·console.error("Insufficient·data",·values.length);·process.exit(1);·}
+         61 │ + ··if·(
+         62 │ + ····values.length·<
+         63 │ + ····constants.params.window_size·+·constants.params.test_size
+         64 │ + ··)·{
+         65 │ + ····console.error("Insufficient·data",·values.length);
+         66 │ + ····process.exit(1);
+         67 │ + ··}
+     34  68 │   
+     35  69 │     const targets = values.slice(constants.params.window_size);
+     36  70 │     const previous = values.slice(constants.params.window_size - 1, -1);
+     37     │ - ··const·naiveMetrics·=·{·mae:·average(targets.map((t,·i)·=>·Math.abs(t·-·previous[i]!))),·rmse:·calculateRMSE(targets,·previous),·smape:·calculateSMAPE(targets,·previous),·directionalAccuracy:·100·};
+         71 │ + ··const·naiveMetrics·=·{
+         72 │ + ····mae:·average(targets.map((t,·i)·=>·Math.abs(t·-·previous[i]!))),
+         73 │ + ····rmse:·calculateRMSE(targets,·previous),
+         74 │ + ····smape:·calculateSMAPE(targets,·previous),
+         75 │ + ····directionalAccuracy:·100,
+         76 │ + ··};
+     38  77 │   
+     39  78 │     const resultsByModel: Record<string, any> = {};
+    ······· │ 
+     46  85 │       for (let i = 0; i < testSize; i++) {
+     47  86 │         const idx = startIdx + i;
+     48     │ - ······const·history·=·values.slice(Math.max(0,·idx·-·constants.params.history_limit),·idx);
+     49     │ - ······const·proc·=·Bun.spawn(["/root/.local/bin/uv",·"run",·"python",·"run_inference.py"],·{·cwd:·join(process.cwd(),·"src/experiments/foundation_models"),·stdin:·"pipe",·stdout:·"pipe"·});
+     50     │ - ······await·proc.stdin.write(new·TextEncoder().encode(JSON.stringify({·history,·model:·modelId·})));
+         87 │ + ······const·history·=·values.slice(
+         88 │ + ········Math.max(0,·idx·-·constants.params.history_limit),
+         89 │ + ········idx,
+         90 │ + ······);
+         91 │ + ······const·proc·=·Bun.spawn(
+         92 │ + ········["/root/.local/bin/uv",·"run",·"python",·"run_inference.py"],
+         93 │ + ········{
+         94 │ + ··········cwd:·join(process.cwd(),·"src/experiments/foundation_models"),
+         95 │ + ··········stdin:·"pipe",
+         96 │ + ··········stdout:·"pipe",
+         97 │ + ········},
+         98 │ + ······);
+         99 │ + ······await·proc.stdin.write(
+        100 │ + ········new·TextEncoder().encode(JSON.stringify({·history,·model:·modelId·})),
+        101 │ + ······);
+     51 102 │         await proc.stdin.end();
+     52 103 │         const output = JSON.parse(await new Response(proc.stdout).text());
+     53     │ - ······if·(!output?.forecast?.[0])·{·console.error("Inference·output·invalid",·output);·process.exit(1);·}
+        104 │ + ······if·(!output?.forecast?.[0])·{
+        105 │ + ········console.error("Inference·output·invalid",·output);
+        106 │ + ········process.exit(1);
+        107 │ + ······}
+     54 108 │         preds.push(output.forecast[0]);
+     55 109 │         mTargets.push(values[idx]!);
+     56 110 │         mPrev.push(values[idx - 1]!);
+     57 111 │       }
+     58     │ - ····resultsByModel[modelId]·=·{·mae:·average(mTargets.map((t,·i)·=>·Math.abs(t·-·preds[i]!))),·rmse:·calculateRMSE(mTargets,·preds),·smape:·calculateSMAPE(mTargets,·preds),·directionalAccuracy:·calculateDA(mTargets,·preds,·mPrev)·};
+        112 │ + ····resultsByModel[modelId]·=·{
+        113 │ + ······mae:·average(mTargets.map((t,·i)·=>·Math.abs(t·-·preds[i]!))),
+        114 │ + ······rmse:·calculateRMSE(mTargets,·preds),
+        115 │ + ······smape:·calculateSMAPE(mTargets,·preds),
+        116 │ + ······directionalAccuracy:·calculateDA(mTargets,·preds,·mPrev),
+        117 │ + ····};
+     59 118 │     }
+     60 119 │   
+     61 120 │     const today = new Date().toISOString().split("T")[0]!.replaceAll("-", "");
+     62 121 │     const allTSModels = await getTSModels();
+     63     │ - ··const·usedModels·=·allTSModels.filter(m·=>·constants.models.some((id:·string)·=>·m.id.includes(id)));
+        122 │ + ··const·usedModels·=·allTSModels.filter((m)·=>
+        123 │ + ····constants.models.some((id:·string)·=>·m.id.includes(id)),
+        124 │ + ··);
+     64 125 │   
+     65 126 │     const report = {
+    ······· │ 
+     70 131 │         baselines: [
+     71 132 │           { name: "Naive", metrics: naiveMetrics },
+     72     │ - ········...constants.models.map((id:·string)·=>·({·name:·id,·metrics:·resultsByModel[id]·}))
+        133 │ + ········...constants.models.map((id:·string)·=>·({
+        134 │ + ··········name:·id,
+        135 │ + ··········metrics:·resultsByModel[id],
+        136 │ + ········})),
+     73 137 │         ],
+     74     │ - ······models:·usedModels.map(m·=>·({·id:·m.id,·vendor:·m.vendor,·tags:·m.tags·})),
+     75     │ - ······recommendations:·["Validated·Zero-Mock·quantitative·pipeline·for·foundational·models."],
+     76     │ - ······insights:·`Comparative·analysis·of·foundational·time-series·models·on·e-Stat·price·indices.`
+        138 │ + ······models:·usedModels.map((m)·=>·({
+        139 │ + ········id:·m.id,
+        140 │ + ········vendor:·m.vendor,
+        141 │ + ········tags:·m.tags,
+        142 │ + ······})),
+        143 │ + ······recommendations:·[
+        144 │ + ········"Validated·Zero-Mock·quantitative·pipeline·for·foundational·models.",
+        145 │ + ······],
+        146 │ + ······insights:·`Comparative·analysis·of·foundational·time-series·models·on·e-Stat·price·indices.`,
+     77 147 │       },
+     78     │ - ····operator:·{·status:·"PASS",·dataset:·"e-Stat",·rowCount:·values.length,·environment:·"production",·workflowReadiness:·"PASS"·},
+     79     │ - ····debugger:·{·telemetry:·{},·envCheck:·{·python_venv:·true,·uv_installed:·true·},·rawValues:·values,·latencyMs:·Date.now()·-·startTime·}
+  30 more lines truncated
+  
+
+src/pipeline/evaluate/llm_agent_readiness.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    113 113 │     const returnStd = Math.sqrt(
+    114 114 │       points.map((p) => p.basketDailyReturn).reduce((acc, x) => acc + x * x, 0) /
+    115     │ - ····Math.max(1,·sampleSize),
+        115 │ + ······Math.max(1,·sampleSize),
+    116 116 │     );
+    117 117 │   
+  
+
+src/use_cases/run_vegetable_proof.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × The imports and exports are not sorted.
+  
+  > 1 │ import { mkdirSync, writeFileSync } from "node:fs";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    2 │ import { join } from "node:path";
+    3 │ import { core } from "../core/index.ts";
+  
+  i Safe fix: Organize Imports (Biome)
+  
+     4  4 │   import { executePaperOrders } from "../execution/paper_executor.ts";
+     5  5 │   import { runVegetableScenario } from "../experiments/scenarios/vegetable_daily.ts";
+     6    │ - import·{·runLlmAgentReadiness·}·from·"../pipeline/evaluate/llm_agent_readiness.ts";
+     7    │ - import·{·MarketdataLocalGateway·}·from·"../gateways/marketdata_local_gateway.ts";
+     8    │ - import·{
+     9    │ - ··loadForecastModelReferences,
+    10    │ - ··type·ModelReference,
+    11    │ - }·from·"../model_registry/registry.ts";
+        6 │ + import·{·MarketdataLocalGateway·}·from·"../gateways/marketdata_local_gateway.ts";
+        7 │ + import·{
+        8 │ + ··loadForecastModelReferences,
+        9 │ + ··type·ModelReference,
+       10 │ + }·from·"../model_registry/registry.ts";
+       11 │ + import·{·runLlmAgentReadiness·}·from·"../pipeline/evaluate/llm_agent_readiness.ts";
+    12 12 │   import { type UnifiedLog, UnifiedLogSchema } from "../schemas/log.ts";
+    13 13 │   
+  
+
+Checked 58 files in 37ms. No fixes applied.
+Found 14 errors.
+Found 2 warnings.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+error: script "lint" exited with code 1

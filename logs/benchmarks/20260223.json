@@ -1,6 +1,6 @@
 {
   "schema": "investor.benchmark-log.v1",
-  "generatedAt": "2026-02-23T06:05:13.445Z",
+  "generatedAt": "2026-02-23T07:14:49.036Z",
   "models": [
     {
       "id": "amazon-chronos",
@@ -88,6 +88,74 @@
             "overconfidenceError": 75.52267173499865,
             "brierScore": 0.3659063268490933,
             "ece": 0.19831355359049502,
+            "premiseCoverage": 100
+          }
+        },
+        {
+          "name": "Amazon Chronos",
+          "metrics": {
+            "mae": 336.2232421875,
+            "rmse": 504.68548894503965,
+            "smape": 1.8342011949406485,
+            "directionalAccuracy": 30,
+            "tStat": 0,
+            "pValue": 1,
+            "abstentionRate": 0,
+            "safeAccuracy": 30,
+            "overconfidenceError": 0,
+            "brierScore": 0,
+            "ece": 0,
+            "premiseCoverage": 100
+          }
+        },
+        {
+          "name": "Google TimesFM",
+          "metrics": {
+            "mae": 300,
+            "rmse": 490.53134456423885,
+            "smape": 1.6249101769840728,
+            "directionalAccuracy": 50,
+            "tStat": 0,
+            "pValue": 1,
+            "abstentionRate": 0,
+            "safeAccuracy": 50,
+            "overconfidenceError": 0,
+            "brierScore": 0,
+            "ece": 0,
+            "premiseCoverage": 100
+          }
+        },
+        {
+          "name": "Salesforce MOIRAI",
+          "metrics": {
+            "mae": 300,
+            "rmse": 490.53134456423885,
+            "smape": 1.6249101769840728,
+            "directionalAccuracy": 50,
+            "tStat": 0,
+            "pValue": 1,
+            "abstentionRate": 0,
+            "safeAccuracy": 50,
+            "overconfidenceError": 0,
+            "brierScore": 0,
+            "ece": 0,
+            "premiseCoverage": 100
+          }
+        },
+        {
+          "name": "Lag-Llama",
+          "metrics": {
+            "mae": 300,
+            "rmse": 490.53134456423885,
+            "smape": 1.6249101769840728,
+            "directionalAccuracy": 50,
+            "tStat": 0,
+            "pValue": 1,
+            "abstentionRate": 0,
+            "safeAccuracy": 50,
+            "overconfidenceError": 0,
+            "brierScore": 0,
+            "ece": 0,
             "premiseCoverage": 100
           }
         }
@@ -100171,7 +100239,7 @@
         17000,
         16000
       ],
-      "latencyMs": 14574
+      "latencyMs": 198188
     }
   }
 }

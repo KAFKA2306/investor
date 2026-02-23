@@ -25,6 +25,7 @@ sequenceDiagram
     X-->>V: execution report
     V-->>L: daily log persisted
     L->>E: baseline vs candidate comparison
+    L->>R: 2. Investment Outcome (Standardized)
 ```
 
 ## 1. Daily Commands (Canonical)
@@ -38,7 +39,7 @@ bun run verify:scenario
 bun run start
 bun run pipeline:ab
 bun run pipeline:llm-readiness
-bun run pipeline:full-validation
+bun run start:outcome
 ```
 
 実行順序の意味:
@@ -48,7 +49,7 @@ bun run pipeline:full-validation
 4. 日次本線実行 (`start`)
 5. 定量比較 (`pipeline:ab`)
 6. 論文基準Readiness判定 (`pipeline:llm-readiness`)
-7. 統一検証ログ作成 (`pipeline:full-validation`)
+7. 標準投資成果ログ作成 (`start:outcome`)
 
 ## 2. Acceptance Gates
 
@@ -61,8 +62,12 @@ bun run pipeline:full-validation
 推奨判定:
 - `pipeline:ab` の `candidate.totalReturn > 0`
 - `pipeline:ab` の `candidate.sharpe >= baseline.sharpe`
-- `pipeline:llm-readiness` の `score.total >= 50`（運用注意域）
 - `pipeline:llm-readiness` の `score.total >= 75`（本番準備域）
+
+成果獲得基準 (Standard Outcome):
+1. Alpha Significance: $|t| > 2, p < 0.05$
+2. Verification: $Sharpe > 1.0$, $MaxDD < 10\%$
+3. Readiness: $Score \ge 75$
 
 ## 3. Runtime Contracts
 
@@ -84,15 +89,20 @@ bun run pipeline:full-validation
 - `logs/daily/YYYYMMDD.json`
   - `report.decision`
   - `report.results.backtest`（fee/slippage含む）
-  - `report.execution`（PAPER実行結果）
-- `pipeline:ab` 出力
-  - baseline/candidate/uplift の定量比較
-- `pipeline:llm-readiness` 出力
-  - `score.total`（0-100）
-  - 内訳: `dataHorizon`, `costAwareness`, `outOfSampleDiscipline`, `modelTraceability`, `reproducibility`, `executionObservability`
 - `logs/unified/YYYYMMDD.json`
-  - `investor.unified-log.v1` 形式
-  - scenario/experiment/pipeline/verification の全ステージ結果
+  - `investor.investment-outcome` 形式
+  - 4層成果（Alpha, Verification, Readiness, Execution）の集約
+
+## 📈 Supported Forecasting Models (Registry)
+
+`Model Registry` を通じて、以下の最新の時系列予測（TS Forecasting）基盤モデルおよびアルファ生成フレームワークをサポートしているよっ ✨
+
+- **Chronos (Amazon)**: ユニバリエート（単変量）時系列データのゼロショット予測。
+- **TimesFM (Google)**: Transformer ベースの事前学習済み時系列基盤モデル。
+- **TimeRAF (Microsoft)**: 金融データに特化した RAG (Retrieval-Augmented) 型予測。
+- **MOIRAI (Salesforce)**: あらゆる時系列データに対応可能な万能トランスフォーマー。
+- **Lag-Llama**: Llama アーキテクチャを時系列に転用した確率的予測。
+- **LES (ArXiv:2409.06289)**: LLM によるマルチエージェント型アルファ因子生成。
 
 ## 5. Incident Handling
 

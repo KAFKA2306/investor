@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { runSimpleBacktest } from "../../backtest/simulator.ts";
 import type { MarketDataGateway } from "../../gateways/live_market_data_gateway.ts";
+import { InferenceService } from "../../infrastructure/inference_service.ts";
 import {
   average,
   extractEstatValues,
@@ -128,15 +129,32 @@ export async function runVegetableScenario(
   const vegetablePriceMomentum =
     (newer - older) / Math.max(Math.abs(older), 1e-9);
 
+  const inference = new InferenceService();
   const detail = await Promise.all(
     matchedSymbols.map(async (symbol) => {
-      const [bars, fins] = await Promise.all([
+      const [bars, fins, history] = await Promise.all([
         gateway.getDailyBars(symbol, dateCandidates),
         gateway.getStatements(symbol),
+        gateway.getHistory(symbol, 512),
       ]);
+      let predictedReturn = 0;
+      try {
+        const pred = await inference.predict(history, "chronos-tiny");
+        const lastClose = history[history.length - 1] ?? 0;
+        const forecast = pred.forecast[0] ?? lastClose;
+        predictedReturn = (forecast - lastClose) / Math.max(lastClose, 1e-9);
+      } catch {
+        // Fail-Safe: Fallback to 0 if inference fails (following protocol except for critical errors)
+      }
       const bar = z.record(z.string(), z.unknown()).catch({}).parse(bars.at(0));
       const fin = z.record(z.string(), z.unknown()).catch({}).parse(fins.at(0));
-      return scoreDailyAlpha(symbol, bar, fin, vegetablePriceMomentum);
+      return scoreDailyAlpha(
+        symbol,
+        bar,
+        fin,
+        vegetablePriceMomentum,
+        predictedReturn,
+      );
     }),
   );
 

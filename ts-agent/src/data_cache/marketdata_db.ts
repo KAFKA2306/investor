@@ -265,6 +265,25 @@ export class MarketdataDbCache {
     return this.rows("stock_fin", toCode5(symbol4)).slice(0, 1);
   }
 
+  public getBars(
+    symbol4: string,
+    limit: number,
+  ): Array<Record<string, unknown>> {
+    const recs = this.db
+      .query(
+        "SELECT payload_json FROM md_unified WHERE source = 'stock_price' AND code = ?1 ORDER BY asof DESC LIMIT ?2",
+      )
+      .all(toCode5(symbol4), limit) as Array<{ payload_json: string }>;
+    return recs
+      .map((r) =>
+        z
+          .record(z.string(), z.unknown())
+          .catch({})
+          .parse(JSON.parse(r.payload_json)),
+      )
+      .reverse();
+  }
+
   public getLatestAsof(source: UnifiedRow["source"]): string {
     const row = this.db
       .query("SELECT MAX(asof) AS asof FROM md_unified WHERE source = ?1")

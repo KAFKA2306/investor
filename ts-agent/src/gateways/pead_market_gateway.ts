@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { PeadDataProvider } from "../agents/pead.ts";
+import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
 
 const safeRecordArray = (value: unknown): Record<string, unknown>[] =>
   z.array(z.record(z.string(), z.unknown())).catch([]).parse(value);
@@ -43,13 +44,19 @@ export class PeadJquantsGateway implements PeadDataProvider {
 
   public async getEarningsCalendar(
     params: Record<string, string>,
-  ): Promise<unknown[]> {
-    return this.fetchRows("/equities/earnings-calendar", params);
+  ): Promise<CalendarEntry[]> {
+    return (await this.fetchRows(
+      "/equities/earnings-calendar",
+      params,
+    )) as CalendarEntry[];
   }
 
   public async getStatements(
     params: Record<string, string>,
-  ): Promise<unknown[]> {
-    return this.fetchRows("/fins/summary", params);
+  ): Promise<FinancialStatement[]> {
+    return (await this.fetchRows(
+      "/fins/summary",
+      params,
+    )) as FinancialStatement[];
   }
 }

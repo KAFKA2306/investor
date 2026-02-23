@@ -62,4 +62,9 @@ export class MarketdataLocalGateway implements MarketDataGateway {
     const asof = await this.db.getLatestAsof("stock_price");
     return asof.replaceAll("-", "");
   }
+
+  public async getHistory(symbol: string, limit: number): Promise<number[]> {
+    const bars = this.db.getBars(symbol, limit);
+    return bars.map((b) => Number(b.Close ?? 0));
+  }
 }

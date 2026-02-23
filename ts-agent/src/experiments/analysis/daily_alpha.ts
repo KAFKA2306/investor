@@ -48,7 +48,6 @@ export const extractEstatValues = (root: unknown): number[] => {
     if (Array.isArray(node)) return node.flatMap((v) => walk(v));
     if (typeof node === "object" && node !== null) {
       const obj = node as Record<string, unknown>;
-      // If we are at a "VALUE" node, extract its "$" property (price)
       if (obj.$ !== undefined && obj["@unit"] !== undefined) {
         const val = Number(obj.$);
         return Number.isFinite(val) ? [val] : [];
@@ -65,6 +64,7 @@ export const scoreDailyAlpha = (
   bar: Record<string, unknown>,
   fin: Record<string, unknown>,
   macroMomentum: number,
+  predictedReturn = 0,
 ): SymbolAnalysis => {
   const open = getNumberByKeys(bar, ["Open", "open_price", "open", "O"]);
   const high = getNumberByKeys(bar, ["High", "high_price", "high", "H"]);
@@ -99,11 +99,12 @@ export const scoreDailyAlpha = (
   const liquidityPerShare = turnoverValue / Math.max(volume, eps);
   const profitMargin = operatingProfit / Math.max(Math.abs(netSales), eps);
   const alphaScore =
-    0.4 * macroMomentum +
-    0.2 * dailyReturn +
-    0.15 * intradayRange +
-    0.15 * profitMargin +
-    0.1 * clamp01(closeStrength);
+    0.3 * macroMomentum +
+    0.15 * dailyReturn +
+    0.1 * intradayRange +
+    0.1 * profitMargin +
+    0.05 * clamp01(closeStrength) +
+    0.3 * predictedReturn;
 
   return SymbolAnalysisSchema.parse({
     symbol,

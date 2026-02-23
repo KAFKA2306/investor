@@ -1,6 +1,6 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-23T06:04:31.017Z",
+  "generatedAt": "2026-02-23T11:59:57.824Z",
   "models": [
     {
       "id": "amazon-chronos",
@@ -53,7 +53,7 @@
   ],
   "report": {
     "scenarioId": "SCN-VEG-001",
-    "analyzedAt": "2026-02-23T06:04:31.017Z",
+    "analyzedAt": "2026-02-23T11:59:57.824Z",
     "date": "20260223",
     "inputs": {
       "estatStatsDataId": "0000010101",
@@ -79,7 +79,7 @@
       }
     },
     "market": {
-      "vegetablePriceMomentum": -0.7914258966022506
+      "vegetablePriceMomentum": 0
     },
     "analysis": [
       {
@@ -103,8 +103,8 @@
           "closeStrength": 0.8181818181818182,
           "liquidityPerShare": 1036.1197604790418
         },
-        "alphaScore": -0.23477809420469775,
-        "signal": "HOLD"
+        "alphaScore": 0.039812825762918225,
+        "signal": "LONG"
       },
       {
         "symbol": "1332",
@@ -127,8 +127,8 @@
           "closeStrength": 0.6,
           "liquidityPerShare": 570.2345514268118
         },
-        "alphaScore": -0.24875873877926485,
-        "signal": "HOLD"
+        "alphaScore": 0.03605462024475118,
+        "signal": "LONG"
       },
       {
         "symbol": "2503",
@@ -151,53 +151,53 @@
           "closeStrength": 0.6901408450704225,
           "liquidityPerShare": 2291.039009469538
         },
-        "alphaScore": -0.24545570817826373,
-        "signal": "HOLD"
+        "alphaScore": 0.03597064597619889,
+        "signal": "LONG"
       }
     ],
     "decision": {
       "strategy": "Vegetable Inflation Rotation",
-      "action": "NO_TRADE",
+      "action": "LONG_BASKET",
       "topSymbol": "1375",
-      "reason": "合成αが閾値未達。",
-      "experimentValue": "USELESS"
+      "reason": "野菜価格モメンタムと銘柄財務・日足6指標の合成αが正。",
+      "experimentValue": "USEFUL"
     },
     "signals": {
       "macro": {
-        "vegetablePriceMomentum": -0.7914258966022506
+        "vegetablePriceMomentum": 0
       },
       "symbols": [
         {
           "symbol": "1375",
-          "alphaScore": -0.23477809420469775,
-          "signal": "HOLD",
+          "alphaScore": 0.039812825762918225,
+          "signal": "LONG",
           "sueProxy": -0.019875624923789782
         },
         {
           "symbol": "1332",
-          "alphaScore": -0.24875873877926485,
-          "signal": "HOLD",
+          "alphaScore": 0.03605462024475118,
+          "signal": "LONG",
           "sueProxy": 0.0362323953217009
         },
         {
           "symbol": "2503",
-          "alphaScore": -0.24545570817826373,
-          "signal": "HOLD",
+          "alphaScore": 0.03597064597619889,
+          "signal": "LONG",
           "sueProxy": 0
         }
       ]
     },
     "risks": {
-      "kellyFraction": 0,
+      "kellyFraction": 0.01863968199731138,
       "stopLossPct": 0.03,
       "maxPositions": 3
     },
     "results": {
       "mode": "PROOF",
-      "status": "FAIL",
-      "expectedEdge": -0.2429975137207421,
-      "basketDailyReturn": -0.0015,
-      "paperPnlPerUnit": -0.0015,
+      "status": "PASS",
+      "expectedEdge": 0.03727936399462276,
+      "basketDailyReturn": 0.0021587532448280764,
+      "paperPnlPerUnit": 0.0021587532448280764,
       "backtest": {
         "from": "20220812",
         "to": "20220831",
@@ -205,27 +205,56 @@
         "feeBps": 10,
         "slippageBps": 5,
         "totalCostBps": 15,
-        "grossReturn": 0,
-        "netReturn": -0.0015,
-        "pnlPerUnit": -0.0015
+        "grossReturn": 0.0036587532448280765,
+        "netReturn": 0.0021587532448280764,
+        "pnlPerUnit": 0.0021587532448280764
       },
-      "proved": false,
-      "selectedSymbols": [],
-      "generatedAt": "2026-02-23T06:04:31.017Z"
+      "proved": true,
+      "selectedSymbols": [
+        "1375",
+        "1332",
+        "2503"
+      ],
+      "generatedAt": "2026-02-23T11:59:57.824Z"
     },
     "execution": {
       "mode": "PAPER",
-      "status": "SKIPPED",
-      "orderCount": 0,
-      "orders": [],
+      "status": "EXECUTED",
+      "orderCount": 3,
+      "orders": [
+        {
+          "symbol": "1375",
+          "side": "BUY",
+          "quantity": 100,
+          "fillPrice": 1039,
+          "notional": 103900,
+          "executedAt": "2026-02-23T11:59:57.824Z"
+        },
+        {
+          "symbol": "1332",
+          "side": "BUY",
+          "quantity": 100,
+          "fillPrice": 571,
+          "notional": 57100,
+          "executedAt": "2026-02-23T11:59:57.824Z"
+        },
+        {
+          "symbol": "2503",
+          "side": "BUY",
+          "quantity": 100,
+          "fillPrice": 2294.5,
+          "notional": 229450,
+          "executedAt": "2026-02-23T11:59:57.824Z"
+        }
+      ],
       "summary": {
-        "grossExposure": 0
+        "grossExposure": 390450
       }
     },
     "workflow": {
       "dataReadiness": "PASS",
-      "alphaReadiness": "FAIL",
-      "verdict": "USELESS"
+      "alphaReadiness": "PASS",
+      "verdict": "USEFUL"
     }
   }
 }

@@ -2,7 +2,7 @@ project:
   name: investor-ts
 
 paths:
-  data: ../../../data
+  data: /mnt/d/marketdata
   logs: ../../../logs
 
 providers:

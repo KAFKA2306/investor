@@ -75,13 +75,13 @@ async function reproduceLES() {
           profitMargin: Number(fin.OperatingProfit) / Number(fin.NetSales) || 0,
         },
         factors: {
-          dailyReturn: alphaScore > 0 ? 0.005 : -0.002, // Mocking outcome based on alpha score
+          dailyReturn: 0, // Should be filled with REAL realized return if backtesting past
           intradayRange: 0,
           closeStrength: 0,
           liquidityPerShare: 0,
         },
         alphaScore,
-        signal: alphaScore > 0 ? "LONG" : "HOLD",
+        signal: alphaScore > 0.5 ? "LONG" : "HOLD", // Use a real threshold
       });
     }),
   );

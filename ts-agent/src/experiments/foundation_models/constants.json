@@ -1,0 +1,23 @@
+{
+  "models": [
+    "chronos-tiny",
+    "chronos-mini",
+    "google-timesfm",
+    "salesforce-moirai",
+    "lag-llama"
+  ],
+  "paths": {
+    "chronos-tiny": "amazon/chronos-t5-tiny",
+    "chronos-mini": "amazon/chronos-t5-mini",
+    "google-timesfm": "google/timesfm-2.5-200m-pytorch",
+    "salesforce-moirai": "Salesforce/moirai-1.0-R-tiny",
+    "lag-llama": "time-series-foundation-models/lag-llama"
+  },
+  "params": {
+    "context_length": 32,
+    "prediction_length": 1,
+    "history_limit": 512,
+    "window_size": 32,
+    "test_size": 10
+  }
+}

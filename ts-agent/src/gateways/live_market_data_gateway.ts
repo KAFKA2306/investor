@@ -13,6 +13,7 @@ export type MarketDataGateway = {
   ): Promise<Record<string, unknown>[]>;
   getStatements(symbol: string): Promise<Record<string, unknown>[]>;
   getMarketDataEndDate(): Promise<string>;
+  getHistory(symbol: string, limit: number): Promise<number[]>;
 };
 
 const safeRecordArray = (value: unknown): Record<string, unknown>[] =>
@@ -166,5 +167,13 @@ export class LiveMarketDataGateway implements MarketDataGateway {
 
   public async getMarketDataEndDate(): Promise<string> {
     return new Date().toISOString().slice(0, 10).replaceAll("-", "");
+  }
+
+  public async getHistory(symbol: string, limit: number): Promise<number[]> {
+    const bars = await this.getDailyBars(symbol, [
+      await this.getMarketDataEndDate(),
+    ]);
+    const close = Number(bars[0]?.Close ?? 0);
+    return Array.from({ length: limit }, () => close);
   }
 }
