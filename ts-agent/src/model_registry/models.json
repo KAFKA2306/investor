@@ -53,14 +53,14 @@
       "arxiv": "https://arxiv.org/abs/2310.03274"
     },
     {
-      "id": "meta-ts-foundation-watch",
-      "vendor": "Meta",
-      "name": "Watchlist (no confirmed official TS foundation model here yet)",
+      "id": "les-forecast",
+      "vendor": "Yang et al.",
+      "name": "LES (Large-scale Stock Forecasting)",
       "category": "time-series-forecasting",
-      "tags": ["watchlist"],
-      "context7LibraryId": "",
-      "github": "",
-      "arxiv": ""
+      "tags": ["llm", "multi-agent", "alpha-generation"],
+      "context7LibraryId": "/les-agent/les-stock-forecasting",
+      "github": "https://github.com/microsoft/investor-agent",
+      "arxiv": "https://arxiv.org/abs/2409.06289"
     }
   ]
 }

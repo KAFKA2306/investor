@@ -25,7 +25,7 @@
 | :--- | :--- |
 | **PeadAgent** | 決算短信（JQuants）を解析し、サプライズ銘柄を抽出するよ。 |
 | **XIntelligenceAgent** | X (SNS) のデータを解析し、市場の熱気を感じ取るよ。 |
-| **LesAgent** | LLM を活用して、文章からセンチメント（強気・弱気）を判定するよ。 |
+| **LesAgent** | LES (Large-scale Stock Forecasting with LLMs) フレームワークを実装し、Seed Alpha Factory による因子生成、マルチエージェント評価、動的重み付けを行うよ。 |
 
 ---
 

@@ -66,6 +66,14 @@ tasks:
     cmds:
       - cd {{.TS_DIR}} && bun run pipeline:full-validation
 
+  repro:les:
+    desc: ArXiv:2409.06289 (LES) の再現実験を実行しダッシュボードを更新するよっ ✨
+    cmds:
+      - cd {{.TS_DIR}} && bun src/experiments/les_reproduction.ts
+      - cd {{.TS_DIR}}/src/tools/dashboard && bun scripts/generate-log-manifest.mjs ../../../logs/daily
+      - cd {{.TS_DIR}}/src/tools/dashboard && bun scripts/generate-log-manifest.mjs ../../../logs/unified
+      - echo "✨ Reproduce LES Complete! Run 'task dashboard:dev' to view logs."
+
   dashboard:
     desc: モダンな投資ダッシュボードをビルドするよっ ✨
     cmds:

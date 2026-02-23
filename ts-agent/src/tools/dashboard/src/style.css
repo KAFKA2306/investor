@@ -225,6 +225,7 @@ header {
   font-size: 0.84rem;
   line-height: 1.55;
   overflow: auto;
+  white-space: pre-wrap;
 }
 
 .metrics-box pre {
