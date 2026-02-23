@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investor Intelligence Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <div class="logo">
+        <span>💎</span> Investor Agent
+      </div>
+      <div id="system-info" style="display: flex; gap: 1.5rem; align-items: center;">
+        <div style="font-size: 0.8rem; color: var(--text-secondary);">
+          <span class="status-dot online" style="margin-right: 4px;"></span>
+          LIVE
+        </div>
+        <div id="last-update" style="font-size: 0.8rem; color: var(--text-secondary);">--</div>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <section class="glass-panel">
+        <div class="section-title">Timeline</div>
+        <div id="log-list" class="log-list">
+          <!-- Log navigation items -->
+        </div>
+      </section>
+
+      <section class="glass-panel">
+        <div class="section-title">Workflow Health</div>
+        <div id="workflow-status" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <!-- Workflow status badges -->
+        </div>
+      </section>
+    </aside>
+
+    <main class="main-content">
+      <!-- Dashboard Summary -->
+      <section id="summary-section" class="glass-panel stat-group">
+        <div class="stat-card">
+          <span class="stat-label">Expected Edge</span>
+          <span id="stat-edge" class="stat-value">--</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Basket Return</span>
+          <span id="stat-return" class="stat-value">--</span>
+        </div>
+        <div id="kelly-box" class="stat-card">
+          <span class="stat-label">Kelly Fraction</span>
+          <span id="stat-kelly" class="stat-value">--</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Top Pick</span>
+          <span id="stat-top" class="stat-value">--</span>
+        </div>
+      </section>
+
+      <!-- Detailed Content -->
+      <div class="detail-container">
+        <section class="glass-panel" style="grid-column: 1 / -1;">
+          <div class="section-title">Market Analysis & Signals</div>
+          <div id="symbol-analysis" class="symbol-grid">
+            <!-- Individual symbol analysis cards -->
+          </div>
+        </section>
+
+        <section class="glass-panel">
+          <div class="section-title">Strategy Verdict</div>
+          <div id="verdict-content" class="metrics-box" style="height: 100%;">
+            <!-- Strategy reason and decision -->
+          </div>
+        </section>
+
+        <section class="glass-panel">
+          <div class="section-title">Environment & Evidence</div>
+          <div id="evidence-content" class="metrics-box" style="height: 100%;">
+            <!-- Evidence debug data -->
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

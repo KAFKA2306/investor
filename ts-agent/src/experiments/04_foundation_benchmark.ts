@@ -72,13 +72,13 @@ async function runFoundationBenchmark() {
       string,
       unknown
     >;
-    const rawData = estatObj["GET_STATS_DATA"];
+    const rawData = estatObj.GET_STATS_DATA;
     values = extractEstatValues(rawData);
   } catch (_e) {
     console.warn("⚠️ Data ingestion failed. Using mock data for demonstration.");
     values = [210, 215, 208, 220, 225, 218, 230, 235, 228];
     dataStatus = "FAIL";
-    envCheck["ESTAT_APP_ID"] = false;
+    envCheck.ESTAT_APP_ID = false;
   }
 
   if (values.length < 4) {

@@ -73,8 +73,8 @@ const pickLatestRows = async (
       z
         .string()
         .catch("")
-        .parse(b["Date"])
-        .localeCompare(z.string().catch("").parse(a["Date"])),
+        .parse(b.Date)
+        .localeCompare(z.string().catch("").parse(a.Date)),
     )
     .at(0);
   return latest ? [latest] : [];

@@ -27,24 +27,23 @@ const pickNumber = (v: unknown): number =>
 const pickString = (v: unknown): string => (typeof v === "string" ? v : "");
 
 const toSummary = (file: string, payload: AnyRecord): DailyLogSummary => {
-  const report = (payload["report"] ?? payload) as AnyRecord;
-  const workflow = (report["workflow"] ?? {}) as AnyRecord;
-  const decision = (report["decision"] ?? {}) as AnyRecord;
-  const results = (report["results"] ?? {}) as AnyRecord;
+  const report = (payload.report ?? payload) as AnyRecord;
+  const workflow = (report.workflow ?? {}) as AnyRecord;
+  const decision = (report.decision ?? {}) as AnyRecord;
+  const results = (report.results ?? {}) as AnyRecord;
 
   return {
-    date: pickString(report["date"]) || file.replace(".json", ""),
+    date: pickString(report.date) || file.replace(".json", ""),
     generatedAt:
-      pickString(payload["generatedAt"]) || pickString(report["generatedAt"]),
-    reportType: pickString(payload["schema"]) || "UNIFIED_LOG",
+      pickString(payload.generatedAt) || pickString(report.generatedAt),
+    reportType: pickString(payload.schema) || "UNIFIED_LOG",
     verdict:
-      pickString(workflow["verdict"]) ||
-      pickString(decision["experimentValue"]),
-    dataReadiness: pickString(workflow["dataReadiness"]),
-    alphaReadiness: pickString(workflow["alphaReadiness"]),
-    expectedEdge: pickNumber(results["expectedEdge"]),
-    basketDailyReturn: pickNumber(results["basketDailyReturn"]),
-    topSymbol: pickString(decision["topSymbol"]),
+      pickString(workflow.verdict) || pickString(decision.experimentValue),
+    dataReadiness: pickString(workflow.dataReadiness),
+    alphaReadiness: pickString(workflow.alphaReadiness),
+    expectedEdge: pickNumber(results.expectedEdge),
+    basketDailyReturn: pickNumber(results.basketDailyReturn),
+    topSymbol: pickString(decision.topSymbol),
     file,
   };
 };
@@ -75,7 +74,7 @@ const notFound = () =>
   new Response(JSON.stringify({ error: "Not Found" }), { status: 404 });
 
 const server = Bun.serve({
-  port: Number(process.env["LOG_VIEWER_PORT"] ?? 8787),
+  port: Number(process.env.LOG_VIEWER_PORT ?? 8787),
   fetch: async (req) => {
     const url = new URL(req.url);
     const pathname = url.pathname;

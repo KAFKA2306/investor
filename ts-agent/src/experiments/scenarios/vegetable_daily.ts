@@ -87,7 +87,7 @@ export async function runVegetableScenario(
   const estatObj = await gateway.getEstatStats("0000010101");
   const matchedSymbols = [...Universe];
 
-  const estatValues = extractEstatValues(estatObj["GET_STATS_DATA"]);
+  const estatValues = extractEstatValues(estatObj.GET_STATS_DATA);
   const half = Math.max(1, Math.floor(estatValues.length / 2));
   const older = average(estatValues.slice(0, half));
   const newer = average(estatValues.slice(half));

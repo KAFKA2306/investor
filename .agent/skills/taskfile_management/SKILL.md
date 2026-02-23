@@ -27,7 +27,6 @@ Taskfile には、最低限これらを入れておこうねっ！
 ## 🎀 筋肉質な Taskfile の書き方っ ✨
 
 ```yaml
-version: '3'
 
 tasks:
   lint:

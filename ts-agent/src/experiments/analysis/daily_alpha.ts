@@ -49,8 +49,8 @@ export const extractEstatValues = (root: unknown): number[] => {
     if (typeof node === "object" && node !== null) {
       const obj = node as Record<string, unknown>;
       // If we are at a "VALUE" node, extract its "$" property (price)
-      if (obj["$"] !== undefined && obj["@unit"] !== undefined) {
-        const val = Number(obj["$"]);
+      if (obj.$ !== undefined && obj["@unit"] !== undefined) {
+        const val = Number(obj.$);
         return Number.isFinite(val) ? [val] : [];
       }
       return Object.values(obj).flatMap((v) => walk(v));

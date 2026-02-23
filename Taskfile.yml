@@ -43,3 +43,13 @@ tasks:
     deps: [lint, check]
     cmds:
       - cd {{.TS_DIR}} && bun run start
+
+  dashboard:
+    desc: モダンな投資ダッシュボードをビルドするよっ ✨
+    cmds:
+      - cd {{.TS_DIR}}/src/tools/dashboard && npm run build
+
+  dashboard:dev:
+    desc: ダッシュボードの開発サーバーを起動するよっ ✨
+    cmds:
+      - cd {{.TS_DIR}}/src/tools/dashboard && npm run dev

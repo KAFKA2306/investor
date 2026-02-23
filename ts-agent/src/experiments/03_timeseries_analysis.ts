@@ -7,7 +7,7 @@ async function runTimeSeriesAnalysis() {
     string,
     unknown
   >;
-  const values = extractEstatValues(estatObj["GET_STATS_DATA"]);
+  const values = extractEstatValues(estatObj.GET_STATS_DATA);
 
   console.log("Time Series Analysis: Vegetable Prices (e-Stat 0000010101)");
   console.log("---------------------------------------------------------");

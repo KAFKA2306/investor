@@ -52,14 +52,14 @@ export class YFinanceProvider {
       .catch({})
       .parse(await this.getStockInfo(ticker));
     return YFinanceQuoteSnapshotSchema.parse({
-      symbol: z.string().catch(ticker).parse(row["symbol"]),
-      open: toNumber(row["regularMarketOpen"]),
-      high: toNumber(row["regularMarketDayHigh"]),
-      low: toNumber(row["regularMarketDayLow"]),
-      close: toNumber(row["regularMarketPrice"]),
-      volume: toNumber(row["regularMarketVolume"]),
-      marketCap: toNumber(row["marketCap"]),
-      trailingPE: toNumber(row["trailingPE"]),
+      symbol: z.string().catch(ticker).parse(row.symbol),
+      open: toNumber(row.regularMarketOpen),
+      high: toNumber(row.regularMarketDayHigh),
+      low: toNumber(row.regularMarketDayLow),
+      close: toNumber(row.regularMarketPrice),
+      volume: toNumber(row.regularMarketVolume),
+      marketCap: toNumber(row.marketCap),
+      trailingPE: toNumber(row.trailingPE),
     });
   }
 }
