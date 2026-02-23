@@ -44,7 +44,21 @@ sequenceDiagram
 | :--- | :--- |
 | **PeadAgent** | **[Hybrid PEAD Analysis]**<br>決算発表後の株価ドリフト (Post-Earnings Announcement Drift) を狙うハイブリッド戦略。<br><br>**実装ロジック:**<br>1. **Universe Selection**: `JQuantsGateway` より当日決算発表銘柄リストを取得。<br>2. **Surprise Calculation**: `NetIncome` (当期純利益) ベースのサプライズを計算。<br>&nbsp;&nbsp;`Surprise = (Latest.NetIncome - Previous.NetIncome) / |Previous.NetIncome|`<br>3. **Sentiment Integration**: `LesAgent.analyzeSentiment()` を呼び出し、決算短信や関連ニュースのテキスト感情スコア (0.0~1.0) を取得。<br>4. **Signal Generation**: `Surprise > 0.2` (20%超) かつ `Sentiment > 0.3` の場合のみ "STRONG BUY" シグナルを発行。ファンダメンタルズとセンチメントの交差検証によりダマシを回避する。 |
 | **XIntelligenceAgent** | **[Social Sentiment Analytics]**<br>X (旧Twitter) 上の市場センチメントとモメンタムを定量化する。<br><br>**実装ロジック:**<br>1. **Data Ingestion**: 特定のキーワード（銘柄コード、"決算"、"上方修正"等）を含む投稿をストリーム監視。<br>2. **Signal Metrics**:<br>&nbsp;&nbsp;- `Sentiment`: 自然言語処理による強気/弱気スコア (0.0~1.0)。<br>&nbsp;&nbsp;- `TrendingScore`: 投稿数、リポスト数、インフルエンサー加重スコアから算出される「熱量」 (0~100)。<br>3. **Output**: `XSignal` オブジェクトとして、センチメントとトレンドスコアが高い銘柄（例: Score > 80）を抽出・報告。 |
-| **LesAgent** | **[Large-scale Stock Forecasting Framework]**<br>ArXiv:2409.06289 に基づく多層エージェント知能。以下の4つのコアプロセスを循環させ、高精度な予測アルファを生成する。<br><br>**Core Modules (Architecture):**<br>1. **SAF (Seed Alpha Factory)**:<br>&nbsp;&nbsp;- **役割**: 因子生成工場。<br>&nbsp;&nbsp;- **動作**: LLM プロンプトエンジニアリングにより、テクニカル (Momentum, Volatility)、ファンダメンタル (Value, Quality)、マクロ経済指標を組み合わせた数式（Alpha Factor）を動的に生成。<br>&nbsp;&nbsp;- **実装例**: `(Close - Close_20) / Close_20` (20日モメンタム) や `OperatingProfit / MarketCap` (益利回り) など。<br>2. **CSA (Confidence Score Agent)**:<br>&nbsp;&nbsp;- **役割**: 信頼度評価。<br>&nbsp;&nbsp;- **動作**: 過去データに基づくバックテストを行い、情報係数 (IC: Information Coefficient) を算出。予測力 (Correlation) を `0.0`〜`1.0` でスコアリング。<br>3. **RPA (Risk Preference Agent)**:<br>&nbsp;&nbsp;- **役割**: リスク選好。<br>&nbsp;&nbsp;- **動作**: シャープ・レシオ、ソルティノ・レシオ、最大ドローダウンを評価。高リターンでもリスク過多な因子を減点。<br>4. **DWA (Dynamic Weight Optimization)**:<br>&nbsp;&nbsp;- **役割**: 動的重み付け。<br>&nbsp;&nbsp;- **動作**: CSA (信頼度) × RPA (リスク調整) の積を「総合スコア」とし、ポートフォリオ内での各因子の配分比率を決定。市場環境の変化に応じて重みを動的にリバランスする。 |
+| **LesAgent** | **[Large-scale Stock Forecasting Framework]**<br>ArXiv:2409.06289 に基づく多層エージェント知能。`ts-agent/src/model_registry/models.json` を参照し、SAF (Seed Alpha Factory) による因子生成、マルチエージェント評価、動的重み付けを行う。 |
+
+### 📚 Model Registry Interaction
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Agent (LesAgent)
+    participant R as Model Registry (models.json)
+    participant L as LLM / Logic
+
+    A->>R: 1. 外部モデルのメタデータ（arxiv/github）をロード
+    R-->>A: Model Metadata (LES-forecast, Chronos, etc.)
+    A->>L: 2. 論文に基づいた因子生成 (SAF) と評価
+```
 
 ---
 

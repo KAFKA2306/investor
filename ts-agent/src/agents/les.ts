@@ -1,4 +1,5 @@
 import { core } from "../core/index.ts";
+import { loadModelRegistry } from "../model_registry/registry.ts";
 
 export interface AlphaFactor {
   id: string;
@@ -20,7 +21,13 @@ export class LesAgent {
    * In a real implementation, this would call an LLM to generate factor expressions.
    */
   public async generateAlphaFactors(): Promise<AlphaFactor[]> {
-    console.log("🚀 LES: Seed Alpha Factory is generating candidates...");
+    const registry = await loadModelRegistry();
+    const lesModel = registry.models.find((m) => m.id === "les-forecast");
+    const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
+
+    console.log(
+      `🚀 LES: Seed Alpha Factory is generating candidates using registry metadata${source}...`,
+    );
 
     // Reproducing typical factors suggested by the paper's methodology
     return [

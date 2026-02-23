@@ -10,6 +10,7 @@
 sequenceDiagram
     autonumber
     participant GW as Market Data Gateway
+    participant MR as Model Registry (models.json)
     participant LES as LesAgent (LES Framework)
     participant PEAD as PeadAgent (Earnings)
     participant LOG as Unified Log (Zod)
@@ -17,6 +18,8 @@ sequenceDiagram
 
     Note over GW, LES: 1. Data Ingestion & Alpha Generation
     GW->>LES: Raw Market & Financial Data
+    LES->>MR: 1.5 Load Model Metadata (arxiv/github)
+    MR-->>LES: Registry Info
     LES->>LES: SAF (Seed Alpha Factory): 因子の動的生成
     LES->>LES: CSA/RPA: 信頼度・リスク評価
 
