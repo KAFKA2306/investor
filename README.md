@@ -2,6 +2,10 @@
 
 **Investor Agent** は、LLM（Gemini 3 Flash）によるインテリジェンスと厳格な TypeScript プロトコルを活用し、資本を自律的に運用する次世代のクオンツ・トレードシステムである。多層的なエージェント・アーキテクチャを通じて、生の市場データを「富」へと変換する。
 
+## 🌐 Dashboard (GitHub Pages)
+
+- Public URL: https://kafka2306.github.io/investor/
+
 ### 🎭 司令塔 (エージェント)
 
 現在は「野菜インフレ・ローテーション」戦略を中心に、以下の特化型エージェントが連携して動作しているよっ！
