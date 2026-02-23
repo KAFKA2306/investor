@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { EstatProvider } from "../providers/estat.ts";
-import { JQuantsProvider } from "../providers/jquants.ts";
+import { ApiVerifyGateway } from "../gateways/api_verify_gateway.ts";
 
 const VerifyTargetSchema = z.enum(["jquants", "kabucom", "edinet", "estat"]);
 type VerifyTarget = z.infer<typeof VerifyTargetSchema>;
@@ -44,8 +43,8 @@ async function verifyJQuantsApi(): Promise<{
   listedCount: number;
   status: "PASS";
 }> {
-  const provider = new JQuantsProvider();
-  const listed = await provider.getListedInfo();
+  const gateway = new ApiVerifyGateway();
+  const listed = await gateway.getJquantsListedInfo();
   const validated = z.array(z.unknown()).parse(listed);
   return {
     listedCount: validated.length,
@@ -69,8 +68,8 @@ async function verifyEstatApi(): Promise<{
   hasStatsData: boolean;
   status: "PASS";
 }> {
-  const provider = new EstatProvider();
-  const response = await provider.getStats("0000010101");
+  const gateway = new ApiVerifyGateway();
+  const response = await gateway.getEstatStatsData("0000010101");
   const validated = z.record(z.string(), z.unknown()).parse(response);
   return {
     hasStatsData: "GET_STATS_DATA" in validated,

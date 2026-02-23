@@ -8,7 +8,8 @@
     "format": "biome format src --write",
     "start": "bun src/index.ts",
     "verify:api": "bun src/experiments/api_verify.ts",
-    "verify:scenario": "bun src/experiments/01_vegetable.ts"
+    "verify:scenario": "bun src/experiments/01_vegetable.ts",
+    "pipeline:evaluate": "bun src/pipeline/evaluate/foundation_benchmark.ts"
   },
   "private": true,
   "devDependencies": {

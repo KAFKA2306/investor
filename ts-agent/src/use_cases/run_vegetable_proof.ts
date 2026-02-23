@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { executePaperOrders } from "../execution/paper_executor.ts";
 import { MarketdataLocalGateway } from "../experiments/gateways/marketdata_local_gateway.ts";
 import { runVegetableScenario } from "../experiments/scenarios/vegetable_daily.ts";
 import {
@@ -42,17 +43,22 @@ export async function runVegetableProof(): Promise<UnifiedLog> {
     nowIso,
     lastCalendarDays(20, anchor),
   );
+  const execution = executePaperOrders(report, nowIso);
+  const reportWithExecution = {
+    ...report,
+    execution,
+  };
   const models = toModelRows(await loadForecastModelReferences());
   const envelope = UnifiedLogSchema.parse({
     schema: "investor.daily-log.v1",
     generatedAt: nowIso,
     models,
-    report,
+    report: reportWithExecution,
   });
   const logsDir = resolve(process.cwd(), "../logs/daily");
   mkdirSync(logsDir, { recursive: true });
   writeFileSync(
-    resolve(logsDir, `${report.date}.json`),
+    resolve(logsDir, `${reportWithExecution.date}.json`),
     `${JSON.stringify(envelope, null, 2)}\n`,
     "utf8",
   );

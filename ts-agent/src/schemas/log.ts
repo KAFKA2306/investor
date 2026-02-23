@@ -94,10 +94,43 @@ export const DailyScenarioLogSchema = z.object({
     expectedEdge: z.number(),
     basketDailyReturn: z.number(),
     paperPnlPerUnit: z.number(),
+    backtest: z
+      .object({
+        from: z.string().regex(/^\d{8}$/),
+        to: z.string().regex(/^\d{8}$/),
+        tradingDays: z.number().int().positive(),
+        feeBps: z.number().min(0),
+        slippageBps: z.number().min(0),
+        totalCostBps: z.number().min(0),
+        grossReturn: z.number(),
+        netReturn: z.number(),
+        pnlPerUnit: z.number(),
+      })
+      .optional(),
     proved: z.boolean(),
     selectedSymbols: z.array(z.string().length(4)),
     generatedAt: z.string().datetime(),
   }),
+  execution: z
+    .object({
+      mode: z.literal("PAPER"),
+      status: z.enum(["EXECUTED", "SKIPPED"]),
+      orderCount: z.number().int().nonnegative(),
+      orders: z.array(
+        z.object({
+          symbol: z.string().length(4),
+          side: z.literal("BUY"),
+          quantity: z.number().int().positive(),
+          fillPrice: z.number().nonnegative(),
+          notional: z.number().nonnegative(),
+          executedAt: z.string().datetime(),
+        }),
+      ),
+      summary: z.object({
+        grossExposure: z.number().nonnegative(),
+      }),
+    })
+    .optional(),
   workflow: z.object({
     dataReadiness: z.enum(["PASS", "FAIL"]),
     alphaReadiness: z.enum(["PASS", "FAIL"]),

@@ -1,5 +1,5 @@
 import { BaseAgent } from "../core/index.ts";
-import { JQuantsProvider } from "../providers/jquants.ts";
+import { PeadJquantsGateway } from "../gateways/pead_market_gateway.ts";
 import { LesAgent } from "./les.ts";
 
 interface CalendarEntry {
@@ -11,9 +11,22 @@ interface FinancialStatement {
   NetIncome: number;
 }
 
+export interface PeadDataProvider {
+  getEarningsCalendar(params: Record<string, string>): Promise<unknown[]>;
+  getStatements(params: Record<string, string>): Promise<unknown[]>;
+}
+
+export interface SentimentAnalyzer {
+  analyzeSentiment(text: string): Promise<number>;
+}
+
 export class PeadAgent extends BaseAgent {
-  private readonly jquants = new JQuantsProvider();
-  private readonly les = new LesAgent();
+  constructor(
+    private readonly jquants: PeadDataProvider,
+    private readonly les: SentimentAnalyzer,
+  ) {
+    super();
+  }
 
   public async run() {
     const today = new Date().toISOString().split("T")[0];
@@ -55,6 +68,6 @@ export class PeadAgent extends BaseAgent {
 }
 
 if (import.meta.main) {
-  const agent = new PeadAgent();
+  const agent = new PeadAgent(new PeadJquantsGateway(), new LesAgent());
   await agent.run();
 }

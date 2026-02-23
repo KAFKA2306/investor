@@ -4,7 +4,9 @@ import { join } from "node:path";
 const distLogsDir = process.argv[2];
 
 if (!distLogsDir) {
-  throw new Error("Usage: node scripts/generate-log-manifest.mjs <dist-logs-dir>");
+  throw new Error(
+    "Usage: node scripts/generate-log-manifest.mjs <dist-logs-dir>",
+  );
 }
 
 const files = (await readdir(distLogsDir))
@@ -16,4 +18,3 @@ await writeFile(
   `${JSON.stringify(files, null, 2)}\n`,
   "utf-8",
 );
-

@@ -1,6 +1,6 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-23T01:19:35.346Z",
+  "generatedAt": "2026-02-23T04:07:37.647Z",
   "models": [
     {
       "id": "amazon-chronos",
@@ -45,7 +45,7 @@
   ],
   "report": {
     "scenarioId": "SCN-VEG-001",
-    "analyzedAt": "2026-02-23T01:19:35.346Z",
+    "analyzedAt": "2026-02-23T04:07:37.647Z",
     "date": "20260223",
     "inputs": {
       "estatStatsDataId": "0000010101",
@@ -71,7 +71,7 @@
       }
     },
     "market": {
-      "vegetablePriceMomentum": 0.0025954852240006555
+      "vegetablePriceMomentum": -0.7914258966022506
     },
     "analysis": [
       {
@@ -95,8 +95,8 @@
           "closeStrength": 0.8181818181818182,
           "liquidityPerShare": 1036.1197604790418
         },
-        "alphaScore": 0.08283045852580277,
-        "signal": "LONG"
+        "alphaScore": -0.23477809420469775,
+        "signal": "HOLD"
       },
       {
         "symbol": "1332",
@@ -119,8 +119,8 @@
           "closeStrength": 0.6,
           "liquidityPerShare": 570.2345514268118
         },
-        "alphaScore": 0.06884981395123568,
-        "signal": "LONG"
+        "alphaScore": -0.24875873877926485,
+        "signal": "HOLD"
       },
       {
         "symbol": "2503",
@@ -143,65 +143,81 @@
           "closeStrength": 0.6901408450704225,
           "liquidityPerShare": 2291.039009469538
         },
-        "alphaScore": 0.07215284455223678,
-        "signal": "LONG"
+        "alphaScore": -0.24545570817826373,
+        "signal": "HOLD"
       }
     ],
     "decision": {
       "strategy": "Vegetable Inflation Rotation",
-      "action": "LONG_BASKET",
+      "action": "NO_TRADE",
       "topSymbol": "1375",
-      "reason": "野菜価格モメンタムと銘柄財務・日足6指標の合成αが正。",
-      "experimentValue": "USEFUL"
+      "reason": "合成αが閾値未達。",
+      "experimentValue": "USELESS"
     },
     "signals": {
       "macro": {
-        "vegetablePriceMomentum": 0.0025954852240006555
+        "vegetablePriceMomentum": -0.7914258966022506
       },
       "symbols": [
         {
           "symbol": "1375",
-          "alphaScore": 0.08283045852580277,
-          "signal": "LONG",
+          "alphaScore": -0.23477809420469775,
+          "signal": "HOLD",
           "sueProxy": -0.019875624923789782
         },
         {
           "symbol": "1332",
-          "alphaScore": 0.06884981395123568,
-          "signal": "LONG",
+          "alphaScore": -0.24875873877926485,
+          "signal": "HOLD",
           "sueProxy": 0.0362323953217009
         },
         {
           "symbol": "2503",
-          "alphaScore": 0.07215284455223678,
-          "signal": "LONG",
+          "alphaScore": -0.24545570817826373,
+          "signal": "HOLD",
           "sueProxy": 0
         }
       ]
     },
     "risks": {
-      "kellyFraction": 0.03730551950487921,
+      "kellyFraction": 0,
       "stopLossPct": 0.03,
       "maxPositions": 3
     },
     "results": {
       "mode": "PROOF",
-      "status": "PASS",
-      "expectedEdge": 0.07461103900975842,
-      "basketDailyReturn": 0.0036587532448280765,
-      "paperPnlPerUnit": 0.0036587532448280765,
-      "proved": true,
-      "selectedSymbols": [
-        "1375",
-        "2503",
-        "1332"
-      ],
-      "generatedAt": "2026-02-23T01:19:35.346Z"
+      "status": "FAIL",
+      "expectedEdge": -0.2429975137207421,
+      "basketDailyReturn": -0.0015,
+      "paperPnlPerUnit": -0.0015,
+      "backtest": {
+        "from": "20220812",
+        "to": "20220831",
+        "tradingDays": 20,
+        "feeBps": 10,
+        "slippageBps": 5,
+        "totalCostBps": 15,
+        "grossReturn": 0,
+        "netReturn": -0.0015,
+        "pnlPerUnit": -0.0015
+      },
+      "proved": false,
+      "selectedSymbols": [],
+      "generatedAt": "2026-02-23T04:07:37.647Z"
+    },
+    "execution": {
+      "mode": "PAPER",
+      "status": "SKIPPED",
+      "orderCount": 0,
+      "orders": [],
+      "summary": {
+        "grossExposure": 0
+      }
     },
     "workflow": {
       "dataReadiness": "PASS",
-      "alphaReadiness": "PASS",
-      "verdict": "USEFUL"
+      "alphaReadiness": "FAIL",
+      "verdict": "USELESS"
     }
   }
 }

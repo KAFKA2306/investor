@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { runSimpleBacktest } from "../../backtest/simulator.ts";
 import {
   average,
   extractEstatValues,
@@ -63,10 +64,43 @@ export const VegetableExperimentReportSchema = z.object({
     expectedEdge: z.number(),
     basketDailyReturn: z.number(),
     paperPnlPerUnit: z.number(),
+    backtest: z
+      .object({
+        from: z.string().regex(/^\d{8}$/),
+        to: z.string().regex(/^\d{8}$/),
+        tradingDays: z.number().int().positive(),
+        feeBps: z.number().min(0),
+        slippageBps: z.number().min(0),
+        totalCostBps: z.number().min(0),
+        grossReturn: z.number(),
+        netReturn: z.number(),
+        pnlPerUnit: z.number(),
+      })
+      .optional(),
     proved: z.boolean(),
     selectedSymbols: z.array(z.string().length(4)),
     generatedAt: z.string().datetime(),
   }),
+  execution: z
+    .object({
+      mode: z.literal("PAPER"),
+      status: z.enum(["EXECUTED", "SKIPPED"]),
+      orderCount: z.number().int().nonnegative(),
+      orders: z.array(
+        z.object({
+          symbol: z.string().length(4),
+          side: z.literal("BUY"),
+          quantity: z.number().int().positive(),
+          fillPrice: z.number().nonnegative(),
+          notional: z.number().nonnegative(),
+          executedAt: z.string().datetime(),
+        }),
+      ),
+      summary: z.object({
+        grossExposure: z.number().nonnegative(),
+      }),
+    })
+    .optional(),
   workflow: z.object({
     dataReadiness: z.enum(["PASS", "FAIL"]),
     alphaReadiness: z.enum(["PASS", "FAIL"]),
@@ -156,10 +190,21 @@ export async function runVegetableScenario(
   const selectedRows = analysis.filter((s) =>
     selectedSymbols.includes(s.symbol),
   );
-  const basketDailyReturn = average(
-    selectedRows.map((s) => s.factors.dailyReturn),
-  );
-  const paperPnlPerUnit = basketDailyReturn;
+  const range = [...dateCandidates].sort();
+  const from = range[0] ?? date;
+  const to = range[range.length - 1] ?? date;
+  const backtest = runSimpleBacktest({
+    config: {
+      from,
+      to,
+      feeBps: 10,
+      slippageBps: 5,
+    },
+    selectedRows,
+    tradingDays: range.length,
+  });
+  const basketDailyReturn = backtest.netReturn;
+  const paperPnlPerUnit = backtest.pnlPerUnit;
   const proved = basketDailyReturn > 0 && dataReadiness === "PASS";
 
   return VegetableExperimentReportSchema.parse({
@@ -209,6 +254,7 @@ export async function runVegetableScenario(
       expectedEdge: avgAlpha,
       basketDailyReturn,
       paperPnlPerUnit,
+      backtest,
       proved,
       selectedSymbols,
       generatedAt: nowIso,
