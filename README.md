@@ -1,20 +1,50 @@
+# 🎀 Investor Agent: Autonomous Intelligence Ecosystem ✨
 
+**Investor Agent** は、LLM（Gemini 2.0 Flash）によるインテリジェンスと厳格な TypeScript プロトコルを活用し、市場データを「富」へと変換する自律型クオンツ・トレードシステムである。
 
-**Investor Agent** は、LLM（Gemini 3 Flash）によるインテリジェンスと厳格な TypeScript プロトコルを活用し、資本を自律的に運用する次世代のクオンツ・トレードシステムである。多層的なエージェント・アーキテクチャを通じて、生の市場データを「富」へと変換する。
+## 🧬 システム・シーケンス (Execution Flow)
 
-## 🌐 Dashboard (GitHub Pages)
+市場データの取得からエージェントによる多層分析、最終的な意思決定とダッシュボード反映までの全工程を以下のシーケンスで定義する。
 
-- Public URL: https://kafka2306.github.io/investor/
+```mermaid
+sequenceDiagram
+    autonumber
+    participant GW as Market Data Gateway
+    participant LES as LesAgent (LES Framework)
+    participant PEAD as PeadAgent (Earnings)
+    participant LOG as Unified Log (Zod)
+    participant DS as Dashboard (GitHub Pages)
 
-### 🎭 司令塔 (エージェント)
+    Note over GW, LES: 1. Data Ingestion & Alpha Generation
+    GW->>LES: Raw Market & Financial Data
+    LES->>LES: SAF (Seed Alpha Factory): 因子の動的生成
+    LES->>LES: CSA/RPA: 信頼度・リスク評価
 
-現在は「野菜インフレ・ローテーション」戦略を中心に、以下の特化型エージェントが連携して動作しているよっ！
+    Note over LES, PEAD: 2. Strategy Execution
+    LES->>PEAD: Alpha Factors & Sentiment
+    PEAD->>PEAD: Hybrid Surprise Analysis
+    
+    Note over PEAD, LOG: 3. Persistence & Verification
+    PEAD->>LOG: SymbolAnalysis (Zod Schema)
+    LOG->>LOG: runSimpleBacktest (Validation)
+    
+    Note over LOG, DS: 4. Deployment
+    LOG->>DS: Generate YYYYMMDD.json & Manifest
+    DS-->>DS: Deploy via GitHub Actions
+    DS-->>User: Visualized Intelligence
+```
 
-| エージェント | 役割 | 使用データソース |
+---
+
+## 🎭 知能ユニット (Active Agents)
+
+現在は以下の特化型エージェントが連携して、多角的な市場分析を実行しているよっ！
+
+| エージェント | 技術基盤 | 役割 |
 | :--- | :--- | :--- |
-| `PeadAgent` | 決算サプライズの解析 | JQuants |
-| `XIntelligenceAgent` | SNSセンチメントの数値化 | X (Grok) |
-| `LesAgent` | 財務ドキュメントの定性解析 | LLM (Gemini) |
+| `LesAgent` | **ArXiv:2409.06289** | LES フレームワークによる因子生成、評価、動的重み付け。 |
+| `PeadAgent` | **Hybrid Surprize** | 決算サプライズと LES センチメントを融合したドリフト捕捉。 |
+| `XIntelligenceAgent` | **Social Analytics** | SNS 熱量とセンチメントの定量化によるトレンド予測。 |
 
 ---
 
@@ -23,48 +53,29 @@
 - **ランタイム**: [Bun](https://bun.sh/) (最速の JS ランタイム)
 - **言語**: [TypeScript](https://www.typescriptlang.org/) (Strict モード, Zod バリデーション)
 - **ダッシュボード**: [Vite](https://vitejs.dev/) & Vanilla CSS
-- **インテリジェンス**: Gemini 3 Flash (Primary LLM)
-- **ツール**: [Biome](https://biomejs.dev/) (Lint & フォーマット)
+- **インテリジェンス**: Gemini 2.0 Flash (Primary LLM)
 - **コア原則**:
-    - **Fail-Fast**: バリデーションエラーや通信エラー発生時は即座に終了。
+    - **Fail-Fast**: バリデーションエラー発生時は即座に終了。
     - **不変性 (Immutability)**: シグナルと設定は作成後、厳格に読み取り専用。
-    - **DIP (依存性逆転)**: 堅牢なテストとモック化を可能にする設計。
+    - **網羅性 (Comprehensiveness)**: [AGENTS.md](./AGENTS.md) に基づく完全な実装。
 
 ---
 
-## 🚀 はじめに
+## 🚀 利用可能なタスク (Taskfile)
 
-### 事前準備
-- [Bun](https://bun.sh/) がインストールされていること。
-- JQuants, EDINET 等の API キー (`.env` で設定)。
-
-### クイックセットアップ
-```bash
-# 依存関係のインストール
-task setup
-
-# デイリー統合ワークフローの実行
-task daily
-```
-
-### 利用可能なタスク
 | コマンド | 説明 |
 | :--- | :--- |
 | `task setup` | 環境の初期化と依存関係のインストール。 |
-| `task daily` | 全行程のワークフローを実行 (Lint -> Check -> Start)。 |
-| `task full:validate` | experiments/scenario/pipelineを再実行し、`logs/unified/YYYYMMDD.json` を生成。 |
-| `task check` | 厳格な TypeScript 型チェック。 |
-| `task lint` | Biome によるコードのクリーンアップ。 |
-| `task format` | プロジェクト標準に従ったコード整形。 |
+| `task daily` | デイリー統合ワークフロー (Lint -> Check -> Start -> AB -> Readiness)。 |
+| `task repro:les` | **ArXiv:2409.06289 (LES)** の再現実験を実行しログを生成。 |
+| `task full:validate` | 全実験・検証シナリオを再実行し `logs/unified/` を出力。 |
+| `task dashboard:dev` | ダッシュボードの開発サーバーを起動。 |
+| `task check` | 厳格な TypeScript 型チェック (`tsc --noEmit`)。 |
 
----
+## 🌐 Dashboard (GitHub Pages)
 
-## 🛡️ コーディング・プロトコル
-
-本プロジェクトでは **Zero-Fat** 開発プロトコルを遵守する。すべてのコードは必要不可欠であり、型付けされ、検証されていなければならない。
-
-> [!TIP]
-> エージェントのライフサイクルやシグナル・プロトコルの詳細については、[AGENTS.md](file:///home/kafka/finance/investor/AGENTS.md) を参照。
+最新の分析結果は以下のパブリック URL で確認できるよっ ✨
+- **URL**: [https://kafka2306.github.io/investor/](https://kafka2306.github.io/investor/)
 
 ---
 世界で一番美しく、正確なロジックで。
