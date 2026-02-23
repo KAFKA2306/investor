@@ -18,7 +18,7 @@ sequenceDiagram
     G->>G: ひとつずつ丁寧に記録するよっ ✨
     G->>C: git push で世界へお届けっ ✨
     C-->>G: CI/CD 実行中... ⏳
-    D->>C: gh runs List -n 2 で確認っ ✨
+    D->>C: gh run list -L 2 --repo KAFKA2306/investor で確認っ ✨
     Note over D,C: ✖ だった場合は最初に戻ってやりなおしっ！
     C-->>D: 成功を浴びて任務完了っ ✨
 ```

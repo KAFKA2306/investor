@@ -47,6 +47,12 @@ tasks:
       - cd {{.TS_DIR}} && bun run start
       - cd {{.TS_DIR}} && bun run pipeline:ab
 
+  pipeline:mine:
+    desc: 因子候補を生成・評価・進化してregistryへ保存する
+    deps: [check]
+    cmds:
+      - cd {{.TS_DIR}} && bun run pipeline:mine
+
   dashboard:
     desc: モダンな投資ダッシュボードをビルドするよっ ✨
     cmds:
