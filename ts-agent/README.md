@@ -5,6 +5,25 @@ To install dependencies:
 ```bash
 # 🤖 Investor Agent (TypeScript Core) ✨
 
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as Providers
+    participant C as Core/Schemas
+    participant A as Agents
+    participant U as Use Cases
+    participant L as Logs/Daily
+
+    U->>C: 1. Setup & Config
+    U->>P: 2. Data Fetching
+    P-->>U: Raw Data
+    U->>C: 3. Zod Validation
+    C-->>U: Typed Data
+    U->>A: 4. Analysis & Strategy
+    A-->>U: Alpha Score / Signals
+    U->>L: 5. Persistence (JSON)
+```
+
 自律型投資エンジンの心臓部だよっ！
 
 ## 🚀 実行方法

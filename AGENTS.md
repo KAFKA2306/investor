@@ -9,6 +9,24 @@
 すべてのエージェントは `BaseAgent` を継承し、単一責任の原則 (SRP) に基づく責務を持つ。
 
 ### 🧬 Lifecycle (Core Execution Flow)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Agent (Instance)
+    participant C as Config/Env
+    participant GW as Data Gateway
+    participant LLM as LLM (Provider)
+
+    A->>C: 1. constructor: 設定のロードと検証
+    A->>GW: 2. fetch: 市場・財務データの取得
+    GW-->>A: Raw Data (Zod Validation)
+    A->>LLM: 3. analyze: インテリジェンスによる解析
+    LLM-->>A: Analysis Result
+    A->>A: 4. decide: 意思決定 (Signal/Score)
+    A->>A: 5. output: 統一ログ形式での永続化
+```
+
 1. **`constructor(dependencies)`**: 
    - 依存性の注入 (DI) を受け入れ、`core.config` と整合性を検証。
    - 外部プロバイダ (API Gateway) は必ずインターフェースとして受け取り、テスト容易性を確保する。
