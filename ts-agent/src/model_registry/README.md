@@ -48,3 +48,19 @@ This directory is a minimal registry for external forecasting models.
 | **salesforce-moirai** | Salesforce | TS Forecasting | Any-variate zero-shot transformer. | [ArXiv](https://arxiv.org/abs/2402.02592) |
 | **lag-llama** | Lag-Llama Team | TS Forecasting | Llama-based probabilistic zero-shot forecasting. | [ArXiv](https://arxiv.org/abs/2310.03274) |
 | **les-forecast** | Yang et al. | Alpha Generation | Multi-agent framework for stock alpha generation (LES). | [ArXiv](https://arxiv.org/abs/2409.06289) |
+
+## 🛠️ Installation Verification
+
+Python 環境における基盤モデルのインストール状況は、以下のコマンドで一括チェックできるよっ！✨
+
+```bash
+# Foundation Models の検証
+task verify:models
+```
+
+**現在のサポート状況:**
+- ✅ **Amazon Chronos**: `chronos` (Python)
+- ✅ **Google TimesFM**: `timesfm` (Python)
+- ✅ **Salesforce MOIRAI**: `uni2ts` (Python)
+- ✅ **Lag-Llama**: `lag_llama` (Python)
+- ℹ️ **Microsoft TimeRAF**: R package (`finnts`) のため、Python 環境では検証スキップ。

@@ -38,8 +38,8 @@
       "name": "MOIRAI",
       "category": "time-series-forecasting",
       "tags": ["transformer", "zero-shot", "foundation-model", "any-variate"],
-      "context7LibraryId": "/salesforce/uni-prophet",
-      "github": "https://github.com/SalesforceAIResearch/uni-prophet",
+      "context7LibraryId": "/salesforce/uni2ts",
+      "github": "https://github.com/SalesforceAIResearch/uni2ts",
       "arxiv": "https://arxiv.org/abs/2402.02592"
     },
     {
@@ -48,8 +48,8 @@
       "name": "Lag-Llama",
       "category": "time-series-forecasting",
       "tags": ["llama", "zero-shot", "probabilistic"],
-      "context7LibraryId": "/lag-llama/lag-llama",
-      "github": "https://github.com/lag-llama/lag-llama",
+      "context7LibraryId": "/time-series-foundation-models/lag-llama",
+      "github": "https://github.com/time-series-foundation-models/lag-llama",
       "arxiv": "https://arxiv.org/abs/2310.03274"
     },
     {

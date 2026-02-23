@@ -23,6 +23,11 @@ tasks:
     cmds:
       - cd {{.TS_DIR}}/src/experiments/foundation_models && uv sync
 
+  verify:models:
+    desc: Foundation Model (Python) のインストール状況を確認するよっ ✨
+    cmds:
+      - cd {{.TS_DIR}}/src/experiments/foundation_models && uv run python check_installation.py
+
   lint:
     desc: Biome でコードをピカピカにするよっ ✨
     cmds:

@@ -5,7 +5,7 @@ description = "Time-series foundation models for investor-agent"
 dependencies = [
     "chronos-forecasting @ git+https://github.com/amazon-science/chronos-forecasting.git",
     "timesfm @ git+https://github.com/google-research/timesfm.git",
-    "lag-llama @ git+https://github.com/lag-llama/lag-llama.git",
+    "lag-llama @ git+https://github.com/time-series-foundation-models/lag-llama.git",
     "uni2ts @ git+https://github.com/SalesforceAIResearch/uni2ts.git",
     "pandas",
     "numpy",
