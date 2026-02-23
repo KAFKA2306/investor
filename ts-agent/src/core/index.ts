@@ -21,6 +21,12 @@ const ConfigSchema = z.object({
     estat: z.object({ enabled: z.boolean() }),
     ai: z.object({ enabled: z.boolean() }),
   }),
+  benchmark: z.object({
+    foundation: z.object({
+      noiseThresholdMultiplier: z.number().positive(),
+      overconfidenceThreshold: z.number().min(0).max(1),
+    }),
+  }),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

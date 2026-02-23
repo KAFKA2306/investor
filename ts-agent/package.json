@@ -9,7 +9,8 @@
     "start": "bun src/index.ts",
     "verify:api": "bun src/experiments/api_verify.ts",
     "verify:scenario": "bun src/experiments/01_vegetable.ts",
-    "pipeline:evaluate": "bun src/pipeline/evaluate/foundation_benchmark.ts"
+    "pipeline:evaluate": "bun src/pipeline/evaluate/foundation_benchmark.ts",
+    "pipeline:ab": "bun src/pipeline/evaluate/ab_compare_daily_logs.ts"
   },
   "private": true,
   "devDependencies": {

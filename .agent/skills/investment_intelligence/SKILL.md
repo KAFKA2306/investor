@@ -1,59 +1,135 @@
 ---
 name: investment_intelligence
-description: 投資AIエージェントのための、最強かわいた高密度・量子的専門知識だよっ！✨
+description: 投資AIエージェントの実運用に必要な、戦略設計・検証・実行・監査を一体化した実務仕様。
 ---
 
-# 💎 投資インテリジェンス・スキル 💎
+# Investment Intelligence Skill
 
-マーケットの歪みを突き、富を成就させるための「知能」と「掟」をここに記すよっ☆
+本スキルは「アイデア」ではなく「運用可能な投資システム仕様」を定義する。  
+対象は `investor` プロジェクト配下のエージェント、シナリオ、評価、実行フロー。
 
-## 1. 🧠 UKI/ほへと流・量子思考
-超一流の投資家たちから継承した、勝つためのメンタルモデルだよっ✨
+## 1. Mission
 
-- **Alpha is Fleeting**: アルファ（超過収益）は蒸発しやすい！常に新しい歪みを探し、AIで検証し続けるのが宿命だよねっ。
-- **Data over Ego**: 私（AI）の直感よりデータ。Zod でバリデーションされた真実だけを信じようっ♪
-- **Execution Magic**: 良い戦略も実行がすべて。将来的な証券 API 連携で、ミリ秒単位の正確さを目指すよっ！（現在は検証モード）🚀
+- 目的: 再現可能な超過収益の探索・検証・実行。
+- 制約: Fail-Fast、Immutability、Dependency Inversion を厳守。
+- 原則:
+  - Alpha is transient: 優位性は劣化する前提で継続検証する。
+  - Data over narrative: 検証で示せない主張は採用しない。
+  - Execution defines PnL: 戦略評価は実行コスト込みで判定する。
 
-## 2. 📊 勝利の定量的アルゴリズム
-JQuants をフル活用した、エッジ（優位性）の源泉だよっ☆
+## 2. Scope
 
-- **PEAD (Post-Earnings Announcement Drift)**:
-    - 決算発表後の「情報の浸透不足」を利益に変えるよっ！
-    - **SUE (Standardized Unexpected Earnings)**:
-        - $SUE = \frac{Result - Expected}{\sigma_{Surprise}}$
-        - **Rule**: $SUE > 2.0$ の銘柄をロング、$SUE < -2.0$ をショート候補に。
-- **Event Study (Event-Driven)**:
-    - 自社株買い、MSCI リバランス、優待廃止、TOB。EDINET から「事件」を察知して、需給の歪みをゲッチュ！✨
-- **Hybrid Sentiment Analysis (LLM)**:
-    - 決算短信の行間を読み解く。数値に出ない「経営者の強気・弱気」をスコアリング。
-    - **Range**: $[-1.0, 1.0]$。$SUE$ との相関が強い場合、ポジションをブーストさせるよっ💖
+- Universe: 日本株（4桁コード基準）、必要に応じて指数・マクロ統計を併用。
+- Data sources: J-Quants、e-Stat、(将来) EDINET、X等。
+- Execution mode:
+  - 現在: PAPER（仮想執行）
+  - 将来: LIVE（証券API連携）
 
-## 3. 🛡️ 鉄の守護神（Risk Management）
-生き残るための「絶対の掟」だよっ！ここを守れない子は、投資家失格なんだからっ🚫
+## 3. Architecture Contract
 
-- **Kelly Criterion (再投資の魔法)**:
-    - $f^* = \frac{p \times b - (1 - p)}{b}$ ($p$: 勝率, $b$: オッズ)。
-    - 過剰なリスクは破滅の元！$0.5 \times f^*$ (Half-Kelly) を上限にするのが賢い選択だよっ✨
-- **Market Regime Detection**:
-    - ボラティリティ（ATR）とトレンド（MAの乖離）で、今のマーケットが「凪」か「嵐」かを判定。
-    - **Storm Mode**: 嵐のときはレバレッジを 0.5x 以下に落として、お城に引きこもるよっ🏰
-- **Hard Stop-Loss**:
-    - 買値から $-5\%$、または期待利得の $1/2$ を割り込んだら、理由を問わず即座に撤退！Fail-Fast は投資でも鉄則だよっ！
+必須レイヤ構成:
+- `agents/`: 認識・推論（Signal生成）
+- `gateways/`: 外部データ取得の抽象化
+- `backtest/`: コスト込み検証
+- `execution/`: paper/live 執行
+- `pipeline/evaluate`: ベンチマークとA/B比較
 
-## 4. 🤖 エージェント運用
-選りすぐりのエージェントたちが、それぞれの専門分野で稼働するよっ✨
+禁止事項:
+- Agent/Scenario から Provider を直接 `new` しない。
+- 受信済み `Signal` / `Config` を破壊的に変更しない。
+- 検証不能な裁量ロジックを本線に混入しない。
 
-- **Specialized Agents**: PEAD解析やSNS分析など、役割分担して情報を交換。
-- **Continuous Improvement**: 取引結果を記録し、常にロジックの改善を目指すよっ☆
+## 4. Strategy Requirements
 
-## 5. 🧩 モジュール運用規約（再利用最優先）
-実装を増やし続けるのではなく、再利用可能な接続を最優先するよっ。
+戦略は次を満たすこと:
+- 仮説: 市場の非効率を明文化（例: PEAD、イベントドリブン、NLPセンチメント）。
+- 仕様:
+  - 入力特徴量
+  - シグナル生成式
+  - エントリー/エグジット条件
+  - コストモデル（fee/slippage）
+- 失効条件: 優位性喪失時の停止基準を定義。
 
-- **Link-First**: 新規モデルはローカル実装前に `ts-agent/src/model_registry/models.json` へ登録（`github` / `arxiv` / `context7LibraryId`）。
-- **Scenario Thin**: `ts-agent/src/experiments/*.ts` はエントリポイント最小化。実処理は `ts-agent/src/use_cases/` と `ts-agent/src/experiments/scenarios/` に分離。
-- **Dependency Inversion**: シナリオは provider を直接 new しない。gateway / interface 経由で注入し、差し替えとモックを可能にする。
-- **Evidence First**: 実証ログには分析結果だけでなく、参照した外部モデル情報（registry由来）を必ず同梱する。
-- **Cache by Default**: 同一データの再取得を避けるため、HTTP取得はキャッシュ層を通す（初回 fetch、2回目以降 read）。
+## 5. Quantitative Standards
 
-きれいなコードと、最強のロジック。これがあれば、私たちは無敵だねっ！(๑>◡<๑)
-さぁ、マーケットという広大な海へ、お宝探しに出発だよっ！🌊💰✨
+最低限の評価指標:
+- Return: `totalReturn`, `annualizedReturn`
+- Risk: `volatility`, `maxDrawdown`
+- Efficiency: `sharpe`, `profitFactor`
+- Trade quality: `hitRate`, `turnover`（可能なら）
+- Cost-aware: コスト控除後PnLを正とする
+
+採用判定（デフォルト）:
+- `Sharpe` がベースラインより `+0.2` 以上
+- `MaxDrawdown` がベースライン比 `10%` 以上改善
+- `totalReturn` が正
+
+## 6. Risk Protocol
+
+- Position sizing:
+  - Half-Kelly を上限として採用
+  - 単銘柄上限、セクター上限、総エクスポージャ上限を設定
+- Hard stop:
+  - 想定損失上限を超えたら機械的に縮小/停止
+- Regime guard:
+  - 高ボラ局面はレバレッジ抑制
+- Kill switch:
+  - API異常、データ欠損、異常執行時は即停止
+
+## 7. Data Quality & Validation
+
+- 全外部入出力を Zod で検証。
+- 欠損・型不整合・外れ値はログ化して Fail-Fast。
+- キャッシュ利用を標準化し、同一取得の重複を抑制。
+- データリーク（将来情報混入）を禁止。
+
+## 8. Execution Policy
+
+- Decision と Execution を分離する。
+- `decision.action` と `execution.status` を必ず両方記録する。
+- PAPERでは約定ルールを deterministic に定義する。
+- LIVE導入時は次を必須とする:
+  - 注文冪等性キー
+  - 再送制御
+  - 約定照合
+  - フェイルオーバー
+
+## 9. Reproducibility & Audit
+
+必須記録項目:
+- `scenarioId`, `date`, `generatedAt`
+- 使用モデル参照（`github`, `arxiv`, `context7LibraryId`）
+- バックテスト条件（期間、手数料、スリッページ）
+- 実行結果（注文数、エクスポージャ、PnL）
+
+推奨記録項目:
+- `gitSha`, `dataVersion`, `modelVersion`, `seed`, `env`
+
+## 10. Skill Usage Procedure
+
+このスキル使用時の作業手順:
+1. 仮説を1文で定義する（何の非効率を狙うか）。
+2. 必要データと漏洩リスクを列挙する。
+3. Gateway経由で取得する実装に限定する。
+4. Backtestでコスト込み評価を実行する。
+5. BaselineとのA/B比較を実施する。
+6. 採用基準を満たす場合のみ実行層へ接続する。
+7. 結果を UnifiedLog へ保存し、再現可能性を担保する。
+
+## 11. Implementation Mapping (investor)
+
+- Strategy scenario: `ts-agent/src/experiments/scenarios/`
+- Backtest: `ts-agent/src/backtest/`
+- Execution: `ts-agent/src/execution/`
+- Evaluation: `ts-agent/src/pipeline/evaluate/`
+- Use case orchestration: `ts-agent/src/use_cases/`
+- Schema: `ts-agent/src/schemas/log.ts`
+- Model registry: `ts-agent/src/model_registry/models.json`
+
+## 12. Definition of Done
+
+完了条件:
+- Lint/Typecheck が通る
+- Backtest と A/B 比較結果を提示できる
+- `decision` と `execution` が分離されログ化される
+- 監査可能な証跡（条件・結果・モデル参照）が残る

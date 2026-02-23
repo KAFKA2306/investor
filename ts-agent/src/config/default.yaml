@@ -16,3 +16,8 @@ providers:
     enabled: true
   ai:
     enabled: true
+
+benchmark:
+  foundation:
+    noiseThresholdMultiplier: 0.5
+    overconfidenceThreshold: 0.8

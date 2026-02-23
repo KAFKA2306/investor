@@ -39,10 +39,13 @@ tasks:
       - cd {{.TS_DIR}} && bun run typecheck
 
   daily:
-    desc: まいにちの統合ワークフローを開始っ ✨
+    desc: 日次Runbook（品質→API検証→シナリオ→本線→A/B比較）を実行する
     deps: [lint, check]
     cmds:
+      - cd {{.TS_DIR}} && bun run verify:api
+      - cd {{.TS_DIR}} && bun run verify:scenario
       - cd {{.TS_DIR}} && bun run start
+      - cd {{.TS_DIR}} && bun run pipeline:ab
 
   dashboard:
     desc: モダンな投資ダッシュボードをビルドするよっ ✨

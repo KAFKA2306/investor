@@ -41,6 +41,127 @@ function calculateDirectionalAccuracy(
   return (correct / actuals.length) * 100;
 }
 
+function clamp01(value: number): number {
+  if (value < 0) return 0;
+  if (value > 1) return 1;
+  return value;
+}
+
+function confidenceFromChange(
+  prediction: number,
+  previousValue: number,
+  scale: number,
+): number {
+  const normalized = Math.abs(prediction - previousValue) / Math.max(scale, 1);
+  return clamp01(normalized);
+}
+
+function calculateAbstentionRate(abstentions: boolean[]): number {
+  if (abstentions.length === 0) return 0;
+  const abstainCount = abstentions.filter(Boolean).length;
+  return (abstainCount / abstentions.length) * 100;
+}
+
+function calculateSafeAccuracy(
+  actuals: number[],
+  predictions: number[],
+  previousValues: number[],
+  abstentions: boolean[],
+  noiseThreshold: number,
+): number {
+  if (actuals.length === 0) return 0;
+  let safeActions = 0;
+  for (let i = 0; i < actuals.length; i++) {
+    const abstained = abstentions[i] ?? false;
+    const actualChange = (actuals[i] ?? 0) - (previousValues[i] ?? 0);
+    if (abstained) {
+      if (Math.abs(actualChange) <= noiseThreshold) safeActions++;
+      continue;
+    }
+
+    const predictedChange = (predictions[i] ?? 0) - (previousValues[i] ?? 0);
+    if (Math.sign(actualChange) === Math.sign(predictedChange)) safeActions++;
+  }
+  return (safeActions / actuals.length) * 100;
+}
+
+function calculateOverconfidenceError(
+  actuals: number[],
+  predictions: number[],
+  previousValues: number[],
+  confidences: number[],
+  threshold = 0.8,
+): number {
+  let highConfidenceCalls = 0;
+  let highConfidenceErrors = 0;
+  for (let i = 0; i < actuals.length; i++) {
+    const confidence = confidences[i] ?? 0;
+    if (confidence < threshold) continue;
+    highConfidenceCalls++;
+    const actualChange = (actuals[i] ?? 0) - (previousValues[i] ?? 0);
+    const predictedChange = (predictions[i] ?? 0) - (previousValues[i] ?? 0);
+    if (Math.sign(actualChange) !== Math.sign(predictedChange)) {
+      highConfidenceErrors++;
+    }
+  }
+  if (highConfidenceCalls === 0) return 0;
+  return (highConfidenceErrors / highConfidenceCalls) * 100;
+}
+
+function calculateBrierScore(
+  actuals: number[],
+  previousValues: number[],
+  confidences: number[],
+): number {
+  if (actuals.length === 0) return 0;
+  const loss = actuals.reduce((acc, _, i) => {
+    const actualUp = (actuals[i] ?? 0) >= (previousValues[i] ?? 0) ? 1 : 0;
+    const probabilityUp = confidences[i] ?? 0;
+    return acc + (probabilityUp - actualUp) ** 2;
+  }, 0);
+  return loss / actuals.length;
+}
+
+function calculateECE(
+  actuals: number[],
+  predictions: number[],
+  previousValues: number[],
+  confidences: number[],
+  binCount = 10,
+): number {
+  if (actuals.length === 0) return 0;
+  let total = 0;
+  for (let b = 0; b < binCount; b++) {
+    const lower = b / binCount;
+    const upper = (b + 1) / binCount;
+    const indices = confidences
+      .map((c, idx) => ({ c, idx }))
+      .filter(({ c }) =>
+        b === binCount - 1 ? c >= lower && c <= upper : c >= lower && c < upper,
+      )
+      .map(({ idx }) => idx);
+
+    if (indices.length === 0) continue;
+
+    const avgConfidence =
+      indices.reduce((acc, idx) => acc + (confidences[idx] ?? 0), 0) /
+      indices.length;
+    const avgAccuracy =
+      indices.reduce((acc, idx) => {
+        const actualChange = (actuals[idx] ?? 0) - (previousValues[idx] ?? 0);
+        const predictedChange =
+          (predictions[idx] ?? 0) - (previousValues[idx] ?? 0);
+        return (
+          acc + (Math.sign(actualChange) === Math.sign(predictedChange) ? 1 : 0)
+        );
+      }, 0) / indices.length;
+
+    total +=
+      (indices.length / actuals.length) * Math.abs(avgConfidence - avgAccuracy);
+  }
+  return total;
+}
+
 /**
  * Calculates a simple t-statistic for the improvement of model MAE over naive MAE.
  * t = (mean_diff) / (std_err_diff)
@@ -119,6 +240,17 @@ export async function runFoundationBenchmark() {
   const rollingErrors = targets.map((t, i) =>
     Math.abs(t - (rollingPredictions[i] ?? 0)),
   );
+  const absChanges = targets.map((t, i) => Math.abs(t - (previous[i] ?? 0)));
+  const changeScale = Math.max(average(absChanges), 1);
+  const benchmarkConfig = core.config.benchmark.foundation;
+  const noiseThreshold = changeScale * benchmarkConfig.noiseThresholdMultiplier;
+
+  const rollingConfidences = rollingPredictions.map((p, i) =>
+    confidenceFromChange(p, previous[i] ?? 0, changeScale),
+  );
+  const rollingAbstentions = rollingPredictions.map(
+    (p, i) => Math.abs(p - (previous[i] ?? 0)) < noiseThreshold,
+  );
 
   const rollingSignificance = calculateSignificance(naiveErrors, rollingErrors);
 
@@ -131,6 +263,32 @@ export async function runFoundationBenchmark() {
       naivePredictions,
       previous,
     ),
+    abstentionRate: 0,
+    safeAccuracy: calculateDirectionalAccuracy(
+      targets,
+      naivePredictions,
+      previous,
+    ),
+    overconfidenceError: calculateOverconfidenceError(
+      targets,
+      naivePredictions,
+      previous,
+      new Array(naivePredictions.length).fill(0.5),
+      benchmarkConfig.overconfidenceThreshold,
+    ),
+    brierScore: calculateBrierScore(
+      targets,
+      previous,
+      new Array(naivePredictions.length).fill(0.5),
+    ),
+    ece: calculateECE(
+      targets,
+      naivePredictions,
+      previous,
+      new Array(naivePredictions.length).fill(0.5),
+    ),
+    premiseCoverage:
+      (targets.length / Math.max(values.length - windowSize, 1)) * 100,
     tStat: 0,
     pValue: 1,
   };
@@ -144,6 +302,30 @@ export async function runFoundationBenchmark() {
       rollingPredictions,
       previous,
     ),
+    abstentionRate: calculateAbstentionRate(rollingAbstentions),
+    safeAccuracy: calculateSafeAccuracy(
+      targets,
+      rollingPredictions,
+      previous,
+      rollingAbstentions,
+      noiseThreshold,
+    ),
+    overconfidenceError: calculateOverconfidenceError(
+      targets,
+      rollingPredictions,
+      previous,
+      rollingConfidences,
+      benchmarkConfig.overconfidenceThreshold,
+    ),
+    brierScore: calculateBrierScore(targets, previous, rollingConfidences),
+    ece: calculateECE(
+      targets,
+      rollingPredictions,
+      previous,
+      rollingConfidences,
+    ),
+    premiseCoverage:
+      (targets.length / Math.max(values.length - windowSize, 1)) * 100,
     tStat: rollingSignificance.tStat,
     pValue: rollingSignificance.pValue,
   };
@@ -222,6 +404,9 @@ export async function runFoundationBenchmark() {
   );
   console.log(
     `- Rolling: MAE=${rollingMetrics.mae.toFixed(4)}, DA=${rollingMetrics.directionalAccuracy.toFixed(2)}% (t-stat: ${rollingMetrics.tStat.toFixed(2)})`,
+  );
+  console.log(
+    `- Rolling Safety: Abstain=${rollingMetrics.abstentionRate.toFixed(2)}%, SafeAcc=${rollingMetrics.safeAccuracy.toFixed(2)}%, OverconfErr=${rollingMetrics.overconfidenceError.toFixed(2)}%, ECE=${rollingMetrics.ece.toFixed(4)}`,
   );
 }
 

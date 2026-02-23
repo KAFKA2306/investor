@@ -1,0 +1,96 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { z } from "zod";
+import { UnifiedLogSchema } from "../../schemas/log.ts";
+import {
+  calculatePerformanceMetrics,
+  PerformanceMetricsSchema,
+} from "./performance_metrics.ts";
+
+const ComparisonReportSchema = z.object({
+  generatedAt: z.string().datetime(),
+  dateRange: z.object({
+    from: z.string().regex(/^\d{8}$/),
+    to: z.string().regex(/^\d{8}$/),
+  }),
+  baseline: z.object({
+    name: z.string(),
+    metrics: PerformanceMetricsSchema,
+  }),
+  candidate: z.object({
+    name: z.string(),
+    metrics: PerformanceMetricsSchema,
+  }),
+  uplift: z.object({
+    totalReturnDelta: z.number(),
+    sharpeDelta: z.number(),
+    maxDrawdownDelta: z.number(),
+    hitRateDelta: z.number(),
+  }),
+});
+
+type DailyPoint = { date: string; basketDailyReturn: number };
+
+const isDailyReport = (report: unknown): report is Record<string, unknown> =>
+  typeof report === "object" &&
+  report !== null &&
+  "scenarioId" in report &&
+  "results" in report;
+
+function loadDailySeries(logsDir: string): DailyPoint[] {
+  const files = readdirSync(logsDir)
+    .filter((f) => /^\d{8}\.json$/.test(f))
+    .sort();
+  const points: DailyPoint[] = [];
+  for (const file of files) {
+    const raw = readFileSync(join(logsDir, file), "utf8");
+    const log = UnifiedLogSchema.parse(JSON.parse(raw) as unknown);
+    if (!isDailyReport(log.report)) continue;
+    const report = log.report as Record<string, unknown>;
+    const date = z
+      .string()
+      .regex(/^\d{8}$/)
+      .parse(report.date);
+    const results = z.record(z.string(), z.unknown()).parse(report.results);
+    const basketDailyReturn = z
+      .number()
+      .catch(0)
+      .parse(results.basketDailyReturn);
+    points.push({ date, basketDailyReturn });
+  }
+  return points;
+}
+
+export function runDailyAbComparison(logsBaseDir: string) {
+  const logsDir = resolve(logsBaseDir, "daily");
+  const points = loadDailySeries(logsDir);
+  if (points.length === 0) {
+    throw new Error(`No daily log files found in ${logsDir}`);
+  }
+  const returns = points.map((p) => p.basketDailyReturn);
+  const baselineReturns = points.map(() => 0);
+  const baseline = calculatePerformanceMetrics(baselineReturns);
+  const candidate = calculatePerformanceMetrics(returns);
+  const report = ComparisonReportSchema.parse({
+    generatedAt: new Date().toISOString(),
+    dateRange: {
+      from: points[0]?.date ?? "19700101",
+      to: points[points.length - 1]?.date ?? "19700101",
+    },
+    baseline: { name: "NO_TRADE", metrics: baseline },
+    candidate: { name: "VEGETABLE_STRATEGY", metrics: candidate },
+    uplift: {
+      totalReturnDelta: candidate.totalReturn - baseline.totalReturn,
+      sharpeDelta: candidate.sharpe - baseline.sharpe,
+      maxDrawdownDelta: candidate.maxDrawdown - baseline.maxDrawdown,
+      hitRateDelta: candidate.hitRate - baseline.hitRate,
+    },
+  });
+  return report;
+}
+
+if (import.meta.main) {
+  const logsBaseDir = resolve(process.cwd(), "../logs");
+  const report = runDailyAbComparison(logsBaseDir);
+  console.log(JSON.stringify(report, null, 2));
+}

@@ -146,6 +146,12 @@ export const MetricsSchema = z.object({
   tStat: z.number().optional(), // Statistical significance of alpha
   pValue: z.number().optional(), // Probability of results due to luck
   sharpeRatio: z.number().optional(), // Risk-adjusted return
+  abstentionRate: z.number().optional(), // Fraction of deferred predictions
+  safeAccuracy: z.number().optional(), // Correct action rate incl. safe abstentions
+  overconfidenceError: z.number().optional(), // Error rate on high-confidence calls
+  brierScore: z.number().optional(), // Probability calibration quality
+  ece: z.number().optional(), // Expected calibration error
+  premiseCoverage: z.number().optional(), // Ratio of samples with valid prerequisites
 });
 
 export const BenchmarkReportSchema = z.object({

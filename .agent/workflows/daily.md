@@ -1,53 +1,114 @@
 ---
-description: 投資エージェントの、まいにちの「おしごとルーチン」だよっ ✨（検証から実行まで！）
+description: 投資エージェントの日次運用 Runbook。データ取得、検証、実行、監査までを標準化する。
 ---
 
-# ☀️ まいにちの統合ワークフロー ☀️
+# Daily Workflow
 
-リサーチ、検証、そして実行から自律改善まで！ひとつの大きなループだよっ ✨
+本ワークフローは `investor` の日次運用を再現可能にするための実行仕様。  
+対象: `ts-agent` の scenario/backtest/execution/evaluation。
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant M as 市場 (E-Stat/JQuants)
-    participant A as エージェント (Pead/X)
-    participant E as 実験 (Vegetable Scenario)
-    participant Z as 門番 (Zod Validation)
-    participant L as 統合ログ (Unified Log)
+    participant D as Data Gateway
+    participant S as Scenario (Decision)
+    participant B as Backtest
+    participant X as Execution (Paper)
+    participant V as Validation (Zod)
+    participant L as Unified Log
+    participant E as Evaluate (A/B)
 
-    A->>M: リサーチ開始っ ✨
-    M-->>A: お宝情報（アルファ）を発見っ ✨
-    A->>E: 野菜インフレ・シナリオで検証っ ✨
-    E-->>A: 検証結果を返却っ ✨
-    A->>Z: Zod スキーマで厳格チェックっ ✨
-    Z-->>L: 実行結果を JSON で記録っ (Success/Fail) ✨
+    D-->>S: Market/Macro data
+    S->>B: Signals + selected symbols
+    B-->>S: Cost-aware returns
+    S->>X: action + symbols
+    X-->>V: execution report
+    V-->>L: daily log persisted
+    L->>E: baseline vs candidate comparison
 ```
 
-## 📋 毎日のチェックリスト
+## 1. Daily Commands (Canonical)
 
-1. **リサーチ**: 市場の歪み（アルファ）を見つけよう！
-2. **検証**: `ts-agent/src/experiments/` で期待値をチェック！
-3. **バリデーション**: Zod スキーマを通った結果だけを信頼するよっ！
-4. **記録 (Unified Logging)**: `logs/daily/{{YYYYMMDD}}.json` にすべての意思決定を刻もう。
+```bash
+cd ts-agent
+bun run lint
+bun run typecheck
+bun run verify:api
+bun run verify:scenario
+bun run start
+bun run pipeline:ab
+```
 
-## 🧩 モジュール的運用（毎日共通）
+実行順序の意味:
+1. 品質ゲート (`lint`, `typecheck`)
+2. 外部接続健全性 (`verify:api`)
+3. シナリオ検証 (`verify:scenario`)
+4. 日次本線実行 (`start`)
+5. 定量比較 (`pipeline:ab`)
 
-1. **Registry更新**: 新規モデル候補はまず `ts-agent/src/model_registry/models.json` にリンク登録（実装前提にしない）。
-2. **UseCase実行**: 実験エントリは薄く保ち、`ts-agent/src/use_cases/` の共通実証ロジックを呼ぶ。
-3. **Scenario分離**: ドメイン分析は `ts-agent/src/experiments/scenarios/` に閉じ込め、他シナリオへ再利用可能にする。
-4. **Gateway分離**: API接続は `ts-agent/src/experiments/gateways/` で統一し、provider差し替えを容易にする。
-5. **証跡固定**: `logs/daily/{{YYYYMMDD}}.json` に `models`（registry参照）+ `report`（分析結果）を一貫保存する。
+## 2. Acceptance Gates
 
-## 💎 統一ログ・プロトコル
-`logs/daily/` に保存される JSON は、私たちの「成長の記録」だよっ☆
-- `signals`: 銘柄、SUE値、センチメントスコア
-- `risks`: ケリー基準によるロットサイズ、逆指値設定
-- `results`: 約定価格、損益状況、エラー内容
+必須合格条件:
+- `bun run lint` が成功
+- `bun run typecheck` が成功
+- `verify:scenario` のログ生成が成功
+- `logs/daily/YYYYMMDD.json` が `UnifiedLogSchema` に適合
 
-## 🚀 自律改善の魔法
-一日の終わりに、AIである私が今日のログを読み込むよっ！
-- 「なぜ負けたのか？」を分析して、Zod スキーマの閾値や LLM プロンプトを自ら書き換えるんだっ。
-- これで、私たちは毎日少しずつ「無敵」に近づいていくよっ💖
+推奨判定:
+- `pipeline:ab` の `candidate.totalReturn > 0`
+- `pipeline:ab` の `candidate.sharpe >= baseline.sharpe`
+
+## 3. Runtime Contracts
+
+責務分離:
+- Decision: `ts-agent/src/experiments/scenarios/`
+- Backtest: `ts-agent/src/backtest/`
+- Execution: `ts-agent/src/execution/`
+- Orchestration: `ts-agent/src/use_cases/`
+- Evaluation: `ts-agent/src/pipeline/evaluate/`
+
+禁止事項:
+- scenario/agent から provider を直接 `new` しない
+- コスト未考慮のPnLで採用判定しない
+- 失敗時に無制限リトライしない（Fail-Fast）
+
+## 4. Daily Artifacts
+
+日次成果物:
+- `logs/daily/YYYYMMDD.json`
+  - `report.decision`
+  - `report.results.backtest`（fee/slippage含む）
+  - `report.execution`（PAPER実行結果）
+- `pipeline:ab` 出力
+  - baseline/candidate/uplift の定量比較
+
+## 5. Incident Handling
+
+失敗時の標準対応:
+1. `verify:api` 失敗
+   - 当日実行停止、API疎通とキーを確認
+2. `typecheck`/`lint` 失敗
+   - 修正完了まで実行停止
+3. `scenario` 失敗
+   - 入力データ欠損・スキーマ不整合を優先調査
+4. `execution` 異常
+   - `status=SKIPPED` を許容しつつ原因記録
+
+## 6. Continuous Improvement Loop
+
+毎営業日の終端で実施:
+1. `pipeline:ab` の差分確認
+2. 低下した指標の原因分類（データ/特徴量/執行/コスト）
+3. 改善案を1つだけ選び、翌日の変更範囲を最小化
+4. 変更は必ずログ比較で回帰確認
+
+## 7. Definition of Done (Daily)
+
+日次完了条件:
+- 品質ゲート通過
+- 日次ログが保存済み
+- A/B 比較結果を出力済み
+- 実行結果（EXECUTED/SKIPPED）が監査可能
 
 > [!IMPORTANT]
-> ログは私たちの財産！きれいに、構造的に残すのが Zero-Fat の流儀だよっ ✨
+> Daily workflow は「動いた」ではなく「再現できる」が完了条件。
