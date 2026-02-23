@@ -1,90 +1,57 @@
-
 version: "3"
 
 vars:
   TS_DIR: ts-agent
+  DASHBOARD_DIR: ts-agent/src/tools/dashboard
 
 tasks:
   default:
-    desc: 全部まとめてお掃除＆チェックするよっ ✨
+    desc: Default task (Runs check)
     cmds:
-      - task: lint
-      - task: format
       - task: check
 
   setup:
-    desc: 依存関係をインストールして準備するよっ ✨
+    desc: Install all dependencies (Node.js & Python) 🔧
     cmds:
       - cd {{.TS_DIR}} && bun install
-      - task: setup:models
-
-  setup:models:
-    desc: Python 財団 models の環境を整えるよっ ✨
-    cmds:
       - cd {{.TS_DIR}}/src/experiments/foundation_models && uv sync
-
-  verify:models:
-    desc: Foundation Model (Python) のインストール状況を確認するよっ ✨
-    cmds:
-      - cd {{.TS_DIR}}/src/experiments/foundation_models && uv run python check_installation.py
-
-  lint:
-    desc: Biome でコードをピカピカにするよっ ✨
-    cmds:
-      - cd {{.TS_DIR}} && bun run lint
-
-  format:
-    desc: Biome でコードを整列させるよっ ✨
-    cmds:
-      - cd {{.TS_DIR}} && bun run format
+      - echo "✨ Setup complete!"
 
   check:
-    desc: TypeScript の型チェックで安全確認っ ✨
+    desc: Lint, Format, and Typecheck 🧹
     cmds:
+      - cd {{.TS_DIR}} && bun run format
+      - cd {{.TS_DIR}} && bun run lint
       - cd {{.TS_DIR}} && bun run typecheck
+      - echo "✨ Code is clean and safe!"
 
-  daily:
-    desc: 日次Runbook（品質→API検証→シナリオ→本線→A/B比較→Readiness）を実行する
-    deps: [lint, check]
+  verify:
+    desc: Verify environment (API & Models) 🔍
     cmds:
       - cd {{.TS_DIR}} && bun run verify:api
-      - cd {{.TS_DIR}} && bun run verify:scenario
-      - cd {{.TS_DIR}} && bun run start
-      - cd {{.TS_DIR}} && bun run pipeline:ab
-      - cd {{.TS_DIR}} && bun run pipeline:llm-readiness
+      - cd {{.TS_DIR}}/src/experiments/foundation_models && uv run python check_installation.py
+      - echo "✨ Environment is ready!"
 
-  pipeline:mine:
-    desc: 因子候補を生成・評価・進化してregistryへ保存する
-    deps: [check]
+  run:
+    desc: Run the Main Pipeline (LES Reproduction + Benchmarks + Dashboard Update) 🚀
+    deps: [check, verify]
     cmds:
-      - cd {{.TS_DIR}} && bun run pipeline:mine
-
-  pipeline:llm-readiness:
-    desc: LLM trading survey基準の運用Readinessを定量スコア化する
-    deps: [check]
-    cmds:
-      - cd {{.TS_DIR}} && bun run pipeline:llm-readiness
-
-  full:validate:
-    desc: experiments/scenario/pipelineを再実行し統一ログを出力する
-    deps: [lint, check]
-    cmds:
-      - cd {{.TS_DIR}} && bun run pipeline:full-validation
-
-  repro:les:
-    desc: ArXiv:2409.06289 (LES) の再現実験を実行しダッシュボードを更新するよっ ✨
-    cmds:
+      - echo "Running LES Reproduction..."
       - cd {{.TS_DIR}} && bun src/experiments/les_reproduction.ts
-      - cd {{.TS_DIR}}/src/tools/dashboard && bun scripts/generate-log-manifest.mjs ../../../logs/daily
-      - cd {{.TS_DIR}}/src/tools/dashboard && bun scripts/generate-log-manifest.mjs ../../../logs/unified
-      - echo "✨ Reproduce LES Complete! Run 'task dashboard:dev' to view logs."
+      - echo "Running Foundation Benchmark..."
+      - cd {{.TS_DIR}} && bun src/experiments/04_foundation_benchmark.ts
+      - echo "Updating Dashboard Manifests..."
+      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/daily
+      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/unified
+      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/benchmarks
+      - echo "✨ Run complete! Use 'task view' to see results."
 
-  dashboard:
-    desc: モダンな投資ダッシュボードをビルドするよっ ✨
+  view:
+    desc: Start the Dashboard 📊
     cmds:
-      - cd {{.TS_DIR}}/src/tools/dashboard && npm run build
+      - cd {{.DASHBOARD_DIR}} && npm run dev
 
-  dashboard:dev:
-    desc: ダッシュボードの開発サーバーを起動するよっ ✨
+  score:
+    desc: Calculate LLM Readiness Score 🎯
     cmds:
-      - cd {{.TS_DIR}}/src/tools/dashboard && npm run dev
+      - cd {{.TS_DIR}} && bun run pipeline:llm-readiness

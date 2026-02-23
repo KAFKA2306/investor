@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
+import { getTSModels } from "../model_registry/registry.ts";
 import { average, extractEstatValues } from "./analysis/daily_alpha.ts";
 
 const TimeSeriesReportSchema = z.object({
@@ -13,6 +14,7 @@ const TimeSeriesReportSchema = z.object({
   naiveMae: z.number(),
   rollingMae: z.number(),
   rollingBeatsNaive: z.boolean(),
+  advancedModelsAvailable: z.number(),
 });
 
 export type TimeSeriesReport = z.infer<typeof TimeSeriesReportSchema>;
@@ -26,11 +28,13 @@ export async function runTimeSeriesAnalysis(
     unknown
   >;
   const values = extractEstatValues(estatObj.GET_STATS_DATA);
+  const tsModels = await getTSModels();
 
   if (verbose) {
     console.log("Time Series Analysis: Vegetable Prices (e-Stat 0000010101)");
     console.log("---------------------------------------------------------");
     console.log(`Total Data Points: ${values.length}`);
+    console.log(`Advanced Models in Registry: ${tsModels.length}`);
   }
 
   if (values.length < 2) {
@@ -48,6 +52,7 @@ export async function runTimeSeriesAnalysis(
       naiveMae: 0,
       rollingMae: 0,
       rollingBeatsNaive: false,
+      advancedModelsAvailable: tsModels.length,
     });
   }
 
@@ -142,6 +147,13 @@ export async function runTimeSeriesAnalysis(
     }
   }
 
+  if (verbose && tsModels.length > 0) {
+    console.log("\n🚀 Registered Foundation Models for Comparison:");
+    tsModels.forEach((m) => {
+      console.log(`- [${m.vendor}] ${m.name} (${m.id})`);
+    });
+  }
+
   const report = TimeSeriesReportSchema.parse({
     generatedAt: new Date().toISOString(),
     dataPoints: values.length,
@@ -153,6 +165,7 @@ export async function runTimeSeriesAnalysis(
     naiveMae: naiveErrorSum / testCount,
     rollingMae: rollingErrorSum / testCount,
     rollingBeatsNaive: rollingErrorSum < naiveErrorSum,
+    advancedModelsAvailable: tsModels.length,
   });
   return report;
 }

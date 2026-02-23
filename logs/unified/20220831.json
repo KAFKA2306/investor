@@ -1,0 +1,43 @@
+{
+  "schema": "investor.unified-log.v1",
+  "generatedAt": "2026-02-23T06:03:19.095Z",
+  "date": "20220831",
+  "runId": "les-repro-1771826599095",
+  "stages": [
+    {
+      "stageId": "les-saf",
+      "category": "experiment",
+      "name": "Seed Alpha Factory",
+      "status": "PASS",
+      "startedAt": "2026-02-23T06:03:19.077Z",
+      "endedAt": "2026-02-23T06:03:19.095Z",
+      "metrics": {
+        "factorsGenerated": 3
+      }
+    },
+    {
+      "stageId": "les-maeval",
+      "category": "experiment",
+      "name": "Multi-Agent Evaluation",
+      "status": "PASS",
+      "startedAt": "2026-02-23T06:03:19.077Z",
+      "endedAt": "2026-02-23T06:03:19.095Z",
+      "metrics": {
+        "avgConfidence": 0.05666666666666667,
+        "avgRisk": 1.2
+      }
+    },
+    {
+      "stageId": "les-backtest",
+      "category": "verification",
+      "name": "LES Backtest",
+      "status": "PASS",
+      "startedAt": "2026-02-23T06:03:19.077Z",
+      "endedAt": "2026-02-23T06:03:19.095Z",
+      "metrics": {
+        "netReturn": 0.0048000000000000004,
+        "sharpeProxy": 1.45
+      }
+    }
+  ]
+}

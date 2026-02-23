@@ -1,0 +1,112 @@
+{
+  "generatedAt": "2026-02-23T06:03:19.095Z",
+  "report": {
+    "date": "20220831",
+    "analyzedAt": "2026-02-23T06:03:19.095Z",
+    "workflow": {
+      "dataReadiness": "PASS",
+      "alphaReadiness": "PASS",
+      "verdict": "USEFUL"
+    },
+    "decision": {
+      "topSymbol": "7203",
+      "strategy": "LES Framework (ArXiv:2409.06289)",
+      "action": "INVEST",
+      "reason": "LES Reproduction: Sharpe proxy 1.45, return 0.48%\nFactors:\n- LES-MOM-01: Weight 0.2778\n- LES-VAL-01: Weight 0.5556\n- LES-SENT-01: Weight 0.1667",
+      "experimentValue": "LES_REPRO"
+    },
+    "results": {
+      "expectedEdge": 0.0048000000000000004,
+      "basketDailyReturn": 0.0048000000000000004,
+      "status": "SUCCESS",
+      "selectedSymbols": [
+        "7203",
+        "8035",
+        "6758",
+        "4063"
+      ]
+    },
+    "analysis": [
+      {
+        "symbol": "7203",
+        "signal": "LONG",
+        "alphaScore": 321.475,
+        "finance": {
+          "netSales": 8491116000000,
+          "operatingProfit": 578655000000,
+          "profitMargin": 0.06814828580836724
+        },
+        "factors": {
+          "dailyReturn": 0.005,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
+        }
+      },
+      {
+        "symbol": "9984",
+        "signal": "HOLD",
+        "alphaScore": 0,
+        "finance": {
+          "netSales": 1572030000000,
+          "operatingProfit": 0,
+          "profitMargin": 0
+        },
+        "factors": {
+          "dailyReturn": -0.002,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
+        }
+      },
+      {
+        "symbol": "8035",
+        "signal": "LONG",
+        "alphaScore": 65.28833333333334,
+        "finance": {
+          "netSales": 473654000000,
+          "operatingProfit": 117519000000,
+          "profitMargin": 0.2481114906661825
+        },
+        "factors": {
+          "dailyReturn": 0.005,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
+        }
+      },
+      {
+        "symbol": "6758",
+        "signal": "LONG",
+        "alphaScore": 170.53500000000003,
+        "finance": {
+          "netSales": 2311494000000,
+          "operatingProfit": 306963000000,
+          "profitMargin": 0.13279852770545802
+        },
+        "factors": {
+          "dailyReturn": 0.005,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
+        }
+      },
+      {
+        "symbol": "4063",
+        "signal": "LONG",
+        "alphaScore": 138.67777777777778,
+        "finance": {
+          "netSales": 656707000000,
+          "operatingProfit": 249620000000,
+          "profitMargin": 0.38010863292153124
+        },
+        "factors": {
+          "dailyReturn": 0.005,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
+        }
+      }
+    ]
+  }
+}

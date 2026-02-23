@@ -84,12 +84,11 @@ sequenceDiagram
 
 | コマンド | 説明 |
 | :--- | :--- |
-| `task setup` | 環境の初期化と依存関係のインストール。 |
-| `task daily` | デイリー統合ワークフロー (Lint -> Check -> Start -> AB -> Readiness)。 |
-| `task repro:les` | **ArXiv:2409.06289 (LES)** の再現実験を実行しログを生成。 |
-| `task full:validate` | 全実験・検証シナリオを再実行し `logs/unified/` を出力。 |
-| `task dashboard:dev` | ダッシュボードの開発サーバーを起動。 |
-| `task check` | 厳格な TypeScript 型チェック (`tsc --noEmit`)。 |
+| `task setup` | 環境の初期化と依存関係（Node.js & Python）のインストール。 |
+| `task check` | Lint (Biome) と TypeScript の厳格な型チェック。 |
+| `task verify` | API とモデル環境（Python）の正常性確認。 |
+| `task run` | **メインパイプライン** (LES 再現 + ベンチマーク + ダッシュボード更新) を実行。 |
+| `task view` | ダッシュボードの開発サーバーを起動して結果を確認。 |
 
 ## 🌐 Dashboard (GitHub Pages)
 

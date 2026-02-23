@@ -53,7 +53,14 @@ function normalize(x: number, scale: number): number {
 }
 
 function buildFeaturesFromDailyLog(raw: unknown): FeatureRow | null {
-  const log = UnifiedLogSchema.parse(raw);
+  if (typeof raw !== "object" || raw === null || (raw as any).schema !== "investor.daily-log.v1") {
+    return null;
+  }
+
+  const result = UnifiedLogSchema.safeParse(raw);
+  if (!result.success) return null;
+  const log = result.data;
+
   if (!isDailyReport(log.report)) return null;
   const report = log.report as Record<string, unknown>;
 

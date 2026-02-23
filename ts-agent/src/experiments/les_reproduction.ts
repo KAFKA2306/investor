@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { LesAgent } from "../agents/les.ts";
 import { runSimpleBacktest } from "../backtest/simulator.ts";
+import { core } from "../core/index.ts";
 import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
 import { SymbolAnalysisSchema } from "./analysis/daily_alpha.ts";
 
@@ -197,8 +198,8 @@ ${factors
     ],
   };
 
-  const logsDailyDir = join(process.cwd(), "logs/daily");
-  const logsUnifiedDir = join(process.cwd(), "logs/unified");
+  const logsDailyDir = join(core.config.paths.logs, "daily");
+  const logsUnifiedDir = join(core.config.paths.logs, "unified");
 
   await mkdir(logsDailyDir, { recursive: true });
   await mkdir(logsUnifiedDir, { recursive: true });

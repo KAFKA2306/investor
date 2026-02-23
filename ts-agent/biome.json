@@ -28,7 +28,8 @@
     "ignoreUnknown": true,
     "includes": [
       "src/**",
-      "!src/tools/dashboard/dist/**"
+      "!src/tools/dashboard/dist/**",
+      "!src/experiments/foundation_models/.venv/**"
     ]
   }
 }

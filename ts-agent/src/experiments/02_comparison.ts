@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../core/index.ts";
+import { loadModelRegistry } from "../model_registry/registry.ts";
 
 const ComparisonRowSchema = z.object({
   date: z.string().regex(/^\d{8}$/),
@@ -19,8 +20,19 @@ export type ComparisonReport = z.infer<typeof ComparisonReportSchema>;
 
 export async function compareForecastAndOutcome(): Promise<ComparisonReport> {
   const logsDir = join(core.config.paths.logs, "daily");
+  const registry = await loadModelRegistry();
+
+  console.log("🚀 Model Strategy Catalog (Registered):");
+  registry.models.forEach((m) => {
+    console.log(`- [${m.id}] ${m.name} by ${m.vendor}`);
+  });
+  console.log("");
+
   const files = readdirSync(logsDir)
-    .filter((f) => f.endsWith(".json"))
+    .filter(
+      (f) =>
+        f.endsWith(".json") && f !== "manifest.json" && /^\d{8}\.json$/.test(f),
+    )
     .sort();
   const rows: z.infer<typeof ComparisonRowSchema>[] = [];
 

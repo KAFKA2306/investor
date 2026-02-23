@@ -1,6 +1,6 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-23T04:41:44.049Z",
+  "generatedAt": "2026-02-23T06:04:31.017Z",
   "models": [
     {
       "id": "amazon-chronos",
@@ -30,22 +30,30 @@
       "id": "salesforce-moirai",
       "vendor": "Salesforce",
       "name": "MOIRAI",
-      "context7LibraryId": "/salesforce/uni-prophet",
-      "github": "https://github.com/SalesforceAIResearch/uni-prophet",
+      "context7LibraryId": "/salesforce/uni2ts",
+      "github": "https://github.com/SalesforceAIResearch/uni2ts",
       "arxiv": "https://arxiv.org/abs/2402.02592"
     },
     {
       "id": "lag-llama",
       "vendor": "Lag-Llama Team",
       "name": "Lag-Llama",
-      "context7LibraryId": "/lag-llama/lag-llama",
-      "github": "https://github.com/lag-llama/lag-llama",
+      "context7LibraryId": "/time-series-foundation-models/lag-llama",
+      "github": "https://github.com/time-series-foundation-models/lag-llama",
       "arxiv": "https://arxiv.org/abs/2310.03274"
+    },
+    {
+      "id": "les-forecast",
+      "vendor": "Yang et al.",
+      "name": "LES (Large-scale Stock Forecasting)",
+      "context7LibraryId": "/les-agent/les-stock-forecasting",
+      "github": "https://github.com/microsoft/investor-agent",
+      "arxiv": "https://arxiv.org/abs/2409.06289"
     }
   ],
   "report": {
     "scenarioId": "SCN-VEG-001",
-    "analyzedAt": "2026-02-23T04:41:44.049Z",
+    "analyzedAt": "2026-02-23T06:04:31.017Z",
     "date": "20260223",
     "inputs": {
       "estatStatsDataId": "0000010101",
@@ -203,7 +211,7 @@
       },
       "proved": false,
       "selectedSymbols": [],
-      "generatedAt": "2026-02-23T04:41:44.049Z"
+      "generatedAt": "2026-02-23T06:04:31.017Z"
     },
     "execution": {
       "mode": "PAPER",

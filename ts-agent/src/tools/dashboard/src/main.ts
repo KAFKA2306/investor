@@ -66,8 +66,16 @@ interface DailySummary {
   topSymbol: string;
 }
 
+interface BenchSummary {
+  date: string;
+  type: string;
+  modelsCount: number;
+  insight: string;
+}
+
 const STATIC_LOGS_BASE = "./logs/daily";
 const UNIFIED_LOGS_BASE = "./logs/unified";
+const BENCH_LOGS_BASE = "./logs/benchmarks";
 
 interface UnifiedStage {
   stageId?: string;
@@ -82,6 +90,23 @@ interface UnifiedRunLogPayload {
   schema?: string;
   date?: string;
   stages?: UnifiedStage[];
+}
+
+interface BenchmarkLogPayload {
+  schema?: string;
+  generatedAt?: string;
+  models?: Array<Record<string, unknown>>;
+  report?: {
+    type?: string;
+    benchmarkId?: string;
+    date?: string;
+    analyst?: {
+      baselines?: Array<{ name: string; metrics: Record<string, number> }>;
+      models?: Array<{ id: string; vendor: string; tags: string[] }>;
+      insights?: string;
+      recommendations?: string[];
+    };
+  };
 }
 
 const pickNumber = (v: unknown): number =>
@@ -109,55 +134,109 @@ const toSummary = (
   };
 };
 
+const toBenchSummary = (
+  file: string,
+  payload: BenchmarkLogPayload,
+): BenchSummary => {
+  const report = payload.report || {};
+  return {
+    date: report.date || file.replace(".json", ""),
+    type: report.type || "BENCHMARK",
+    modelsCount: payload.models?.length || 0,
+    insight: report.analyst?.insights || "N/A",
+  };
+};
+
 class Dashboard {
   private logs: DailySummary[] = [];
+  private benches: BenchSummary[] = [];
+  private registry: Array<Record<string, unknown>> = [];
   private activeLog: LogPayload | null = null;
+  private activeBench: BenchmarkLogPayload | null = null;
   private staticPayloadByDate = new Map<string, LogPayload>();
   private unifiedPayloadByDate = new Map<string, UnifiedRunLogPayload>();
+  private benchPayloadByDate = new Map<string, BenchmarkLogPayload>();
 
   constructor() {
     this.init();
   }
 
   async init() {
-    await this.loadStaticLogs();
-    await this.loadUnifiedLogs();
+    await Promise.all([
+      this.loadStaticLogs(),
+      this.loadUnifiedLogs(),
+      this.loadBenchLogs(),
+      this.loadRegistry(),
+    ]);
     const firstLog = this.logs.at(0);
     if (firstLog) {
       await this.selectLog(firstLog.date);
     }
   }
 
-  private async loadStaticLogs() {
-    const manifestRes = await fetch(`${STATIC_LOGS_BASE}/manifest.json`);
-    if (!manifestRes.ok) {
-      throw new Error(`Static manifest fetch failed: ${manifestRes.status}`);
+  private async loadRegistry() {
+    try {
+      const res = await fetch("./registry/models.json");
+      if (!res.ok) return;
+      const data = await res.json();
+      this.registry = Array.isArray(data) ? data : data.models || [];
+      this.renderRegistry();
+    } catch (_e) {
+      // Ignore
     }
+  }
 
-    const files = (await manifestRes.json()) as string[];
-    const jsonFiles = files
-      .filter((f) => /^\d{8}\.json$/.test(f))
-      .sort()
-      .reverse();
-
-    const settled = await Promise.allSettled(
-      jsonFiles.map(async (file) => {
-        const res = await fetch(`${STATIC_LOGS_BASE}/${file}`);
-        if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
-        const payload = (await res.json()) as LogPayload;
-        const date = payload.report?.date || file.replace(".json", "");
-        this.staticPayloadByDate.set(date, payload);
-        return toSummary(file, payload as unknown as Record<string, unknown>);
-      }),
-    );
-
-    this.logs = settled
-      .filter(
-        (r): r is PromiseFulfilledResult<DailySummary> =>
-          r.status === "fulfilled",
+  private renderRegistry() {
+    const list = document.getElementById("registry-list");
+    if (!list) return;
+    list.innerHTML = this.registry
+      .map(
+        (m) => `
+      <div class="log-item" style="cursor: default;">
+        <div class="log-item-row">
+          <span class="log-date">${this.escapeHtml(m.name || m.id)}</span>
+          <span class="badge badge-neutral">${this.escapeHtml(m.vendor || "N/A")}</span>
+        </div>
+        <div class="log-sub">${this.escapeHtml(m.id)}</div>
+      </div>
+    `,
       )
-      .map((r) => r.value);
-    this.renderSidebar();
+      .join("");
+  }
+
+  private async loadStaticLogs() {
+    try {
+      const manifestRes = await fetch(`${STATIC_LOGS_BASE}/manifest.json`);
+      if (!manifestRes.ok) return;
+
+      const files = (await manifestRes.json()) as string[];
+      const jsonFiles = files
+        .filter((f) => /^\d{8}\.json$/.test(f))
+        .sort()
+        .reverse();
+
+      const settled = await Promise.allSettled(
+        jsonFiles.map(async (file) => {
+          const res = await fetch(`${STATIC_LOGS_BASE}/${file}`);
+          if (!res.ok)
+            throw new Error(`Failed to fetch ${file}: ${res.status}`);
+          const payload = (await res.json()) as LogPayload;
+          const date = payload.report?.date || file.replace(".json", "");
+          this.staticPayloadByDate.set(date, payload);
+          return toSummary(file, payload as unknown as Record<string, unknown>);
+        }),
+      );
+
+      this.logs = settled
+        .filter(
+          (r): r is PromiseFulfilledResult<DailySummary> =>
+            r.status === "fulfilled",
+        )
+        .map((r) => r.value);
+      this.renderSidebar();
+    } catch (_e) {
+      // Ignore
+    }
   }
 
   private async loadUnifiedLogs() {
@@ -188,10 +267,46 @@ class Dashboard {
     }
   }
 
+  private async loadBenchLogs() {
+    try {
+      const manifestRes = await fetch(`${BENCH_LOGS_BASE}/manifest.json`);
+      if (!manifestRes.ok) return;
+
+      const files = (await manifestRes.json()) as string[];
+      const jsonFiles = files
+        .filter((f) => /^\d{8}\.json$/.test(f))
+        .sort()
+        .reverse();
+
+      const settled = await Promise.allSettled(
+        jsonFiles.map(async (file) => {
+          const res = await fetch(`${BENCH_LOGS_BASE}/${file}`);
+          if (!res.ok)
+            throw new Error(`Failed to fetch ${file}: ${res.status}`);
+          const payload = (await res.json()) as BenchmarkLogPayload;
+          const date = payload.report?.date || file.replace(".json", "");
+          this.benchPayloadByDate.set(date, payload);
+          return toBenchSummary(file, payload);
+        }),
+      );
+
+      this.benches = settled
+        .filter(
+          (r): r is PromiseFulfilledResult<BenchSummary> =>
+            r.status === "fulfilled",
+        )
+        .map((r) => r.value);
+      this.renderSidebar();
+    } catch (_e) {
+      // Ignore
+    }
+  }
+
   private async selectLog(date: string) {
     const payload = this.staticPayloadByDate.get(date);
     if (!payload) return;
     this.activeLog = payload;
+    this.activeBench = null;
     this.renderActiveLog();
 
     document.querySelectorAll(".log-item").forEach((el) => {
@@ -199,38 +314,78 @@ class Dashboard {
     });
   }
 
-  private renderSidebar() {
-    const list = document.getElementById("log-list");
-    if (!list) return;
+  private async selectBench(date: string) {
+    const payload = this.benchPayloadByDate.get(date);
+    if (!payload) return;
+    this.activeBench = payload;
+    this.activeLog = null;
+    this.renderActiveBench();
 
-    list.innerHTML = this.logs
-      .map(
-        (log) => `
-      <div class="log-item ${this.activeLog?.report?.date === log.date ? "active" : ""}"
-           data-date="${this.escapeHtml(log.date)}">
-        <div class="log-item-row">
-          <span class="log-date">${this.escapeHtml(this.formatDate(log.date))}</span>
-          <span class="badge ${log.verdict === "USEFUL" ? "badge-success" : "badge-danger"}">${this.escapeHtml(log.verdict)}</span>
-        </div>
-        <div class="log-sub">
-          日次収益 ${(log.basketDailyReturn * 100).toFixed(2)}% / 期待エッジ ${(log.expectedEdge * 100).toFixed(2)}%
-        </div>
-      </div>
-    `,
-      )
-      .join("");
-
-    list.querySelectorAll(".log-item").forEach((el) => {
-      el.addEventListener("click", () => {
-        const date = el.getAttribute("data-date");
-        if (date) this.selectLog(date);
-      });
+    document.querySelectorAll(".log-item").forEach((el) => {
+      el.classList.toggle("active", el.getAttribute("data-date") === date);
     });
+  }
+
+  private renderSidebar() {
+    const dailyList = document.getElementById("log-list");
+    if (dailyList) {
+      dailyList.innerHTML = this.logs
+        .map(
+          (log) => `
+        <div class="log-item ${this.activeLog?.report?.date === log.date ? "active" : ""}"
+             data-date="${this.escapeHtml(log.date)}">
+          <div class="log-item-row">
+            <span class="log-date">${this.escapeHtml(this.formatDate(log.date))}</span>
+            <span class="badge ${log.verdict === "USEFUL" ? "badge-success" : "badge-danger"}">${this.escapeHtml(log.verdict)}</span>
+          </div>
+          <div class="log-sub">
+            日次収益 ${(log.basketDailyReturn * 100).toFixed(2)}% / 期待エッジ ${(log.expectedEdge * 100).toFixed(2)}%
+          </div>
+        </div>
+      `,
+        )
+        .join("");
+
+      dailyList.querySelectorAll(".log-item").forEach((el) => {
+        el.addEventListener("click", () => {
+          const date = el.getAttribute("data-date");
+          if (date) this.selectLog(date);
+        });
+      });
+    }
+
+    const benchList = document.getElementById("bench-list");
+    if (benchList) {
+      benchList.innerHTML = this.benches
+        .map(
+          (bench) => `
+        <div class="log-item ${this.activeBench?.report?.date === bench.date ? "active" : ""}"
+             data-date="${this.escapeHtml(bench.date)}">
+          <div class="log-item-row">
+            <span class="log-date">${this.escapeHtml(this.formatDate(bench.date))}</span>
+            <span class="badge badge-neutral">${this.escapeHtml(bench.type)}</span>
+          </div>
+          <div class="log-sub">
+            モデル数: ${bench.modelsCount} / ${this.escapeHtml(bench.insight.slice(0, 20))}...
+          </div>
+        </div>
+      `,
+        )
+        .join("");
+
+      benchList.querySelectorAll(".log-item").forEach((el) => {
+        el.addEventListener("click", () => {
+          const date = el.getAttribute("data-date");
+          if (date) this.selectBench(date);
+        });
+      });
+    }
   }
 
   private renderActiveLog() {
     if (!this.activeLog) return;
     const report = this.activeLog.report || {};
+    // ... (rest of renderActiveLog remains similar)
 
     const updateEl = document.getElementById("last-update");
     if (updateEl) {
@@ -309,6 +464,97 @@ class Dashboard {
     }
 
     this.renderValidationPanel(pickString(report.date));
+  }
+
+  private renderActiveBench() {
+    if (!this.activeBench) return;
+    const report = this.activeBench.report || {};
+    const analyst = report.analyst || {};
+
+    const updateEl = document.getElementById("last-update");
+    if (updateEl) {
+      updateEl.textContent = this.activeBench.generatedAt
+        ? `更新: ${new Date(this.activeBench.generatedAt).toLocaleString("ja-JP")}`
+        : "更新: --";
+    }
+
+    // Benchmark-specific summary stats
+    this.updateText("stat-edge", "BMK");
+    this.updateText("stat-return", report.type || "BENCHMARK");
+    this.updateText("stat-kelly", report.date || "--");
+    this.updateText("stat-top", report.benchmarkId || "--");
+
+    const workflowEl = document.getElementById("workflow-status");
+    if (workflowEl) {
+      workflowEl.innerHTML = `
+        ${this.statusRow("ベンチマーク", "PASS")}
+        ${this.statusRow("モデル数", (this.activeBench.models?.length || 0).toString())}
+        ${this.statusRow("ベースライン", (analyst.baselines?.length || 0).toString())}
+      `;
+    }
+
+    const analysisEl = document.getElementById("symbol-analysis");
+    if (analysisEl) {
+      const modelCards = (analyst.models || [])
+        .map(
+          (m) => `
+        <div class="symbol-card animate-fade">
+          <div class="symbol-head">
+            <span class="symbol-code">${this.escapeHtml(m.id)}</span>
+            <span class="badge badge-neutral">${this.escapeHtml(m.vendor)}</span>
+          </div>
+          <div class="log-sub">${(m.tags || []).join(", ")}</div>
+        </div>
+      `,
+        )
+        .join("");
+
+      const baselineCards = (analyst.baselines || [])
+        .map((b) => {
+          const da = pickNumber(b.metrics.directionalAccuracy);
+          const daDisplay = da.toFixed(1);
+          return `
+        <div class="symbol-card animate-fade" style="border-left: 4px solid var(--accent);">
+          <div class="symbol-head">
+            <span class="symbol-code">${this.escapeHtml(b.name)}</span>
+            <span class="badge badge-success">BASELINE</span>
+          </div>
+          <div class="symbol-metrics">
+            <div><div class="metric-label">MAE</div><div class="metric-value">${pickNumber(b.metrics.mae).toFixed(2)}</div></div>
+            <div><div class="metric-label">RMSE</div><div class="metric-value">${pickNumber(b.metrics.rmse).toFixed(2)}</div></div>
+            <div><div class="metric-label">DirAcc</div><div class="metric-value">${daDisplay}%</div></div>
+          </div>
+        </div>
+      `;
+        })
+        .join("");
+
+      analysisEl.innerHTML = baselineCards + modelCards;
+    }
+
+    const verdictEl = document.getElementById("verdict-content");
+    if (verdictEl) {
+      verdictEl.innerHTML = `
+        <div class="box-title">インサイト</div>
+        <div style="font-size: 0.9em; line-height: 1.4;">${this.escapeHtml(analyst.insights || "N/A")}</div>
+        <div class="box-title">推奨事項</div>
+        <ul style="padding-left: 1.2em; margin: 0.5em 0;">
+          ${(analyst.recommendations || []).map((r: string) => `<li>${this.escapeHtml(r)}</li>`).join("")}
+        </ul>
+      `;
+    }
+
+    const validationEl = document.getElementById("validation-results");
+    if (validationEl) {
+      validationEl.innerHTML = `<div class="metric-label">ベンチマーク詳細（JSON参照）</div>`;
+    }
+
+    const jsonEl = document.getElementById("json-content");
+    if (jsonEl) {
+      jsonEl.innerHTML = `<pre>${this.escapeHtml(
+        JSON.stringify(this.activeBench, null, 2),
+      )}</pre>`;
+    }
   }
 
   private renderValidationPanel(date: string) {

@@ -58,18 +58,31 @@ function loadDailyPoints(logsDir: string): DailyPoint[] {
   const points: DailyPoint[] = [];
   for (const file of files) {
     const raw = readFileSync(join(logsDir, file), "utf8");
-    const log = UnifiedLogSchema.parse(JSON.parse(raw) as unknown);
+    let logRaw;
+    try {
+      logRaw = JSON.parse(raw);
+    } catch {
+      continue;
+    }
+
+    // Only process daily-log schema
+    if (logRaw.schema !== "investor.daily-log.v1") continue;
+
+    const result = UnifiedLogSchema.safeParse(logRaw);
+    if (!result.success) {
+      console.warn(`[Readiness] Skipping ${file} due to schema mismatch.`);
+      continue;
+    }
+    const log = result.data;
     if (typeof log.report !== "object" || log.report === null) continue;
-    const report = z.record(z.string(), z.unknown()).parse(log.report);
-    const results = z
-      .record(z.string(), z.unknown())
-      .catch({})
-      .parse(report.results);
-    const backtest = z
-      .record(z.string(), z.unknown())
-      .catch({})
-      .parse(results.backtest);
-    const models = z.array(z.unknown()).catch([]).parse(log.models);
+
+    // Type guard for daily scenario report
+    if (!("scenarioId" in log.report)) continue;
+    const report = log.report;
+
+    const results = report.results;
+    const backtest = results.backtest || {};
+    const models = log.models || [];
     const hasModelRefs = models.length > 0;
     const hasBacktestCost =
       typeof backtest.totalCostBps === "number" &&
@@ -77,17 +90,9 @@ function loadDailyPoints(logsDir: string): DailyPoint[] {
     const hasExecution =
       typeof report.execution === "object" && report.execution !== null;
     const date = YYYMMDD.parse(report.date);
-    const basketDailyReturn = z
-      .number()
-      .catch(0)
-      .parse(results.basketDailyReturn);
-    const action = z
-      .string()
-      .catch("UNKNOWN")
-      .parse(
-        z.record(z.string(), z.unknown()).catch({}).parse(report.decision)
-          .action,
-      );
+    const basketDailyReturn = results.basketDailyReturn || 0;
+    const action = report.decision?.action || "UNKNOWN";
+
     points.push(
       DailyPointSchema.parse({
         date,

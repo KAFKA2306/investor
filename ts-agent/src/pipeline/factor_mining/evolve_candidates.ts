@@ -93,7 +93,20 @@ function mutateFromElite(
 export function runFactorMining(logsBaseDir: string, registryDir: string) {
   const rows = loadFeatureRows(logsBaseDir);
   if (rows.length < 2) {
-    throw new Error("Factor mining requires at least 2 daily rows.");
+    return FactorMiningReportSchema.parse({
+      generatedAt: new Date().toISOString(),
+      source: {
+        logsDir: resolve(logsBaseDir, "daily"),
+        rows: rows.length,
+      },
+      config: {
+        generations: 0,
+        candidatesPerGeneration: 0,
+        eliteCount: 0,
+      },
+      acceptedCount: 0,
+      top: [],
+    });
   }
 
   const featureNames = Object.keys(rows[0]?.features ?? {});

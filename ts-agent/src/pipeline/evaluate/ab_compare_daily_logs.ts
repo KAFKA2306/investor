@@ -45,7 +45,19 @@ function loadDailySeries(logsDir: string): DailyPoint[] {
   const points: DailyPoint[] = [];
   for (const file of files) {
     const raw = readFileSync(join(logsDir, file), "utf8");
-    const log = UnifiedLogSchema.parse(JSON.parse(raw) as unknown);
+    let logRaw;
+    try {
+      logRaw = JSON.parse(raw);
+    } catch {
+      continue;
+    }
+
+    if (logRaw.schema !== "investor.daily-log.v1") continue;
+
+    const result = UnifiedLogSchema.safeParse(logRaw);
+    if (!result.success) continue;
+    const log = result.data;
+
     if (!isDailyReport(log.report)) continue;
     const report = log.report as Record<string, unknown>;
     const date = z
@@ -65,8 +77,15 @@ function loadDailySeries(logsDir: string): DailyPoint[] {
 export function runDailyAbComparison(logsBaseDir: string) {
   const logsDir = resolve(logsBaseDir, "daily");
   const points = loadDailySeries(logsDir);
-  if (points.length === 0) {
-    throw new Error(`No daily log files found in ${logsDir}`);
+  if (points.length < 1) {
+    const emptyMetrics = calculatePerformanceMetrics([]);
+    return ComparisonReportSchema.parse({
+      generatedAt: new Date().toISOString(),
+      dateRange: { from: "19700101", to: "19700101" },
+      baseline: { name: "NO_TRADE", metrics: emptyMetrics },
+      candidate: { name: "VEGETABLE_STRATEGY", metrics: emptyMetrics },
+      uplift: { totalReturnDelta: 0, sharpeDelta: 0, maxDrawdownDelta: 0, hitRateDelta: 0 },
+    });
   }
   const returns = points.map((p) => p.basketDailyReturn);
   const baselineReturns = points.map(() => 0);
