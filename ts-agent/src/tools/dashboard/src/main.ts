@@ -1,9 +1,61 @@
 import "./style.css";
 
 interface LogPayload {
-  schema: string;
-  generatedAt: string;
-  report: DashboardReport;
+  schema?: string;
+  generatedAt?: string;
+  models?: Array<Record<string, unknown>>;
+  report?: DashboardReport;
+}
+
+interface DashboardReport {
+  date?: string;
+  analyzedAt?: string;
+  workflow?: {
+    dataReadiness?: string;
+    alphaReadiness?: string;
+    verdict?: string;
+  };
+  evidence?: {
+    estat?: { status?: string; hasStatsData?: boolean };
+    jquants?: Record<string, unknown> & { status?: string };
+  };
+  decision?: {
+    topSymbol?: string;
+    strategy?: string;
+    action?: string;
+    reason?: string;
+    experimentValue?: string;
+  };
+  results?: {
+    expectedEdge?: number;
+    basketDailyReturn?: number;
+    status?: string;
+    selectedSymbols?: string[];
+  };
+  risks?: {
+    kellyFraction?: number;
+    stopLossPct?: number;
+    maxPositions?: number;
+  };
+  analysis?: AnalysisSymbol[];
+  market?: Record<string, unknown>;
+  inputs?: {
+    universe?: string[];
+    estatStatsDataId?: string;
+  };
+}
+
+interface AnalysisSymbol {
+  symbol: string;
+  signal?: string;
+  alphaScore?: number;
+  finance?: {
+    netSales?: number;
+    profitMargin?: number;
+  };
+  factors?: {
+    dailyReturn?: number;
+  };
 }
 
 interface DailySummary {
@@ -14,52 +66,10 @@ interface DailySummary {
   topSymbol: string;
 }
 
-interface AnalysisSymbol {
-  symbol: string;
-  signal: string;
-  alphaScore: number;
-  finance: {
-    netSales: number;
-    profitMargin: number;
-  };
-  factors: {
-    dailyReturn: number;
-  };
-}
-
-interface DashboardReport {
-  date?: string;
-  workflow?: {
-    dataReadiness?: string;
-    alphaReadiness?: string;
-  };
-  evidence?: {
-    estat?: {
-      status?: string;
-    };
-    jquants?: unknown;
-  };
-  decision?: {
-    topSymbol?: string;
-    strategy?: string;
-    reason?: string;
-  };
-  results?: {
-    expectedEdge?: number;
-    basketDailyReturn?: number;
-  };
-  risks?: {
-    kellyFraction?: number;
-  };
-  analysis?: AnalysisSymbol[];
-  market?: unknown;
-}
-
-const API_BASE = "/api";
 const STATIC_LOGS_BASE = "./logs/daily";
 
 const pickNumber = (v: unknown): number =>
-  typeof v === "number" ? v : Number.NaN;
+  typeof v === "number" && Number.isFinite(v) ? v : 0;
 const pickString = (v: unknown): string => (typeof v === "string" ? v : "");
 
 const toSummary = (
@@ -74,10 +84,12 @@ const toSummary = (
   return {
     date: pickString(report.date) || file.replace(".json", ""),
     verdict:
-      pickString(workflow.verdict) || pickString(decision.experimentValue),
+      pickString(workflow.verdict) ||
+      pickString(decision.experimentValue) ||
+      "UNKNOWN",
     expectedEdge: pickNumber(results.expectedEdge),
     basketDailyReturn: pickNumber(results.basketDailyReturn),
-    topSymbol: pickString(decision.topSymbol),
+    topSymbol: pickString(decision.topSymbol) || "--",
   };
 };
 
@@ -91,50 +103,10 @@ class Dashboard {
   }
 
   async init() {
-    await this.loadLogs();
+    await this.loadStaticLogs();
     const firstLog = this.logs.at(0);
     if (firstLog) {
       await this.selectLog(firstLog.date);
-    }
-
-    // Auto refresh every 30s
-    setInterval(() => this.loadLogs(), 30000);
-  }
-
-  async loadLogs() {
-    try {
-      const res = await fetch(`${API_BASE}/logs`);
-      if (!res.ok) throw new Error(`API /logs failed: ${res.status}`);
-      this.logs = (await res.json()) as DailySummary[];
-      this.renderSidebar();
-    } catch (e) {
-      console.warn("API logs unavailable, switching to static logs", e);
-      await this.loadStaticLogs();
-    }
-  }
-
-  async selectLog(date: string) {
-    try {
-      const res = await fetch(`${API_BASE}/logs/${date}`);
-      if (!res.ok) throw new Error(`API /logs/${date} failed: ${res.status}`);
-      this.activeLog = (await res.json()) as LogPayload;
-      this.renderActiveLog();
-
-      // Update active state in sidebar
-      document.querySelectorAll(".log-item").forEach((el) => {
-        el.classList.toggle("active", el.getAttribute("data-date") === date);
-      });
-    } catch (e) {
-      const payload = this.staticPayloadByDate.get(date);
-      if (!payload) {
-        console.error(`Failed to load log for ${date}`, e);
-        return;
-      }
-      this.activeLog = payload;
-      this.renderActiveLog();
-      document.querySelectorAll(".log-item").forEach((el) => {
-        el.classList.toggle("active", el.getAttribute("data-date") === date);
-      });
     }
   }
 
@@ -170,21 +142,32 @@ class Dashboard {
     this.renderSidebar();
   }
 
-  renderSidebar() {
+  private async selectLog(date: string) {
+    const payload = this.staticPayloadByDate.get(date);
+    if (!payload) return;
+    this.activeLog = payload;
+    this.renderActiveLog();
+
+    document.querySelectorAll(".log-item").forEach((el) => {
+      el.classList.toggle("active", el.getAttribute("data-date") === date);
+    });
+  }
+
+  private renderSidebar() {
     const list = document.getElementById("log-list");
     if (!list) return;
 
     list.innerHTML = this.logs
       .map(
         (log) => `
-      <div class="log-item ${this.activeLog?.report.date === log.date ? "active" : ""}" 
+      <div class="log-item ${this.activeLog?.report?.date === log.date ? "active" : ""}"
            data-date="${this.escapeHtml(log.date)}">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-weight: 700;">${this.escapeHtml(this.formatDate(log.date))}</span>
+        <div class="log-item-row">
+          <span class="log-date">${this.escapeHtml(this.formatDate(log.date))}</span>
           <span class="badge ${log.verdict === "USEFUL" ? "badge-success" : "badge-danger"}">${this.escapeHtml(log.verdict)}</span>
         </div>
-        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">
-          Ret: ${(log.basketDailyReturn * 100).toFixed(2)}% | Edge: ${(log.expectedEdge * 100).toFixed(2)}%
+        <div class="log-sub">
+          日次収益 ${(log.basketDailyReturn * 100).toFixed(2)}% / 期待エッジ ${(log.expectedEdge * 100).toFixed(2)}%
         </div>
       </div>
     `,
@@ -194,87 +177,63 @@ class Dashboard {
     list.querySelectorAll(".log-item").forEach((el) => {
       el.addEventListener("click", () => {
         const date = el.getAttribute("data-date");
-        if (date) {
-          this.selectLog(date);
-        }
+        if (date) this.selectLog(date);
       });
     });
   }
 
-  renderActiveLog() {
+  private renderActiveLog() {
     if (!this.activeLog) return;
-    const report = this.activeLog.report;
+    const report = this.activeLog.report || {};
 
-    // Header info
     const updateEl = document.getElementById("last-update");
-    if (updateEl)
-      updateEl.textContent = `LAST SYNC: ${new Date(this.activeLog.generatedAt).toLocaleTimeString()}`;
+    if (updateEl) {
+      const ts = this.activeLog.generatedAt || report.analyzedAt;
+      updateEl.textContent = ts ? `更新: ${new Date(ts).toLocaleString("ja-JP")}` : "更新: --";
+    }
 
-    // Summary Stats
     this.updateText(
       "stat-edge",
-      `${((report.results?.expectedEdge ?? 0) * 100).toFixed(2)}%`,
+      `${(pickNumber(report.results?.expectedEdge) * 100).toFixed(2)}%`,
     );
     this.updateText(
       "stat-return",
-      `${((report.results?.basketDailyReturn ?? 0) * 100).toFixed(2)}%`,
-      (report.results?.basketDailyReturn ?? 0) >= 0
+      `${(pickNumber(report.results?.basketDailyReturn) * 100).toFixed(2)}%`,
+      pickNumber(report.results?.basketDailyReturn) >= 0
         ? "var(--success)"
         : "var(--danger)",
     );
     this.updateText(
       "stat-kelly",
-      `${((report.risks?.kellyFraction ?? 0) * 100).toFixed(2)}%`,
+      `${(pickNumber(report.risks?.kellyFraction) * 100).toFixed(2)}%`,
     );
-    this.updateText("stat-top", report.decision?.topSymbol || "--");
+    this.updateText("stat-top", pickString(report.decision?.topSymbol) || "--");
 
-    // Workflow Health
     const workflowEl = document.getElementById("workflow-status");
     if (workflowEl) {
       workflowEl.innerHTML = `
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-          <span>Data Readiness</span>
-          <span class="badge ${report.workflow?.dataReadiness === "PASS" ? "badge-success" : "badge-danger"}">${this.escapeHtml(report.workflow?.dataReadiness)}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-          <span>Alpha Readiness</span>
-          <span class="badge ${report.workflow?.alphaReadiness === "PASS" ? "badge-success" : "badge-danger"}">${this.escapeHtml(report.workflow?.alphaReadiness)}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-          <span>E-STAT Evidence</span>
-          <span class="badge ${report.evidence?.estat?.status === "PASS" ? "badge-success" : "badge-danger"}">${this.escapeHtml(report.evidence?.estat?.status)}</span>
-        </div>
+        ${this.statusRow("データ準備", pickString(report.workflow?.dataReadiness))}
+        ${this.statusRow("アルファ判定", pickString(report.workflow?.alphaReadiness))}
+        ${this.statusRow("e-Stat", pickString(report.evidence?.estat?.status))}
+        ${this.statusRow("J-Quants", pickString(report.evidence?.jquants?.status))}
       `;
     }
 
-    // Analysis Cards
     const analysisEl = document.getElementById("symbol-analysis");
-    if (analysisEl && report.analysis) {
+    if (analysisEl && Array.isArray(report.analysis)) {
       analysisEl.innerHTML = report.analysis
         .map(
           (s: AnalysisSymbol) => `
         <div class="symbol-card animate-fade">
-          <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-            <span style="font-size: 1.1rem; font-weight: 800;">${this.escapeHtml(s.symbol)}</span>
-            <span class="badge ${s.signal === "LONG" ? "badge-success" : "badge-neutral"}">${this.escapeHtml(s.signal)}</span>
+          <div class="symbol-head">
+            <span class="symbol-code">${this.escapeHtml(s.symbol)}</span>
+            <span class="badge ${s.signal === "LONG" ? "badge-success" : "badge-neutral"}">${this.escapeHtml(s.signal || "N/A")}</span>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem;">
-            <div>
-              <div style="color:var(--text-secondary)">Alpha Score</div>
-              <div style="font-weight:700; color:var(--accent-emerald)">${s.alphaScore.toFixed(4)}</div>
-            </div>
-            <div>
-              <div style="color:var(--text-secondary)">Net Sales</div>
-              <div style="font-weight:700">¥${(s.finance.netSales / 1e8).toFixed(1)}B</div>
-            </div>
-            <div>
-              <div style="color:var(--text-secondary)">Daily Ret</div>
-              <div style="color:${s.factors.dailyReturn >= 0 ? "var(--success)" : "var(--danger)"}">${(s.factors.dailyReturn * 100).toFixed(2)}%</div>
-            </div>
-            <div>
-              <div style="color:var(--text-secondary)">Profit Margin</div>
-              <div style="font-weight:700">${(s.finance.profitMargin * 100).toFixed(2)}%</div>
-            </div>
+          <div class="symbol-metrics">
+            <div><div class="metric-label">Alpha</div><div class="metric-value">${pickNumber(s.alphaScore).toFixed(4)}</div></div>
+            <div><div class="metric-label">日次騰落</div><div class="metric-value ${pickNumber(s.factors?.dailyReturn) >= 0 ? "pos" : "neg"}">${(pickNumber(s.factors?.dailyReturn) * 100).toFixed(2)}%</div></div>
+            <div><div class="metric-label">売上高</div><div class="metric-value">¥${(pickNumber(s.finance?.netSales) / 1e8).toFixed(1)}億</div></div>
+            <div><div class="metric-label">利益率</div><div class="metric-value">${(pickNumber(s.finance?.profitMargin) * 100).toFixed(2)}%</div></div>
           </div>
         </div>
       `,
@@ -282,27 +241,29 @@ class Dashboard {
         .join("");
     }
 
-    // Verdict & Decision
     const verdictEl = document.getElementById("verdict-content");
     if (verdictEl) {
       verdictEl.innerHTML = `
-        <div style="color: var(--accent-emerald); font-weight: 800; margin-bottom: 0.5rem;">[STRATEGY]</div>
-        <div style="margin-bottom: 1rem;">${this.escapeHtml(report.decision?.strategy || "N/A")}</div>
-        <div style="color: var(--accent-emerald); font-weight: 800; margin-bottom: 0.5rem;">[REASONING]</div>
+        <div class="box-title">戦略</div>
+        <div>${this.escapeHtml(report.decision?.strategy || "N/A")}</div>
+        <div class="box-title">アクション</div>
+        <div>${this.escapeHtml(report.decision?.action || "N/A")}</div>
+        <div class="box-title">理由</div>
         <div>${this.escapeHtml(report.decision?.reason || "N/A")}</div>
       `;
     }
 
-    // Evidence & Env
-    const evidenceEl = document.getElementById("evidence-content");
-    if (evidenceEl) {
-      evidenceEl.innerHTML = `
-        <div style="color: var(--accent-emerald); font-weight: 800; margin-bottom: 0.5rem;">[MARKET_CONTEXT]</div>
-        <pre style="margin-bottom: 1rem; color: var(--text-secondary);">${this.escapeHtml(JSON.stringify(report.market, null, 2))}</pre>
-        <div style="color: var(--accent-emerald); font-weight: 800; margin-bottom: 0.5rem;">[EVIDENCE_TELEMETRY]</div>
-        <pre style="color: var(--text-secondary);">${this.escapeHtml(JSON.stringify(report.evidence?.jquants || {}, null, 2))}</pre>
-      `;
+    const jsonEl = document.getElementById("json-content");
+    if (jsonEl) {
+      jsonEl.innerHTML = `<pre>${this.escapeHtml(
+        JSON.stringify(this.activeLog, null, 2),
+      )}</pre>`;
     }
+  }
+
+  private statusRow(label: string, status: string) {
+    const kind = status === "PASS" ? "badge-success" : "badge-danger";
+    return `<div class="status-row"><span>${this.escapeHtml(label)}</span><span class="badge ${kind}">${this.escapeHtml(status || "--")}</span></div>`;
   }
 
   private formatDate(dateStr: string) {
@@ -311,10 +272,9 @@ class Dashboard {
 
   private updateText(id: string, text: string, color?: string) {
     const el = document.getElementById(id);
-    if (el) {
-      el.textContent = text;
-      if (color) el.style.color = color;
-    }
+    if (!el) return;
+    el.textContent = text;
+    if (color) el.style.color = color;
   }
 
   private escapeHtml(value: unknown): string {
@@ -328,5 +288,4 @@ class Dashboard {
   }
 }
 
-// Global instance for onclick handlers
-(window as unknown as { dashboard: Dashboard }).dashboard = new Dashboard();
+new Dashboard();

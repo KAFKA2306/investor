@@ -4,10 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Investor Intelligence Dashboard</title>
+  <title>日本語ビギナークオンツ ダッシュボード</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&family=JetBrains+Mono&display=swap"
     rel="stylesheet">
 </head>
 
@@ -15,75 +15,60 @@
   <div id="app">
     <header>
       <div class="logo">
-        <span>💎</span> Investor Agent
+        <span>日本語 Beginner Quant Analyst</span>
       </div>
-      <div id="system-info" style="display: flex; gap: 1.5rem; align-items: center;">
-        <div style="font-size: 0.8rem; color: var(--text-secondary);">
-          <span class="status-dot online" style="margin-right: 4px;"></span>
-          LIVE
-        </div>
-        <div id="last-update" style="font-size: 0.8rem; color: var(--text-secondary);">--</div>
+      <div id="system-info">
+        <div class="static-chip">JSON ONLY</div>
+        <div id="last-update">更新: --</div>
       </div>
     </header>
 
     <aside class="sidebar">
       <section class="glass-panel">
-        <div class="section-title">Timeline</div>
-        <div id="log-list" class="log-list">
-          <!-- Log navigation items -->
-        </div>
+        <div class="section-title">日次ログ</div>
+        <div id="log-list" class="log-list"></div>
       </section>
 
       <section class="glass-panel">
-        <div class="section-title">Workflow Health</div>
-        <div id="workflow-status" style="display: flex; flex-direction: column; gap: 0.75rem;">
-          <!-- Workflow status badges -->
-        </div>
+        <div class="section-title">判定ステータス</div>
+        <div id="workflow-status" class="status-list"></div>
       </section>
     </aside>
 
     <main class="main-content">
-      <!-- Dashboard Summary -->
       <section id="summary-section" class="glass-panel stat-group">
         <div class="stat-card">
-          <span class="stat-label">Expected Edge</span>
+          <span class="stat-label">期待エッジ</span>
           <span id="stat-edge" class="stat-value">--</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">Basket Return</span>
+          <span class="stat-label">バスケット収益</span>
           <span id="stat-return" class="stat-value">--</span>
         </div>
-        <div id="kelly-box" class="stat-card">
-          <span class="stat-label">Kelly Fraction</span>
+        <div class="stat-card">
+          <span class="stat-label">ケリー比率</span>
           <span id="stat-kelly" class="stat-value">--</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">Top Pick</span>
+          <span class="stat-label">注目銘柄</span>
           <span id="stat-top" class="stat-value">--</span>
         </div>
       </section>
 
-      <!-- Detailed Content -->
       <div class="detail-container">
         <section class="glass-panel" style="grid-column: 1 / -1;">
-          <div class="section-title">Market Analysis & Signals</div>
-          <div id="symbol-analysis" class="symbol-grid">
-            <!-- Individual symbol analysis cards -->
-          </div>
+          <div class="section-title">銘柄分析（初心者向け）</div>
+          <div id="symbol-analysis" class="symbol-grid"></div>
         </section>
 
         <section class="glass-panel">
-          <div class="section-title">Strategy Verdict</div>
-          <div id="verdict-content" class="metrics-box" style="height: 100%;">
-            <!-- Strategy reason and decision -->
-          </div>
+          <div class="section-title">戦略メモ</div>
+          <div id="verdict-content" class="metrics-box" style="height: 100%;"></div>
         </section>
 
         <section class="glass-panel">
-          <div class="section-title">Environment & Evidence</div>
-          <div id="evidence-content" class="metrics-box" style="height: 100%;">
-            <!-- Evidence debug data -->
-          </div>
+          <div class="section-title">生JSON（読み取り専用）</div>
+          <div id="json-content" class="metrics-box" style="height: 100%;"></div>
         </section>
       </div>
     </main>
