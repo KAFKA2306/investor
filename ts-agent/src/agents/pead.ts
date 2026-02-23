@@ -42,18 +42,35 @@ export class PeadAgent extends BaseAgent {
     const latest = statements[0];
     const previous = statements[1];
 
-    if (!latest || !previous || previous.NetIncome === 0) return;
+    if (!latest || !previous) return;
 
-    const surprise =
-      (latest.NetIncome - previous.NetIncome) / Math.abs(previous.NetIncome);
+    // 1. Standardized Unanticipated Earnings (SUE) Proxy
+    // We factor in both NetIncome and Revenue for "Quality of Surprise"
+    const incomeSurprise =
+      (latest.NetIncome - previous.NetIncome) /
+      Math.abs(previous.NetIncome || 1);
+    const revenueSurprise =
+      (latest.NetSales - previous.NetSales) / Math.abs(previous.NetSales || 1);
+
+    // 2. Cross-Verification Logic
+    // High Income Surprise + Negative Revenue is often just accounting/one-off items (Fake Surprise)
+    const compositeSurprise = incomeSurprise * 0.7 + revenueSurprise * 0.3;
 
     const sentiment = await this.les.analyzeSentiment(
-      "Mock financial text content",
+      `Earnings results for ${latest.LocalCode}: Sales ${latest.NetSales}, Income ${latest.NetIncome}`,
     );
 
-    if (surprise > 0.2 && sentiment > 0.3) {
+    // 3. Precise Signal Generation (ArXiv-inspired thresholds)
+    const isStrongPead =
+      compositeSurprise > 0.15 && revenueSurprise > 0 && sentiment > 0.6;
+
+    if (isStrongPead) {
       console.log(
-        `[HYBRID PEAD SUCCESS] Code: ${latest.LocalCode}, Surprise: ${surprise}, Sentiment: ${sentiment}`,
+        `[HYBRID PEAD SUCCESS] Symbol: ${latest.LocalCode}
+         - Composite Surprise: ${(compositeSurprise * 100).toFixed(2)}%
+         - Revenue Growth: ${(revenueSurprise * 100).toFixed(2)}%
+         - Text Sentiment: ${sentiment.toFixed(2)}
+         - Signal: STRONG LONG (Post-Earnings Drift)`,
       );
     }
   }

@@ -36,21 +36,22 @@ export async function runGenericAlphaScenario(params: {
     alpha: params.alpha,
     verification: params.verification
       ? {
-          metrics: {
-            mae: 0, // Placeholder for template
-            rmse: 0,
-            smape: 0,
-            directionalAccuracy: 0,
-            sharpeRatio: params.verification.sharpe,
-          },
-          upliftOverBaseline: params.verification.totalReturn > 0 ? 0.05 : 0, // Mock uplift
-        }
+        metrics: {
+          mae: 0, // Placeholder for template
+          rmse: 0,
+          smape: 0,
+          directionalAccuracy: 0,
+          sharpeRatio: params.verification.sharpe,
+        },
+        upliftOverBaseline: params.verification.totalReturn > 0 ? 0.05 : 0, // Mock uplift
+      }
       : undefined,
-    readiness: {
-      readinessScore: params.readinessScore,
+    stability: {
+      trackingError: 0.01, // Mock
       tradingDaysHorizon: 252, // Standard year
       isProductionReady: params.isProductionReady,
     },
+    reasoningScore: params.readinessScore / 100, // Convert to 0.0-1.0
   };
 
   const unifiedLog = {

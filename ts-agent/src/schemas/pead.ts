@@ -7,6 +7,7 @@ export const CalendarEntrySchema = z.object({
 export const FinancialStatementSchema = z.object({
   LocalCode: z.string().length(4),
   NetIncome: z.number(),
+  NetSales: z.number(),
 });
 
 export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;

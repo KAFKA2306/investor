@@ -5,7 +5,23 @@ export const AlphaSignificanceSchema = z.object({
   tStat: z.number().optional(),
   pValue: z.number().min(0).max(1).optional(),
   informationCoefficient: z.number().min(-1).max(1).optional(),
-  factorStability: z.number().optional(), // decay rate or autocorrelation
+  factorStability: z.number().optional(),
+  numerai: z
+    .object({
+      corr: z.number().min(-1).max(1).optional(),
+      mmc: z.number().min(-1).max(1).optional(),
+      fnc: z.number().min(-1).max(1).optional(),
+    })
+    .optional(),
+  famaFrench: z
+    .object({
+      mkt: z.number().optional(),
+      smb: z.number().optional(),
+      hml: z.number().optional(),
+      rmw: z.number().optional(),
+      cma: z.number().optional(),
+    })
+    .optional(),
 });
 
 export const VerificationPerformanceSchema = z.object({
@@ -14,8 +30,8 @@ export const VerificationPerformanceSchema = z.object({
   profitFactor: z.number().nonnegative().optional(),
 });
 
-export const OperationalReadinessSchema = z.object({
-  readinessScore: z.number().min(0).max(100),
+export const OperationalStabilitySchema = z.object({
+  trackingError: z.number().nonnegative(),
   tradingDaysHorizon: z.number().int().nonnegative(),
   isProductionReady: z.boolean(),
 });
@@ -31,10 +47,12 @@ export const StandardOutcomeSchema = z.object({
   strategyName: z.string(),
   timestamp: z.string().datetime(),
   summary: z.string(),
+  reasoning: z.string().optional(),
+  reasoningScore: z.number().min(0).max(1).optional(), // RS (0.0-1.0)
   modelRegistryStatus: z.string().optional(),
   alpha: AlphaSignificanceSchema.optional(),
   verification: VerificationPerformanceSchema.optional(),
-  readiness: OperationalReadinessSchema.optional(),
+  stability: OperationalStabilitySchema.optional(),
   execution: ExecutionAuditSchema.optional(),
 });
 

@@ -30,6 +30,8 @@ export const MetricsSchema = z.object({
   tStat: z.number().optional(),
   pValue: z.number().optional(),
   sharpeRatio: z.number().optional(),
+  maxDrawdown: z.number().optional(),
+  annualizedReturn: z.number().optional(),
   abstentionRate: z.number().optional(),
   safeAccuracy: z.number().optional(),
   overconfidenceError: z.number().optional(),

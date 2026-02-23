@@ -1,111 +1,150 @@
 {
-  "generatedAt": "2026-02-23T06:03:19.095Z",
+  "schema": "investor.daily-log.v1",
+  "generatedAt": "2026-02-23T12:30:38.917Z",
   "report": {
     "date": "20220831",
-    "analyzedAt": "2026-02-23T06:03:19.095Z",
-    "workflow": {
-      "dataReadiness": "PASS",
-      "alphaReadiness": "PASS",
-      "verdict": "USEFUL"
-    },
+    "analyzedAt": "2026-02-23T12:30:38.917Z",
     "decision": {
-      "topSymbol": "7203",
-      "strategy": "LES Framework (ArXiv:2409.06289)",
+      "strategy": "LES Framework (RS-Integrated)",
       "action": "INVEST",
-      "reason": "LES Reproduction: Sharpe proxy 1.45, return 0.48%\nFactors:\n- LES-MOM-01: Weight 0.2778\n- LES-VAL-01: Weight 0.5556\n- LES-SENT-01: Weight 0.1667",
-      "experimentValue": "LES_REPRO"
+      "reasoningScore": 0.7947791798107255,
+      "factors": [
+        {
+          "id": "LES-NONLINEAR-SENT-01",
+          "weight": 0.5268138801261829,
+          "rs": 0.835
+        },
+        {
+          "id": "LES-VOL-DYNAMICS-01",
+          "weight": 0.47318611987381703,
+          "rs": 0.75
+        }
+      ]
     },
     "results": {
-      "expectedEdge": 0.0048000000000000004,
-      "basketDailyReturn": 0.0048000000000000004,
-      "status": "SUCCESS",
-      "selectedSymbols": [
-        "7203",
-        "8035",
-        "6758",
-        "4063"
-      ]
+      "basketDailyReturn": -0.0002,
+      "status": "SUCCESS"
     },
     "analysis": [
       {
         "symbol": "7203",
-        "signal": "LONG",
-        "alphaScore": 321.475,
+        "ohlc6": {
+          "open": 2090,
+          "high": 2106.5,
+          "low": 2088,
+          "close": 2101.5,
+          "volume": 22276200,
+          "turnoverValue": 0
+        },
         "finance": {
           "netSales": 8491116000000,
           "operatingProfit": 578655000000,
           "profitMargin": 0.06814828580836724
         },
         "factors": {
-          "dailyReturn": 0.005,
+          "dailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
-        }
+        },
+        "alphaScore": 0.3526813880126183,
+        "signal": "HOLD"
       },
       {
         "symbol": "9984",
-        "signal": "HOLD",
-        "alphaScore": 0,
+        "ohlc6": {
+          "open": 5520,
+          "high": 5614,
+          "low": 5514,
+          "close": 5562,
+          "volume": 11743000,
+          "turnoverValue": 0
+        },
         "finance": {
           "netSales": 1572030000000,
           "operatingProfit": 0,
           "profitMargin": 0
         },
         "factors": {
-          "dailyReturn": -0.002,
+          "dailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
-        }
+        },
+        "alphaScore": 0.3526813880126183,
+        "signal": "HOLD"
       },
       {
         "symbol": "8035",
-        "signal": "LONG",
-        "alphaScore": 65.28833333333334,
+        "ohlc6": {
+          "open": 43320,
+          "high": 44350,
+          "low": 43220,
+          "close": 44160,
+          "volume": 1326500,
+          "turnoverValue": 0
+        },
         "finance": {
           "netSales": 473654000000,
           "operatingProfit": 117519000000,
           "profitMargin": 0.2481114906661825
         },
         "factors": {
-          "dailyReturn": 0.005,
+          "dailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
-        }
+        },
+        "alphaScore": 0.3526813880126183,
+        "signal": "HOLD"
       },
       {
         "symbol": "6758",
-        "signal": "LONG",
-        "alphaScore": 170.53500000000003,
+        "ohlc6": {
+          "open": 11110,
+          "high": 11145,
+          "low": 11020,
+          "close": 11135,
+          "volume": 5419400,
+          "turnoverValue": 0
+        },
         "finance": {
           "netSales": 2311494000000,
           "operatingProfit": 306963000000,
           "profitMargin": 0.13279852770545802
         },
         "factors": {
-          "dailyReturn": 0.005,
+          "dailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
-        }
+        },
+        "alphaScore": 0.3526813880126183,
+        "signal": "HOLD"
       },
       {
         "symbol": "4063",
-        "signal": "LONG",
-        "alphaScore": 138.67777777777778,
+        "ohlc6": {
+          "open": 16150,
+          "high": 16330,
+          "low": 16125,
+          "close": 16315,
+          "volume": 2696400,
+          "turnoverValue": 0
+        },
         "finance": {
           "netSales": 656707000000,
           "operatingProfit": 249620000000,
           "profitMargin": 0.38010863292153124
         },
         "factors": {
-          "dailyReturn": 0.005,
+          "dailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
-        }
+        },
+        "alphaScore": 0.3526813880126183,
+        "signal": "HOLD"
       }
     ]
   }

@@ -12,12 +12,47 @@ interface StandardOutcome {
   strategyName: string;
   timestamp: string;
   summary: string;
-  alpha?: { tStat?: number; pValue?: number };
+  reasoning?: string;
+  reasoningScore?: number; // RS (0.0-1.0)
+  alpha?: {
+    tStat?: number;
+    pValue?: number;
+    informationCoefficient?: number;
+    numerai?: {
+      corr?: number;
+      mmc?: number;
+      fnc?: number;
+    };
+    famaFrench?: {
+      mkt?: number;
+      smb?: number;
+      hml?: number;
+      rmw?: number;
+      cma?: number;
+    };
+  };
   verification?: {
-    metrics: { sharpeRatio?: number };
+    metrics: {
+      mae?: number;
+      rmse?: number;
+      smape?: number;
+      directionalAccuracy?: number;
+      sharpeRatio?: number;
+      annualizedReturn?: number;
+      maxDrawdown?: number;
+    };
     upliftOverBaseline?: number;
   };
-  readiness?: { readinessScore: number; isProductionReady: boolean };
+  stability?: {
+    trackingError: number;
+    tradingDaysHorizon: number;
+    isProductionReady: boolean;
+  };
+  execution?: {
+    totalPnL?: number;
+    trackingError?: number;
+    slippageImpactBps?: number;
+  };
 }
 
 interface DashboardReport {
@@ -56,6 +91,17 @@ interface DashboardReport {
     universe?: string[];
     estatStatsDataId?: string;
   };
+  options?: {
+    iv?: number;
+    rv?: number;
+    spread?: number;
+    action?: string;
+  };
+  commodity?: {
+    macroScore?: number;
+    goldCopperRatio?: number;
+    oilPrice?: number;
+  };
 }
 
 interface AnalysisSymbol {
@@ -68,6 +114,8 @@ interface AnalysisSymbol {
   };
   factors?: {
     dailyReturn?: number;
+    compositeSurprise?: number;
+    revenueGrowth?: number;
   };
 }
 
@@ -166,6 +214,7 @@ interface OutcomeSummary {
   date: string;
   sharpe: number;
   readiness: number;
+  reasoningScore?: number;
 }
 
 const toOutcomeSummary = (payload: LogPayload): OutcomeSummary => {
@@ -175,7 +224,7 @@ const toOutcomeSummary = (payload: LogPayload): OutcomeSummary => {
     name: report.strategyName,
     date: report.timestamp.slice(0, 10).replace(/-/g, ""),
     sharpe: report.verification?.metrics?.sharpeRatio ?? 0,
-    readiness: report.readiness?.readinessScore ?? 0,
+    readiness: (report.reasoningScore ?? 0) * 100,
   };
 };
 
@@ -186,6 +235,8 @@ interface LeaderboardRow {
   totalReturn: number;
   maxDrawdown: number;
   dirAcc: number;
+  corr: number;
+  mmc: number;
   verdict: string;
 }
 
@@ -234,16 +285,18 @@ class Dashboard {
       sharpe: alphaMetrics.sharpe,
       totalReturn: alphaMetrics.totalReturn,
       maxDrawdown: alphaMetrics.maxDrawdown,
-      dirAcc: 0, // Not applicable for strategy result
+      dirAcc: 0,
+      corr: 0,
+      mmc: 0,
       verdict: alphaMetrics.sharpe > 1.0 ? "READY" : "CAUTION",
     };
 
     // 2. Foundation Models from latest Benchmark
+    const benchRows: LeaderboardRow[] = [];
     const latestBench = Array.from(this.benchPayloadByDate.values()).sort(
       (a, b) => (b.report?.date || "").localeCompare(a.report?.date || ""),
     )[0];
 
-    const benchRows: LeaderboardRow[] = [];
     if (latestBench?.report?.analyst?.baselines) {
       for (const b of latestBench.report.analyst.baselines) {
         const metrics = b.metrics || {};
@@ -251,9 +304,11 @@ class Dashboard {
           id: b.name,
           type: b.name.includes("Naive") ? "BASELINE" : "FOUNDATION",
           sharpe: pickNumber(metrics.sharpeRatio),
-          totalReturn: 0, // We only have daily snapshots in bench
+          totalReturn: 0,
           maxDrawdown: 0,
           dirAcc: pickNumber(metrics.directionalAccuracy),
+          corr: 0,
+          mmc: 0,
           verdict:
             pickNumber(metrics.directionalAccuracy) > 50 ? "READY" : "FAIL",
         });
@@ -261,15 +316,21 @@ class Dashboard {
     }
 
     // 3. Standardized Outcomes
-    const outcomeRows: LeaderboardRow[] = this.outcomes.map((o) => ({
-      id: o.name,
-      type: "ALPHA",
-      sharpe: o.sharpe,
-      totalReturn: 0,
-      maxDrawdown: 0,
-      dirAcc: 0,
-      verdict: o.readiness >= 75 ? "READY" : "CAUTION",
-    }));
+    const outcomeRows: LeaderboardRow[] = this.outcomes.map((o) => {
+      const payload = this.outcomePayloadById.get(o.id);
+      const alpha = (payload?.report as StandardOutcome)?.alpha;
+      return {
+        id: o.name,
+        type: "ALPHA",
+        sharpe: o.sharpe,
+        totalReturn: 0,
+        maxDrawdown: 0,
+        dirAcc: 0,
+        corr: alpha?.numerai?.corr ?? 0,
+        mmc: alpha?.numerai?.mmc ?? 0,
+        verdict: (o.reasoningScore ?? 0) >= 0.75 ? "READY" : "CAUTION",
+      };
+    });
 
     this.leaderboard = [alphaRow, ...benchRows, ...outcomeRows].sort(
       (a, b) => b.sharpe - a.sharpe,
@@ -317,27 +378,27 @@ class Dashboard {
             <th>Type</th>
             <th>Sharpe</th>
             <th>Return</th>
-            <th>MaxDD</th>
-            <th>DirAcc</th>
+            <th>CORR</th>
+            <th>MMC</th>
             <th>Verdict</th>
           </tr>
         </thead>
         <tbody>
           ${this.leaderboard
-            .map(
-              (row) => `
+        .map(
+          (row) => `
             <tr>
               <td><strong>${this.escapeHtml(row.id)}</strong></td>
               <td><span class="badge badge-neutral">${row.type}</span></td>
               <td class="${row.sharpe > 1.5 ? "pos" : ""}"><strong>${row.sharpe.toFixed(2)}</strong></td>
-              <td class="${row.totalReturn >= 0 ? "pos" : "neg"}">${(row.totalReturn * 100).toFixed(2)}%</td>
-              <td class="neg">${(row.maxDrawdown * 100).toFixed(1)}%</td>
-              <td>${row.dirAcc > 0 ? `${row.dirAcc.toFixed(1)}%` : "--"}</td>
+              <td class="${row.totalReturn >= 0 ? "pos" : "neg"}">${(row.totalReturn * 100).toFixed(1)}%</td>
+              <td class="pos">${row.corr > 0 ? row.corr.toFixed(3) : "--"}</td>
+              <td class="pos">${row.mmc > 0 ? row.mmc.toFixed(3) : "--"}</td>
               <td><span class="badge ${row.verdict === "READY" ? "badge-success" : row.verdict === "CAUTION" ? "badge-warning" : "badge-danger"}">${row.verdict}</span></td>
             </tr>
           `,
-            )
-            .join("")}
+        )
+        .join("")}
         </tbody>
       </table>
     `;
@@ -600,15 +661,18 @@ class Dashboard {
     if (outcomeList) {
       outcomeList.innerHTML = this.outcomes
         .map(
-          (o) => `
-        <div class="log-item" data-id="${this.escapeHtml(o.id)}">
-          <div class="log-item-row">
-            <span class="log-date">${this.escapeHtml(o.name)}</span>
-            <span class="badge ${o.readiness >= 75 ? "badge-success" : "badge-warning"}">Score: ${o.readiness}</span>
-          </div>
-          <div class="log-sub">Sharpe: ${o.sharpe.toFixed(2)} / Date: ${o.date}</div>
-        </div>
-      `,
+          (o) => {
+            const readiness = (o.reasoningScore ?? 0) * 100;
+            return `
+              <div class="log-item" data-id="${this.escapeHtml(o.id)}">
+                <div class="log-item-row">
+                  <span class="log-date">${this.escapeHtml(o.name)}</span>
+                  <span class="badge ${readiness >= 75 ? "badge-success" : "badge-warning"}">Score: ${readiness.toFixed(0)}</span>
+                </div>
+                <div class="log-sub">Sharpe: ${o.sharpe.toFixed(2)} / Date: ${o.date}</div>
+              </div>
+            `;
+          },
         )
         .join("");
 
@@ -676,15 +740,52 @@ class Dashboard {
             <span class="badge ${s.signal === "LONG" ? "badge-success" : "badge-neutral"}">${this.escapeHtml(s.signal || "N/A")}</span>
           </div>
           <div class="symbol-metrics">
-            <div><div class="metric-label">Alpha</div><div class="metric-value">${pickNumber(s.alphaScore).toFixed(4)}</div></div>
-            <div><div class="metric-label">日次騰落</div><div class="metric-value ${pickNumber(s.factors?.dailyReturn) >= 0 ? "pos" : "neg"}">${(pickNumber(s.factors?.dailyReturn) * 100).toFixed(2)}%</div></div>
-            <div><div class="metric-label">売上高</div><div class="metric-value">¥${(pickNumber(s.finance?.netSales) / 1e8).toFixed(1)}億</div></div>
-            <div><div class="metric-label">利益率</div><div class="metric-value">${(pickNumber(s.finance?.profitMargin) * 100).toFixed(2)}%</div></div>
+            <div><div class="metric-label">Alpha Score</div><div class="metric-value">${pickNumber(s.alphaScore).toFixed(4)}</div></div>
+            <div><div class="metric-label">複合サプライズ</div><div class="metric-value ${pickNumber(s.factors?.compositeSurprise) >= 0 ? "pos" : "neg"}">${(pickNumber(s.factors?.compositeSurprise) * 100).toFixed(1)}%</div></div>
+            <div><div class="metric-label">売上成長率</div><div class="metric-value ${pickNumber(s.factors?.revenueGrowth) >= 0 ? "pos" : "neg"}">${(pickNumber(s.factors?.revenueGrowth) * 100).toFixed(1)}%</div></div>
+            <div><div class="metric-label">利益率</div><div class="metric-value">${(pickNumber(s.finance?.profitMargin) * 100).toFixed(1)}%</div></div>
           </div>
         </div>
       `,
         )
         .join("");
+
+      // Strategy Y & Macro Section Injection
+      if (report.options || report.commodity) {
+        analysisEl.innerHTML += `
+          <div class="symbol-card animate-fade" style="grid-column: 1 / -1; border-top: 2px solid var(--border); padding-top: 15px; margin-top: 10px;">
+            <div class="stat-group" style="grid-template-columns: 1fr 1fr;">
+              <!-- Option Section -->
+              ${report.options
+            ? `
+              <div>
+                <div class="box-title" style="color: #c084fc;">Option Strategy Y (VRP)</div>
+                <div class="symbol-metrics">
+                  <div><div class="metric-label">IV / RV</div><div class="metric-value">${(pickNumber(report.options.iv) * 100).toFixed(1)}% / ${(pickNumber(report.options.rv) * 100).toFixed(1)}%</div></div>
+                  <div><div class="metric-label">VRP Spread</div><div class="metric-value pos">${pickNumber(report.options.spread).toFixed(2)}%</div></div>
+                  <div><div class="metric-label">Action</div><div class="badge badge-success">${this.escapeHtml(report.options.action)}</div></div>
+                </div>
+              </div>`
+            : ""
+          }
+              
+              <!-- Commodity Section -->
+              ${report.commodity
+            ? `
+              <div>
+                <div class="box-title" style="color: #fbbf24;">Commodity Macro Model</div>
+                <div class="symbol-metrics">
+                  <div><div class="metric-label">Macro Score</div><div class="metric-value ${pickNumber(report.commodity.macroScore) > 0 ? "pos" : "neg"}">${pickNumber(report.commodity.macroScore).toFixed(2)}</div></div>
+                  <div><div class="metric-label">Gold/Copper</div><div class="metric-value">${pickNumber(report.commodity.goldCopperRatio).toFixed(2)}</div></div>
+                  <div><div class="metric-label">Oil (Brent)</div><div class="metric-value">$${pickNumber(report.commodity.oilPrice)}</div></div>
+                </div>
+              </div>`
+            : ""
+          }
+            </div>
+          </div>
+        `;
+      }
     }
 
     const verdictEl = document.getElementById("verdict-content");
@@ -869,7 +970,7 @@ class Dashboard {
     }
 
     this.updateText("stat-edge", "Outcome");
-    this.updateText("stat-return", "STANDARD");
+    this.updateText("stat-return", "Tiers 1-4");
     this.updateText(
       "stat-kelly",
       report.verification?.metrics?.sharpeRatio?.toFixed(2) ?? "--",
@@ -878,27 +979,82 @@ class Dashboard {
 
     const workflowEl = document.getElementById("workflow-status");
     if (workflowEl) {
-      const readiness = report.readiness?.readinessScore ?? 0;
+      const readiness = (report.reasoningScore ?? 0) * 100;
       workflowEl.innerHTML = `
-        ${this.statusRow("Ready Score", readiness.toString())}
-        ${this.statusRow("Production", report.readiness?.isProductionReady ? "YES" : "NO")}
-        ${this.statusRow("P-Value", report.alpha?.pValue?.toFixed(4) || "--")}
+        ${this.statusRow("Readiness Score", readiness.toFixed(0))}
+        ${this.statusRow("Production Ready", report.stability?.isProductionReady ? "YES" : "NO")}
+        ${this.statusRow("Information Coeff", report.alpha?.informationCoefficient?.toFixed(3) || "--")}
       `;
     }
 
     const analysisEl = document.getElementById("symbol-analysis");
     if (analysisEl) {
       analysisEl.innerHTML = `
-        <div class="symbol-card animate-fade" style="grid-column: 1 / -1;">
+        <div class="symbol-card animate-fade" style="grid-column: 1 / -1; border-left: 4px solid var(--accent);">
           <div class="symbol-head">
             <span class="symbol-code">${this.escapeHtml(report.strategyName)}</span>
-            <span class="badge badge-success">SUMMARY</span>
+            <span class="badge badge-success">ARXIV STANDARDIZED OUTCOME</span>
           </div>
-          <p style="margin-top: 10px; line-height: 1.5;">${this.escapeHtml(report.summary)}</p>
-          <div class="symbol-metrics" style="margin-top: 15px;">
-            <div><div class="metric-label">T-Stat</div><div class="metric-value">${report.alpha?.tStat?.toFixed(2) || "--"}</div></div>
-            <div><div class="metric-label">Sharpe</div><div class="metric-value">${report.verification?.metrics?.sharpeRatio?.toFixed(2) || "--"}</div></div>
+          <p style="margin: 10px 0; line-height: 1.5; color: var(--text-secondary);">${this.escapeHtml(report.summary)}</p>
+          ${report.reasoning
+          ? `
+          <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border-left: 2px solid var(--accent); margin-top: 10px;">
+            <div style="font-size: 0.75em; opacity: 0.6; margin-bottom: 4px;">PRINCIPLES & VERDICT (DALIO STYLE)</div>
+            <div style="font-style: italic; color: var(--text-primary); font-size: 0.9em;">"${this.escapeHtml(report.reasoning)}"</div>
+          </div>
+          `
+          : ""
+        }
+        </div>
+
+        <!-- Tier 1: Alpha Significance -->
+        <div class="symbol-card animate-fade">
+          <div class="box-title">Tier 1: Alpha Significance</div>
+          <div class="symbol-metrics">
+            <div><div class="metric-label">t-Stat</div><div class="metric-value">${report.alpha?.tStat?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">p-Value</div><div class="metric-value ${report.alpha?.pValue && report.alpha.pValue < 0.05 ? "pos" : "neg"}">${report.alpha?.pValue?.toFixed(4) || "--"}</div></div>
+            <div><div class="metric-label">IC</div><div class="metric-value">${report.alpha?.informationCoefficient?.toFixed(3) || "--"}</div></div>
+            <div><div class="metric-label">CORR</div><div class="metric-value">${report.alpha?.numerai?.corr?.toFixed(4) || "--"}</div></div>
+            <div><div class="metric-label">MMC</div><div class="metric-value">${report.alpha?.numerai?.mmc?.toFixed(4) || "--"}</div></div>
+            <div><div class="metric-label">FNC</div><div class="metric-value">${report.alpha?.numerai?.fnc?.toFixed(4) || "--"}</div></div>
+          </div>
+          <div class="box-title" style="margin-top: 10px; font-size: 0.8em; opacity: 0.7;">Fama-French Five-Factors</div>
+          <div class="symbol-metrics" style="grid-template-columns: repeat(5, 1fr);">
+            <div><div class="metric-label">MKT</div><div class="metric-value">${report.alpha?.famaFrench?.mkt?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">SMB</div><div class="metric-value">${report.alpha?.famaFrench?.smb?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">HML</div><div class="metric-value">${report.alpha?.famaFrench?.hml?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">RMW</div><div class="metric-value">${report.alpha?.famaFrench?.rmw?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">CMA</div><div class="metric-value">${report.alpha?.famaFrench?.cma?.toFixed(2) || "--"}</div></div>
+          </div>
+        </div>
+
+        <!-- Tier 2: Verification -->
+        <div class="symbol-card animate-fade">
+          <div class="box-title">Tier 2: Verification</div>
+          <div class="symbol-metrics">
+            <div><div class="metric-label">Sharpe</div><div class="metric-value pos">${report.verification?.metrics?.sharpeRatio?.toFixed(2) || "--"}</div></div>
+            <div><div class="metric-label">Ann. Return</div><div class="metric-value">${((report.verification?.metrics?.annualizedReturn ?? 0) * 100).toFixed(1)}%</div></div>
+            <div><div class="metric-label">MaxDD</div><div class="metric-value neg">${((report.verification?.metrics?.maxDrawdown ?? 0) * 100).toFixed(1)}%</div></div>
             <div><div class="metric-label">Uplift</div><div class="metric-value">${((report.verification?.upliftOverBaseline ?? 0) * 100).toFixed(1)}%</div></div>
+          </div>
+        </div>
+
+        <!-- Tier 3: Operational Stability -->
+        <div class="symbol-card animate-fade">
+          <div class="box-title">Tier 3: Stability</div>
+          <div class="symbol-metrics">
+            <div><div class="metric-label">Tracking Err</div><div class="metric-value pos">${report.stability?.trackingError?.toFixed(4) || "--"}</div></div>
+            <div><div class="metric-label">Horizon</div><div class="metric-value">${report.stability?.tradingDaysHorizon || "--"} days</div></div>
+          </div>
+        </div>
+
+        <!-- Tier 4: Execution Audit -->
+        <div class="symbol-card animate-fade">
+          <div class="box-title">Tier 4: Execution</div>
+          <div class="symbol-metrics">
+            <div><div class="metric-label">Total PnL</div><div class="metric-value">¥${((report.execution?.totalPnL ?? 0) / 10000).toFixed(0)}万</div></div>
+            <div><div class="metric-label">Tracking Error</div><div class="metric-value">${((report.execution?.trackingError ?? 0) * 100).toFixed(2)}%</div></div>
+            <div><div class="metric-label">Slippage Impact</div><div class="metric-value">${report.execution?.slippageImpactBps?.toFixed(1) || "--"} bps</div></div>
           </div>
         </div>
       `;
