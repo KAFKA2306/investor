@@ -20,9 +20,6 @@ export interface FactorEvaluation {
 export class LesAgent extends BaseAgent {
   constructor() {
     super();
-    if (!this.core.config.providers.ai.enabled) {
-      console.warn("AI provider is not enabled, LES agent will use fallback logic.");
-    }
   }
 
   /**
