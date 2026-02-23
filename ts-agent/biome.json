@@ -1,6 +1,12 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "$schema": "https://biomejs.dev/schemas/latest/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -17,5 +23,12 @@
     "enabled": true,
     "indentStyle": "space",
     "indentWidth": 2
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "src/**",
+      "!src/tools/dashboard/dist/**"
+    ]
   }
 }
