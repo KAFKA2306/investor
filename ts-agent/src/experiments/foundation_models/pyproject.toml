@@ -1,0 +1,18 @@
+[project]
+name = "foundation-models"
+version = "0.1.0"
+description = "Time-series foundation models for investor-agent"
+dependencies = [
+    "chronos-forecasting @ git+https://github.com/amazon-science/chronos-forecasting.git",
+    "timesfm @ git+https://github.com/google-research/timesfm.git",
+    "lag-llama @ git+https://github.com/lag-llama/lag-llama.git",
+    "uni2ts @ git+https://github.com/SalesforceAIResearch/uni2ts.git",
+    "pandas",
+    "numpy",
+    "scipy",
+    "torch",
+    "tqdm",
+]
+
+[tool.uv]
+managed = true

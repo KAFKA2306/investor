@@ -105,11 +105,57 @@ export const DailyScenarioLogSchema = z.object({
   }),
 });
 
+export const MetricsSchema = z.object({
+  mae: z.number(),
+  rmse: z.number(),
+  smape: z.number(),
+  directionalAccuracy: z.number(),
+  tStat: z.number().optional(), // Statistical significance of alpha
+  pValue: z.number().optional(), // Probability of results due to luck
+  sharpeRatio: z.number().optional(), // Risk-adjusted return
+});
+
+export const BenchmarkReportSchema = z.object({
+  type: z.literal("FOUNDATION_BENCHMARK"),
+  benchmarkId: z.string(),
+  date: z.string().regex(/^\d{8}$/),
+  analyst: z.object({
+    baselines: z.array(
+      z.object({
+        name: z.string(),
+        metrics: MetricsSchema,
+      }),
+    ),
+    models: z.array(
+      z.object({
+        id: z.string(),
+        vendor: z.string(),
+        tags: z.array(z.string()),
+      }),
+    ),
+    recommendations: z.array(z.string()),
+    insights: z.string(),
+  }),
+  operator: z.object({
+    status: z.enum(["PASS", "FAIL"]),
+    dataset: z.string(),
+    rowCount: z.number(),
+    environment: z.string(),
+    workflowReadiness: z.enum(["PASS", "FAIL"]),
+  }),
+  debugger: z.object({
+    telemetry: z.record(z.string(), z.unknown()),
+    envCheck: z.record(z.string(), z.boolean()),
+    rawValues: z.array(z.number()),
+    latencyMs: z.number().optional(),
+  }),
+});
+
 export const UnifiedLogSchema = z.object({
-  schema: z.literal("investor.daily-log.v1"),
+  schema: z.enum(["investor.daily-log.v1", "investor.benchmark-log.v1"]),
   generatedAt: z.string().datetime(),
   models: z.array(ModelReferenceLogSchema),
-  report: DailyScenarioLogSchema,
+  report: z.union([DailyScenarioLogSchema, BenchmarkReportSchema]),
 });
 
 export type UnifiedLog = z.infer<typeof UnifiedLogSchema>;

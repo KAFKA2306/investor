@@ -1,4 +1,6 @@
 
+version: "3"
+
 vars:
   TS_DIR: ts-agent
 
@@ -14,6 +16,12 @@ tasks:
     desc: 依存関係をインストールして準備するよっ ✨
     cmds:
       - cd {{.TS_DIR}} && bun install
+      - task: setup:models
+
+  setup:models:
+    desc: Python 財団 models の環境を整えるよっ ✨
+    cmds:
+      - cd {{.TS_DIR}}/src/experiments/foundation_models && uv sync
 
   lint:
     desc: Biome でコードをピカピカにするよっ ✨

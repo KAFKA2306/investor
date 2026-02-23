@@ -1,200 +1,73 @@
-# Investor AI Agent
+# 💎 Investor Agent: 自律型・富の成就システム ✨
 
-日本株向けの「検証してから動く」投資AIです。  
-個人投資家が毎日チェックしやすいように、判断根拠を `logs/daily/YYYYMMDD.json` に残します。
-
----
-
-## このREADMEの目的
-
-- このシステムが何を見て売買判断するか
-- どの数字なら「実行してよい」とみなすか
-- 直近の実証結果（2026-02-22）
-
-を、短く具体的に示します。
+> [!IMPORTANT]
+> 本リポジトリは、16体の並列特化エージェントによって駆動される、高密度かつ自律的な投資エンジンのソースコードである。速度、精度、そして絶対的な論理的厳密さを追求して構築されている。
 
 ---
 
-## まず結論（2026-02-22 実績）
+## 🏗️ システム概要
 
-参照: `logs/daily/20260222.json`
+**Investor Agent** は、LLM（Gemini 3 Flash）によるインテリジェンスと厳格な TypeScript プロトコルを活用し、資本を自律的に運用する次世代のクオンツ・トレードシステムである。多層的なエージェント・アーキテクチャを通じて、生の市場データを「富」へと変換する。
 
-- シナリオ: `SCN-VEG-001`（野菜インフレ・ローテーション）
-- 最終判断: `LONG_BASKET`
-- 採用銘柄: `1375`, `2503`, `1332`
-- 結果: `status=PASS`, `proved=true`, `verdict=USEFUL`
-- 期待値: `expectedEdge=0.07461103900975842`
-- 当日バスケット日次リターン: `0.0036587532448280765`（約+0.37%）
+### 🎭 脳 (16体の並列エージェント)
 
-この日は「データ準備OK + アルファOK」で、証明運転は合格です。
+システムは、異なる時間軸と戦略をカバーする16体の特化型エージェントによって支えられている。
 
----
-
-## 何を見て判断しているか
-
-入力データ:
-- JQuants（銘柄・価格・財務）
-- e-STAT（マクロ）
-- EDINET / ニュース / SNS補助
-
-直近ログで実際に使った入力:
-- `estatStatsDataId = 0000010101`
-- 対象ユニバース: `1375`, `1332`, `2503`
-- マクロ指標: `vegetablePriceMomentum = 0.0025954852240006555`
+| 戦略 | エージェント | 焦点 | データソース |
+| :--- | :--- | :--- | :--- |
+| **決算** | `PEAD-S/M` | 決算サプライズに基づくモメンタム (短期/中期) | JQuants, TDnet |
+| **イベント** | `Event-*` | 自社株買い、MSCI入替、TOB | EDINET, TDnet |
+| **センチメント** | `Sent-*` | X/Grok 及び定性ニュース解析 | X API, ニュースフィード |
+| **アルファ** | `Arb/Macro` | ペアトレード、e-STAT マクロローテーション | Tickデータ, e-STAT |
+| **リスク** | `Guard/Opt` | ケリー基準による最適化、レジーム検知 | システムログ |
 
 ---
 
-## 売買のルール（実務で使う閾値）
+## 🛠️ 技術スタック & アーキテクチャ
 
-### 1. シグナル
-
-- `SUE = (Result - Expected) / sigma(Surprise)`
-- ロング条件: `SUE > 2.0`
-- ショート条件: `SUE < -2.0`
-
-### 2. ポジションサイズ
-
-- Kelly: `f* = (p*b - (1-p)) / b`
-- 実際の採用サイズ: `0.5 * f*`（Half-Kelly）
-- 直近ログの `kellyFraction`: `0.03730551950487921`
-
-### 3. リスク上限
-
-- `stopLossPct = 0.03`（3%）
-- `maxPositions = 3`
-- レジームが荒い日はレバ上限 `0.5x`
+- **ランタイム**: [Bun](https://bun.sh/) (最速の JS ランタイム)
+- **言語**: [TypeScript](https://www.typescriptlang.org/) (Strict モード, Zod バリデーション)
+- **ツール**: [Biome](https://biomejs.dev/) (Lint & フォーマット)
+- **コア原則**:
+    - **Fail-Fast**: バリデーションエラーや通信エラー発生時は即座に終了。
+    - **不変性 (Immutability)**: シグナルと設定は作成後、厳格に読み取り専用。
+    - **DIP (依存性逆転)**: 堅牢なテストとモック化を可能にする設計。
 
 ---
 
-## 直近ログの読み方（個人投資家向け）
+## 🚀 はじめに
 
-`logs/daily/YYYYMMDD.json` は次の順で見れば十分です。
+### 事前準備
+- [Bun](https://bun.sh/) がインストールされていること。
+- JQuants, EDINET 等の API キー (`.env` で設定)。
 
-1. `workflow`
-- `dataReadiness` と `alphaReadiness` が両方 `PASS` か
-- どちらか `FAIL` なら見送り
-
-2. `decision`
-- `action` が何か（例: `LONG_BASKET`）
-- `topSymbol` と `reason` が妥当か
-
-3. `risks`
-- `kellyFraction` が過大でないか
-- `stopLossPct` と `maxPositions` が守れるか
-
-4. `results`
-- `status` が `PASS` か
-- `expectedEdge` がプラスか
-- `proved=true` か
-
----
-
-## 2026-02-22 の銘柄別スナップショット
-
-| Symbol | AlphaScore | Signal | DailyReturn | ProfitMargin |
-| :-- | --: | :-- | --: | --: |
-| 1375 | 0.0828304585 | LONG | 0.0067829457 | -0.0198756249 |
-| 1332 | 0.0688498140 | LONG | 0.0052816901 | 0.0362323953 |
-| 2503 | 0.0721528446 | LONG | -0.0010883761 | 0 |
-
-ポイント:
-- 3銘柄とも `signal=LONG`
-- `alphaScore` は 1375 が最大
-- ただし財務（利益率）と当日リターンは銘柄で差があるため、バスケット運用で分散
-
----
-
-## 16エージェント体制（役割だけ）
-
-| ID | 役割 |
-| :-- | :-- |
-| A-01 | 決算サプライズ短期 |
-| A-02 | 決算ドリフト中期 |
-| A-03 | 自社株買いイベント |
-| A-04 | 指数入替イベント |
-| A-05 | SNSセンチメント |
-| A-06 | ニュース定性評価 |
-| A-07 | 銘柄間アービトラージ |
-| A-08 | e-STATマクロ分析 |
-| A-09 | ATRベースの損益管理 |
-| A-10 | 板監視・異常検知 |
-| A-11 | Kelly資金配分 |
-| A-12 | 相場レジーム判定 |
-| A-13 | TOB/M&A検知 |
-| A-14 | バリュー探索 |
-| A-15 | 投資主体フロー追跡 |
-| A-16 | 全体レビュー |
-
----
-
-## 技術ガードレール（壊さないための約束）
-
-- `any` 禁止
-- 外部データは Zod で検証
-- Signal / Config は不変
-- DIP厳守（Provider直new禁止）
-- 失敗時は Fail-Fast
-- 秘密情報は `core.getEnv()` のみ
-
-主要ディレクトリ:
-- `ts-agent/src/agents/`
-- `ts-agent/src/use_cases/`
-- `ts-agent/src/domain/`
-- `ts-agent/src/infrastructure/`
-- `ts-agent/src/providers/`
-- `ts-agent/src/schemas/`
-- `ts-agent/src/core/`
-- `ts-agent/src/config/`
-- `ts-agent/src/experiments/`
-
----
-
-## すぐ動かす
-
+### クイックセットアップ
 ```bash
-bun install --cwd ts-agent
-task lint
-task check
+# 依存関係のインストール
+task setup
+
+# デイリー統合ワークフローの実行
 task daily
 ```
 
+### 利用可能なタスク
+| コマンド | 説明 |
+| :--- | :--- |
+| `task setup` | 環境の初期化と依存関係のインストール。 |
+| `task daily` | 全行程のワークフローを実行 (Lint -> Check -> Start)。 |
+| `task check` | 厳格な TypeScript 型チェック。 |
+| `task lint` | Biome によるコードのクリーンアップ。 |
+| `task format` | プロジェクト標準に従ったコード整形。 |
+
 ---
 
-## 参照モデル（2026-02-22）
+## 🛡️ コーディング・プロトコル
 
-| モデル | 提供元 | Context7 | GitHub | arXiv |
-| :-- | :-- | :-- | :-- | :-- |
-| Chronos | Amazon | `/amazon-science/chronos-forecasting` | `https://github.com/amazon-science/chronos-forecasting` | `https://arxiv.org/abs/2403.07815` |
-| TimesFM | Google | `/google-research/timesfm` | `https://github.com/google-research/timesfm` | `https://arxiv.org/abs/2310.10688` |
-| TimeRAF | Microsoft | `/microsoft/finnts` | `https://github.com/microsoft/finnts` | `https://arxiv.org/abs/2412.20810` |
-
----
-
-## 🎀 ぎっと操作がーどっ ✨
-
-日次改善を安全に積み上げるための、最小ルールです。
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant D as 私 (Agent)
-    participant P as Purity Gate (Biome/TSC)
-    participant G as ぎっと (Git)
-    participant C as CI/CD (GitHub)
-
-    D->>P: コードをピカピカに磨くよっ ✨
-    P-->>D: 警告なしの完璧な状態を確認っ ✨
-    D->>G: git add / commit で保存っ ✨
-    G->>G: ひとつずつ丁寧に記録するよっ ✨
-    G->>C: git push で世界へお届けっ ✨
-    C-->>D: 成功を浴びて任務完了っ ✨
-```
-
-実務チェック:
-1. `task lint` と `task check` が通るまで修正する
-2. 変更理由が1行で説明できる単位で `git commit` する
-3. `git push` 後に CI 緑を確認する
-4. 失敗時は即修正し、同じ原因を再発させない
+本プロジェクトでは **Zero-Fat** 開発プロトコルを遵守する。すべてのコードは必要不可欠であり、型付けされ、検証されていなければならない。
 
 > [!TIP]
-> もし失敗しちゃったら、すぐにバグ修正フェーズに戻ってやり直そうねっ ✨
+> エージェントのライフサイクルやシグナル・プロトコルの詳細については、[AGENTS.md](file:///home/kafka/finance/investor/AGENTS.md) を参照。
+
+---
+世界で一番美しく、正確なロジックで。
+私たちのコードが、未来の富を成就させる。 💖🚀💰✨

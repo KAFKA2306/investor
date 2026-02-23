@@ -1,0 +1,172 @@
+{
+  "schema": "investor.benchmark-log.v1",
+  "generatedAt": "2026-02-23T01:40:32.561Z",
+  "models": [
+    {
+      "id": "amazon-chronos",
+      "vendor": "Amazon",
+      "name": "Chronos",
+      "context7LibraryId": "/amazon-science/chronos-forecasting",
+      "github": "https://github.com/amazon-science/chronos-forecasting",
+      "arxiv": "https://arxiv.org/abs/2403.07815"
+    },
+    {
+      "id": "google-timesfm",
+      "vendor": "Google",
+      "name": "TimesFM",
+      "context7LibraryId": "/google-research/timesfm",
+      "github": "https://github.com/google-research/timesfm",
+      "arxiv": "https://arxiv.org/abs/2310.10688"
+    },
+    {
+      "id": "microsoft-timeraf",
+      "vendor": "Microsoft",
+      "name": "TimeRAF",
+      "context7LibraryId": "/microsoft/finnts",
+      "github": "https://github.com/microsoft/finnts",
+      "arxiv": "https://arxiv.org/abs/2412.20810"
+    },
+    {
+      "id": "salesforce-moirai",
+      "vendor": "Salesforce",
+      "name": "MOIRAI",
+      "context7LibraryId": "/salesforce/uni-prophet",
+      "github": "https://github.com/SalesforceAIResearch/uni-prophet",
+      "arxiv": "https://arxiv.org/abs/2402.02592"
+    },
+    {
+      "id": "lag-llama",
+      "vendor": "Lag-Llama Team",
+      "name": "Lag-Llama",
+      "context7LibraryId": "/lag-llama/lag-llama",
+      "github": "https://github.com/lag-llama/lag-llama",
+      "arxiv": "https://arxiv.org/abs/2310.03274"
+    },
+    {
+      "id": "meta-ts-foundation-watch",
+      "vendor": "Meta",
+      "name": "Watchlist (no confirmed official TS foundation model here yet)",
+      "context7LibraryId": "",
+      "github": "https://github.com",
+      "arxiv": "https://arxiv.org"
+    }
+  ],
+  "report": {
+    "type": "FOUNDATION_BENCHMARK",
+    "benchmarkId": "bench_20260223",
+    "date": "20260223",
+    "analyst": {
+      "baselines": [
+        {
+          "name": "Naive (t-1)",
+          "metrics": {
+            "mae": 8,
+            "rmse": 8.524474568362947,
+            "smape": 3.5910628530024433,
+            "directionalAccuracy": 0,
+            "tStat": 0,
+            "pValue": 1
+          }
+        },
+        {
+          "name": "Rolling Avg (3)",
+          "metrics": {
+            "mae": 6.666666666666667,
+            "rmse": 8.059960481476502,
+            "smape": 2.994507878522367,
+            "directionalAccuracy": 66.66666666666666,
+            "tStat": 0.6315789473684219,
+            "pValue": 0.5
+          }
+        }
+      ],
+      "models": [
+        {
+          "id": "amazon-chronos",
+          "vendor": "Amazon",
+          "tags": [
+            "transformer",
+            "zero-shot",
+            "foundation-model"
+          ]
+        },
+        {
+          "id": "google-timesfm",
+          "vendor": "Google",
+          "tags": [
+            "transformer",
+            "zero-shot",
+            "foundation-model"
+          ]
+        },
+        {
+          "id": "microsoft-timeraf",
+          "vendor": "Microsoft",
+          "tags": [
+            "zero-shot",
+            "retrieval-augmented",
+            "foundation-model"
+          ]
+        },
+        {
+          "id": "salesforce-moirai",
+          "vendor": "Salesforce",
+          "tags": [
+            "transformer",
+            "zero-shot",
+            "foundation-model",
+            "any-variate"
+          ]
+        },
+        {
+          "id": "lag-llama",
+          "vendor": "Lag-Llama Team",
+          "tags": [
+            "llama",
+            "zero-shot",
+            "probabilistic"
+          ]
+        },
+        {
+          "id": "meta-ts-foundation-watch",
+          "vendor": "Meta",
+          "tags": [
+            "watchlist"
+          ]
+        }
+      ],
+      "recommendations": [
+        "Historical data smoothing (Rolling) is currently superior to Naive persistence."
+      ],
+      "insights": "Benchmark run completed with 6 test points. Rolling Average shows 1.3333 MAE improvement over Naive (t-stat=0.63)."
+    },
+    "operator": {
+      "status": "FAIL",
+      "dataset": "e-Stat 0000010101 (Vegetable Prices)",
+      "rowCount": 9,
+      "environment": "development",
+      "workflowReadiness": "PASS"
+    },
+    "debugger": {
+      "telemetry": {
+        "nodeVersion": "v24.3.0",
+        "platform": "linux"
+      },
+      "envCheck": {
+        "ESTAT_APP_ID": false
+      },
+      "rawValues": [
+        210,
+        215,
+        208,
+        220,
+        225,
+        218,
+        230,
+        235,
+        228
+      ],
+      "latencyMs": 11169
+    }
+  }
+}

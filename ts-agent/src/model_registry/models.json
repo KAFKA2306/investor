@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-02-22",
+  "updatedAt": "2026-02-23",
   "models": [
     {
       "id": "amazon-chronos",
@@ -31,6 +31,26 @@
       "context7LibraryId": "/microsoft/finnts",
       "github": "https://github.com/microsoft/finnts",
       "arxiv": "https://arxiv.org/abs/2412.20810"
+    },
+    {
+      "id": "salesforce-moirai",
+      "vendor": "Salesforce",
+      "name": "MOIRAI",
+      "category": "time-series-forecasting",
+      "tags": ["transformer", "zero-shot", "foundation-model", "any-variate"],
+      "context7LibraryId": "/salesforce/uni-prophet",
+      "github": "https://github.com/SalesforceAIResearch/uni-prophet",
+      "arxiv": "https://arxiv.org/abs/2402.02592"
+    },
+    {
+      "id": "lag-llama",
+      "vendor": "Lag-Llama Team",
+      "name": "Lag-Llama",
+      "category": "time-series-forecasting",
+      "tags": ["llama", "zero-shot", "probabilistic"],
+      "context7LibraryId": "/lag-llama/lag-llama",
+      "github": "https://github.com/lag-llama/lag-llama",
+      "arxiv": "https://arxiv.org/abs/2310.03274"
     },
     {
       "id": "meta-ts-foundation-watch",

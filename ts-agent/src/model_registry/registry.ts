@@ -51,3 +51,12 @@ export async function loadForecastModelReferences(): Promise<
     .filter((model) => model.github.length > 0 && model.arxiv.length > 0)
     .map((model) => ModelReferenceSchema.parse(model));
 }
+
+export async function getTSModels(): Promise<
+  readonly ModelRegistry["models"][number][]
+> {
+  const registry = await loadModelRegistry();
+  return registry.models.filter(
+    (model) => model.category === "time-series-forecasting",
+  );
+}

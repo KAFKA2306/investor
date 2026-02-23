@@ -44,14 +44,19 @@ export const average = (xs: number[]): number =>
 export const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
 
 export const extractEstatValues = (root: unknown): number[] => {
-  const walk = (node: unknown): number[] =>
-    Array.isArray(node)
-      ? node.flatMap((v) => walk(v))
-      : typeof node === "object" && node !== null
-        ? Object.values(node as Record<string, unknown>).flatMap((v) => walk(v))
-        : typeof node === "string" || typeof node === "number"
-          ? [Number(node)]
-          : [];
+  const walk = (node: unknown): number[] => {
+    if (Array.isArray(node)) return node.flatMap((v) => walk(v));
+    if (typeof node === "object" && node !== null) {
+      const obj = node as Record<string, unknown>;
+      // If we are at a "VALUE" node, extract its "$" property (price)
+      if (obj["$"] !== undefined && obj["@unit"] !== undefined) {
+        const val = Number(obj["$"]);
+        return Number.isFinite(val) ? [val] : [];
+      }
+      return Object.values(obj).flatMap((v) => walk(v));
+    }
+    return [];
+  };
   return walk(root).filter((n) => Number.isFinite(n) && Math.abs(n) > 0);
 };
 
