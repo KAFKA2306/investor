@@ -189,7 +189,9 @@ class Dashboard {
     const updateEl = document.getElementById("last-update");
     if (updateEl) {
       const ts = this.activeLog.generatedAt || report.analyzedAt;
-      updateEl.textContent = ts ? `更新: ${new Date(ts).toLocaleString("ja-JP")}` : "更新: --";
+      updateEl.textContent = ts
+        ? `更新: ${new Date(ts).toLocaleString("ja-JP")}`
+        : "更新: --";
     }
 
     this.updateText(

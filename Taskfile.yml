@@ -39,19 +39,26 @@ tasks:
       - cd {{.TS_DIR}} && bun run typecheck
 
   daily:
-    desc: 日次Runbook（品質→API検証→シナリオ→本線→A/B比較）を実行する
+    desc: 日次Runbook（品質→API検証→シナリオ→本線→A/B比較→Readiness）を実行する
     deps: [lint, check]
     cmds:
       - cd {{.TS_DIR}} && bun run verify:api
       - cd {{.TS_DIR}} && bun run verify:scenario
       - cd {{.TS_DIR}} && bun run start
       - cd {{.TS_DIR}} && bun run pipeline:ab
+      - cd {{.TS_DIR}} && bun run pipeline:llm-readiness
 
   pipeline:mine:
     desc: 因子候補を生成・評価・進化してregistryへ保存する
     deps: [check]
     cmds:
       - cd {{.TS_DIR}} && bun run pipeline:mine
+
+  pipeline:llm-readiness:
+    desc: LLM trading survey基準の運用Readinessを定量スコア化する
+    deps: [check]
+    cmds:
+      - cd {{.TS_DIR}} && bun run pipeline:llm-readiness
 
   dashboard:
     desc: モダンな投資ダッシュボードをビルドするよっ ✨

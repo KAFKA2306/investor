@@ -37,6 +37,7 @@ bun run verify:api
 bun run verify:scenario
 bun run start
 bun run pipeline:ab
+bun run pipeline:llm-readiness
 ```
 
 実行順序の意味:
@@ -45,6 +46,7 @@ bun run pipeline:ab
 3. シナリオ検証 (`verify:scenario`)
 4. 日次本線実行 (`start`)
 5. 定量比較 (`pipeline:ab`)
+6. 論文基準Readiness判定 (`pipeline:llm-readiness`)
 
 ## 2. Acceptance Gates
 
@@ -57,6 +59,8 @@ bun run pipeline:ab
 推奨判定:
 - `pipeline:ab` の `candidate.totalReturn > 0`
 - `pipeline:ab` の `candidate.sharpe >= baseline.sharpe`
+- `pipeline:llm-readiness` の `score.total >= 50`（運用注意域）
+- `pipeline:llm-readiness` の `score.total >= 75`（本番準備域）
 
 ## 3. Runtime Contracts
 
@@ -81,6 +85,9 @@ bun run pipeline:ab
   - `report.execution`（PAPER実行結果）
 - `pipeline:ab` 出力
   - baseline/candidate/uplift の定量比較
+- `pipeline:llm-readiness` 出力
+  - `score.total`（0-100）
+  - 内訳: `dataHorizon`, `costAwareness`, `outOfSampleDiscipline`, `modelTraceability`, `reproducibility`, `executionObservability`
 
 ## 5. Incident Handling
 
@@ -98,9 +105,10 @@ bun run pipeline:ab
 
 毎営業日の終端で実施:
 1. `pipeline:ab` の差分確認
-2. 低下した指標の原因分類（データ/特徴量/執行/コスト）
-3. 改善案を1つだけ選び、翌日の変更範囲を最小化
-4. 変更は必ずログ比較で回帰確認
+2. `pipeline:llm-readiness` の不足項目確認
+3. 低下した指標の原因分類（データ/特徴量/執行/コスト）
+4. 改善案を1つだけ選び、翌日の変更範囲を最小化
+5. 変更は必ずログ比較で回帰確認
 
 ## 7. Definition of Done (Daily)
 

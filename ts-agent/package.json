@@ -11,6 +11,7 @@
     "verify:scenario": "bun src/experiments/01_vegetable.ts",
     "pipeline:evaluate": "bun src/pipeline/evaluate/foundation_benchmark.ts",
     "pipeline:ab": "bun src/pipeline/evaluate/ab_compare_daily_logs.ts",
+    "pipeline:llm-readiness": "bun src/pipeline/evaluate/llm_agent_readiness.ts",
     "pipeline:mine": "bun src/pipeline/factor_mining/evolve_candidates.ts"
   },
   "private": true,
