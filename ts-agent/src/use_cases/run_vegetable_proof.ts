@@ -1,8 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { join } from "node:path";
+import { core } from "../core/index.ts";
 import { executePaperOrders } from "../execution/paper_executor.ts";
-import { MarketdataLocalGateway } from "../experiments/gateways/marketdata_local_gateway.ts";
 import { runVegetableScenario } from "../experiments/scenarios/vegetable_daily.ts";
+import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
 import {
   loadForecastModelReferences,
   type ModelReference,
@@ -55,10 +56,10 @@ export async function runVegetableProof(): Promise<UnifiedLog> {
     models,
     report: reportWithExecution,
   });
-  const logsDir = resolve(process.cwd(), "../logs/daily");
+  const logsDir = join(core.config.paths.logs, "daily");
   mkdirSync(logsDir, { recursive: true });
   writeFileSync(
-    resolve(logsDir, `${reportWithExecution.date}.json`),
+    join(logsDir, `${reportWithExecution.date}.json`),
     `${JSON.stringify(envelope, null, 2)}\n`,
     "utf8",
   );

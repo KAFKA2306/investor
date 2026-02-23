@@ -52,6 +52,7 @@ task daily
 | :--- | :--- |
 | `task setup` | 環境の初期化と依存関係のインストール。 |
 | `task daily` | 全行程のワークフローを実行 (Lint -> Check -> Start)。 |
+| `task full:validate` | experiments/scenario/pipelineを再実行し、`logs/unified/YYYYMMDD.json` を生成。 |
 | `task check` | 厳格な TypeScript 型チェック。 |
 | `task lint` | Biome によるコードのクリーンアップ。 |
 | `task format` | プロジェクト標準に従ったコード整形。 |

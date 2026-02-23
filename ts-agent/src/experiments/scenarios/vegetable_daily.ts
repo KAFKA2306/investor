@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { runSimpleBacktest } from "../../backtest/simulator.ts";
+import type { MarketDataGateway } from "../../gateways/live_market_data_gateway.ts";
 import {
   average,
   extractEstatValues,
   SymbolAnalysisSchema,
   scoreDailyAlpha,
 } from "../analysis/daily_alpha.ts";
-import type { MarketDataGateway } from "../gateways/live_market_data_gateway.ts";
 
 const Universe = ["1375", "1332", "2503"] as const;
 

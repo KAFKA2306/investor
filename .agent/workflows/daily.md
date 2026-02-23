@@ -38,6 +38,7 @@ bun run verify:scenario
 bun run start
 bun run pipeline:ab
 bun run pipeline:llm-readiness
+bun run pipeline:full-validation
 ```
 
 実行順序の意味:
@@ -47,6 +48,7 @@ bun run pipeline:llm-readiness
 4. 日次本線実行 (`start`)
 5. 定量比較 (`pipeline:ab`)
 6. 論文基準Readiness判定 (`pipeline:llm-readiness`)
+7. 統一検証ログ作成 (`pipeline:full-validation`)
 
 ## 2. Acceptance Gates
 
@@ -88,6 +90,9 @@ bun run pipeline:llm-readiness
 - `pipeline:llm-readiness` 出力
   - `score.total`（0-100）
   - 内訳: `dataHorizon`, `costAwareness`, `outOfSampleDiscipline`, `modelTraceability`, `reproducibility`, `executionObservability`
+- `logs/unified/YYYYMMDD.json`
+  - `investor.unified-log.v1` 形式
+  - scenario/experiment/pipeline/verification の全ステージ結果
 
 ## 5. Incident Handling
 

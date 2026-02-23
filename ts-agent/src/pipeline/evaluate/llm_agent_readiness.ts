@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z } from "zod";
+import { core } from "../../core/index.ts";
 import { UnifiedLogSchema } from "../../schemas/log.ts";
 
 const YYYMMDD = z.string().regex(/^\d{8}$/);
@@ -201,7 +202,7 @@ export function runLlmAgentReadiness(logsBaseDir: string) {
 }
 
 if (import.meta.main) {
-  const logsBaseDir = resolve(process.cwd(), "../logs");
+  const logsBaseDir = core.config.paths.logs;
   const report = runLlmAgentReadiness(logsBaseDir);
   console.log(JSON.stringify(report, null, 2));
 }

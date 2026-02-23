@@ -1,5 +1,7 @@
+import { join } from "node:path";
 import { z } from "zod";
-import { SqliteHttpCache } from "../experiments/cache/sqlite_http_cache.ts";
+import { core } from "../core/index.ts";
+import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
 
 const QuoteResponseSchema = z.object({
   quoteResponse: z.object({
@@ -30,7 +32,7 @@ const toNumber = (v: unknown): number =>
 
 export class YFinanceProvider {
   private readonly cache = new SqliteHttpCache(
-    `${process.cwd()}/../logs/cache/market_cache.sqlite`,
+    join(core.config.paths.logs, "cache", "market_cache.sqlite"),
   );
 
   public async getStockInfo(

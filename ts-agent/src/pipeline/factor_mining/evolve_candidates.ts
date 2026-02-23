@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { z } from "zod";
+import { core } from "../../core/index.ts";
 import {
   evaluateFactorCandidates,
   loadFeatureRows,
@@ -179,7 +180,7 @@ export function runFactorMining(logsBaseDir: string, registryDir: string) {
 }
 
 if (import.meta.main) {
-  const logsBaseDir = resolve(process.cwd(), "../logs");
+  const logsBaseDir = core.config.paths.logs;
   const registryDir = resolve(process.cwd(), "src/model_registry");
   const report = runFactorMining(logsBaseDir, registryDir);
   console.log(JSON.stringify(report, null, 2));

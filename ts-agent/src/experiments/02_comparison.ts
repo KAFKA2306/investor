@@ -1,11 +1,28 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { z } from "zod";
+import { core } from "../core/index.ts";
 
-async function compareForecastAndOutcome() {
-  const logsDir = join(process.cwd(), "../logs/daily");
+const ComparisonRowSchema = z.object({
+  date: z.string().regex(/^\d{8}$/),
+  forecast: z.number(),
+  outcome: z.number(),
+  accuracy: z.number(),
+});
+
+const ComparisonReportSchema = z.object({
+  generatedAt: z.string().datetime(),
+  rows: z.array(ComparisonRowSchema),
+});
+
+export type ComparisonReport = z.infer<typeof ComparisonReportSchema>;
+
+export async function compareForecastAndOutcome(): Promise<ComparisonReport> {
+  const logsDir = join(core.config.paths.logs, "daily");
   const files = readdirSync(logsDir)
     .filter((f) => f.endsWith(".json"))
     .sort();
+  const rows: z.infer<typeof ComparisonRowSchema>[] = [];
 
   console.log(
     "Comparison: Forecast (Expected Edge) vs Outcome (Actual Return)",
@@ -24,12 +41,22 @@ async function compareForecastAndOutcome() {
     const date = log.report.date;
     const forecast = log.report.results.expectedEdge;
     const outcome = log.report.results.basketDailyReturn;
-    const accuracy = `${((outcome / forecast) * 100).toFixed(2)}%`;
+    const ratio = forecast === 0 ? 0 : outcome / forecast;
+    const accuracyPct = ratio * 100;
+    const accuracy = `${accuracyPct.toFixed(2)}%`;
 
     console.log(
       `| ${date} | ${forecast.toFixed(6)}         | ${outcome.toFixed(6)}         | ${accuracy.padStart(8)} |`,
     );
+    rows.push({ date, forecast, outcome, accuracy: ratio });
   }
+
+  return ComparisonReportSchema.parse({
+    generatedAt: new Date().toISOString(),
+    rows,
+  });
 }
 
-compareForecastAndOutcome();
+if (import.meta.main) {
+  compareForecastAndOutcome();
+}

@@ -5,7 +5,7 @@ import {
   average,
   extractEstatValues,
 } from "../../experiments/analysis/daily_alpha.ts";
-import { MarketdataLocalGateway } from "../../experiments/gateways/marketdata_local_gateway.ts";
+import { MarketdataLocalGateway } from "../../gateways/marketdata_local_gateway.ts";
 import { getTSModels } from "../../model_registry/registry.ts";
 import { UnifiedLogSchema } from "../../schemas/log.ts";
 
@@ -408,6 +408,7 @@ export async function runFoundationBenchmark() {
   console.log(
     `- Rolling Safety: Abstain=${rollingMetrics.abstentionRate.toFixed(2)}%, SafeAcc=${rollingMetrics.safeAccuracy.toFixed(2)}%, OverconfErr=${rollingMetrics.overconfidenceError.toFixed(2)}%, ECE=${rollingMetrics.ece.toFixed(4)}`,
   );
+  return validatedLog;
 }
 
 if (import.meta.main) {

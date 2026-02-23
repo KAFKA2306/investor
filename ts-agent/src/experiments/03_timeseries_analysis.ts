@@ -1,7 +1,25 @@
+import { z } from "zod";
+import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
 import { average, extractEstatValues } from "./analysis/daily_alpha.ts";
-import { MarketdataLocalGateway } from "./gateways/marketdata_local_gateway.ts";
 
-async function runTimeSeriesAnalysis() {
+const TimeSeriesReportSchema = z.object({
+  generatedAt: z.string().datetime(),
+  dataPoints: z.number().int().nonnegative(),
+  averageValue: z.number(),
+  maxValue: z.number(),
+  minValue: z.number(),
+  averageDailyReturn: z.number(),
+  volatility: z.number(),
+  naiveMae: z.number(),
+  rollingMae: z.number(),
+  rollingBeatsNaive: z.boolean(),
+});
+
+export type TimeSeriesReport = z.infer<typeof TimeSeriesReportSchema>;
+
+export async function runTimeSeriesAnalysis(
+  verbose = true,
+): Promise<TimeSeriesReport> {
   const gateway = await MarketdataLocalGateway.create(["1375"]);
   const estatObj = (await gateway.getEstatStats("0000010101")) as Record<
     string,
@@ -9,20 +27,37 @@ async function runTimeSeriesAnalysis() {
   >;
   const values = extractEstatValues(estatObj.GET_STATS_DATA);
 
-  console.log("Time Series Analysis: Vegetable Prices (e-Stat 0000010101)");
-  console.log("---------------------------------------------------------");
-  console.log(`Total Data Points: ${values.length}`);
+  if (verbose) {
+    console.log("Time Series Analysis: Vegetable Prices (e-Stat 0000010101)");
+    console.log("---------------------------------------------------------");
+    console.log(`Total Data Points: ${values.length}`);
+  }
 
   if (values.length < 2) {
-    console.log("Insufficient data points for time series analysis.");
-    return;
+    if (verbose) {
+      console.log("Insufficient data points for time series analysis.");
+    }
+    return TimeSeriesReportSchema.parse({
+      generatedAt: new Date().toISOString(),
+      dataPoints: values.length,
+      averageValue: 0,
+      maxValue: 0,
+      minValue: 0,
+      averageDailyReturn: 0,
+      volatility: 0,
+      naiveMae: 0,
+      rollingMae: 0,
+      rollingBeatsNaive: false,
+    });
   }
 
   // 1. Trend Analysis (Rolling Window)
   const windowSize = 3;
-  console.log(`\nRolling Analysis (Window Size: ${windowSize}):`);
-  console.log("| Index | Value | Rolling Avg | Momentum |");
-  console.log("------------------------------------------");
+  if (verbose) {
+    console.log(`\nRolling Analysis (Window Size: ${windowSize}):`);
+    console.log("| Index | Value | Rolling Avg | Momentum |");
+    console.log("------------------------------------------");
+  }
 
   for (let i = 0; i < values.length; i++) {
     const val = values[i];
@@ -38,9 +73,11 @@ async function runTimeSeriesAnalysis() {
           "%";
       }
     }
-    console.log(
-      `| ${i.toString().padStart(5)} | ${val.toFixed(2).padStart(5)} | ${rollingAvg.toFixed(2).padStart(11)} | ${momentum.padStart(8)} |`,
-    );
+    if (verbose) {
+      console.log(
+        `| ${i.toString().padStart(5)} | ${val.toFixed(2).padStart(5)} | ${rollingAvg.toFixed(2).padStart(11)} | ${momentum.padStart(8)} |`,
+      );
+    }
   }
 
   // 2. Volatility Analysis
@@ -53,17 +90,21 @@ async function runTimeSeriesAnalysis() {
   const variance = average(returns.map((r) => (r - avgReturn) ** 2));
   const stdDev = Math.sqrt(variance);
 
-  console.log("\nSummary Statistics:");
-  console.log(`- Average Value: ${average(values).toFixed(2)}`);
-  console.log(`- Max Value: ${Math.max(...values).toFixed(2)}`);
-  console.log(`- Min Value: ${Math.min(...values).toFixed(2)}`);
-  console.log(`- Average Daily Return: ${(avgReturn * 100).toFixed(4)}%`);
-  console.log(
-    `- Volatility (Std Dev of Returns): ${(stdDev * 100).toFixed(4)}%`,
-  );
+  if (verbose) {
+    console.log("\nSummary Statistics:");
+    console.log(`- Average Value: ${average(values).toFixed(2)}`);
+    console.log(`- Max Value: ${Math.max(...values).toFixed(2)}`);
+    console.log(`- Min Value: ${Math.min(...values).toFixed(2)}`);
+    console.log(`- Average Daily Return: ${(avgReturn * 100).toFixed(4)}%`);
+    console.log(
+      `- Volatility (Std Dev of Returns): ${(stdDev * 100).toFixed(4)}%`,
+    );
+  }
 
   // 3. Forecast Accuracy (Backtesting Naive vs Rolling)
-  console.log("\nBacktesting Forecast (Next Value Prediction):");
+  if (verbose) {
+    console.log("\nBacktesting Forecast (Next Value Prediction):");
+  }
   let naiveErrorSum = 0;
   let rollingErrorSum = 0;
   const testCount = values.length - windowSize;
@@ -78,22 +119,44 @@ async function runTimeSeriesAnalysis() {
     rollingErrorSum += Math.abs(actual - rollingForecast);
   }
 
-  console.log(
-    `- Naive Forecast (t-1) MAE: ${(naiveErrorSum / testCount).toFixed(4)}`,
-  );
-  console.log(
-    `- Rolling Avg (${windowSize}) Forecast MAE: ${(rollingErrorSum / testCount).toFixed(4)}`,
-  );
-
-  if (rollingErrorSum < naiveErrorSum) {
+  if (verbose) {
     console.log(
-      ">> Rolling Average outperforms Naive forecast for this sequence.",
+      `- Naive Forecast (t-1) MAE: ${(naiveErrorSum / testCount).toFixed(4)}`,
     );
-  } else {
     console.log(
-      ">> Naive forecast (t-1) is more accurate or equal for this sequence.",
+      `- Rolling Avg (${windowSize}) Forecast MAE: ${(rollingErrorSum / testCount).toFixed(4)}`,
     );
   }
+
+  if (rollingErrorSum < naiveErrorSum) {
+    if (verbose) {
+      console.log(
+        ">> Rolling Average outperforms Naive forecast for this sequence.",
+      );
+    }
+  } else {
+    if (verbose) {
+      console.log(
+        ">> Naive forecast (t-1) is more accurate or equal for this sequence.",
+      );
+    }
+  }
+
+  const report = TimeSeriesReportSchema.parse({
+    generatedAt: new Date().toISOString(),
+    dataPoints: values.length,
+    averageValue: average(values),
+    maxValue: Math.max(...values),
+    minValue: Math.min(...values),
+    averageDailyReturn: avgReturn,
+    volatility: stdDev,
+    naiveMae: naiveErrorSum / testCount,
+    rollingMae: rollingErrorSum / testCount,
+    rollingBeatsNaive: rollingErrorSum < naiveErrorSum,
+  });
+  return report;
 }
 
-runTimeSeriesAnalysis();
+if (import.meta.main) {
+  runTimeSeriesAnalysis();
+}

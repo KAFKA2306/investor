@@ -1,6 +1,8 @@
+import { join } from "node:path";
 import { z } from "zod";
-import { YFinanceProvider } from "../../providers/yfinance.ts";
-import { SqliteHttpCache } from "../cache/sqlite_http_cache.ts";
+import { core } from "../core/index.ts";
+import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
+import { YFinanceProvider } from "../providers/yfinance.ts";
 
 export type MarketDataGateway = {
   getEstatStats(statsDataId: string): Promise<Record<string, unknown>>;
@@ -88,7 +90,7 @@ export class LiveMarketDataGateway implements MarketDataGateway {
     .object({ ESTAT_APP_ID: z.string().min(1) })
     .parse(process.env).ESTAT_APP_ID;
   private readonly cache = new SqliteHttpCache(
-    `${process.cwd()}/../logs/cache/market_cache.sqlite`,
+    join(core.config.paths.logs, "cache", "market_cache.sqlite"),
   );
   private readonly yfinance = new YFinanceProvider();
 

@@ -60,6 +60,12 @@ tasks:
     cmds:
       - cd {{.TS_DIR}} && bun run pipeline:llm-readiness
 
+  full:validate:
+    desc: experiments/scenario/pipelineを再実行し統一ログを出力する
+    deps: [lint, check]
+    cmds:
+      - cd {{.TS_DIR}} && bun run pipeline:full-validation
+
   dashboard:
     desc: モダンな投資ダッシュボードをビルドするよっ ✨
     cmds:

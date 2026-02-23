@@ -2,8 +2,8 @@ project:
   name: investor-ts
 
 paths:
-  data: ./data
-  logs: ./logs
+  data: ../../../data
+  logs: ../../../logs
 
 providers:
   yfinance:

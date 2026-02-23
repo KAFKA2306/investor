@@ -67,6 +67,22 @@ interface DailySummary {
 }
 
 const STATIC_LOGS_BASE = "./logs/daily";
+const UNIFIED_LOGS_BASE = "./logs/unified";
+
+interface UnifiedStage {
+  stageId?: string;
+  name?: string;
+  category?: string;
+  status?: string;
+  metrics?: Record<string, number>;
+  error?: string;
+}
+
+interface UnifiedRunLogPayload {
+  schema?: string;
+  date?: string;
+  stages?: UnifiedStage[];
+}
 
 const pickNumber = (v: unknown): number =>
   typeof v === "number" && Number.isFinite(v) ? v : 0;
@@ -97,6 +113,7 @@ class Dashboard {
   private logs: DailySummary[] = [];
   private activeLog: LogPayload | null = null;
   private staticPayloadByDate = new Map<string, LogPayload>();
+  private unifiedPayloadByDate = new Map<string, UnifiedRunLogPayload>();
 
   constructor() {
     this.init();
@@ -104,6 +121,7 @@ class Dashboard {
 
   async init() {
     await this.loadStaticLogs();
+    await this.loadUnifiedLogs();
     const firstLog = this.logs.at(0);
     if (firstLog) {
       await this.selectLog(firstLog.date);
@@ -140,6 +158,34 @@ class Dashboard {
       )
       .map((r) => r.value);
     this.renderSidebar();
+  }
+
+  private async loadUnifiedLogs() {
+    try {
+      const manifestRes = await fetch(`${UNIFIED_LOGS_BASE}/manifest.json`);
+      if (!manifestRes.ok) return;
+      const files = (await manifestRes.json()) as string[];
+      const jsonFiles = files
+        .filter((f) => /^\d{8}\.json$/.test(f))
+        .sort()
+        .reverse();
+      const settled = await Promise.allSettled(
+        jsonFiles.map(async (file) => {
+          const res = await fetch(`${UNIFIED_LOGS_BASE}/${file}`);
+          if (!res.ok)
+            throw new Error(`Failed to fetch ${file}: ${res.status}`);
+          return (await res.json()) as UnifiedRunLogPayload;
+        }),
+      );
+      settled.forEach((r) => {
+        if (r.status !== "fulfilled") return;
+        const payload = r.value;
+        const date = payload.date || "";
+        if (date) this.unifiedPayloadByDate.set(date, payload);
+      });
+    } catch (_e) {
+      // Unified logs are optional for local preview.
+    }
   }
 
   private async selectLog(date: string) {
@@ -261,6 +307,47 @@ class Dashboard {
         JSON.stringify(this.activeLog, null, 2),
       )}</pre>`;
     }
+
+    this.renderValidationPanel(pickString(report.date));
+  }
+
+  private renderValidationPanel(date: string) {
+    const container = document.getElementById("validation-results");
+    if (!container) return;
+    const runLog = this.unifiedPayloadByDate.get(date);
+    if (
+      !runLog ||
+      !Array.isArray(runLog.stages) ||
+      runLog.stages.length === 0
+    ) {
+      container.innerHTML = `<div class="metric-label">統一ログがありません（${this.escapeHtml(date || "--")}）</div>`;
+      return;
+    }
+
+    container.innerHTML = runLog.stages
+      .map((stage) => {
+        const status = pickString(stage.status);
+        const badge = status === "PASS" ? "badge-success" : "badge-danger";
+        const metrics = Object.entries(stage.metrics ?? {})
+          .slice(0, 4)
+          .map(([k, v]) => `${this.escapeHtml(k)}: ${pickNumber(v).toFixed(4)}`)
+          .join(" / ");
+        const error = stage.error
+          ? `<div class="log-sub neg">error: ${this.escapeHtml(stage.error)}</div>`
+          : "";
+        return `
+          <div class="symbol-card animate-fade">
+            <div class="symbol-head">
+              <span class="symbol-code">${this.escapeHtml(stage.name || "N/A")}</span>
+              <span class="badge ${badge}">${this.escapeHtml(status || "N/A")}</span>
+            </div>
+            <div class="log-sub">${this.escapeHtml(stage.category || "unknown")} / ${this.escapeHtml(stage.stageId || "--")}</div>
+            <div class="log-sub">${metrics || "metrics: --"}</div>
+            ${error}
+          </div>
+        `;
+      })
+      .join("");
   }
 
   private statusRow(label: string, status: string) {

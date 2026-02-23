@@ -46,6 +46,13 @@ jobs:
           mkdir -p dist/logs/daily
           cp ../../../../logs/daily/*.json dist/logs/daily/
           bun scripts/generate-log-manifest.mjs dist/logs/daily
+          mkdir -p dist/logs/unified
+          if ls ../../../../logs/unified/*.json >/dev/null 2>&1; then
+            cp ../../../../logs/unified/*.json dist/logs/unified/
+            bun scripts/generate-log-manifest.mjs dist/logs/unified
+          else
+            echo "[]" > dist/logs/unified/manifest.json
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
