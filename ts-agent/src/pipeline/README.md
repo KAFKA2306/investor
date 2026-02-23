@@ -17,6 +17,7 @@ sequenceDiagram
 - `infer/`: inference workflows for generating live/paper signals.
 - `evaluate/`: evaluation and benchmark workflows.
 
-Current benchmark entrypoint:
+Current benchmark and pipeline entrypoints:
 
-- `src/pipeline/evaluate/foundation_benchmark.ts`
+- `src/pipeline/evaluate/foundation_benchmark.ts`: Foundation Model metrics.
+- `src/pipeline/evaluate/run_full_validation.ts`: **Unified Pipeline Entrypoint** (All stages).
