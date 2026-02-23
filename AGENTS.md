@@ -60,6 +60,19 @@ sequenceDiagram
     A->>L: 2. 論文に基づいた因子生成 (SAF) と評価
 ```
 
+### 🧠 Supported Forecasting Models (Foundation Models)
+
+エージェントは以下の最新の時系列予測（TS Forecasting）基盤モデルおよびアルファ生成フレームワークを `Model Registry` 経由で活用できるよっ ✨
+
+| Model ID | Category | Characteristics |
+| :--- | :--- | :--- |
+| **amazon-chronos** | Zero-Shot TS | Transformer-based univariate forecasting. |
+| **google-timesfm** | Zero-Shot TS | Pre-trained foundation model for time-series. |
+| **microsoft-timeraf** | Financial TS | Retrieval-Augmented (RAG) specialized for finance. |
+| **salesforce-moirai** | Any-Variate TS | Versatile transformer for multi-variate data. |
+| **lag-llama** | Probabilistic TS | Llama-based probabilistic zero-shot forecasting. |
+| **les-forecast** | Alpha Generation | Multi-agent framework for stock alpha generation (LES). |
+
 ---
 
 ## 🔄 3. Architecture & Data Flow: 疎結合設計

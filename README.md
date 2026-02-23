@@ -51,6 +51,22 @@ sequenceDiagram
 
 ---
 
+## 📈 Supported Forecasting Models (Registry)
+
+`Model Registry` を通じて、以下の最新の時系列予測（TS Forecasting）基盤モデルおよびアルファ生成フレームワークをサポートしているよっ ✨
+
+- **Chronos (Amazon)**: ユニバリエート（単変量）時系列データのゼロショット予測。
+- **TimesFM (Google)**: Transformer ベースの事前学習済み時系列基盤モデル。
+- **TimeRAF (Microsoft)**: 金融データに特化した RAG (Retrieval-Augmented) 型予測。
+- **MOIRAI (Salesforce)**: あらゆる時系列データに対応可能な万能トランスフォーマー。
+- **Lag-Llama**: Llama アーキテクチャを時系列に転用した確率的予測。
+- **LES (ArXiv:2409.06289)**: LLM によるマルチエージェント型アルファ因子生成。
+
+> [!TIP]
+> 各モデルの技術論文（ArXiv）や GitHub へのリンクは、[Model Registry README](./ts-agent/src/model_registry/README.md) を参照してねっ！
+
+---
+
 ## 🛠️ 技術スタック & アーキテクチャ
 
 - **ランタイム**: [Bun](https://bun.sh/) (最速の JS ランタイム)
