@@ -1,39 +1,165 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-24T03:40:18.867Z",
+  "generatedAt": "2026-02-24T10:16:55.466Z",
+  "models": [
+    {
+      "id": "amazon-chronos",
+      "vendor": "Amazon",
+      "name": "Chronos",
+      "context7LibraryId": "/amazon-science/chronos-forecasting",
+      "github": "https://github.com/amazon-science/chronos-forecasting",
+      "arxiv": "https://arxiv.org/abs/2403.07815"
+    },
+    {
+      "id": "google-timesfm",
+      "vendor": "Google",
+      "name": "TimesFM",
+      "context7LibraryId": "/google-research/timesfm",
+      "github": "https://github.com/google-research/timesfm",
+      "arxiv": "https://arxiv.org/abs/2310.10688"
+    },
+    {
+      "id": "microsoft-timeraf",
+      "vendor": "Microsoft",
+      "name": "TimeRAF",
+      "context7LibraryId": "/microsoft/finnts",
+      "github": "https://github.com/microsoft/finnts",
+      "arxiv": "https://arxiv.org/abs/2412.20810"
+    },
+    {
+      "id": "salesforce-moirai",
+      "vendor": "Salesforce",
+      "name": "MOIRAI",
+      "context7LibraryId": "/salesforce/uni2ts",
+      "github": "https://github.com/SalesforceAIResearch/uni2ts",
+      "arxiv": "https://arxiv.org/abs/2402.02592"
+    },
+    {
+      "id": "lag-llama",
+      "vendor": "Lag-Llama Team",
+      "name": "Lag-Llama",
+      "context7LibraryId": "/time-series-foundation-models/lag-llama",
+      "github": "https://github.com/time-series-foundation-models/lag-llama",
+      "arxiv": "https://arxiv.org/abs/2310.03274"
+    },
+    {
+      "id": "les-forecast",
+      "vendor": "Yang et al.",
+      "name": "LES (Large-scale Stock Forecasting)",
+      "context7LibraryId": "/les-agent/les-stock-forecasting",
+      "github": "https://github.com/microsoft/investor-agent",
+      "arxiv": "https://arxiv.org/abs/2409.06289"
+    }
+  ],
   "report": {
+    "scenarioId": "SCN-LES-REPRO",
+    "analyzedAt": "2026-02-24T10:16:55.466Z",
     "date": "20220831",
-    "analyzedAt": "2026-02-24T03:40:18.867Z",
+    "inputs": {
+      "estatStatsDataId": "0000010101",
+      "universe": [
+        "7203",
+        "9984",
+        "8035",
+        "6758",
+        "4063"
+      ]
+    },
+    "evidence": {
+      "estat": {
+        "hasStatsData": true,
+        "status": "PASS"
+      },
+      "jquants": {
+        "listedCount": 5,
+        "matchedSymbols": [
+          "7203",
+          "9984",
+          "8035",
+          "6758",
+          "4063"
+        ],
+        "status": "PASS"
+      }
+    },
+    "market": {
+      "vegetablePriceMomentum": 0
+    },
     "decision": {
       "strategy": "LES Framework (RS-Integrated)",
-      "action": "INVEST",
-      "reasoningScore": 0.7579139072847682,
-      "factors": [
+      "action": "LONG_BASKET",
+      "topSymbol": "7203",
+      "reason": "LES integrated reasoning score validation.",
+      "experimentValue": "USEFUL"
+    },
+    "signals": {
+      "macro": {
+        "vegetablePriceMomentum": 0
+      },
+      "symbols": [
         {
-          "id": "LES-NONLINEAR-SENT-01",
-          "weight": 0.27649006622516553,
-          "rs": 0.835
+          "symbol": "7203",
+          "alphaScore": 0.41283112582781456,
+          "signal": "LONG",
+          "sueProxy": 0.06814828580836724
         },
         {
-          "id": "LES-VOL-DYNAMICS-01",
-          "weight": 0.23675496688741723,
-          "rs": 0.7150000000000001
+          "symbol": "9984",
+          "alphaScore": 0.41283112582781456,
+          "signal": "LONG",
+          "sueProxy": 0
         },
         {
-          "id": "LES-MEAN-REV-LIQ-01",
-          "weight": 0.2433774834437086,
-          "rs": 0.735
+          "symbol": "8035",
+          "alphaScore": 0.41283112582781456,
+          "signal": "LONG",
+          "sueProxy": 0.2481114906661825
         },
         {
-          "id": "LES-SKEWNESS-OP-01",
-          "weight": 0.2433774834437086,
-          "rs": 0.735
+          "symbol": "6758",
+          "alphaScore": 0.41283112582781456,
+          "signal": "LONG",
+          "sueProxy": 0.13279852770545802
+        },
+        {
+          "symbol": "4063",
+          "alphaScore": 0.41283112582781456,
+          "signal": "LONG",
+          "sueProxy": 0.38010863292153124
         }
       ]
     },
+    "risks": {
+      "kellyFraction": 0.1,
+      "stopLossPct": 0.03,
+      "maxPositions": 5
+    },
     "results": {
+      "mode": "PROOF",
+      "status": "PASS",
+      "expectedEdge": 0.24,
       "basketDailyReturn": 0.00879372260057583,
-      "status": "SUCCESS"
+      "paperPnlPerUnit": 0.00879372260057583,
+      "backtest": {
+        "from": "20220831",
+        "to": "20220831",
+        "tradingDays": 1,
+        "feeBps": 1,
+        "slippageBps": 1,
+        "totalCostBps": 2,
+        "grossReturn": 0.008993722600575831,
+        "netReturn": 0.00879372260057583,
+        "pnlPerUnit": 0.00879372260057583
+      },
+      "proved": true,
+      "selectedSymbols": [
+        "7203",
+        "9984",
+        "8035",
+        "6758",
+        "4063"
+      ],
+      "generatedAt": "2026-02-24T10:16:55.466Z"
     },
     "analysis": [
       {
@@ -166,6 +292,11 @@
         "signal": "LONG",
         "targetReturn": 0.01021671826625387
       }
-    ]
+    ],
+    "workflow": {
+      "dataReadiness": "PASS",
+      "alphaReadiness": "PASS",
+      "verdict": "USEFUL"
+    }
   }
 }

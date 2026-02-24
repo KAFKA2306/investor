@@ -1,33 +1,38 @@
 import type { z } from "zod";
+import type {
+  EvaluationResult,
+  IAcquirer,
+  IConstructor,
+  IEvaluator,
+  IEvolver,
+  IProcessor,
+} from "../core/opence/interfaces";
 import type { ContextPlaybook } from "../core/playbook";
 import type { DailyScenarioLogSchema, UnifiedLog } from "../schemas/log";
 
 /**
  * OpenCE: Evaluation Pillar
- * AceEvaluator (formerly AceReflector): Analyzes execution logs to extract actionable insights.
+ * AceEvaluator: Analyzes execution logs to extract actionable insights.
  */
-export class AceEvaluator {
+export class AceEvaluator implements IEvaluator {
   /**
    * Generates insights from a run log.
    */
-  async evaluate(runLog: UnifiedLog): Promise<{
-    insights: string[];
-    helpfulIds: string[];
-    harmfulIds: string[];
-  }> {
+  async evaluate(output: UnifiedLog): Promise<EvaluationResult> {
+    const runLog = output;
     const insights: string[] = [];
     const helpfulIds: string[] = [];
     const harmfulIds: string[] = [];
 
     if (runLog.schema !== "investor.daily-log.v1") {
-      return { insights, helpfulIds, harmfulIds };
+      return { score: 0, feedback: [], metadata: { helpfulIds, harmfulIds } };
     }
 
     const report = runLog.report as z.infer<typeof DailyScenarioLogSchema>;
     const results = report.results?.backtest;
 
     if (!results || results.sharpe === undefined)
-      return { insights, helpfulIds, harmfulIds };
+      return { score: 0, feedback: [], metadata: { helpfulIds, harmfulIds } };
 
     if (results.sharpe < 0.5) {
       insights.push(
@@ -39,19 +44,45 @@ export class AceEvaluator {
       );
     }
 
-    return { insights, helpfulIds, harmfulIds };
+    return {
+      score: results.sharpe,
+      feedback: insights,
+      metadata: { helpfulIds, harmfulIds },
+    };
+  }
+}
+
+/**
+ * OpenCE: Processing Pillar
+ * AceProcessor: Handles deduplication and semantic cleaning.
+ */
+export class AceProcessor implements IProcessor {
+  async process(content: string): Promise<string> {
+    // Current simple implementation: returning as-is
+    return content;
+  }
+}
+
+/**
+ * OpenCE: Construction Pillar
+ * AceConstructor: Assembles context into prompts.
+ */
+export class AceConstructor implements IConstructor {
+  async construct(input: unknown, context: string[]): Promise<string> {
+    const bulletList = context.map((c) => `- ${c}`).join("\n");
+    return `Context:\n${bulletList}\n\nTask: ${JSON.stringify(input)}`;
   }
 }
 
 /**
  * OpenCE: Acquisition Pillar
- * AceAcquirer (formerly AceStrategyMiner): Discovers and proposes new, high-value orthogonal strategies.
+ * AceAcquirer: Discovers and proposes new, high-value orthogonal strategies.
  */
-export class AceAcquirer {
+export class AceAcquirer implements IAcquirer {
   /**
    * Proposes new strategy hypotheses based on market structural gaps.
    */
-  async acquireAlphaFrontiers(): Promise<string[]> {
+  async acquire(): Promise<string[]> {
     return [
       "Cross-Liquidity Arbitrage: 指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
       "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフトを基盤モデル（Chronos/TimesFM）で強化した検証系。",
@@ -63,16 +94,15 @@ export class AceAcquirer {
 
 /**
  * OpenCE: Evolution Pillar
- * AceEvolver (formerly AceCurator): Manages the Playbook updates based on Evaluation signals.
+ * AceEvolver: Manages the Playbook updates based on Evaluation signals.
  */
-export class AceEvolver {
+export class AceEvolver implements IEvolver {
   constructor(private playbook: ContextPlaybook) {}
 
-  async evolve(
-    insights: string[],
-    helpfulIds: string[],
-    harmfulIds: string[],
-  ): Promise<void> {
+  async evolve(signal: EvaluationResult): Promise<void> {
+    const { feedback: insights, metadata } = signal;
+    const helpfulIds = (metadata.helpfulIds as string[]) || [];
+    const harmfulIds = (metadata.harmfulIds as string[]) || [];
     // 1. Update helpful/harmful counts for existing bullets
     const allBullets = this.playbook.getBullets();
     for (const b of allBullets) {

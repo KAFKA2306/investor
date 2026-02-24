@@ -91,15 +91,14 @@ export async function runVegetableProof(): Promise<UnifiedLog> {
     const playbook = new ContextPlaybook();
     await playbook.load();
     const evaluator = new AceEvaluator();
-    const { insights, helpfulIds, harmfulIds } =
-      await evaluator.evaluate(finalLog);
+    const evaluation = await evaluator.evaluate(finalLog);
 
     const evolver = new AceEvolver(playbook);
-    await evolver.evolve(insights, helpfulIds, harmfulIds);
+    await evolver.evolve(evaluation);
 
     // 8. OpenCE: Acquisition Pillar (Alpha Frontier Discovery)
     const acquirer = new AceAcquirer();
-    const frontiers = await acquirer.acquireAlphaFrontiers();
+    const frontiers = await acquirer.acquire();
     for (const content of frontiers) {
       playbook.addBullet({
         content,

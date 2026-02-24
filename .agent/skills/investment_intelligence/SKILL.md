@@ -34,6 +34,7 @@ sequenceDiagram
   - Alpha is transient: 優位性は劣化する前提で継続検証する。
   - Data over narrative: 検証で示せない主張は採用しない。
   - Execution defines PnL: 戦略評価は実行コスト込みで判定する。
+  - **ACE for Persistence**: 成功・失敗の経験を `Playbook` に蓄積し、エージェントのコンテキストを進化させる。
 
 ## 2. Scope
 
@@ -48,9 +49,9 @@ sequenceDiagram
 必須レイヤ構成:
 - `agents/`: 認識・推論（Signal生成）
 - `gateways/`: 外部データ取得の抽象化
-- `backtest/`: コスト込み検証
-- `execution/`: paper/live 執行
-- `pipeline/evaluate`: ベンチマークとA/B比較
+- `core/playbook.ts`: ACE基盤。知識の永続化と整理 (Curator)
+- `agents/ace_agents.ts`: ACE Reflector/Curator ロジックの実装
+- **Skill Reference**: [ACE Intelligence](file:///home/kafka/finance/investor/.agent/skills/ace_intelligence/SKILL.md) を知能循環の核として使用する。
 
 禁止事項:
 - Agent/Scenario から Provider を直接 `new` しない。
@@ -151,6 +152,7 @@ sequenceDiagram
 - Backtest と A/B 比較結果を提示できる
 - `decision` と `execution` が分離されログ化される
 - 監査可能な証跡（条件・結果・モデル参照）が残る
+- **ACE Playbook** へのフィードバックが実施されている
 
 ## 13. LLM Agent Survey Concretization (arXiv:2408.06361)
 

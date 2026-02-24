@@ -79,17 +79,147 @@
       }
     },
     {
+      "id": "ctx-lskxai7q",
+      "content": "Low Sharpe ratio (-0.15) detected. Strategy might be too volatile or trend-following in ranging market.",
+      "section": "insights",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:07:49.393Z",
+      "updated_at": "2026-02-24T10:07:49.393Z",
+      "metadata": {
+        "source": "AceEvaluator",
+        "timestamp": "2026-02-24T10:07:49.393Z"
+      }
+    },
+    {
+      "id": "ctx-618wyupi",
+      "content": "Cross-Liquidity Arbitrage: 指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:07:49.394Z",
+      "updated_at": "2026-02-24T10:07:49.394Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-szypz7q7",
+      "content": "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフトを基盤モデル（Chronos/TimesFM）で強化した検証系。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:07:49.394Z",
+      "updated_at": "2026-02-24T10:07:49.394Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-oxefj8c7",
+      "content": "Sentiment-Volume Divergence: SNSセンチメントと出来高乖離による反転シグナル。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:07:49.394Z",
+      "updated_at": "2026-02-24T10:07:49.394Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-tuqbui3l",
+      "content": "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証する動的配分ロジック。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:07:49.394Z",
+      "updated_at": "2026-02-24T10:07:49.394Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-1uw92i9v",
+      "content": "Low Sharpe ratio (-0.15) detected. Strategy might be too volatile or trend-following in ranging market.",
+      "section": "insights",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:16:08.156Z",
+      "updated_at": "2026-02-24T10:16:08.156Z",
+      "metadata": {
+        "source": "AceEvaluator",
+        "timestamp": "2026-02-24T10:16:08.156Z"
+      }
+    },
+    {
+      "id": "ctx-au9wjjd6",
+      "content": "Cross-Liquidity Arbitrage: 指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:16:08.157Z",
+      "updated_at": "2026-02-24T10:16:08.157Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-ok0rgs43",
+      "content": "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフトを基盤モデル（Chronos/TimesFM）で強化した検証系。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:16:08.157Z",
+      "updated_at": "2026-02-24T10:16:08.157Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-ec21g1oc",
+      "content": "Sentiment-Volume Divergence: SNSセンチメントと出来高乖離による反転シグナル。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:16:08.157Z",
+      "updated_at": "2026-02-24T10:16:08.157Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-arvmivm9",
+      "content": "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証する動的配分ロジック。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:16:08.157Z",
+      "updated_at": "2026-02-24T10:16:08.157Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
       "content": "Low Sharpe ratio (-0.15) detected. Strategy might be too volatile or trend-following in ranging market.",
       "section": "insights",
       "metadata": {
         "source": "AceEvaluator",
-        "timestamp": "2026-02-24T10:07:49.393Z"
+        "timestamp": "2026-02-24T10:16:19.818Z"
       },
-      "id": "ctx-lskxai7q",
+      "id": "ctx-0hli8q9w",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-24T10:07:49.393Z",
-      "updated_at": "2026-02-24T10:07:49.393Z"
+      "created_at": "2026-02-24T10:16:19.818Z",
+      "updated_at": "2026-02-24T10:16:19.818Z"
     },
     {
       "content": "Cross-Liquidity Arbitrage: 指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
@@ -98,11 +228,11 @@
         "source": "AceAcquirer",
         "type": "HYPOTHESIS"
       },
-      "id": "ctx-618wyupi",
+      "id": "ctx-gs7mlh5r",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-24T10:07:49.394Z",
-      "updated_at": "2026-02-24T10:07:49.394Z"
+      "created_at": "2026-02-24T10:16:19.819Z",
+      "updated_at": "2026-02-24T10:16:19.819Z"
     },
     {
       "content": "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフトを基盤モデル（Chronos/TimesFM）で強化した検証系。",
@@ -111,11 +241,11 @@
         "source": "AceAcquirer",
         "type": "HYPOTHESIS"
       },
-      "id": "ctx-szypz7q7",
+      "id": "ctx-sn0i6a68",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-24T10:07:49.394Z",
-      "updated_at": "2026-02-24T10:07:49.394Z"
+      "created_at": "2026-02-24T10:16:19.819Z",
+      "updated_at": "2026-02-24T10:16:19.819Z"
     },
     {
       "content": "Sentiment-Volume Divergence: SNSセンチメントと出来高乖離による反転シグナル。",
@@ -124,11 +254,11 @@
         "source": "AceAcquirer",
         "type": "HYPOTHESIS"
       },
-      "id": "ctx-oxefj8c7",
+      "id": "ctx-3dg2g40h",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-24T10:07:49.394Z",
-      "updated_at": "2026-02-24T10:07:49.394Z"
+      "created_at": "2026-02-24T10:16:19.819Z",
+      "updated_at": "2026-02-24T10:16:19.819Z"
     },
     {
       "content": "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証する動的配分ロジック。",
@@ -137,11 +267,11 @@
         "source": "AceAcquirer",
         "type": "HYPOTHESIS"
       },
-      "id": "ctx-tuqbui3l",
+      "id": "ctx-zi8fvtz4",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-24T10:07:49.394Z",
-      "updated_at": "2026-02-24T10:07:49.394Z"
+      "created_at": "2026-02-24T10:16:19.819Z",
+      "updated_at": "2026-02-24T10:16:19.819Z"
     }
   ]
 }

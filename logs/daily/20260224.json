@@ -1,6 +1,6 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-24T03:39:06.518Z",
+  "generatedAt": "2026-02-24T10:16:08.248Z",
   "models": [
     {
       "id": "amazon-chronos",
@@ -53,7 +53,7 @@
   ],
   "report": {
     "scenarioId": "SCN-VEG-001",
-    "analyzedAt": "2026-02-24T03:39:06.518Z",
+    "analyzedAt": "2026-02-24T10:16:08.248Z",
     "date": "20260224",
     "inputs": {
       "estatStatsDataId": "0000010101",
@@ -84,87 +84,87 @@
     "analysis": [
       {
         "symbol": "1375",
-        "date": "20220830",
+        "date": "20260224",
         "ohlc6": {
-          "open": 1045,
-          "high": 1045,
-          "low": 1028,
-          "close": 1036,
-          "volume": 43500,
-          "turnoverValue": 45000400
+          "open": 0,
+          "high": 0,
+          "low": 0,
+          "close": 0,
+          "volume": 0,
+          "turnoverValue": 0
         },
         "finance": {
-          "netSales": 8201000000,
-          "operatingProfit": -163000000,
-          "profitMargin": -0.019875624923789782
+          "netSales": 35669000000,
+          "operatingProfit": 3614000000,
+          "profitMargin": 0.10132047436149037
         },
         "factors": {
-          "prevDailyReturn": -0.00861244019138756,
-          "intradayRange": 0.016267942583732056,
-          "closeStrength": 0.47058823529411764,
-          "liquidityPerShare": 1034.4919540229885
+          "prevDailyReturn": 0,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
         },
-        "alphaScore": -0.2135976667486242,
+        "alphaScore": -0.227491022997439,
         "signal": "HOLD",
-        "targetReturn": 0.006782945736434108
+        "targetReturn": 0
       },
       {
         "symbol": "1332",
-        "date": "20220830",
+        "date": "20260224",
         "ohlc6": {
-          "open": 575,
-          "high": 578,
-          "low": 573,
-          "close": 577,
-          "volume": 705100,
-          "turnoverValue": 406131700
+          "open": 0,
+          "high": 0,
+          "low": 0,
+          "close": 0,
+          "volume": 0,
+          "turnoverValue": 0
         },
         "finance": {
-          "netSales": 184255000000,
-          "operatingProfit": 6676000000,
-          "profitMargin": 0.0362323953217009
+          "netSales": 625481000000,
+          "operatingProfit": 26355000000,
+          "profitMargin": 0.04213557246343214
         },
         "factors": {
-          "prevDailyReturn": 0.0034782608695652175,
-          "intradayRange": 0.008695652173913044,
-          "closeStrength": 0.8,
-          "liquidityPerShare": 575.9916323925685
+          "prevDailyReturn": 0,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
         },
-        "alphaScore": -0.19165437959936546,
+        "alphaScore": -0.23194818559400296,
         "signal": "HOLD",
-        "targetReturn": 0.00528169014084507
+        "targetReturn": 0
       },
       {
         "symbol": "2503",
-        "date": "20220830",
+        "date": "20260224",
         "ohlc6": {
-          "open": 2274,
-          "high": 2298.5,
-          "low": 2261,
-          "close": 2281,
-          "volume": 2896600,
-          "turnoverValue": 6610175850
+          "open": 0,
+          "high": 0,
+          "low": 0,
+          "close": 0,
+          "volume": 0,
+          "turnoverValue": 0
         },
         "finance": {
-          "netSales": 917048000000,
-          "operatingProfit": 0,
-          "profitMargin": 0
+          "netSales": 2134393000000,
+          "operatingProfit": 150294000000,
+          "profitMargin": 0.07041533588237968
         },
         "factors": {
-          "prevDailyReturn": 0.0030782761653474055,
-          "intradayRange": 0.016490765171503958,
-          "closeStrength": 0.5333333333333333,
-          "liquidityPerShare": 2282.046485534765
+          "prevDailyReturn": 0,
+          "intradayRange": 0,
+          "closeStrength": 0,
+          "liquidityPerShare": 0
         },
-        "alphaScore": -0.2085689183507278,
+        "alphaScore": -0.23060169595763197,
         "signal": "HOLD",
-        "targetReturn": -0.00108837614279495
+        "targetReturn": 0
       }
     ],
     "decision": {
       "strategy": "Vegetable Inflation Rotation",
       "action": "NO_TRADE",
-      "topSymbol": "1332",
+      "topSymbol": "1375",
       "reason": "合成αが閾値未達。",
       "experimentValue": "USELESS"
     },
@@ -175,21 +175,21 @@
       "symbols": [
         {
           "symbol": "1375",
-          "alphaScore": -0.2135976667486242,
+          "alphaScore": -0.227491022997439,
           "signal": "HOLD",
-          "sueProxy": -0.019875624923789782
+          "sueProxy": 0.10132047436149037
         },
         {
           "symbol": "1332",
-          "alphaScore": -0.19165437959936546,
+          "alphaScore": -0.23194818559400296,
           "signal": "HOLD",
-          "sueProxy": 0.0362323953217009
+          "sueProxy": 0.04213557246343214
         },
         {
           "symbol": "2503",
-          "alphaScore": -0.2085689183507278,
+          "alphaScore": -0.23060169595763197,
           "signal": "HOLD",
-          "sueProxy": 0
+          "sueProxy": 0.07041533588237968
         }
       ]
     },
@@ -201,23 +201,24 @@
     "results": {
       "mode": "PROOF",
       "status": "FAIL",
-      "expectedEdge": -0.20460698823290582,
+      "expectedEdge": -0.23001363484969128,
       "basketDailyReturn": -0.0015,
       "paperPnlPerUnit": -0.0015,
       "backtest": {
-        "from": "20220812",
-        "to": "20220831",
+        "from": "20260205",
+        "to": "20260224",
         "tradingDays": 20,
         "feeBps": 10,
         "slippageBps": 5,
         "totalCostBps": 15,
         "grossReturn": 0,
         "netReturn": -0.0015,
-        "pnlPerUnit": -0.0015
+        "pnlPerUnit": -0.0015,
+        "sharpe": -0.15
       },
       "proved": false,
       "selectedSymbols": [],
-      "generatedAt": "2026-02-24T03:39:06.518Z"
+      "generatedAt": "2026-02-24T10:16:08.248Z"
     },
     "execution": {
       "mode": "PAPER",
@@ -229,7 +230,7 @@
       }
     },
     "workflow": {
-      "dataReadiness": "PASS",
+      "dataReadiness": "FAIL",
       "alphaReadiness": "FAIL",
       "verdict": "USELESS"
     }
