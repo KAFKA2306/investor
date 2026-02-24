@@ -291,7 +291,8 @@ export class LesAgent extends BaseAgent {
 
     return `# LES フレームワーク実証レポート (${outcome.strategyId})
 
-**日付:** ${date}
+**レポート作成日:** ${new Date().toISOString().split("T")[0]}
+**検証対象日:** ${date}
 **ステータス:** **${this.validateStrategy(outcome) ? "VERIFIED ✅" : "FAILED ❌"}**
 **対象戦略:** ${outcome.strategyName}
 

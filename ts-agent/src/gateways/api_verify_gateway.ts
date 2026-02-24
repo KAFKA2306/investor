@@ -30,7 +30,13 @@ export class ApiVerifyGateway {
         "x-api-key": this.jquantsApiKey,
       },
     });
-    response.ok || process.exit(1);
+    if (!response.ok) {
+      console.error(
+        `[JQuants] API Failed: ${response.status} ${response.statusText}`,
+      );
+      console.error(await response.text());
+      process.exit(1);
+    }
     const payload = z
       .record(z.string(), z.unknown())
       .parse(await response.json());
@@ -47,7 +53,10 @@ export class ApiVerifyGateway {
     url.searchParams.set("statsDataId", statsDataId);
     url.searchParams.set("lang", "J");
     const response = await fetch(url.toString());
-    response.ok || process.exit(1);
+    if (!response.ok) {
+      console.error(`[e-Stat] API Failed: ${response.status}`);
+      process.exit(1);
+    }
     return z.record(z.string(), z.unknown()).parse(await response.json());
   }
 }

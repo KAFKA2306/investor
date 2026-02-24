@@ -107,6 +107,7 @@ export const DailyScenarioLogSchema = z.object({
         grossReturn: z.number(),
         netReturn: z.number(),
         pnlPerUnit: z.number(),
+        sharpe: z.number().optional(),
       })
       .optional(),
     proved: z.boolean(),

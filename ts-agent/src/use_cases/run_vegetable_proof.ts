@@ -1,9 +1,15 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import {
+  AceCurator,
+  AceReflector,
+  AceStrategyMiner,
+} from "../agents/ace_agents.ts";
 import { core } from "../core/index.ts";
+import { ContextPlaybook } from "../core/playbook.ts";
 import { executePaperOrders } from "../execution/paper_executor.ts";
 import { runVegetableScenario } from "../experiments/scenarios/vegetable_daily.ts";
-import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
+import { LiveMarketDataGateway } from "../gateways/live_market_data_gateway.ts";
 import {
   loadForecastModelReferences,
   type ModelReference,
@@ -31,19 +37,22 @@ const toModelRows = (models: readonly ModelReference[]) =>
     arxiv: model.arxiv,
   }));
 
-const VegetableUniverse = ["1375", "1332", "2503"] as const;
-
 export async function runVegetableProof(): Promise<UnifiedLog> {
   const nowIso = new Date().toISOString();
-  const gateway = await MarketdataLocalGateway.create(VegetableUniverse);
+  const gateway = new LiveMarketDataGateway();
   const marketDataEnd = await gateway.getMarketDataEndDate();
   const anchor = new Date(
     `${marketDataEnd.slice(0, 4)}-${marketDataEnd.slice(4, 6)}-${marketDataEnd.slice(6, 8)}T00:00:00.000Z`,
   );
+  const playbook = new ContextPlaybook();
+  await playbook.load();
+  const playbookBullets = playbook.getRankedBullets();
+
   const report = await runVegetableScenario(
     gateway,
     nowIso,
     lastCalendarDays(20, anchor),
+    playbookBullets,
   );
   const execution = executePaperOrders(report, nowIso);
   const reportWithExecution = {
@@ -79,5 +88,33 @@ export async function runVegetableProof(): Promise<UnifiedLog> {
     "utf8",
   );
 
-  return envelope;
+  const finalLog = envelope;
+
+  // 7. ACE Continuous Improvement Loop (Reflector/Curator)
+  try {
+    const playbook = new ContextPlaybook();
+    await playbook.load();
+    const reflector = new AceReflector();
+    const { insights, helpfulIds, harmfulIds } =
+      await reflector.reflect(finalLog);
+
+    const curator = new AceCurator(playbook);
+    await curator.applyInsights(insights, helpfulIds, harmfulIds);
+
+    // 8. Alpha Frontier Discovery (Strategy Mining)
+    const miner = new AceStrategyMiner();
+    const frontiers = await miner.proposeAlphaFrontiers();
+    for (const content of frontiers) {
+      playbook.addBullet({
+        content,
+        section: "strategies_and_hard_rules",
+        metadata: { source: "AceStrategyMiner", type: "HYPOTHESIS" },
+      });
+    }
+    await playbook.save();
+  } catch (aceError) {
+    console.warn("ACE Loop failed (non-critical):", aceError);
+  }
+
+  return finalLog;
 }

@@ -69,7 +69,7 @@ export const scoreDailyAlpha = (
   predictedReturn = 0,
   targetReturn?: number,
 ): SymbolAnalysis => {
-  const date = String(bar.Date || bar.date || "00000000")
+  const date = String(bar.Date || bar.date || "19700101")
     .replaceAll("-", "")
     .slice(0, 8);
   const open = getNumberByKeys(bar, ["Open", "open_price", "open", "O"]);

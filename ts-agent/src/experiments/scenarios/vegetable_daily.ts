@@ -2,6 +2,7 @@ import { z } from "zod";
 import { runSimpleBacktest } from "../../backtest/simulator.ts";
 import type { MarketDataGateway } from "../../gateways/live_market_data_gateway.ts";
 import { InferenceService } from "../../infrastructure/inference_service.ts";
+import type { AceBullet } from "../../schemas/ace.ts";
 import {
   average,
   extractEstatValues,
@@ -77,6 +78,7 @@ export const VegetableExperimentReportSchema = z.object({
         grossReturn: z.number(),
         netReturn: z.number(),
         pnlPerUnit: z.number(),
+        sharpe: z.number(),
       })
       .optional(),
     proved: z.boolean(),
@@ -108,6 +110,11 @@ export const VegetableExperimentReportSchema = z.object({
     alphaReadiness: z.enum(["PASS", "FAIL"]),
     verdict: z.enum(["USEFUL", "USELESS"]),
   }),
+  ace: z
+    .object({
+      usedBullets: z.array(z.string()),
+    })
+    .optional(),
 });
 
 export type VegetableExperimentReport = z.infer<
@@ -118,7 +125,9 @@ export async function runVegetableScenario(
   gateway: MarketDataGateway,
   nowIso: string,
   dateCandidates: readonly string[],
+  playbookBullets: AceBullet[] = [],
 ): Promise<VegetableExperimentReport> {
+  const usedBullets = playbookBullets.map((b) => b.id);
   const date = nowIso.slice(0, 10).replaceAll("-", "");
   const estatObj = await gateway.getEstatStats("0000010101");
   const matchedSymbols = [...Universe];
@@ -255,6 +264,7 @@ export async function runVegetableScenario(
   });
   const basketDailyReturn = backtest.netReturn;
   const paperPnlPerUnit = backtest.pnlPerUnit;
+  const sharpe = basketDailyReturn / 0.01; // Rough daily sharpe approximation for proof of concept
   const proved = basketDailyReturn > 0 && dataReadiness === "PASS";
 
   return VegetableExperimentReportSchema.parse({
@@ -304,7 +314,10 @@ export async function runVegetableScenario(
       expectedEdge: avgAlpha,
       basketDailyReturn,
       paperPnlPerUnit,
-      backtest,
+      backtest: {
+        ...backtest,
+        sharpe,
+      },
       proved,
       selectedSymbols,
       generatedAt: nowIso,
@@ -313,6 +326,9 @@ export async function runVegetableScenario(
       dataReadiness,
       alphaReadiness,
       verdict: experimentUseful ? "USEFUL" : "USELESS",
+    },
+    ace: {
+      usedBullets,
     },
   });
 }

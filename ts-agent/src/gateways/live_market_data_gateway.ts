@@ -107,6 +107,7 @@ export class LiveMarketDataGateway implements MarketDataGateway {
       Close: q.close,
       Volume: q.volume,
       TurnoverValue: q.close * q.volume,
+      Date: new Date().toISOString().slice(0, 10).replaceAll("-", ""),
       NetSales: q.marketCap,
       OperatingProfit: q.trailingPE > 0 ? q.marketCap / q.trailingPE / 10 : 0,
     };

@@ -1,0 +1,82 @@
+{
+  "bullets": [
+    {
+      "id": "ctx-p8chxwbq",
+      "content": "Low Sharpe ratio (-0.15) detected. Strategy might be too volatile or trend-following in ranging market.",
+      "section": "insights",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T09:49:27.564Z",
+      "updated_at": "2026-02-24T09:49:27.564Z",
+      "metadata": {
+        "source": "AceReflector",
+        "timestamp": "2026-02-24T09:49:27.564Z"
+      }
+    },
+    {
+      "content": "Low Sharpe ratio (-0.15) detected. Strategy might be too volatile or trend-following in ranging market.",
+      "section": "insights",
+      "metadata": {
+        "source": "AceReflector",
+        "timestamp": "2026-02-24T10:01:35.599Z"
+      },
+      "id": "ctx-rnx3xd66",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:01:35.599Z",
+      "updated_at": "2026-02-24T10:01:35.599Z"
+    },
+    {
+      "content": "Cross-Liquidity Arbitrage: 利用可能なJ-Quantsデータを用い、指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AceStrategyMiner",
+        "type": "HYPOTHESIS"
+      },
+      "id": "ctx-tmxzspjk",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:01:35.600Z",
+      "updated_at": "2026-02-24T10:01:35.600Z"
+    },
+    {
+      "content": "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフト（PEAD）を、Chronos/TimesFMによる非線形予測で強化した検証系。",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AceStrategyMiner",
+        "type": "HYPOTHESIS"
+      },
+      "id": "ctx-98jdx437",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:01:35.600Z",
+      "updated_at": "2026-02-24T10:01:35.600Z"
+    },
+    {
+      "content": "Sentiment-Volume Divergence: X Intelligenceを活用し、感情の極端な乖離と出来高の急増をトリガーとする反転シグナルの検証。",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AceStrategyMiner",
+        "type": "HYPOTHESIS"
+      },
+      "id": "ctx-cbb45y5e",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:01:35.600Z",
+      "updated_at": "2026-02-24T10:01:35.600Z"
+    },
+    {
+      "content": "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証し、相関が低いセクターへの動的配分ロジック。",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AceStrategyMiner",
+        "type": "HYPOTHESIS"
+      },
+      "id": "ctx-9q99s6ql",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-24T10:01:35.600Z",
+      "updated_at": "2026-02-24T10:01:35.600Z"
+    }
+  ]
+}
