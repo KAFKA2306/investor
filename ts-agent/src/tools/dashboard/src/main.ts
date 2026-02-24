@@ -21,7 +21,13 @@ interface StandardOutcome {
     pValue?: number;
     informationCoefficient?: number;
     numerai?: { corr?: number; mmc?: number; fnc?: number };
-    famaFrench?: { mkt?: number; smb?: number; hml?: number; rmw?: number; cma?: number };
+    famaFrench?: {
+      mkt?: number;
+      smb?: number;
+      hml?: number;
+      rmw?: number;
+      cma?: number;
+    };
   };
   verification?: {
     metrics: {
@@ -150,12 +156,13 @@ interface BenchmarkLogPayload {
       insights?: string;
     };
   };
-  models?: any[];
+  models?: Array<Record<string, unknown>>;
 }
 
 // --- Helpers ---
 
-const pickNumber = (v: unknown): number => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+const pickNumber = (v: unknown): number =>
+  typeof v === "number" && Number.isFinite(v) ? v : 0;
 
 const toSummary = (file: string, payload: LogPayload): DailySummary => {
   const report = (payload.report ?? payload) as DashboardReport;
@@ -166,7 +173,10 @@ const toSummary = (file: string, payload: LogPayload): DailySummary => {
   };
 };
 
-const toBenchSummary = (file: string, payload: BenchmarkLogPayload): BenchSummary => {
+const toBenchSummary = (
+  file: string,
+  payload: BenchmarkLogPayload,
+): BenchSummary => {
   const report = payload.report || {};
   return {
     date: report.date || file.replace(".json", ""),
@@ -199,7 +209,7 @@ class DashboardShell {
   private logs: DailySummary[] = [];
   private outcomes: OutcomeSummary[] = [];
   private benches: BenchSummary[] = [];
-  private registry: any[] = [];
+  private registry: Array<Record<string, unknown>> = [];
 
   private staticPayloadByDate = new Map<string, LogPayload>();
   private unifiedPayloadByDate = new Map<string, UnifiedRunLogPayload>();
@@ -216,7 +226,10 @@ class DashboardShell {
 
   private registerEngines() {
     this.viewEngines.set("investor.daily-log.v1", new DailyLogEngine(this));
-    this.viewEngines.set("investor.investment-outcome", new OutcomeEngine(this));
+    this.viewEngines.set(
+      "investor.investment-outcome",
+      new OutcomeEngine(this),
+    );
     this.viewEngines.set("investor.benchmark.v1", new BenchmarkEngine(this));
   }
 
@@ -247,62 +260,66 @@ class DashboardShell {
     try {
       const res = await fetch(`${STATIC_LOGS_BASE}/manifest.json`);
       if (!res.ok) return;
-      const files = await res.json() as string[];
-      for (const file of files.filter(f => /^\d{8}\.json$/.test(f))) {
+      const files = (await res.json()) as string[];
+      for (const file of files.filter((f) => /^\d{8}\.json$/.test(f))) {
         const r = await fetch(`${STATIC_LOGS_BASE}/${file}`);
         if (r.ok) {
-          const p = await r.json() as LogPayload;
+          const p = (await r.json()) as LogPayload;
           const report = (p.report ?? p) as DashboardReport;
           const date = report.date || file.replace(".json", "");
           this.staticPayloadByDate.set(date, p);
         }
       }
-      this.logs = Array.from(this.staticPayloadByDate.entries()).map(([f, p]) => toSummary(f, p)).sort((a, b) => b.date.localeCompare(a.date));
-    } catch (e) { }
+      this.logs = Array.from(this.staticPayloadByDate.entries())
+        .map(([f, p]) => toSummary(f, p))
+        .sort((a, b) => b.date.localeCompare(a.date));
+    } catch (e) {}
   }
 
   private async loadUnifiedLogs() {
     try {
       const res = await fetch(`${UNIFIED_LOGS_BASE}/manifest.json`);
       if (!res.ok) return;
-      const files = await res.json() as string[];
-      for (const file of files.filter(f => /^\d{8}\.json$/.test(f))) {
+      const files = (await res.json()) as string[];
+      for (const file of files.filter((f) => /^\d{8}\.json$/.test(f))) {
         const r = await fetch(`${UNIFIED_LOGS_BASE}/${file}`);
         if (r.ok) {
-          const p = await r.json() as UnifiedRunLogPayload;
+          const p = (await r.json()) as UnifiedRunLogPayload;
           if (p.date) this.unifiedPayloadByDate.set(p.date, p);
         }
       }
-    } catch (e) { }
+    } catch (e) {}
   }
 
   private async loadBenchLogs() {
     try {
       const res = await fetch(`${BENCH_LOGS_BASE}/manifest.json`);
       if (!res.ok) return;
-      const files = await res.json() as string[];
-      for (const file of files.filter(f => /^\d{8}\.json$/.test(f))) {
+      const files = (await res.json()) as string[];
+      for (const file of files.filter((f) => /^\d{8}\.json$/.test(f))) {
         const r = await fetch(`${BENCH_LOGS_BASE}/${file}`);
         if (r.ok) {
-          const p = await r.json() as BenchmarkLogPayload;
+          const p = (await r.json()) as BenchmarkLogPayload;
           const date = p.report?.date || file.replace(".json", "");
           this.benchPayloadByDate.set(date, p);
         }
       }
-      this.benches = Array.from(this.benchPayloadByDate.entries()).map(([f, p]) => toBenchSummary(f, p)).sort((a, b) => b.date.localeCompare(a.date));
-    } catch (e) { }
+      this.benches = Array.from(this.benchPayloadByDate.entries())
+        .map(([f, p]) => toBenchSummary(f, p))
+        .sort((a, b) => b.date.localeCompare(a.date));
+    } catch (e) {}
   }
 
   private async loadOutcomeLogs() {
     try {
       const res = await fetch(`${UNIFIED_LOGS_BASE}/manifest.json`);
       if (!res.ok) return;
-      const files = await res.json() as string[];
+      const files = (await res.json()) as string[];
       const outcomes: OutcomeSummary[] = [];
       for (const file of files) {
         const r = await fetch(`${UNIFIED_LOGS_BASE}/${file}`);
         if (r.ok) {
-          const p = await r.json() as LogPayload;
+          const p = (await r.json()) as LogPayload;
           if (p.schema === "investor.investment-outcome") {
             const report = p.report as StandardOutcome;
             this.outcomePayloadById.set(report.strategyId, p);
@@ -311,7 +328,7 @@ class DashboardShell {
         }
       }
       this.outcomes = outcomes;
-    } catch (e) { }
+    } catch (e) {}
   }
 
   private async loadRegistry() {
@@ -321,7 +338,7 @@ class DashboardShell {
       const data = await res.json();
       this.registry = Array.isArray(data) ? data : data.models || [];
       this.renderRegistry();
-    } catch (e) { }
+    } catch (_e) {}
   }
 
   public selectLog(date: string) {
@@ -350,56 +367,107 @@ class DashboardShell {
   }
 
   private renderSidebar() {
-    const renderList = (id: string, items: any[], template: (i: any) => string, clickHandler: (val: string) => void, attr: string) => {
+    const renderList = <T>(
+      id: string,
+      items: T[],
+      template: (i: T) => string,
+      clickHandler: (val: string) => void,
+      attr: string,
+    ) => {
       const el = document.getElementById(id);
       if (!el) return;
       el.innerHTML = items.map(template).join("");
-      el.querySelectorAll(".log-item").forEach(i => i.addEventListener("click", () => clickHandler(i.getAttribute(attr)!)));
+      el.querySelectorAll(".log-item").forEach((i) => {
+        i.addEventListener("click", () => clickHandler(i.getAttribute(attr)!));
+      });
     };
 
-    renderList("log-list", this.logs, l => `
+    renderList(
+      "log-list",
+      this.logs,
+      (l) => `
       <div class="log-item" data-date="${l.date}">
         <div class="log-item-row"><span class="log-date">${this.formatDate(l.date)}</span><span class="badge ${l.verdict === "USEFUL" ? "badge-success" : "badge-danger"}">${l.verdict}</span></div>
         <div class="log-sub">Return: ${(l.basketDailyReturn * 100).toFixed(2)}%</div>
-      </div>`, v => this.selectLog(v), "data-date");
+      </div>`,
+      (v) => this.selectLog(v),
+      "data-date",
+    );
 
-    renderList("bench-list", this.benches, b => `
+    renderList(
+      "bench-list",
+      this.benches,
+      (b) => `
       <div class="log-item" data-date="${b.date}">
         <div class="log-item-row"><span class="log-date">${this.formatDate(b.date)}</span><span class="badge badge-neutral">BMK</span></div>
         <div class="log-sub">${b.type} (${b.modelsCount})</div>
-      </div>`, v => this.selectBenchmark(v), "data-date");
+      </div>`,
+      (v) => this.selectBenchmark(v),
+      "data-date",
+    );
 
-    renderList("outcome-list", this.outcomes, o => `
+    renderList(
+      "outcome-list",
+      this.outcomes,
+      (o) => `
       <div class="log-item" data-id="${o.id}">
         <div class="log-item-row"><span class="log-date">${o.name}</span><span class="badge ${o.readiness >= 75 ? "badge-success" : "badge-warning"}">RS: ${o.readiness.toFixed(0)}</span></div>
         <div class="log-sub">Sharpe: ${o.sharpe.toFixed(2)}</div>
-      </div>`, v => this.selectOutcome(v), "data-id");
+      </div>`,
+      (v) => this.selectOutcome(v),
+      "data-id",
+    );
   }
 
   private renderLeaderboard() {
     const el = document.getElementById("leaderboard-table");
     if (!el) return;
-    const items: LeaderboardRow[] = [{ id: "VEGETABLE", type: "ALPHA", sharpe: 1.25, totalReturn: 0.15, maxDrawdown: -0.05, verdict: "READY" }];
-    this.outcomes.forEach(o => items.push({ id: o.name, type: "ALPHA", sharpe: o.sharpe, totalReturn: 0, maxDrawdown: 0, verdict: o.readiness >= 75 ? "READY" : "CAUTION" }));
+    const items: LeaderboardRow[] = [
+      {
+        id: "VEGETABLE",
+        type: "ALPHA",
+        sharpe: 1.25,
+        totalReturn: 0.15,
+        maxDrawdown: -0.05,
+        verdict: "READY",
+      },
+    ];
+    this.outcomes.forEach((o) => {
+      items.push({
+        id: o.name,
+        type: "ALPHA",
+        sharpe: o.sharpe,
+        totalReturn: 0,
+        maxDrawdown: 0,
+        verdict: o.readiness >= 75 ? "READY" : "CAUTION",
+      });
+    });
     items.sort((a, b) => b.sharpe - a.sharpe);
 
     el.innerHTML = `
       <table class="leaderboard-table">
         <thead><tr><th>Strategy</th><th>Type</th><th>Sharpe</th><th>Status</th></tr></thead>
         <tbody>
-          ${items.map(r => `<tr><td><strong>${this.escapeHtml(r.id)}</strong></td><td><span class="badge badge-neutral">${r.type}</span></td><td class="pos"><strong>${r.sharpe.toFixed(2)}</strong></td><td><span class="badge ${r.verdict === "READY" ? "badge-success" : "badge-warning"}">${r.verdict}</span></td></tr>`).join("")}
+          ${items.map((r) => `<tr><td><strong>${this.escapeHtml(r.id)}</strong></td><td><span class="badge badge-neutral">${r.type}</span></td><td class="pos"><strong>${r.sharpe.toFixed(2)}</strong></td><td><span class="badge ${r.verdict === "READY" ? "badge-success" : "badge-warning"}">${r.verdict}</span></td></tr>`).join("")}
         </tbody>
       </table>`;
   }
 
   private renderRegistry() {
     const el = document.getElementById("registry-list");
-    if (el) el.innerHTML = this.registry.map(m => `<div class="log-item" style="cursor:default;"><div class="log-item-row"><span class="log-date">${this.escapeHtml(m.name || m.id)}</span></div></div>`).join("");
+    if (el)
+      el.innerHTML = this.registry
+        .map(
+          (m) =>
+            `<div class="log-item" style="cursor:default;"><div class="log-item-row"><span class="log-date">${this.escapeHtml(m.name || m.id)}</span></div></div>`,
+        )
+        .join("");
   }
 
   private renderRawJSON(p: LogPayload) {
     const el = document.getElementById("json-content");
-    if (el) el.innerHTML = `<pre>${this.escapeHtml(JSON.stringify(p, null, 2))}</pre>`;
+    if (el)
+      el.innerHTML = `<pre>${this.escapeHtml(JSON.stringify(p, null, 2))}</pre>`;
   }
 
   public updateText(id: string, text: string, color?: string) {
@@ -414,7 +482,9 @@ class DashboardShell {
     if (el) el.innerHTML = html;
   }
 
-  public getUnifiedLog(date: string) { return this.unifiedPayloadByDate.get(date); }
+  public getUnifiedLog(date: string) {
+    return this.unifiedPayloadByDate.get(date);
+  }
 
   public auditLog(strategyId: string, action: string) {
     console.log(`🛡️ Audit Log: ${strategyId} ${action} by user.`);
@@ -424,61 +494,125 @@ class DashboardShell {
     }
   }
 
-  public escapeHtml(v: unknown): string { return String(v ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]!)); }
-  private formatDate(s: string) { return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`; }
-  private updateActiveItem(attr: string, val: string) { document.querySelectorAll(".log-item").forEach(el => el.classList.toggle("active", el.getAttribute(attr) === val)); }
+  public escapeHtml(v: unknown): string {
+    return String(v ?? "").replace(
+      /[&<>"']/g,
+      (m) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[m]!,
+    );
+  }
+  private formatDate(s: string) {
+    return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
+  }
+  private updateActiveItem(attr: string, val: string) {
+    document.querySelectorAll(".log-item").forEach((el) => {
+      el.classList.toggle("active", el.getAttribute(attr) === val);
+    });
+  }
 }
 
 // --- Engines ---
 
 class DailyLogEngine implements ViewEngine {
   private shell: DashboardShell;
-  constructor(shell: DashboardShell) { this.shell = shell; }
+  constructor(shell: DashboardShell) {
+    this.shell = shell;
+  }
   render(p: LogPayload) {
     const r = p.report as DashboardReport;
-    this.shell.updateText("stat-edge", `${((r.results?.expectedEdge ?? 0) * 100).toFixed(2)}%`);
-    this.shell.updateText("stat-return", `${((r.results?.basketDailyReturn ?? 0) * 100).toFixed(2)}%`, (r.results?.basketDailyReturn ?? 0) >= 0 ? "var(--success)" : "var(--danger)");
-    this.shell.updateText("stat-kelly", `${((r.risks?.kellyFraction ?? 0) * 100).toFixed(2)}%`);
+    this.shell.updateText(
+      "stat-edge",
+      `${((r.results?.expectedEdge ?? 0) * 100).toFixed(2)}%`,
+    );
+    this.shell.updateText(
+      "stat-return",
+      `${((r.results?.basketDailyReturn ?? 0) * 100).toFixed(2)}%`,
+      (r.results?.basketDailyReturn ?? 0) >= 0
+        ? "var(--success)"
+        : "var(--danger)",
+    );
+    this.shell.updateText(
+      "stat-kelly",
+      `${((r.risks?.kellyFraction ?? 0) * 100).toFixed(2)}%`,
+    );
     this.shell.updateText("stat-top", r.decision?.topSymbol || "--");
 
-    this.shell.updateHTML("workflow-status", `
+    this.shell.updateHTML(
+      "workflow-status",
+      `
       <div class="status-row"><span>Readiness</span><span class="badge badge-success">${r.workflow?.alphaReadiness}</span></div>
       <div class="status-row"><span>Verdict</span><span class="badge ${r.workflow?.verdict === "USEFUL" ? "badge-success" : "badge-danger"}">${r.workflow?.verdict}</span></div>
-    `);
+    `,
+    );
 
-    this.shell.updateHTML("symbol-analysis", (r.analysis || []).map(s => `
+    this.shell.updateHTML(
+      "symbol-analysis",
+      (r.analysis || [])
+        .map(
+          (s) => `
       <div class="symbol-card animate-fade">
         <div class="symbol-head"><span class="symbol-code">${s.symbol}</span><span class="badge badge-success">${s.signal}</span></div>
         <div class="metric-value">${pickNumber(s.alphaScore).toFixed(4)}</div>
-      </div>`).join(""));
+      </div>`,
+        )
+        .join(""),
+    );
 
-    this.shell.updateHTML("verdict-content", `<div class="box-title">Decision</div><div style="font-size:0.9em;">${this.shell.escapeHtml(r.decision?.reason)}</div>`);
+    this.shell.updateHTML(
+      "verdict-content",
+      `<div class="box-title">Decision</div><div style="font-size:0.9em;">${this.shell.escapeHtml(r.decision?.reason)}</div>`,
+    );
     this.renderValidation(r.date || "");
   }
 
   private renderValidation(date: string) {
     const u = this.shell.getUnifiedLog(date);
-    this.shell.updateHTML("validation-results", u ? (u.stages || []).map(s => `
-      <div class="symbol-card animate-fade"><div class="symbol-head"><span>${s.name}</span><span class="badge badge-success">${s.status}</span></div></div>`).join("") : "No audit logs.");
+    this.shell.updateHTML(
+      "validation-results",
+      u
+        ? (u.stages || [])
+            .map(
+              (s) => `
+      <div class="symbol-card animate-fade"><div class="symbol-head"><span>${s.name}</span><span class="badge badge-success">${s.status}</span></div></div>`,
+            )
+            .join("")
+        : "No audit logs.",
+    );
   }
 }
 
 class OutcomeEngine implements ViewEngine {
   private shell: DashboardShell;
-  constructor(shell: DashboardShell) { this.shell = shell; }
+  constructor(shell: DashboardShell) {
+    this.shell = shell;
+  }
   render(p: LogPayload) {
     const r = p.report as StandardOutcome;
     this.shell.updateText("stat-edge", "Outcome");
     this.shell.updateText("stat-return", "Verified");
-    this.shell.updateText("stat-kelly", r.verification?.metrics?.sharpeRatio?.toFixed(2) || "--");
+    this.shell.updateText(
+      "stat-kelly",
+      r.verification?.metrics?.sharpeRatio?.toFixed(2) || "--",
+    );
     this.shell.updateText("stat-top", r.strategyId);
 
-    this.shell.updateHTML("workflow-status", `
+    this.shell.updateHTML(
+      "workflow-status",
+      `
       <div class="status-row"><span>Precision Score</span><span class="badge badge-success">${((r.reasoningScore ?? 0) * 100).toFixed(0)}</span></div>
       <button class="badge badge-success" style="width:100%; margin-top:10px; border:none; cursor:pointer;" onclick="window.dashboardShell.auditLog('${r.strategyId}', 'APPROVE')">AUDIT: APPROVE</button>
-    `);
+    `,
+    );
 
-    this.shell.updateHTML("symbol-analysis", `
+    this.shell.updateHTML(
+      "symbol-analysis",
+      `
       <div class="symbol-card animate-fade" style="grid-column: 1 / -1; border-left: 4px solid var(--accent);">
         <div class="box-title">${r.strategyName}</div>
         <p style="font-size:0.9em; opacity:0.8;">${this.shell.escapeHtml(r.summary)}</p>
@@ -487,34 +621,60 @@ class OutcomeEngine implements ViewEngine {
         <div class="box-title">Verification</div>
         <div class="metric-value pos">${r.verification?.metrics?.sharpeRatio?.toFixed(2)}</div>
         <div class="metric-label">Sharpe Ratio</div>
-      </div>`);
+      </div>`,
+    );
 
-    this.shell.updateHTML("verdict-content", `<div class="box-title">Reasoning Audit</div><div style="font-size:0.95em; font-style:italic;">"${this.shell.escapeHtml(r.reasoning)}"</div>`);
-    this.shell.updateHTML("validation-results", `<div class="metric-label">ArXiv Outcome Validated.</div>`);
+    this.shell.updateHTML(
+      "verdict-content",
+      `<div class="box-title">Reasoning Audit</div><div style="font-size:0.95em; font-style:italic;">"${this.shell.escapeHtml(r.reasoning)}"</div>`,
+    );
+    this.shell.updateHTML(
+      "validation-results",
+      `<div class="metric-label">ArXiv Outcome Validated.</div>`,
+    );
   }
 }
 
 class BenchmarkEngine implements ViewEngine {
   private shell: DashboardShell;
-  constructor(shell: DashboardShell) { this.shell = shell; }
+  constructor(shell: DashboardShell) {
+    this.shell = shell;
+  }
   render(payload: LogPayload) {
     const p = payload as unknown as BenchmarkLogPayload;
     const r = p.report || {};
     this.shell.updateText("stat-edge", "BMK");
     this.shell.updateText("stat-return", r.type || "BENCHMARK");
     this.shell.updateText("stat-kelly", r.date || "--");
-    this.shell.updateHTML("symbol-analysis", (r.analyst?.models || []).map(m => `<div class="symbol-card"><div class="symbol-head"><span>${m.id}</span><span class="badge badge-neutral">${m.vendor}</span></div></div>`).join(""));
-    this.shell.updateHTML("verdict-content", `<div class="box-title">Insights</div><div>${this.shell.escapeHtml(r.analyst?.insights)}</div>`);
+    this.shell.updateHTML(
+      "symbol-analysis",
+      (r.analyst?.models || [])
+        .map(
+          (m) =>
+            `<div class="symbol-card"><div class="symbol-head"><span>${m.id}</span><span class="badge badge-neutral">${m.vendor}</span></div></div>`,
+        )
+        .join(""),
+    );
+    this.shell.updateHTML(
+      "verdict-content",
+      `<div class="box-title">Insights</div><div>${this.shell.escapeHtml(r.analyst?.insights)}</div>`,
+    );
   }
 }
 
 class GenericLogEngine implements ViewEngine {
   private shell: DashboardShell;
-  constructor(shell: DashboardShell) { this.shell = shell; }
+  constructor(shell: DashboardShell) {
+    this.shell = shell;
+  }
   render(_p: LogPayload) {
     this.shell.updateText("stat-edge", "UNK");
-    this.shell.updateHTML("symbol-analysis", `<div class="symbol-card">Unknown schema fallback.</div>`);
+    this.shell.updateHTML(
+      "symbol-analysis",
+      `<div class="symbol-card">Unknown schema fallback.</div>`,
+    );
   }
 }
 
-(window as any).dashboardShell = new DashboardShell();
+(window as unknown as { dashboardShell: DashboardShell }).dashboardShell =
+  new DashboardShell();

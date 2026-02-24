@@ -36,15 +36,15 @@ export async function runGenericAlphaScenario(params: {
     alpha: params.alpha,
     verification: params.verification
       ? {
-        metrics: {
-          mae: 0, // Placeholder for template
-          rmse: 0,
-          smape: 0,
-          directionalAccuracy: 0,
-          sharpeRatio: params.verification.sharpe,
-        },
-        upliftOverBaseline: params.verification.totalReturn > 0 ? 0.05 : 0, // Mock uplift
-      }
+          metrics: {
+            mae: 0, // Placeholder for template
+            rmse: 0,
+            smape: 0,
+            directionalAccuracy: 0,
+            sharpeRatio: params.verification.sharpe,
+          },
+          upliftOverBaseline: params.verification.totalReturn > 0 ? 0.05 : 0, // Mock uplift
+        }
       : undefined,
     stability: {
       trackingError: 0.01, // Mock
@@ -60,13 +60,25 @@ export async function runGenericAlphaScenario(params: {
     report: outcome,
   };
 
-  // Validate against our new schema
+  // Persist to unified logs directory
+  const { core } = await import("../../core/index.ts");
+  const { join } = await import("node:path");
+  const { mkdirSync, writeFileSync } = await import("node:fs");
+
+  const today = generatedAt.split("T")[0];
+  const logDir = join(core.config.paths.logs, "unified");
+  mkdirSync(logDir, { recursive: true });
+  writeFileSync(
+    join(logDir, `${today}.json`),
+    JSON.stringify(unifiedLog, null, 2),
+  );
+
   return UnifiedLogSchema.parse(unifiedLog);
 }
 
 // Example usage / self-test if run directly
 if (import.meta.main) {
-  const mockResult = await runGenericAlphaScenario({
+  await runGenericAlphaScenario({
     strategyId: "STRAT-001",
     strategyName: "Mean Reversion Discovery",
     summary:
@@ -84,6 +96,7 @@ if (import.meta.main) {
     isProductionReady: true,
   });
 
-  console.log("✅ Successfully generated a standardized Outcome Log:");
-  console.log(JSON.stringify(mockResult, null, 2));
+  console.log(
+    "✅ Successfully generated and persisted a standardized Outcome Log:",
+  );
 }

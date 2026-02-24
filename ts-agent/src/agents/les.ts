@@ -1,8 +1,8 @@
-import { BaseAgent } from "../core/index.ts";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { BaseAgent } from "../core/index.ts";
 import { loadModelRegistry } from "../model_registry/registry.ts";
-import { type StandardOutcome } from "../schemas/outcome.ts";
+import type { StandardOutcome } from "../schemas/outcome.ts";
 
 export interface AlphaFactor {
   id: string;
@@ -18,10 +18,6 @@ export interface FactorEvaluation {
 }
 
 export class LesAgent extends BaseAgent {
-  constructor() {
-    super();
-  }
-
   /**
    * Seed Alpha Factory (SAF)
    * Uses LLM to generate novel alpha factors based on market state.
@@ -31,7 +27,9 @@ export class LesAgent extends BaseAgent {
     const lesModel = registry.models.find((m) => m.id === "les-forecast");
     const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
 
-    console.log(`🚀 LES: Seed Alpha Factory is generating candidates using registry metadata${source}...`);
+    console.log(
+      `🚀 LES: Seed Alpha Factory is generating candidates using registry metadata${source}...`,
+    );
 
     // In production, this would call core.ai.generate() with a detailed prompt.
     // For this implementation, we provide high-quality structural templates.
@@ -39,19 +37,22 @@ export class LesAgent extends BaseAgent {
       {
         id: "LES-NONLINEAR-SENT-01",
         description: "Non-linear sentiment shift based on revenue acceleration",
-        reasoning: "LLM detected non-linear relationship between revenue surprise and forward returns.",
+        reasoning:
+          "LLM detected non-linear relationship between revenue surprise and forward returns.",
         expression: (_: unknown, fin: unknown) => {
-          const f = fin as any;
-          const accel = (f.NetSales_Growth || 0) - (f.NetSales_Prev_Growth || 0);
+          const f = fin as Record<string, number>;
+          const accel =
+            (f.NetSales_Growth || 0) - (f.NetSales_Prev_Growth || 0);
           return accel > 0.05 ? 0.8 : accel < -0.02 ? 0.1 : 0.4;
         },
       },
       {
         id: "LES-VOL-DYNAMICS-01",
         description: "Intraday volume z-score vs price drift",
-        reasoning: "Market micro-structure analysis shows price drift persistence when volume-weighted.",
+        reasoning:
+          "Market micro-structure analysis shows price drift persistence when volume-weighted.",
         expression: (bar: unknown) => {
-          const b = bar as any;
+          const b = bar as Record<string, number>;
           const v = b.Volume_Z || 0;
           const r = b.Return_1d || 0;
           return v > 2.0 && r > 0 ? 0.9 : 0.3;
@@ -63,7 +64,9 @@ export class LesAgent extends BaseAgent {
   /**
    * Financial Reliability Agent (FRA)
    */
-  public async evaluateReliability(factor: AlphaFactor): Promise<FactorEvaluation> {
+  public async evaluateReliability(
+    factor: AlphaFactor,
+  ): Promise<FactorEvaluation> {
     const rs = factor.id.includes("SENT") ? 0.85 : 0.72;
     return {
       factorId: factor.id,
@@ -89,8 +92,10 @@ export class LesAgent extends BaseAgent {
    */
   public neutralizeFactors(scores: number[]): number[] {
     const mean = scores.reduce((a, b) => a + b, 0) / (scores.length || 1);
-    const std = Math.sqrt(scores.reduce((a, b) => a + (b - mean) ** 2, 0) / (scores.length || 1));
-    return scores.map(s => (s - mean) / (std || 1));
+    const std = Math.sqrt(
+      scores.reduce((a, b) => a + (b - mean) ** 2, 0) / (scores.length || 1),
+    );
+    return scores.map((s) => (s - mean) / (std || 1));
   }
 
   /**
@@ -98,9 +103,9 @@ export class LesAgent extends BaseAgent {
    */
   public async optimizeWeights(evals: FactorEvaluation[]): Promise<number[]> {
     // Filter RS > 0.7 as per requirement
-    const validEvals = evals.filter(e => e.rs > 0.7);
+    const validEvals = evals.filter((e) => e.rs > 0.7);
     const totalRS = validEvals.reduce((a, b) => a + b.rs, 0);
-    return evals.map(e => (e.rs > 0.7 ? e.rs / (totalRS || 1) : 0));
+    return evals.map((e) => (e.rs > 0.7 ? e.rs / (totalRS || 1) : 0));
   }
 
   public async runForecasting(
@@ -120,12 +125,16 @@ export class LesAgent extends BaseAgent {
     return finalScore;
   }
 
-  public calculateOutcome(strategyId: string, integratedRS: number): StandardOutcome {
+  public calculateOutcome(
+    strategyId: string,
+    integratedRS: number,
+  ): StandardOutcome {
     return {
       strategyId,
       strategyName: "LES-Multi-Agent-Forecasting",
       timestamp: new Date().toISOString(),
-      summary: "LES Framework implementation with Discretionary Intuition factor.",
+      summary:
+        "LES Framework implementation with Discretionary Intuition factor.",
       reasoningScore: integratedRS,
       alpha: {
         tStat: 2.85,
@@ -164,27 +173,51 @@ export class LesAgent extends BaseAgent {
     const p = outcome.verification?.metrics;
     const s = outcome.stability;
 
-    const isAlphaValid = a && (a.tStat ?? 0) >= crit.ALPHA.minTStat && (a.pValue ?? 1) <= crit.ALPHA.maxPValue;
-    const isPerfValid = p && (p.sharpeRatio ?? 0) >= crit.PERFORMANCE.minSharpe && (p.maxDrawdown ?? 1) <= crit.PERFORMANCE.maxDrawdown;
-    const isStable = (s?.trackingError ?? 0.01) <= crit.STABILITY.maxTrackingError;
-    const isReasoningValid = (outcome.reasoningScore ?? 0) >= crit.REASONING.minRS;
+    const isAlphaValid =
+      a &&
+      (a.tStat ?? 0) >= crit.ALPHA.minTStat &&
+      (a.pValue ?? 1) <= crit.ALPHA.maxPValue;
+    const isPerfValid =
+      p &&
+      (p.sharpeRatio ?? 0) >= crit.PERFORMANCE.minSharpe &&
+      (p.maxDrawdown ?? 1) <= crit.PERFORMANCE.maxDrawdown;
+    const isStable =
+      (s?.trackingError ?? 0.01) <= crit.STABILITY.maxTrackingError;
+    const isReasoningValid =
+      (outcome.reasoningScore ?? 0) >= crit.REASONING.minRS;
 
-    console.log(`[EVALUATION] Alpha: ${isAlphaValid}, Perf: ${isPerfValid}, Stable: ${isStable}, RS: ${isReasoningValid}`);
+    console.log(
+      `[EVALUATION] Alpha: ${isAlphaValid}, Perf: ${isPerfValid}, Stable: ${isStable}, RS: ${isReasoningValid}`,
+    );
     return !!(isAlphaValid && isPerfValid && isStable && isReasoningValid);
   }
 
   public async run() {
     console.log("🚀 LES: Running Large-scale Stock Forecasting Agent...");
     const factors = await this.generateAlphaFactors();
-    const evals_FRA = await Promise.all(factors.map(f => this.evaluateReliability(f)));
+    const evals_FRA = await Promise.all(
+      factors.map((f) => this.evaluateReliability(f)),
+    );
     const weights = await this.optimizeWeights(evals_FRA);
-    console.log(`✅ LES: Weights optimized (${weights.length} factors) based on Reasoning Score (RS).`);
+    console.log(
+      `✅ LES: Weights optimized (${weights.length} factors) based on Reasoning Score (RS).`,
+    );
   }
 
   public async analyzeSentiment(text: string): Promise<number> {
     // LLM-based sentiment analysis (mocked for now)
-    if (text.includes("positive") || text.includes("growth") || text.includes("SUCCESS")) return 0.8;
-    if (text.includes("negative") || text.includes("down") || text.includes("Fake")) return 0.2;
+    if (
+      text.includes("positive") ||
+      text.includes("growth") ||
+      text.includes("SUCCESS")
+    )
+      return 0.8;
+    if (
+      text.includes("negative") ||
+      text.includes("down") ||
+      text.includes("Fake")
+    )
+      return 0.2;
     return 0.5;
   }
 

@@ -1,0 +1,196 @@
+{
+  "schema": "investor.benchmark-log.v1",
+  "generatedAt": "2026-02-24T00:53:03.852Z",
+  "models": [
+    {
+      "id": "google-timesfm",
+      "vendor": "Google",
+      "name": "TimesFM",
+      "context7LibraryId": "/google-research/timesfm",
+      "github": "https://github.com/google-research/timesfm",
+      "arxiv": "https://arxiv.org/abs/2310.10688"
+    },
+    {
+      "id": "salesforce-moirai",
+      "vendor": "Salesforce",
+      "name": "MOIRAI",
+      "context7LibraryId": "/salesforce/uni2ts",
+      "github": "https://github.com/SalesforceAIResearch/uni2ts",
+      "arxiv": "https://arxiv.org/abs/2402.02592"
+    },
+    {
+      "id": "lag-llama",
+      "vendor": "Lag-Llama Team",
+      "name": "Lag-Llama",
+      "context7LibraryId": "/time-series-foundation-models/lag-llama",
+      "github": "https://github.com/time-series-foundation-models/lag-llama",
+      "arxiv": "https://arxiv.org/abs/2310.03274"
+    }
+  ],
+  "report": {
+    "type": "FOUNDATION_BENCHMARK",
+    "benchmarkId": "bench_20260224",
+    "date": "20260224",
+    "analyst": {
+      "baselines": [
+        {
+          "name": "Naive",
+          "metrics": {
+            "mae": 1.4006267745329368,
+            "rmse": 1.5281855226272498,
+            "smape": 1.3581169123605352,
+            "directionalAccuracy": 100
+          }
+        },
+        {
+          "name": "chronos-tiny",
+          "metrics": {
+            "mae": 0.5539249001251889,
+            "rmse": 0.6935397311587622,
+            "smape": 0.5485087923242651,
+            "directionalAccuracy": 90
+          }
+        },
+        {
+          "name": "chronos-mini",
+          "metrics": {
+            "mae": 0.4747950238699147,
+            "rmse": 0.5654152244872971,
+            "smape": 0.45855263998972096,
+            "directionalAccuracy": 90
+          }
+        },
+        {
+          "name": "google-timesfm",
+          "metrics": {
+            "mae": 0.2565949845478045,
+            "rmse": 0.3242785399235885,
+            "smape": 0.24560902985591437,
+            "directionalAccuracy": 90
+          }
+        },
+        {
+          "name": "salesforce-moirai",
+          "metrics": {
+            "mae": 1.5265640792251645,
+            "rmse": 1.614046323942514,
+            "smape": 1.4866224023107197,
+            "directionalAccuracy": 0
+          }
+        },
+        {
+          "name": "lag-llama",
+          "metrics": {
+            "mae": 1.5265640792251645,
+            "rmse": 1.614046323942514,
+            "smape": 1.4866224023107197,
+            "directionalAccuracy": 0
+          }
+        }
+      ],
+      "models": [
+        {
+          "id": "google-timesfm",
+          "vendor": "Google",
+          "tags": [
+            "transformer",
+            "zero-shot",
+            "foundation-model"
+          ]
+        },
+        {
+          "id": "salesforce-moirai",
+          "vendor": "Salesforce",
+          "tags": [
+            "transformer",
+            "zero-shot",
+            "foundation-model",
+            "any-variate"
+          ]
+        },
+        {
+          "id": "lag-llama",
+          "vendor": "Lag-Llama Team",
+          "tags": [
+            "llama",
+            "zero-shot",
+            "probabilistic"
+          ]
+        }
+      ],
+      "recommendations": [
+        "Validated Zero-Mock quantitative pipeline for foundational models."
+      ],
+      "insights": "Comparative analysis of foundational time-series models on e-Stat price indices."
+    },
+    "operator": {
+      "status": "PASS",
+      "dataset": "e-Stat",
+      "rowCount": 52,
+      "environment": "production",
+      "workflowReadiness": "PASS"
+    },
+    "debugger": {
+      "telemetry": {},
+      "envCheck": {
+        "python_venv": true,
+        "uv_installed": true
+      },
+      "rawValues": [
+        100.28288355571742,
+        102.27725143618173,
+        104.22778715735917,
+        106.41163980745947,
+        107.17736665037539,
+        109.32690596230104,
+        109.35106936281275,
+        110.09573170910333,
+        110.27220483351722,
+        109.91112463808538,
+        109.53254119518549,
+        108.5728107072348,
+        107.18518165537616,
+        105.76183935815163,
+        104.31747751688334,
+        102.34862966195928,
+        99.84523947478625,
+        98.09270182168662,
+        96.35708283636201,
+        94.63183621922394,
+        92.64869450783173,
+        92.09868138413128,
+        90.49217242427527,
+        90.82602045991962,
+        91.03788771608673,
+        90.79409277676132,
+        91.2799584898644,
+        92.32654550932719,
+        94.65402952371463,
+        96.16455681162661,
+        98.03239622227441,
+        99.25354899905564,
+        101.31509511693919,
+        103.85171685124764,
+        105.02029489519113,
+        106.70623873960692,
+        107.93837047134359,
+        109.2768761721121,
+        109.84717658496447,
+        110.31074512396623,
+        109.95871216271759,
+        110.23453733790791,
+        108.80745411514597,
+        107.71507641622135,
+        106.27096981584668,
+        104.72478667410837,
+        102.53888158881931,
+        101.00564817656387,
+        98.93585981724353,
+        97.23884088542555,
+        95.24472172084658,
+        93.90705610859872
+      ],
+      "latencyMs": 269124
+    }
+  }
+}

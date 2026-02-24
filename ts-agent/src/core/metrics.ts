@@ -4,89 +4,86 @@
  * Provides CORR, MMC, and FNC calculations for verifiable model evaluation.
  */
 
-export class QuantMetrics {
+export namespace QuantMetrics {
   /**
    * CORR: Gauss-ranked, tail-emphasized correlation
    * Emphasizes the most confident predictions.
    */
-  public static calculateCorr(
+  export function calculateCorr(
     predictions: number[],
     targets: number[],
   ): number {
     if (predictions.length !== targets.length) return 0;
 
     // Gauss Rank transformation (simple approximation)
-    const rankedPreds = QuantMetrics.gaussRank(predictions);
-    const rankedTargets = QuantMetrics.gaussRank(targets);
+    const rankedPreds = gaussRank(predictions);
+    const rankedTargets = gaussRank(targets);
 
     // Pearson Correlation on ranked data
-    return QuantMetrics.pearson(rankedPreds, rankedTargets);
+    return pearson(rankedPreds, rankedTargets);
   }
 
   /**
    * MMC: Meta-Model Contribution
    * measures unique alpha against a baseline (system-wide Meta Model).
    */
-  public static calculateMMC(
+  export function calculateMMC(
     preds: number[],
     metaModelPreds: number[],
     targets: number[],
   ): number {
     // Neutralize preds to metaModelPreds
-    const neutralized = QuantMetrics.neutralize(preds, metaModelPreds);
-    return QuantMetrics.calculateCorr(neutralized, targets);
+    const neutralized = neutralize(preds, metaModelPreds);
+    return calculateCorr(neutralized, targets);
   }
 
   /**
    * FNC: Feature Neutral Correlation
    * Measures predictive power that is NOT explained by linear exposure to features.
    */
-  public static calculateFNC(
+  export function calculateFNC(
     preds: number[],
     features: number[][],
     targets: number[],
   ): number {
     let neutralized = [...preds];
     for (const feature of features) {
-      neutralized = QuantMetrics.neutralize(neutralized, feature);
+      neutralized = neutralize(neutralized, feature);
     }
-    return QuantMetrics.calculateCorr(neutralized, targets);
+    return calculateCorr(neutralized, targets);
   }
 
-  private static gaussRank(data: number[]): number[] {
+  function gaussRank(data: number[]): number[] {
     const sorted = [...data].sort((a, b) => a - b);
     return data.map((v) => {
       const rank = sorted.indexOf(v) / (data.length - 1);
       // Inverse Normal CDF approximation
-      return QuantMetrics.invNormalCdf(rank);
+      return invNormalCdf(rank);
     });
   }
 
-  private static neutralize(preds: number[], features: number[]): number[] {
+  function neutralize(preds: number[], features: number[]): number[] {
     const len = Math.min(preds.length, features.length);
     const p = preds.slice(0, len);
     const f = features.slice(0, len);
 
     // 1D Linear Regression residual: Y - (beta * X)
-    const varF = QuantMetrics.variance(f);
+    const varF = variance(f);
     if (varF === 0) return p;
 
-    const b = QuantMetrics.covariance(p, f) / varF;
+    const b = covariance(p, f) / varF;
     return p.map((val, i) => {
       const fi = f[i];
       return fi !== undefined ? val - b * fi : val;
     });
   }
 
-  private static invNormalCdf(p: number): number {
+  function invNormalCdf(p: number): number {
     // Simple Approximation for Gauss Ranking
-    return (
-      Math.sqrt(2) *
-      QuantMetrics.erfInv(2 * Math.max(0.001, Math.min(0.999, p)) - 1)
-    );
+    return Math.sqrt(2) * erfInv(2 * Math.max(0.001, Math.min(0.999, p)) - 1);
   }
 
-  private static erfInv(x: number): number {
+  function erfInv(x: number): number {
     const a = 0.147;
     const l = Math.log(1 - x * x);
     const m = 2 / (Math.PI * a) + l / 2;
@@ -94,7 +91,7 @@ export class QuantMetrics {
     return x < 0 ? -res : res;
   }
 
-  private static pearson(x: number[], y: number[]): number {
+  function pearson(x: number[], y: number[]): number {
     const n = Math.min(x.length, y.length);
     if (n < 2) return 0;
 
@@ -120,7 +117,7 @@ export class QuantMetrics {
     return den === 0 ? 0 : num / den;
   }
 
-  private static covariance(x: number[], y: number[]): number {
+  function covariance(x: number[], y: number[]): number {
     const n = x.length;
     const meanX = x.reduce((a, b) => a + b, 0) / n || 0;
     const meanY = y.reduce((a, b) => a + b, 0) / n || 0;
@@ -133,7 +130,7 @@ export class QuantMetrics {
     );
   }
 
-  private static variance(x: number[]): number {
+  function variance(x: number[]): number {
     const n = x.length;
     if (n < 2) return 0;
     const mean = x.reduce((a, b) => a + b, 0) / n || 0;
@@ -143,7 +140,7 @@ export class QuantMetrics {
    * Fama-French Five-Factor Model Exposure
    * (Simplified approximation for in-agent validation)
    */
-  public static calculateFamaFrench(
+  export function calculateFamaFrench(
     returns: number[],
     market: number[],
     size: number[],
@@ -152,11 +149,11 @@ export class QuantMetrics {
     investment: number[],
   ) {
     return {
-      mkt: QuantMetrics.pearson(returns, market),
-      smb: QuantMetrics.pearson(returns, size),
-      hml: QuantMetrics.pearson(returns, value),
-      rmw: QuantMetrics.pearson(returns, profitability),
-      cma: QuantMetrics.pearson(returns, investment),
+      mkt: pearson(returns, market),
+      smb: pearson(returns, size),
+      hml: pearson(returns, value),
+      rmw: pearson(returns, profitability),
+      cma: pearson(returns, investment),
     };
   }
 }

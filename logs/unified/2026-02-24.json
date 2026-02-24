@@ -1,0 +1,31 @@
+{
+  "schema": "investor.investment-outcome.v1",
+  "generatedAt": "2026-02-24T00:54:18.095Z",
+  "report": {
+    "strategyId": "STRAT-001",
+    "strategyName": "Mean Reversion Discovery",
+    "timestamp": "2026-02-24T00:54:18.095Z",
+    "summary": "Discovered persistent 24h mean reversion in high-liquidity symbols. (Validated via Model Registry for TS Forecasting models line: Chronos/TimesFM)",
+    "modelRegistryStatus": "ACTIVE",
+    "alpha": {
+      "tStat": 2.45,
+      "pValue": 0.012
+    },
+    "verification": {
+      "metrics": {
+        "mae": 0,
+        "rmse": 0,
+        "smape": 0,
+        "directionalAccuracy": 0,
+        "sharpeRatio": 1.2
+      },
+      "upliftOverBaseline": 0.05
+    },
+    "stability": {
+      "trackingError": 0.01,
+      "tradingDaysHorizon": 252,
+      "isProductionReady": true
+    },
+    "reasoningScore": 0.82
+  }
+}
