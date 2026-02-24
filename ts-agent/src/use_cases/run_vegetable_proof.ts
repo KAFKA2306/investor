@@ -1,9 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  AceCurator,
-  AceReflector,
-  AceStrategyMiner,
+  AceAcquirer,
+  AceEvaluator,
+  AceEvolver,
 } from "../agents/ace_agents.ts";
 import { core } from "../core/index.ts";
 import { ContextPlaybook } from "../core/playbook.ts";
@@ -94,21 +94,21 @@ export async function runVegetableProof(): Promise<UnifiedLog> {
   try {
     const playbook = new ContextPlaybook();
     await playbook.load();
-    const reflector = new AceReflector();
+    const evaluator = new AceEvaluator();
     const { insights, helpfulIds, harmfulIds } =
-      await reflector.reflect(finalLog);
+      await evaluator.evaluate(finalLog);
 
-    const curator = new AceCurator(playbook);
-    await curator.applyInsights(insights, helpfulIds, harmfulIds);
+    const evolver = new AceEvolver(playbook);
+    await evolver.evolve(insights, helpfulIds, harmfulIds);
 
-    // 8. Alpha Frontier Discovery (Strategy Mining)
-    const miner = new AceStrategyMiner();
-    const frontiers = await miner.proposeAlphaFrontiers();
+    // 8. OpenCE: Acquisition Pillar (Alpha Frontier Discovery)
+    const acquirer = new AceAcquirer();
+    const frontiers = await acquirer.acquireAlphaFrontiers();
     for (const content of frontiers) {
       playbook.addBullet({
         content,
         section: "strategies_and_hard_rules",
-        metadata: { source: "AceStrategyMiner", type: "HYPOTHESIS" },
+        metadata: { source: "AceAcquirer", type: "HYPOTHESIS" },
       });
     }
     await playbook.save();

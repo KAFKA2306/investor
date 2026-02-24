@@ -3,21 +3,18 @@ import type { ContextPlaybook } from "../core/playbook";
 import type { DailyScenarioLogSchema, UnifiedLog } from "../schemas/log";
 
 /**
- * AceReflector: Analyzes execution logs to extract actionable insights.
+ * OpenCE: Evaluation Pillar
+ * AceEvaluator (formerly AceReflector): Analyzes execution logs to extract actionable insights.
  */
-export class AceReflector {
+export class AceEvaluator {
   /**
    * Generates insights from a run log.
-   * In a real implementation, this would call an LLM.
-   * For "highest logic" simulation, we provide a structured analyzer.
    */
-  async reflect(runLog: UnifiedLog): Promise<{
+  async evaluate(runLog: UnifiedLog): Promise<{
     insights: string[];
     helpfulIds: string[];
     harmfulIds: string[];
   }> {
-    // Logic: If sharpe < 0 or totalReturn < 0, it's a failure (Harmful)
-    // If sharpe > 1, it's a success (Helpful)
     const insights: string[] = [];
     const helpfulIds: string[] = [];
     const harmfulIds: string[] = [];
@@ -42,36 +39,36 @@ export class AceReflector {
       );
     }
 
-    // In a real scenario, the LLM would look at raw signals vs market outcome.
     return { insights, helpfulIds, harmfulIds };
   }
 }
 
 /**
- * AceStrategyMiner: Discovers and proposes new, high-value orthogonal strategies.
- * This is the 'Generator' for the frontier expansion mission.
+ * OpenCE: Acquisition Pillar
+ * AceAcquirer (formerly AceStrategyMiner): Discovers and proposes new, high-value orthogonal strategies.
  */
-export class AceStrategyMiner {
+export class AceAcquirer {
   /**
    * Proposes new strategy hypotheses based on market structural gaps.
    */
-  async proposeAlphaFrontiers(): Promise<string[]> {
+  async acquireAlphaFrontiers(): Promise<string[]> {
     return [
-      "Cross-Liquidity Arbitrage: 利用可能なJ-Quantsデータを用い、指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
-      "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフト（PEAD）を、Chronos/TimesFMによる非線形予測で強化した検証系。",
-      "Sentiment-Volume Divergence: X Intelligenceを活用し、感情の極端な乖離と出来高の急増をトリガーとする反転シグナルの検証。",
-      "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証し、相関が低いセクターへの動的配分ロジック。",
+      "Cross-Liquidity Arbitrage: 指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
+      "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフトを基盤モデル（Chronos/TimesFM）で強化した検証系。",
+      "Sentiment-Volume Divergence: SNSセンチメントと出来高乖離による反転シグナル。",
+      "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証する動的配分ロジック。",
     ];
   }
 }
 
 /**
- * AceCurator: Manages the Playbook updates based on Reflector insights.
+ * OpenCE: Evolution Pillar
+ * AceEvolver (formerly AceCurator): Manages the Playbook updates based on Evaluation signals.
  */
-export class AceCurator {
+export class AceEvolver {
   constructor(private playbook: ContextPlaybook) {}
 
-  async applyInsights(
+  async evolve(
     insights: string[],
     helpfulIds: string[],
     harmfulIds: string[],
@@ -95,17 +92,17 @@ export class AceCurator {
         content,
         section: "insights",
         metadata: {
-          source: "AceReflector",
+          source: "AceEvaluator",
           timestamp: new Date().toISOString(),
         },
       });
     }
 
-    // 3. Save and Pruen
+    // 3. Save and Prune
     await this.playbook.save();
     const removedCount = await this.playbook.prune();
     console.log(
-      `ACE Curator: Applied ${insights.length} insights, pruned ${removedCount} stale bullets.`,
+      `OpenCE Evolver: Applied ${insights.length} insights, pruned ${removedCount} stale bullets.`,
     );
   }
 }
