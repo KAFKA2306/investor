@@ -1,10 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  AceAcquirer,
-  AceEvaluator,
-  AceEvolver,
-} from "../agents/ace_agents.ts";
+import { AceAcquirer, AceEvaluator, AceEvolver } from "../agents/ace_agents.ts";
 import { core } from "../core/index.ts";
 import { ContextPlaybook } from "../core/playbook.ts";
 import { executePaperOrders } from "../execution/paper_executor.ts";
