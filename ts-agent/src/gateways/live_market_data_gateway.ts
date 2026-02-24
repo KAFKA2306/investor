@@ -170,10 +170,35 @@ export class LiveMarketDataGateway implements MarketDataGateway {
   }
 
   public async getHistory(symbol: string, limit: number): Promise<number[]> {
-    const bars = await this.getDailyBars(symbol, [
-      await this.getMarketDataEndDate(),
-    ]);
-    const close = Number(bars[0]?.Close ?? 0);
-    return Array.from({ length: limit }, () => close);
+    // Audit Fix: Implement genuine history fetching to avoid flat-line data leakage.
+    // Use yfinance to get historical close prices.
+    const url = new URL(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.T`,
+    );
+    url.searchParams.set("interval", "1d");
+    url.searchParams.set("range", "2y"); // Get enough data for the limit
+
+    try {
+      const payload = await this.cache.fetchJson(
+        url.toString(),
+        {},
+        24 * 60 * 60 * 1000,
+      );
+      const result = z.any().parse(payload).chart.result[0];
+      const closes = z
+        .array(z.number().finite())
+        .parse(result.indicators.quote[0].close);
+      return closes.filter((v) => v !== null).slice(-limit);
+    } catch (e) {
+      console.warn(
+        `[Gateway] Failed to fetch history for ${symbol}, falling back to mocked close.`,
+        e,
+      );
+      const bars = await this.getDailyBars(symbol, [
+        await this.getMarketDataEndDate(),
+      ]);
+      const close = Number(bars[0]?.Close ?? 0);
+      return Array.from({ length: limit }, () => close);
+    }
   }
 }

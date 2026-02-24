@@ -8,6 +8,7 @@ export const Numeric = z
 
 export const SymbolAnalysisSchema = z.object({
   symbol: z.string().length(4),
+  date: z.string().regex(/^\d{8}$/),
   ohlc6: z.object({
     open: z.number(),
     high: z.number(),
@@ -22,13 +23,14 @@ export const SymbolAnalysisSchema = z.object({
     profitMargin: z.number(),
   }),
   factors: z.object({
-    dailyReturn: z.number(),
+    prevDailyReturn: z.number(),
     intradayRange: z.number(),
     closeStrength: z.number(),
     liquidityPerShare: z.number(),
   }),
   alphaScore: z.number(),
   signal: z.enum(["LONG", "HOLD"]),
+  targetReturn: z.number().optional(), // Realized return on day T
 });
 
 export type SymbolAnalysis = z.infer<typeof SymbolAnalysisSchema>;
@@ -65,7 +67,11 @@ export const scoreDailyAlpha = (
   fin: Record<string, unknown>,
   macroMomentum: number,
   predictedReturn = 0,
+  targetReturn?: number,
 ): SymbolAnalysis => {
+  const date = String(bar.Date || bar.date || "00000000")
+    .replaceAll("-", "")
+    .slice(0, 8);
   const open = getNumberByKeys(bar, ["Open", "open_price", "open", "O"]);
   const high = getNumberByKeys(bar, ["High", "high_price", "high", "H"]);
   const low = getNumberByKeys(bar, ["Low", "low_price", "low", "L"]);
@@ -93,14 +99,16 @@ export const scoreDailyAlpha = (
   ]);
 
   const eps = 1e-9;
-  const dailyReturn = (close - open) / Math.max(Math.abs(open), eps);
+  const prevDailyReturn = (close - open) / Math.max(Math.abs(open), eps);
   const intradayRange = (high - low) / Math.max(Math.abs(open), eps);
   const closeStrength = (close - low) / Math.max(high - low, eps);
   const liquidityPerShare = turnoverValue / Math.max(volume, eps);
   const profitMargin = operatingProfit / Math.max(Math.abs(netSales), eps);
+
+  // Weights (Audit Note: prevDailyReturn is now correctly a feature from T-1)
   const alphaScore =
     0.3 * macroMomentum +
-    0.15 * dailyReturn +
+    0.15 * prevDailyReturn +
     0.1 * intradayRange +
     0.1 * profitMargin +
     0.05 * clamp01(closeStrength) +
@@ -108,10 +116,17 @@ export const scoreDailyAlpha = (
 
   return SymbolAnalysisSchema.parse({
     symbol,
+    date,
     ohlc6: { open, high, low, close, volume, turnoverValue },
     finance: { netSales, operatingProfit, profitMargin },
-    factors: { dailyReturn, intradayRange, closeStrength, liquidityPerShare },
+    factors: {
+      prevDailyReturn,
+      intradayRange,
+      closeStrength,
+      liquidityPerShare,
+    },
     alphaScore,
     signal: alphaScore > 0 ? "LONG" : "HOLD",
+    targetReturn,
   });
 };

@@ -5,6 +5,7 @@ import { InferenceService } from "../../infrastructure/inference_service.ts";
 import {
   average,
   extractEstatValues,
+  getNumberByKeys,
   SymbolAnalysisSchema,
   scoreDailyAlpha,
 } from "../analysis/daily_alpha.ts";
@@ -129,31 +130,63 @@ export async function runVegetableScenario(
   const vegetablePriceMomentum =
     (newer - older) / Math.max(Math.abs(older), 1e-9);
 
+  const range = [...dateCandidates].sort();
+  const executionDate = range[range.length - 1] ?? date;
+  const signalDates = range.slice(0, -1);
+  if (signalDates.length === 0) signalDates.push(executionDate); // Fallback for single date
+
   const inference = new InferenceService();
   const detail = await Promise.all(
     matchedSymbols.map(async (symbol) => {
-      const [bars, fins, history] = await Promise.all([
-        gateway.getDailyBars(symbol, dateCandidates),
+      const [signalBars, executionBars, fins, history] = await Promise.all([
+        gateway.getDailyBars(symbol, signalDates),
+        gateway.getDailyBars(symbol, [executionDate]),
         gateway.getStatements(symbol),
         gateway.getHistory(symbol, 512),
       ]);
+
+      const lastClose = history[history.length - 1] ?? 0;
       let predictedReturn = 0;
       try {
         const pred = await inference.predict(history, "chronos-tiny");
-        const lastClose = history[history.length - 1] ?? 0;
         const forecast = pred.forecast[0] ?? lastClose;
         predictedReturn = (forecast - lastClose) / Math.max(lastClose, 1e-9);
       } catch {
-        // Fail-Safe: Fallback to 0 if inference fails (following protocol except for critical errors)
+        // Fail-Safe
       }
-      const bar = z.record(z.string(), z.unknown()).catch({}).parse(bars.at(0));
+
+      const signalBar = z
+        .record(z.string(), z.unknown())
+        .catch({})
+        .parse(signalBars.at(0));
+      const executionBar = z
+        .record(z.string(), z.unknown())
+        .catch({})
+        .parse(executionBars.at(0));
       const fin = z.record(z.string(), z.unknown()).catch({}).parse(fins.at(0));
+
+      // Calculate REALIZED return for backtest (T-day return)
+      const eOpen = getNumberByKeys(executionBar, [
+        "Open",
+        "open_price",
+        "open",
+        "O",
+      ]);
+      const eClose = getNumberByKeys(executionBar, [
+        "Close",
+        "close_price",
+        "close",
+        "C",
+      ]);
+      const targetReturn = (eClose - eOpen) / Math.max(Math.abs(eOpen), 1e-9);
+
       return scoreDailyAlpha(
         symbol,
-        bar,
+        signalBar,
         fin,
         vegetablePriceMomentum,
         predictedReturn,
+        targetReturn,
       );
     }),
   );
@@ -208,7 +241,6 @@ export async function runVegetableScenario(
   const selectedRows = analysis.filter((s) =>
     selectedSymbols.includes(s.symbol),
   );
-  const range = [...dateCandidates].sort();
   const from = range[0] ?? date;
   const to = range[range.length - 1] ?? date;
   const backtest = runSimpleBacktest({

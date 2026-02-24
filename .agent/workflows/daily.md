@@ -39,6 +39,7 @@ bun run verify:scenario
 bun run start
 bun run pipeline:ab
 bun run pipeline:llm-readiness
+bun run experiments:alpha-discovery
 bun run start:outcome
 ```
 
@@ -49,7 +50,8 @@ bun run start:outcome
 4. 日次本線実行 (`start`)
 5. 定量比較 (`pipeline:ab`)
 6. 論文基準Readiness判定 (`pipeline:llm-readiness`)
-7. 標準投資成果ログ作成 (`start:outcome`)
+7. **直行アルファ探索 (`experiments:alpha-discovery`)**
+8. 標準投資成果ログ作成 (`start:outcome`)
 
 ## 2. Acceptance Gates
 
@@ -125,7 +127,19 @@ bun run start:outcome
 4. 改善案を1つだけ選び、翌日の変更範囲を最小化
 5. 変更は必ずログ比較で回帰確認
 
-## 7. Definition of Done (Daily)
+## 7. Orthogonal Alpha Discovery (直行アルファ探索)
+
+MaskJiro氏の指摘に基づき、既存戦略への「成功バイアス」を排除するための定期的探索プロセス。
+
+### 実行条件
+- 週次、または `pipeline:ab` でパフォーマンスが停滞（局所解への沈着）した場合に実行。
+
+### 探索の三原則
+1.  **Blind Planning**: `generateAlphaFactors({ blindPlanning: true })` を使用し、過去の成功ログをあえて参照せずにアルファを生成する。
+2.  **Context Isolation**: 各因子の評価は独立した `evaluateReliability` / `evaluateRisk` セッションで行い、相互汚染を防ぐ。
+3.  **Orthogonality Check**: 既存のメイン因子と相関が低い（直行する）新しい系統（平均回帰、流動性イベント等）の採用を優先する。
+
+## 8. Definition of Done (Daily)
 
 日次完了条件:
 - 品質ゲート通過

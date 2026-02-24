@@ -84,6 +84,7 @@ sequenceDiagram
 
 ### Design Patterns
 - **Gateway Pattern**: 外部API (JQuants, e-Stat, X API) へのアクセスはすべて Gateway クラスに隠蔽。ビジネスロジック内に直接 `fetch` を書かないこと。
+- **Context Isolation**: エージェントの評価プロセスにおける「成功バイアス」を防ぐため、各因子やタスクの評価は完全に独立したコンテキストで行うこと。他者の結果や過去の成功例が現在の判断を汚染してはならない。
 - **Dependency Injection**: テスト時のモック差し替えを容易にするため、依存オブジェクトはコンストラクタで受け取る。
 - **Fail-Fast & Graceful Shutdown**: エラー発生時は速やかに異常を検知し、システム全体を巻き込まずに該当エージェントのみを安全に停止、またはスキップする。
 
@@ -93,6 +94,7 @@ sequenceDiagram
 1. **Comprehensiveness (網羅性)**: 実装は仕様を完全に満たし、エッジケース（データ欠損、APIエラー、異常値）を網羅すること。
 2. **Type Safety (型安全性)**: `any` の使用は極力避け、Zod スキーマや TypeScript の型定義 (`interface`, `type`) を徹底すること。
 3. **Reproducibility (再現性)**: すべての実験・検証は再現可能であること。乱数シードの固定やログの保存を徹底する。
+4. **Stateless Evaluation (無状態評価)**: 評価ロジックは常にステートレスであり、外部のコンテキスト（特に過去の成功詳細）に依存しない「盲検化」された判断を維持すること。
 
 ---
 世界で一番美しく、正確で、網羅的なロジックで。

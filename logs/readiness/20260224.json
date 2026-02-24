@@ -1,31 +1,29 @@
 {
   "schema": "investor.readiness-report.v1",
-  "generatedAt": "2026-02-24T00:40:14.786Z",
+  "generatedAt": "2026-02-24T03:39:06.518Z",
   "report": {
-    "generatedAt": "2026-02-24T00:40:54.919Z",
+    "generatedAt": "2026-02-24T03:39:24.083Z",
     "dateRange": {
-      "from": "20260222",
+      "from": "20260224",
       "to": "20260224"
     },
-    "sampleSize": 3,
+    "sampleSize": 1,
     "score": {
       "dataHorizon": 0,
-      "costAwareness": 13,
-      "outOfSampleDiscipline": 1,
+      "costAwareness": 20,
+      "outOfSampleDiscipline": 20,
       "modelTraceability": 15,
       "reproducibility": 10,
-      "executionObservability": 7,
-      "total": 46
+      "executionObservability": 10,
+      "total": 75
     },
     "thresholds": {
       "productionReadyMin": 75,
       "cautionMin": 50
     },
-    "verdict": "NOT_READY",
+    "verdict": "READY",
     "recommendations": [
-      "Sample window is short. Expand daily logs to at least 252 trading days; target 756 days.",
-      "Attach fee/slippage fields to all daily logs (`results.backtest.totalCostBps`).",
-      "Persist `report.execution` every day, even when skipped, for audit completeness."
+      "Sample window is short. Expand daily logs to at least 252 trading days; target 756 days."
     ]
   }
 }

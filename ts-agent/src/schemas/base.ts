@@ -16,7 +16,7 @@ export const FinanceSnapshotSchema = z.object({
 });
 
 export const AlphaFactorsSchema = z.object({
-  dailyReturn: z.number(),
+  prevDailyReturn: z.number(),
   intradayRange: z.number(),
   closeStrength: z.number(),
   liquidityPerShare: z.number(),

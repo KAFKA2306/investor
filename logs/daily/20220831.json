@@ -1,39 +1,50 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-24T00:48:34.271Z",
+  "generatedAt": "2026-02-24T03:40:18.867Z",
   "report": {
     "date": "20220831",
-    "analyzedAt": "2026-02-24T00:48:34.271Z",
+    "analyzedAt": "2026-02-24T03:40:18.867Z",
     "decision": {
       "strategy": "LES Framework (RS-Integrated)",
       "action": "INVEST",
-      "reasoningScore": 0.7947791798107255,
+      "reasoningScore": 0.7579139072847682,
       "factors": [
         {
           "id": "LES-NONLINEAR-SENT-01",
-          "weight": 0.5268138801261829,
+          "weight": 0.27649006622516553,
           "rs": 0.835
         },
         {
           "id": "LES-VOL-DYNAMICS-01",
-          "weight": 0.47318611987381703,
-          "rs": 0.75
+          "weight": 0.23675496688741723,
+          "rs": 0.7150000000000001
+        },
+        {
+          "id": "LES-MEAN-REV-LIQ-01",
+          "weight": 0.2433774834437086,
+          "rs": 0.735
+        },
+        {
+          "id": "LES-SKEWNESS-OP-01",
+          "weight": 0.2433774834437086,
+          "rs": 0.735
         }
       ]
     },
     "results": {
-      "basketDailyReturn": -0.0002,
+      "basketDailyReturn": 0.00879372260057583,
       "status": "SUCCESS"
     },
     "analysis": [
       {
         "symbol": "7203",
+        "date": "20220830",
         "ohlc6": {
-          "open": 2090,
-          "high": 2106.5,
-          "low": 2088,
-          "close": 2101.5,
-          "volume": 22276200,
+          "open": 2100,
+          "high": 2113.5,
+          "low": 2094.5,
+          "close": 2105,
+          "volume": 16897300,
           "turnoverValue": 0
         },
         "finance": {
@@ -42,22 +53,24 @@
           "profitMargin": 0.06814828580836724
         },
         "factors": {
-          "dailyReturn": 0,
+          "prevDailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.3526813880126183,
-        "signal": "HOLD"
+        "alphaScore": 0.41283112582781456,
+        "signal": "LONG",
+        "targetReturn": 0.005502392344497608
       },
       {
         "symbol": "9984",
+        "date": "20220830",
         "ohlc6": {
-          "open": 5520,
-          "high": 5614,
-          "low": 5514,
-          "close": 5562,
-          "volume": 11743000,
+          "open": 5552,
+          "high": 5594,
+          "low": 5532,
+          "close": 5588,
+          "volume": 13158200,
           "turnoverValue": 0
         },
         "finance": {
@@ -66,22 +79,24 @@
           "profitMargin": 0
         },
         "factors": {
-          "dailyReturn": 0,
+          "prevDailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.3526813880126183,
-        "signal": "HOLD"
+        "alphaScore": 0.41283112582781456,
+        "signal": "LONG",
+        "targetReturn": 0.007608695652173913
       },
       {
         "symbol": "8035",
+        "date": "20220830",
         "ohlc6": {
-          "open": 43320,
-          "high": 44350,
-          "low": 43220,
-          "close": 44160,
-          "volume": 1326500,
+          "open": 43640,
+          "high": 44390,
+          "low": 43580,
+          "close": 44250,
+          "volume": 1119600,
           "turnoverValue": 0
         },
         "finance": {
@@ -90,22 +105,24 @@
           "profitMargin": 0.2481114906661825
         },
         "factors": {
-          "dailyReturn": 0,
+          "prevDailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.3526813880126183,
-        "signal": "HOLD"
+        "alphaScore": 0.41283112582781456,
+        "signal": "LONG",
+        "targetReturn": 0.019390581717451522
       },
       {
         "symbol": "6758",
+        "date": "20220830",
         "ohlc6": {
-          "open": 11110,
-          "high": 11145,
-          "low": 11020,
-          "close": 11135,
-          "volume": 5419400,
+          "open": 11300,
+          "high": 11380,
+          "low": 11250,
+          "close": 11325,
+          "volume": 2365100,
           "turnoverValue": 0
         },
         "finance": {
@@ -114,22 +131,24 @@
           "profitMargin": 0.13279852770545802
         },
         "factors": {
-          "dailyReturn": 0,
+          "prevDailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.3526813880126183,
-        "signal": "HOLD"
+        "alphaScore": 0.41283112582781456,
+        "signal": "LONG",
+        "targetReturn": 0.0022502250225022503
       },
       {
         "symbol": "4063",
+        "date": "20220830",
         "ohlc6": {
-          "open": 16150,
-          "high": 16330,
-          "low": 16125,
-          "close": 16315,
-          "volume": 2696400,
+          "open": 16515,
+          "high": 16530,
+          "low": 16355,
+          "close": 16490,
+          "volume": 1455200,
           "turnoverValue": 0
         },
         "finance": {
@@ -138,13 +157,14 @@
           "profitMargin": 0.38010863292153124
         },
         "factors": {
-          "dailyReturn": 0,
+          "prevDailyReturn": 0,
           "intradayRange": 0,
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.3526813880126183,
-        "signal": "HOLD"
+        "alphaScore": 0.41283112582781456,
+        "signal": "LONG",
+        "targetReturn": 0.01021671826625387
       }
     ]
   }

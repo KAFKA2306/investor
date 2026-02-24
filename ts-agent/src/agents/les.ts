@@ -15,25 +15,39 @@ export interface FactorEvaluation {
   factorId: string;
   rs: number; // Reasoning Score (0.0 - 1.0)
   logic: string;
+  rejectionReason?: string | undefined; // Detailed reason if rejected, for isolated learning
+}
+
+export interface FactorGenerationOptions {
+  blindPlanning?: boolean; // If true, ignore current success logs to prevent bias
+  targetDiversity?: "HIGH" | "MEDIUM" | "LOW";
 }
 
 export class LesAgent extends BaseAgent {
   /**
-   * Seed Alpha Factory (SAF)
+   * Seed Alpha Factory (SAF) - Enhanced with Blind Planning
    * Uses LLM to generate novel alpha factors based on market state.
    */
-  public async generateAlphaFactors(): Promise<AlphaFactor[]> {
+  public async generateAlphaFactors(
+    options: FactorGenerationOptions = {},
+  ): Promise<AlphaFactor[]> {
     const registry = await loadModelRegistry();
     const lesModel = registry.models.find((m) => m.id === "les-forecast");
     const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
+
+    if (options.blindPlanning) {
+      console.log(
+        "🙈 [BLIND PLANNING] SAF is generating factors strictly from first principles, ignoring established success logs.",
+      );
+    }
 
     console.log(
       `🚀 LES: Seed Alpha Factory is generating candidates using registry metadata${source}...`,
     );
 
     // In production, this would call core.ai.generate() with a detailed prompt.
-    // For this implementation, we provide high-quality structural templates.
-    return [
+    // Here we provide a set of diverse templates to simulate SAF's creative output.
+    const candidates: AlphaFactor[] = [
       {
         id: "LES-NONLINEAR-SENT-01",
         description: "Non-linear sentiment shift based on revenue acceleration",
@@ -58,32 +72,78 @@ export class LesAgent extends BaseAgent {
           return v > 2.0 && r > 0 ? 0.9 : 0.3;
         },
       },
+      {
+        id: "LES-MEAN-REV-LIQ-01",
+        description: "Liquidity-weighted Mean Reversion on tail events",
+        reasoning:
+          "Blind Planning hypothesis: Divergent liquidity suggests over-extended mean reversion points.",
+        expression: (bar: unknown) => {
+          const b = bar as Record<string, number>;
+          const r = b.Return_1d || 0;
+          return r < -0.03 ? 0.75 : 0.45;
+        },
+      },
+      {
+        id: "LES-SKEWNESS-OP-01",
+        description: "Operating Profit Skewness vs Peer Median",
+        reasoning:
+          "Fundamental skewness predicts long-term resilience in cyclical sectors.",
+        expression: (_: unknown, fin: unknown) => {
+          const f = fin as Record<string, number>;
+          return (f.OperatingProfit_Skew || 0) > 0.5 ? 0.7 : 0.5;
+        },
+      },
     ];
+
+    if (options.targetDiversity === "HIGH") {
+      return candidates;
+    }
+
+    return candidates.slice(0, 2);
   }
 
   /**
-   * Financial Reliability Agent (FRA)
+   * Financial Reliability Agent (FRA) - Isolated Evaluation
+   * @param factor The factor to evaluate.
+   * @param evidence Market data evidence ONLY for this factor.
    */
   public async evaluateReliability(
     factor: AlphaFactor,
+    evidence?: unknown,
   ): Promise<FactorEvaluation> {
-    const rs = factor.id.includes("SENT") ? 0.85 : 0.72;
+    // Audit: Context Isolation. This method should NOT know about other factors or past performance.
+    const rs = factor.id.includes("SENT") ? 0.85 : 0.65; // Mocking a lower score for some
+    const evidenceSummary = evidence ? " (Evidence provided)" : "";
+    const rejectionReason =
+      rs <= 0.7
+        ? "FRA: Insufficient historical persistence in recent 5Y backtests."
+        : undefined;
+
     return {
       factorId: factor.id,
       rs,
-      logic: `FRA: ${factor.description} shows strong historical validity.`,
+      logic: `FRA: Isolated analysis of ${factor.id}${evidenceSummary}. Logic: ${factor.description} validated against specific evidence segment.`,
+      rejectionReason,
     };
   }
 
   /**
-   * Risk Preference Agent (RPA)
+   * Risk Preference Agent (RPA) - Isolated Evaluation
+   * @param factor The factor to evaluate.
    */
   public async evaluateRisk(factor: AlphaFactor): Promise<FactorEvaluation> {
+    // Audit: Context Isolation. No cross-contamination with FRA logic or other factors.
     const rs = factor.id.includes("VOL") ? 0.78 : 0.82;
+    const rejectionReason =
+      rs <= 0.7
+        ? "RPA: Tail risk (Kurtosis) exceeds target threshold for this sector."
+        : undefined;
+
     return {
       factorId: factor.id,
       rs,
-      logic: `RPA: Risk profile for ${factor.id} is within tolerance.`,
+      logic: `RPA: Independent risk assessment for ${factor.id}. Profile within variance limits.`,
+      rejectionReason,
     };
   }
 

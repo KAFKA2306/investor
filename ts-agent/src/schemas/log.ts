@@ -33,11 +33,13 @@ export const ReadinessReportSchema = z.object({
 
 export const SymbolAnalysisLogSchema = z.object({
   symbol: z.string().length(4),
+  date: z.string().regex(/^\d{8}$/),
   ohlc6: Ohlc6Schema,
   finance: FinanceSnapshotSchema,
   factors: AlphaFactorsSchema,
   alphaScore: z.number(),
   signal: z.enum(["LONG", "HOLD"]),
+  targetReturn: z.number().optional(),
 });
 
 export const DailyScenarioLogSchema = z.object({

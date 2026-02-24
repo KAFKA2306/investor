@@ -34,8 +34,9 @@ type RunBacktestArgs = {
 export function runSimpleBacktest(args: RunBacktestArgs): BacktestResult {
   const config = BacktestConfigSchema.parse(args.config);
   const tradingDays = Math.max(1, args.tradingDays);
+  // Audit Fix: Use realized targetReturn (T-day), not the signal feature (T-1)
   const grossReturn = average(
-    args.selectedRows.map((s) => s.factors.dailyReturn),
+    args.selectedRows.map((s) => s.targetReturn ?? 0),
   );
   const totalCostBps = config.feeBps + config.slippageBps;
   const costRate = totalCostBps / 10_000;

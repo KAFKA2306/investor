@@ -273,7 +273,7 @@ class DashboardShell {
       this.logs = Array.from(this.staticPayloadByDate.entries())
         .map(([f, p]) => toSummary(f, p))
         .sort((a, b) => b.date.localeCompare(a.date));
-    } catch (e) {}
+    } catch (_e) {}
   }
 
   private async loadUnifiedLogs() {
@@ -288,7 +288,7 @@ class DashboardShell {
           if (p.date) this.unifiedPayloadByDate.set(p.date, p);
         }
       }
-    } catch (e) {}
+    } catch (_e) {}
   }
 
   private async loadBenchLogs() {
@@ -307,7 +307,7 @@ class DashboardShell {
       this.benches = Array.from(this.benchPayloadByDate.entries())
         .map(([f, p]) => toBenchSummary(f, p))
         .sort((a, b) => b.date.localeCompare(a.date));
-    } catch (e) {}
+    } catch (_e) {}
   }
 
   private async loadOutcomeLogs() {
@@ -328,7 +328,7 @@ class DashboardShell {
         }
       }
       this.outcomes = outcomes;
-    } catch (e) {}
+    } catch (_e) {}
   }
 
   private async loadRegistry() {

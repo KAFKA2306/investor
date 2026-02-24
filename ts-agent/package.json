@@ -12,11 +12,13 @@
     "experiments:comparison": "bun src/experiments/02_comparison.ts",
     "experiments:timeseries": "bun src/experiments/03_timeseries_analysis.ts",
     "experiments:benchmark": "bun src/experiments/04_foundation_benchmark.ts",
+    "experiments:alpha-discovery": "bun src/experiments/new_alpha_discovery.ts",
     "pipeline:evaluate": "bun src/pipeline/evaluate/foundation_benchmark.ts",
     "pipeline:ab": "bun src/pipeline/evaluate/ab_compare_daily_logs.ts",
     "pipeline:llm-readiness": "bun src/pipeline/evaluate/llm_agent_readiness.ts",
     "pipeline:mine": "bun src/pipeline/factor_mining/evolve_candidates.ts",
-    "pipeline:full-validation": "bun src/pipeline/evaluate/run_full_validation.ts"
+    "pipeline:full-validation": "bun src/pipeline/evaluate/run_full_validation.ts",
+    "start:outcome": "bun src/experiments/les_reproduction.ts"
   },
   "private": true,
   "devDependencies": {
