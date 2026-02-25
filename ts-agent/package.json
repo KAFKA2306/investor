@@ -25,7 +25,8 @@
     "@biomejs/biome": "^2.4.4",
     "@tsconfig/strictest": "^2.0.8",
     "@types/bun": "latest",
-    "@types/js-yaml": "^4.0.9"
+    "@types/js-yaml": "^4.0.9",
+    "vite": "^7.3.1"
   },
   "peerDependencies": {
     "typescript": "^5.9.3"
