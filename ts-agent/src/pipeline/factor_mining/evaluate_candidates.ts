@@ -177,7 +177,7 @@ function evaluateSingleFactor(
   const accepted =
     metrics.sharpe - baseline.sharpe >= 0.2 &&
     metrics.maxDrawdown <= baseline.maxDrawdown * 0.9 &&
-    metrics.totalReturn > 0 &&
+    metrics.cumulativeReturn > 0 &&
     pValue <= 0.05;
 
   const signals = rows
@@ -204,6 +204,6 @@ export function evaluateFactorCandidates(
         return Number(b.accepted) - Number(a.accepted);
       if (b.metrics.sharpe !== a.metrics.sharpe)
         return b.metrics.sharpe - a.metrics.sharpe;
-      return b.metrics.totalReturn - a.metrics.totalReturn;
+      return b.metrics.cumulativeReturn - a.metrics.cumulativeReturn;
     });
 }

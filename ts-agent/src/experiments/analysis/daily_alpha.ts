@@ -3,8 +3,7 @@ import { z } from "zod";
 export const Numeric = z
   .union([z.number(), z.string()])
   .transform((v) => Number(v))
-  .pipe(z.number().finite())
-  .catch(0);
+  .pipe(z.number().finite());
 
 export const SymbolAnalysisSchema = z.object({
   symbol: z.string().length(4),

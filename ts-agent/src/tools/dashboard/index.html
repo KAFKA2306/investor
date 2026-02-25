@@ -4,10 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>日本語ビギナークオンツ ダッシュボード</title>
+  <title>Precision Quant Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;800&family=JetBrains+Mono&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=JetBrains+Mono&display=swap"
     rel="stylesheet">
 </head>
 
@@ -15,88 +15,95 @@
   <div id="app">
     <header>
       <div class="logo">
-        <span>日本語 Beginner Quant Analyst</span>
+        <span>Precision Quant Dashboard / v2 / High-Density</span>
       </div>
       <div id="system-info">
-        <div class="static-chip">JSON ONLY</div>
-        <div id="last-update">更新: --</div>
+        <div class="static-chip">Zero-Fat Mode</div>
+        <div id="last-update" class="animate-pulse">更新: --</div>
       </div>
     </header>
 
     <aside class="sidebar">
       <section class="glass-panel">
-        <div class="section-title">日次ログ</div>
+        <div class="section-title">日次ログ <i>History</i></div>
         <div id="log-list" class="log-list"></div>
       </section>
 
       <section class="glass-panel">
-        <div class="section-title">ベンチマークログ</div>
+        <div class="section-title">ベンチマーク <i>Benchmark</i></div>
         <div id="bench-list" class="log-list"></div>
       </section>
 
       <section class="glass-panel">
-        <div class="section-title">投資成果（Standardized）</div>
+        <div class="section-title">投資成果 <i>Outcomes</i></div>
         <div id="outcome-list" class="log-list"></div>
       </section>
 
       <section class="glass-panel">
-        <div class="section-title">モデルレジストリ</div>
+        <div class="section-title">モデル <i>Registry</i></div>
         <div id="registry-list" class="log-list"></div>
       </section>
 
       <section class="glass-panel">
-        <div class="section-title">判定ステータス</div>
+        <div class="section-title">判定状態 <i>Workflow</i></div>
         <div id="workflow-status" class="status-list"></div>
       </section>
     </aside>
 
     <main class="main-content">
-      <section id="leaderboard-section" class="glass-panel" style="margin-bottom: 1.5rem;">
-        <div class="section-title">🏆 戦略リーダーボード（経済的指標比較）</div>
-        <div id="leaderboard-table" class="leaderboard-grid">
-          <!-- JS dynamic content -->
+      <section id="leaderboard-section" class="glass-panel">
+        <div class="section-title">🏆 経済的指標比較 (Leaderboard)</div>
+        <div id="leaderboard-table">
           <div class="log-sub">データを読み込み中...</div>
         </div>
       </section>
 
       <section id="summary-section" class="glass-panel stat-group">
         <div class="stat-card">
-          <span class="stat-label">期待エッジ</span>
+          <span class="stat-label">期待エッジ (Expected Edge)</span>
           <span id="stat-edge" class="stat-value">--</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">バスケット収益</span>
+          <span class="stat-label">予測収益 (Daily Return)</span>
           <span id="stat-return" class="stat-value">--</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">ケリー比率</span>
+          <span class="stat-label">適正投資率 (Kelly)</span>
           <span id="stat-kelly" class="stat-value">--</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">注目銘柄</span>
+          <span class="stat-label">注目銘柄 (Top Signal)</span>
           <span id="stat-top" class="stat-value">--</span>
         </div>
       </section>
 
       <div class="detail-container">
         <section class="glass-panel" style="grid-column: 1 / -1;">
-          <div class="section-title">銘柄分析（初心者向け）</div>
+          <div class="section-title">
+            <span>銘柄分析（財務・合成α・因子寄与）</span>
+            <i id="symbol-count">-- symbols</i>
+          </div>
           <div id="symbol-analysis" class="symbol-grid"></div>
         </section>
 
-        <section class="glass-panel" style="grid-column: 1 / -1;">
-          <div class="section-title">統一検証ログ（Scenario/Experiment/Pipeline）</div>
-          <div id="validation-results" class="symbol-grid"></div>
+        <section class="glass-panel">
+          <div class="section-title">実行命令 (Execution Orders)</div>
+          <div id="execution-log" class="metrics-box" style="height: 280px;"></div>
         </section>
 
         <section class="glass-panel">
-          <div class="section-title">戦略メモ</div>
-          <div id="verdict-content" class="metrics-box" style="height: 100%;"></div>
+          <div class="section-title">検証フェーズ (Validation)</div>
+          <div id="validation-results" class="metrics-box" style="height: 280px;"></div>
         </section>
 
         <section class="glass-panel">
-          <div class="section-title">生JSON（読み取り専用）</div>
-          <div id="json-content" class="metrics-box" style="height: 100%;"></div>
+          <div class="section-title">戦略意志決定 (Verdict Analysis)</div>
+          <div id="verdict-content" class="metrics-box" style="height: 280px;"></div>
+        </section>
+
+        <section class="glass-panel">
+          <div class="section-title">生JSON (Raw Payload)</div>
+          <div id="json-content" class="metrics-box" style="height: 280px;"></div>
         </section>
       </div>
     </main>

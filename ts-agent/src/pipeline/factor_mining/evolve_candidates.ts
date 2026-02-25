@@ -28,7 +28,7 @@ const FactorMiningReportSchema = z.object({
     z.object({
       factor: FactorExpressionSchema,
       sharpe: z.number(),
-      totalReturn: z.number(),
+      cumulativeReturn: z.number(),
       maxDrawdown: z.number(),
       pValue: z.number(),
       accepted: z.boolean(),
@@ -47,7 +47,7 @@ const FactorRegistrySchema = z.object({
       weights: z.record(z.string(), z.number()),
       metrics: z.object({
         sharpe: z.number(),
-        totalReturn: z.number(),
+        cumulativeReturn: z.number(),
         maxDrawdown: z.number(),
         pValue: z.number(),
         accepted: z.boolean(),
@@ -156,7 +156,7 @@ export function runFactorMining(logsBaseDir: string, registryDir: string) {
       weights: entry.candidate.weights,
       metrics: {
         sharpe: entry.metrics.sharpe,
-        totalReturn: entry.metrics.totalReturn,
+        cumulativeReturn: entry.metrics.cumulativeReturn,
         maxDrawdown: entry.metrics.maxDrawdown,
         pValue: entry.pValue,
         accepted: entry.accepted,
@@ -182,7 +182,7 @@ export function runFactorMining(logsBaseDir: string, registryDir: string) {
     top: top.map((entry) => ({
       factor: entry.candidate,
       sharpe: entry.metrics.sharpe,
-      totalReturn: entry.metrics.totalReturn,
+      cumulativeReturn: entry.metrics.cumulativeReturn,
       maxDrawdown: entry.metrics.maxDrawdown,
       pValue: entry.pValue,
       accepted: entry.accepted,

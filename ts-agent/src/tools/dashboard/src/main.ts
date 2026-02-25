@@ -21,13 +21,7 @@ interface StandardOutcome {
     pValue?: number;
     informationCoefficient?: number;
     numerai?: { corr?: number; mmc?: number; fnc?: number };
-    famaFrench?: {
-      mkt?: number;
-      smb?: number;
-      hml?: number;
-      rmw?: number;
-      cma?: number;
-    };
+    famaFrench?: Record<string, number>;
   };
   verification?: {
     metrics: {
@@ -70,22 +64,27 @@ interface DashboardReport {
     expectedEdge?: number;
     basketDailyReturn?: number;
     status?: string;
+    backtest?: Record<string, unknown>;
   };
   risks?: {
     kellyFraction?: number;
+    stopLossPct?: number;
+    maxPositions?: number;
   };
   analysis?: AnalysisSymbol[];
   market?: Record<string, unknown>;
-  options?: {
-    iv?: number;
-    rv?: number;
-    spread?: number;
-    action?: string;
-  };
-  commodity?: {
-    macroScore?: number;
-    goldCopperRatio?: number;
-    oilPrice?: number;
+  execution?: {
+    mode?: string;
+    status?: string;
+    orderCount?: number;
+    orders?: Array<{
+      symbol: string;
+      side: string;
+      quantity: number;
+      fillPrice: number;
+      notional: number;
+      executedAt: string;
+    }>;
   };
 }
 
@@ -94,11 +93,16 @@ interface AnalysisSymbol {
   signal?: string;
   alphaScore?: number;
   finance?: {
+    netSales?: number;
+    operatingProfit?: number;
     profitMargin?: number;
   };
   factors?: {
+    dailyReturn?: number;
+    intradayRange?: number;
+    closeStrength?: number;
+    liquidityPerShare?: number;
     compositeSurprise?: number;
-    revenueGrowth?: number;
   };
 }
 
@@ -125,7 +129,7 @@ interface OutcomeSummary {
 
 interface LeaderboardRow {
   id: string;
-  type: "ALPHA" | "FOUNDATION" | "BASELINE";
+  type: string;
   sharpe: number;
   totalReturn: number;
   maxDrawdown: number;
@@ -135,29 +139,6 @@ interface LeaderboardRow {
 const STATIC_LOGS_BASE = "./logs/daily";
 const UNIFIED_LOGS_BASE = "./logs/unified";
 const BENCH_LOGS_BASE = "./logs/benchmarks";
-
-interface UnifiedStage {
-  name?: string;
-  status?: string;
-}
-
-interface UnifiedRunLogPayload {
-  date?: string;
-  stages?: UnifiedStage[];
-}
-
-interface BenchmarkLogPayload {
-  report?: {
-    type?: string;
-    benchmarkId?: string;
-    date?: string;
-    analyst?: {
-      models?: Array<{ id: string; vendor: string }>;
-      insights?: string;
-    };
-  };
-  models?: Array<Record<string, unknown>>;
-}
 
 // --- Helpers ---
 
@@ -201,6 +182,32 @@ const toOutcomeSummary = (payload: LogPayload): OutcomeSummary => {
 
 interface ViewEngine {
   render(payload: LogPayload): void;
+}
+
+interface BenchmarkLogPayload {
+  report?: {
+    type?: string;
+    benchmarkId?: string;
+    date?: string;
+    analyst?: {
+      models?: Array<{ id: string; vendor: string }>;
+      insights?: string;
+      baselines?: Array<{
+        name: string;
+        metrics: Record<string, number>;
+      }>;
+    };
+  };
+  models?: Array<Record<string, unknown>>;
+}
+
+interface UnifiedRunLogPayload {
+  date?: string;
+  stages?: Array<{
+    name?: string;
+    status?: string;
+    metrics?: Record<string, number>;
+  }>;
 }
 
 // --- Dashboard Shell ---
@@ -281,11 +288,12 @@ class DashboardShell {
       const res = await fetch(`${UNIFIED_LOGS_BASE}/manifest.json`);
       if (!res.ok) return;
       const files = (await res.json()) as string[];
-      for (const file of files.filter((f) => /^\d{8}\.json$/.test(f))) {
+      for (const file of files.filter((f) => f.endsWith(".json"))) {
         const r = await fetch(`${UNIFIED_LOGS_BASE}/${file}`);
         if (r.ok) {
           const p = (await r.json()) as UnifiedRunLogPayload;
-          if (p.date) this.unifiedPayloadByDate.set(p.date, p);
+          const date = p.date || file.replace(".json", "");
+          this.unifiedPayloadByDate.set(date, p);
         }
       }
     } catch (_e) {}
@@ -345,18 +353,21 @@ class DashboardShell {
     const p = this.staticPayloadByDate.get(date);
     if (p) this.dispatch(p);
     this.updateActiveItem("data-date", date);
+    this.updateTimeLabel();
   }
 
   public selectBenchmark(date: string) {
     const p = this.benchPayloadByDate.get(date);
     if (p) this.dispatch(p as unknown as LogPayload);
     this.updateActiveItem("data-date", date);
+    this.updateTimeLabel();
   }
 
   public selectOutcome(id: string) {
     const p = this.outcomePayloadById.get(id);
     if (p) this.dispatch(p);
     this.updateActiveItem("data-id", id);
+    this.updateTimeLabel();
   }
 
   private dispatch(payload: LogPayload) {
@@ -388,7 +399,7 @@ class DashboardShell {
       (l) => `
       <div class="log-item" data-date="${l.date}">
         <div class="log-item-row"><span class="log-date">${this.formatDate(l.date)}</span><span class="badge ${l.verdict === "USEFUL" ? "badge-success" : "badge-danger"}">${l.verdict}</span></div>
-        <div class="log-sub">Return: ${(l.basketDailyReturn * 100).toFixed(2)}%</div>
+        <div class="log-sub">Ret: ${(l.basketDailyReturn * 100).toFixed(2)}%</div>
       </div>`,
       (v) => this.selectLog(v),
       "data-date",
@@ -411,7 +422,7 @@ class DashboardShell {
       this.outcomes,
       (o) => `
       <div class="log-item" data-id="${o.id}">
-        <div class="log-item-row"><span class="log-date">${o.name}</span><span class="badge ${o.readiness >= 75 ? "badge-success" : "badge-warning"}">RS: ${o.readiness.toFixed(0)}</span></div>
+        <div class="log-item-row"><span class="log-date" style="font-size:0.75rem;">${this.shorten(o.name)}</span><span class="badge ${o.readiness >= 75 ? "badge-success" : "badge-warning"}">R:${o.readiness.toFixed(0)}</span></div>
         <div class="log-sub">Sharpe: ${o.sharpe.toFixed(2)}</div>
       </div>`,
       (v) => this.selectOutcome(v),
@@ -424,31 +435,39 @@ class DashboardShell {
     if (!el) return;
     const items: LeaderboardRow[] = [
       {
-        id: "VEGETABLE",
+        id: "VEG_BASE",
         type: "ALPHA",
         sharpe: 1.25,
         totalReturn: 0.15,
         maxDrawdown: -0.05,
         verdict: "READY",
       },
+      {
+        id: "MOCK_FOUND",
+        type: "FOUNDATION",
+        sharpe: 0.88,
+        totalReturn: 0.1,
+        maxDrawdown: -0.12,
+        verdict: "CAUTION",
+      },
     ];
     this.outcomes.forEach((o) => {
       items.push({
         id: o.name,
-        type: "ALPHA",
+        type: "STRAT",
         sharpe: o.sharpe,
         totalReturn: 0,
         maxDrawdown: 0,
-        verdict: o.readiness >= 75 ? "READY" : "CAUTION",
+        verdict: o.readiness >= 75 ? "READY" : "WATCH",
       });
     });
     items.sort((a, b) => b.sharpe - a.sharpe);
 
     el.innerHTML = `
       <table class="leaderboard-table">
-        <thead><tr><th>Strategy</th><th>Type</th><th>Sharpe</th><th>Status</th></tr></thead>
+        <thead><tr><th>Strategy</th><th>Type</th><th>Sharpe</th><th>Return</th><th>MaxDD</th><th>Status</th></tr></thead>
         <tbody>
-          ${items.map((r) => `<tr><td><strong>${this.escapeHtml(r.id)}</strong></td><td><span class="badge badge-neutral">${r.type}</span></td><td class="pos"><strong>${r.sharpe.toFixed(2)}</strong></td><td><span class="badge ${r.verdict === "READY" ? "badge-success" : "badge-warning"}">${r.verdict}</span></td></tr>`).join("")}
+          ${items.map((r) => `<tr><td><strong>${this.escapeHtml(r.id)}</strong></td><td><span class="badge badge-neutral">${r.type}</span></td><td class="pos"><strong>${r.sharpe.toFixed(2)}</strong></td><td>${(r.totalReturn * 100).toFixed(1)}%</td><td>${(r.maxDrawdown * 100).toFixed(1)}%</td><td><span class="badge ${r.verdict === "READY" ? "badge-success" : "badge-warning"}">${r.verdict}</span></td></tr>`).join("")}
         </tbody>
       </table>`;
   }
@@ -459,7 +478,7 @@ class DashboardShell {
       el.innerHTML = this.registry
         .map(
           (m) =>
-            `<div class="log-item" style="cursor:default;"><div class="log-item-row"><span class="log-date">${this.escapeHtml(m.name || m.id)}</span></div></div>`,
+            `<div class="log-item" style="cursor:default; padding: 0.4rem 0.75rem;"><div class="log-item-row"><span class="log-date" style="font-size:0.75rem;">${this.escapeHtml((m.name as string) || (m.id as string))}</span><span class="badge badge-neutral">${(m.vendor as string) || "OSS"}</span></div></div>`,
         )
         .join("");
   }
@@ -483,14 +502,18 @@ class DashboardShell {
   }
 
   public getUnifiedLog(date: string) {
-    return this.unifiedPayloadByDate.get(date);
+    return (
+      this.unifiedPayloadByDate.get(date) ||
+      this.unifiedPayloadByDate.get(this.formatDate(date)) ||
+      null
+    );
   }
 
   public auditLog(strategyId: string, action: string) {
     console.log(`🛡️ Audit Log: ${strategyId} ${action} by user.`);
     const el = document.getElementById("workflow-status");
     if (el) {
-      el.innerHTML += `<div class="status-row" style="margin-top:10px; color:var(--success); font-weight:800; animation:fadeIn 0.5s ease;">✅ USER ${action}ED</div>`;
+      el.innerHTML += `<div class="status-row" style="margin-top:8px; color:var(--success); font-weight:800; animation:fadeIn 0.4s ease;">✅ USER ${action}ED</div>`;
     }
   }
 
@@ -507,13 +530,27 @@ class DashboardShell {
         })[m]!,
     );
   }
+
   private formatDate(s: string) {
+    if (s.includes("-")) return s;
     return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
   }
+
   private updateActiveItem(attr: string, val: string) {
     document.querySelectorAll(".log-item").forEach((el) => {
       el.classList.toggle("active", el.getAttribute(attr) === val);
     });
+  }
+
+  private updateTimeLabel() {
+    this.updateText(
+      "last-update",
+      `Last Sync: ${new Date().toLocaleTimeString()}`,
+    );
+  }
+
+  private shorten(s: string) {
+    return s.length > 15 ? `${s.slice(0, 13)}..` : s;
   }
 }
 
@@ -525,7 +562,7 @@ class DailyLogEngine implements ViewEngine {
     this.shell = shell;
   }
   render(p: LogPayload) {
-    const r = p.report as DashboardReport;
+    const r = (p.report ?? p) as DashboardReport;
     this.shell.updateText(
       "stat-edge",
       `${((r.results?.expectedEdge ?? 0) * 100).toFixed(2)}%`,
@@ -548,17 +585,29 @@ class DailyLogEngine implements ViewEngine {
       `
       <div class="status-row"><span>Readiness</span><span class="badge badge-success">${r.workflow?.alphaReadiness}</span></div>
       <div class="status-row"><span>Verdict</span><span class="badge ${r.workflow?.verdict === "USEFUL" ? "badge-success" : "badge-danger"}">${r.workflow?.verdict}</span></div>
+      <div class="status-row"><span>Risk Cap</span><span class="badge badge-warning">${r.risks?.maxPositions} Pos</span></div>
     `,
     );
 
+    const symbols = r.analysis || [];
+    this.shell.updateText("symbol-count", `${symbols.length} symbols`);
     this.shell.updateHTML(
       "symbol-analysis",
-      (r.analysis || [])
+      symbols
         .map(
           (s) => `
       <div class="symbol-card animate-fade">
         <div class="symbol-head"><span class="symbol-code">${s.symbol}</span><span class="badge badge-success">${s.signal}</span></div>
-        <div class="metric-value">${pickNumber(s.alphaScore).toFixed(4)}</div>
+        <div class="stat-value" style="font-size:1rem;">${pickNumber(s.alphaScore).toFixed(4)} <small style="font-size:0.65rem; opacity:0.6;">ALPHA</small></div>
+        <table class="density-table">
+          <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Profit Margin</td><td>${((s.finance?.profitMargin ?? 0) * 100).toFixed(1)}%</td></tr>
+            <tr><td>Daily Ret</td><td>${((s.factors?.dailyReturn ?? 0) * 100).toFixed(2)}%</td></tr>
+            <tr><td>Momentum</td><td>${pickNumber(s.factors?.compositeSurprise || s.factors?.intradayRange).toFixed(2)}</td></tr>
+            <tr><td>Liquidity</td><td>${(pickNumber(s.factors?.liquidityPerShare) / 1000).toFixed(1)}k</td></tr>
+          </tbody>
+        </table>
       </div>`,
         )
         .join(""),
@@ -566,23 +615,69 @@ class DailyLogEngine implements ViewEngine {
 
     this.shell.updateHTML(
       "verdict-content",
-      `<div class="box-title">Decision</div><div style="font-size:0.9em;">${this.shell.escapeHtml(r.decision?.reason)}</div>`,
+      `
+      <div class="box-title">Strategy Verdict</div>
+      <div style="font-weight:700; color:var(--text-primary); margin-bottom:4px;">${r.decision?.strategy}</div>
+      <div style="font-size:0.85em; opacity:0.8;">${this.shell.escapeHtml(r.decision?.reason)}</div>
+      <div class="box-title">Risk Parameters</div>
+      <div style="font-size:0.85em;">- Stop Loss: ${((r.risks?.stopLossPct ?? 0) * 100).toFixed(1)}%<br>- Kelly: ${((r.risks?.kellyFraction ?? 0) * 100).toFixed(2)}%</div>
+    `,
     );
+
+    this.renderExecution(r);
     this.renderValidation(r.date || "");
+  }
+
+  private renderExecution(r: DashboardReport) {
+    const ex = r.execution;
+    if (!ex || !ex.orders || ex.orders.length === 0) {
+      this.shell.updateHTML(
+        "execution-log",
+        `<div class="log-sub">No execution for this cycle. Status: ${ex?.status || "N/A"}</div>`,
+      );
+      return;
+    }
+    this.shell.updateHTML(
+      "execution-log",
+      `
+      <table class="density-table" style="font-family:'JetBrains Mono', monospace;">
+        <thead><tr><th>Sym</th><th>Side</th><th>Qty</th><th>Price</th><th>Notional</th></tr></thead>
+        <tbody>
+          ${ex.orders.map((o) => `<tr><td>${o.symbol}</td><td class="${o.side === "BUY" ? "pos" : "neg"}">${o.side}</td><td>${o.quantity}</td><td>${o.fillPrice}</td><td>${o.notional.toLocaleString()}</td></tr>`).join("")}
+        </tbody>
+      </table>
+      <div style="margin-top:10px; font-size:0.7em; opacity:0.6;">Status: ${ex.status} | Mode: ${ex.mode}</div>
+    `,
+    );
   }
 
   private renderValidation(date: string) {
     const u = this.shell.getUnifiedLog(date);
+    if (!u) {
+      this.shell.updateHTML(
+        "validation-results",
+        `<div class="log-sub">No audit logs found for ${date}.</div>`,
+      );
+      return;
+    }
     this.shell.updateHTML(
       "validation-results",
-      u
-        ? (u.stages || [])
-            .map(
-              (s) => `
-      <div class="symbol-card animate-fade"><div class="symbol-head"><span>${s.name}</span><span class="badge badge-success">${s.status}</span></div></div>`,
-            )
-            .join("")
-        : "No audit logs.",
+      `
+      <table class="density-table">
+        <thead><tr><th>Stage</th><th>Status</th><th>Metric</th></tr></thead>
+        <tbody>
+          ${(u.stages || [])
+            .map((s) => {
+              const m = Object.entries(s.metrics || {}).at(0);
+              const mStr = m
+                ? `${m[0]}: ${typeof m[1] === "number" ? m[1].toFixed(2) : m[1]}`
+                : "";
+              return `<tr><td>${s.name}</td><td><span class="badge ${s.status === "PASS" ? "badge-success" : "badge-danger"}">${s.status}</span></td><td style="font-size:0.65rem;">${mStr}</td></tr>`;
+            })
+            .join("")}
+        </tbody>
+      </table>
+    `,
     );
   }
 }
@@ -606,7 +701,7 @@ class OutcomeEngine implements ViewEngine {
       "workflow-status",
       `
       <div class="status-row"><span>Precision Score</span><span class="badge badge-success">${((r.reasoningScore ?? 0) * 100).toFixed(0)}</span></div>
-      <button class="badge badge-success" style="width:100%; margin-top:10px; border:none; cursor:pointer;" onclick="window.dashboardShell.auditLog('${r.strategyId}', 'APPROVE')">AUDIT: APPROVE</button>
+      <button class="badge badge-success" style="width:100%; margin-top:10px; border:none; cursor:pointer;" onclick="(window as any).dashboardShell.auditLog('${r.strategyId}', 'APPROVE')">APPROVE STRATEGY</button>
     `,
     );
 
@@ -615,22 +710,55 @@ class OutcomeEngine implements ViewEngine {
       `
       <div class="symbol-card animate-fade" style="grid-column: 1 / -1; border-left: 4px solid var(--accent);">
         <div class="box-title">${r.strategyName}</div>
-        <p style="font-size:0.9em; opacity:0.8;">${this.shell.escapeHtml(r.summary)}</p>
+        <p style="font-size:0.85em; opacity:0.9; margin-bottom:10px;">${this.shell.escapeHtml(r.summary)}</p>
+        <div class="stat-group" style="padding:10px 0;">
+          <div class="stat-card">
+            <span class="stat-label">Sharpe Ratio</span>
+            <span class="stat-value pos">${r.verification?.metrics?.sharpeRatio?.toFixed(2)}</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Annualized Ret</span>
+            <span class="stat-value">${((r.verification?.metrics?.annualizedReturn ?? 0) * 100).toFixed(1)}%</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Max Drawdown</span>
+            <span class="stat-value neg">${((r.verification?.metrics?.maxDrawdown ?? 0) * 100).toFixed(1)}%</span>
+          </div>
+        </div>
       </div>
-      <div class="symbol-card animate-fade">
-        <div class="box-title">Verification</div>
-        <div class="metric-value pos">${r.verification?.metrics?.sharpeRatio?.toFixed(2)}</div>
-        <div class="metric-label">Sharpe Ratio</div>
+      <div class="symbol-card animate-fade" style="grid-column: 1 / -1;">
+        <div class="box-title">Alpha Characteristics (Fama-French / Numerai)</div>
+        <table class="density-table">
+          <thead><tr><th>Factor</th><th>Exposure / Score</th></tr></thead>
+          <tbody>
+            ${Object.entries(r.alpha?.famaFrench || {})
+              .map(
+                ([k, v]) =>
+                  `<tr><td>FF:${k}</td><td>${pickNumber(v).toFixed(3)}</td></tr>`,
+              )
+              .join("")}
+            ${r.alpha?.numerai ? `<tr><td>Numerai CORR</td><td>${pickNumber(r.alpha.numerai.corr).toFixed(4)}</td></tr>` : ""}
+          </tbody>
+        </table>
       </div>`,
     );
 
     this.shell.updateHTML(
       "verdict-content",
-      `<div class="box-title">Reasoning Audit</div><div style="font-size:0.95em; font-style:italic;">"${this.shell.escapeHtml(r.reasoning)}"</div>`,
+      `
+      <div class="box-title">Reasoning Audit</div>
+      <div style="font-size:0.85em; line-height:1.6; font-style:italic;">"${this.shell.escapeHtml(r.reasoning)}"</div>
+      <div class="box-title">Stability</div>
+      <div style="font-size:0.85em;">- Production Ready: <span class="badge ${r.stability?.isProductionReady ? "badge-success" : "badge-danger"}">${r.stability?.isProductionReady}</span><br>- Tracking Error: ${r.stability?.trackingError?.toFixed(2)}</div>
+    `,
+    );
+    this.shell.updateHTML(
+      "execution-log",
+      `<div class="log-sub">Validated Historical Outcome (Backtest Mode)</div>`,
     );
     this.shell.updateHTML(
       "validation-results",
-      `<div class="metric-label">ArXiv Outcome Validated.</div>`,
+      `<div class="badge badge-success">ARXIV PERSISTENCE SUCCESSFUL</div>`,
     );
   }
 }
@@ -648,16 +776,41 @@ class BenchmarkEngine implements ViewEngine {
     this.shell.updateText("stat-kelly", r.date || "--");
     this.shell.updateHTML(
       "symbol-analysis",
-      (r.analyst?.models || [])
-        .map(
-          (m) =>
-            `<div class="symbol-card"><div class="symbol-head"><span>${m.id}</span><span class="badge badge-neutral">${m.vendor}</span></div></div>`,
-        )
-        .join(""),
+      `
+      <div class="symbol-card animate-fade" style="grid-column: 1 / -1;">
+        <div class="box-title">Baseline Comparison Metrics</div>
+        <table class="density-table">
+          <thead><tr><th>Model</th><th>MAE</th><th>RMSE</th><th>sMAPE</th><th>DirAcc</th></tr></thead>
+          <tbody>
+            ${(r.analyst?.baselines || [])
+              .map(
+                (b) => `
+              <tr>
+                <td><strong>${b.name}</strong></td>
+                <td>${pickNumber(b.metrics.mae).toFixed(2)}</td>
+                <td>${pickNumber(b.metrics.rmse).toFixed(2)}</td>
+                <td>${pickNumber(b.metrics.smape).toFixed(2)}%</td>
+                <td class="${(b.metrics.directionalAccuracy ?? 0) > 50 ? "pos" : "neg"}">${pickNumber(b.metrics.directionalAccuracy).toFixed(1)}%</td>
+              </tr>
+            `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+      `,
     );
     this.shell.updateHTML(
       "verdict-content",
-      `<div class="box-title">Insights</div><div>${this.shell.escapeHtml(r.analyst?.insights)}</div>`,
+      `<div class="box-title">Insights</div><div style="font-size:0.85em;">${this.shell.escapeHtml(r.analyst?.insights)}</div>`,
+    );
+    this.shell.updateHTML(
+      "execution-log",
+      `<div class="log-sub">No execution for benchmark logs.</div>`,
+    );
+    this.shell.updateHTML(
+      "validation-results",
+      `<div class="badge badge-neutral">BENCHMARK COMPLETE</div>`,
     );
   }
 }
@@ -671,7 +824,7 @@ class GenericLogEngine implements ViewEngine {
     this.shell.updateText("stat-edge", "UNK");
     this.shell.updateHTML(
       "symbol-analysis",
-      `<div class="symbol-card">Unknown schema fallback.</div>`,
+      `<div class="log-sub">Unknown schema fallback.</div>`,
     );
   }
 }

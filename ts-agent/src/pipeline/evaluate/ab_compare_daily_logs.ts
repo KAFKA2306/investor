@@ -23,10 +23,10 @@ const ComparisonReportSchema = z.object({
     metrics: PerformanceMetricsSchema,
   }),
   uplift: z.object({
-    totalReturnDelta: z.number(),
+    cumulativeReturnDelta: z.number(),
     sharpeDelta: z.number(),
     maxDrawdownDelta: z.number(),
-    hitRateDelta: z.number(),
+    winRateDelta: z.number(),
   }),
 });
 
@@ -86,10 +86,10 @@ export function runDailyAbComparison(logsBaseDir: string) {
       baseline: { name: "NO_TRADE", metrics: emptyMetrics },
       candidate: { name: "VEGETABLE_STRATEGY", metrics: emptyMetrics },
       uplift: {
-        totalReturnDelta: 0,
+        cumulativeReturnDelta: 0,
         sharpeDelta: 0,
         maxDrawdownDelta: 0,
-        hitRateDelta: 0,
+        winRateDelta: 0,
       },
     });
   }
@@ -106,10 +106,11 @@ export function runDailyAbComparison(logsBaseDir: string) {
     baseline: { name: "NO_TRADE", metrics: baseline },
     candidate: { name: "VEGETABLE_STRATEGY", metrics: candidate },
     uplift: {
-      totalReturnDelta: candidate.totalReturn - baseline.totalReturn,
+      cumulativeReturnDelta:
+        candidate.cumulativeReturn - baseline.cumulativeReturn,
       sharpeDelta: candidate.sharpe - baseline.sharpe,
       maxDrawdownDelta: candidate.maxDrawdown - baseline.maxDrawdown,
-      hitRateDelta: candidate.hitRate - baseline.hitRate,
+      winRateDelta: candidate.winRate - baseline.winRate,
     },
   });
   return report;

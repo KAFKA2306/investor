@@ -158,8 +158,8 @@ export async function runFullValidation(logsBaseDir: string) {
         return {
           metrics: {
             sharpeDelta: report.uplift.sharpeDelta,
-            totalReturnDelta: report.uplift.totalReturnDelta,
-            hitRateDelta: report.uplift.hitRateDelta,
+            cumulativeReturnDelta: report.uplift.cumulativeReturnDelta,
+            winRateDelta: report.uplift.winRateDelta,
           },
           detail: report,
         };

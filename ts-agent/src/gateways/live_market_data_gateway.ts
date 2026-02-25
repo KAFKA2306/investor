@@ -2,7 +2,6 @@ import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../core/index.ts";
 import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
-import { YFinanceProvider } from "../providers/yfinance.ts";
 
 export type MarketDataGateway = {
   getEstatStats(statsDataId: string): Promise<Record<string, unknown>>;
@@ -93,25 +92,6 @@ export class LiveMarketDataGateway implements MarketDataGateway {
   private readonly cache = new SqliteHttpCache(
     join(core.config.paths.logs, "cache", "market_cache.sqlite"),
   );
-  private readonly yfinance = new YFinanceProvider();
-
-  private async getYfQuoteRow(
-    symbol: string,
-  ): Promise<Record<string, unknown>> {
-    const q = await this.yfinance.getQuoteSnapshot(`${symbol}.T`);
-    return {
-      Code: `${symbol}0`,
-      Open: q.open,
-      High: q.high,
-      Low: q.low,
-      Close: q.close,
-      Volume: q.volume,
-      TurnoverValue: q.close * q.volume,
-      Date: new Date().toISOString().slice(0, 10).replaceAll("-", ""),
-      NetSales: q.marketCap,
-      OperatingProfit: q.trailingPE > 0 ? q.marketCap / q.trailingPE / 10 : 0,
-    };
-  }
 
   private async fetchJquantsRows(
     endpoint: string,
@@ -150,20 +130,18 @@ export class LiveMarketDataGateway implements MarketDataGateway {
     symbol: string,
     dates: readonly string[],
   ): Promise<Record<string, unknown>[]> {
-    const rows = await pickLatestRows(this.apiKey, symbol, dates, this.cache);
-    return rows.length > 0 ? rows : [await this.getYfQuoteRow(symbol)];
+    return pickLatestRows(this.apiKey, symbol, dates, this.cache);
   }
 
   public async getStatements(
     symbol: string,
   ): Promise<Record<string, unknown>[]> {
     const code5 = `${symbol}0`;
-    const rows = await this.fetchJquantsRows(
+    return this.fetchJquantsRows(
       "/fins/summary",
       { code: code5 },
       24 * 60 * 60 * 1000,
     );
-    return rows.length > 0 ? rows : [await this.getYfQuoteRow(symbol)];
   }
 
   public async getMarketDataEndDate(): Promise<string> {

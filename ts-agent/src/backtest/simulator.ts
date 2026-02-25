@@ -21,6 +21,7 @@ export const BacktestResultSchema = z.object({
   grossReturn: z.number(),
   netReturn: z.number(),
   pnlPerUnit: z.number(),
+  history: z.array(z.number()).optional(),
 });
 
 export type BacktestResult = z.infer<typeof BacktestResultSchema>;
