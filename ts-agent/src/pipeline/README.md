@@ -1,23 +1,20 @@
-# Pipeline Layers
+# パイプライン：処理の流れ
+
+投資システムのデータの流れ（パイプライン）について説明します。
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant T as train/ (Models)
-    participant I as infer/ (Signals)
-    participant E as evaluate/ (A/B)
+    participant T as 学習 (学習済みモデル)
+    participant I as 推論 (投資シグナル)
+    participant E as 評価 (比較・検証)
 
-    T->>I: 1. 学習済みモデルのロード
-    I->>I: 2. 推論とシグナル生成
-    I->>E: 3. 戦略パフォーマンスの評価
-    E-->>T: 4. フィードバックと再学習
+    T->>I: 1. モデルの読み込み
+    I->>I: 2. 将来の予測とシグナル生成
+    I->>E: 3. 成績の評価
+    E-->>T: 4. フィードバックと改善
 ```
 
-- `train/`: training workflows for reusable models.
-- `infer/`: inference workflows for generating live/paper signals.
-- `evaluate/`: evaluation and benchmark workflows.
-
-Current benchmark and pipeline entrypoints:
-
-- `src/pipeline/evaluate/foundation_benchmark.ts`: Foundation Model metrics.
-- `src/pipeline/evaluate/run_full_validation.ts`: **Unified Pipeline Entrypoint** (All stages).
+- `train/`: モデルの学習に関するプログラム。
+- `infer/`: 実際の予測を行い、投資指示（シグナル）を出すプログラム。
+- `evaluate/`: 成績の評価やベンチマーク（比較テスト）を行うプログラム。

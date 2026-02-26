@@ -1,66 +1,39 @@
-# Model Registry (Link-Only)
+# モデル・レジストリ：外部 AI モデルの管理
+
+このディレクトリは、時系列予測モデル（AI モデル）の情報を管理する場所です。
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant U as あなた (User)
+    participant U as あなた
     participant M as models.json
-    participant V as Source Verification
+    participant V as 元データの確認
 
-    U->>V: 1. arxiv / github リンクの検証
-    V-->>U: 成功 (Verified)
-    U->>M: 2. 新しいエントリの追加
-    M-->>U: 3. 更新されたレジストリ
-    Note over M: 既存 ID の編集は禁止
+    U->>V: 1. 論文やソースコードの確認
+    V-->>U: 成功
+    U->>M: 2. 新しいモデル情報の追加
+    M-->>U: 3. 更新完了
+    Note over M: 既存の ID を勝手に変えるのは禁止
 ```
 
-This directory is a minimal registry for external forecasting models.
+## ルール
+- ローカルでの実装は行わず、公式のリンクと ID のみを管理します。
+- 過去の ID は変更せず、新しい情報を追加するようにします。
+- 特定のメーカーや状況に依存しない、中立な情報を保ちます。
 
-- No local model implementation.
-- No local wrapper maintenance.
-- Keep only canonical links and IDs.
+## 🚀 登録されている主なモデル
 
-## Files
+| モデル ID | 開発元 | 役割 | 解説 |
+| :--- | :--- | :--- | :--- |
+| **amazon-chronos** | Amazon | 時系列予測 | Amazon による強力な時系列予測モデル |
+| **google-timesfm** | Google | 時系列予測 | Google の時系列基盤モデル |
+| **microsoft-timeraf** | Microsoft | 時系列予測 | 金融向けの RAG 予測モデル |
+| **salesforce-moirai** | Salesforce | 時系列予測 | 万能型の予測モデル |
+| **les-forecast** | Yang et al. | 投資アルファ生成 | 多くの AI で株価予測を行うフレームワーク |
 
-- `models.json`: machine-readable model registry.
-
-## Usage
-
-- For `Context7`, use `context7LibraryId`.
-- For papers, use `arxiv`.
-- For implementation sources, use `github`.
-
-## Policy
-
-- Add a new entry instead of editing historical IDs.
-- Keep fields non-empty when a source is verified.
-- Keep this registry vendor-agnostic and scenario-agnostic.
-
-## 🚀 Registered Models (Foundation & Alpha)
-
-`models.json` に登録されている主要な予測モデルのカタログだよっ！✨
-
-| Model ID | Vendor | Category | Key Features | Docs |
-| :--- | :--- | :--- | :--- | :--- |
-| **amazon-chronos** | Amazon | TS Forecasting | Transformer-based zero-shot univariate forecasting. | [ArXiv](https://arxiv.org/abs/2403.07815) |
-| **google-timesfm** | Google | TS Forecasting | Pre-trained foundation model for time-series. | [ArXiv](https://arxiv.org/abs/2310.10688) |
-| **microsoft-timeraf** | Microsoft | TS Forecasting | Retrieval-Augmented zero-shot forecasting for Finance. | [ArXiv](https://arxiv.org/abs/2412.20810) |
-| **salesforce-moirai** | Salesforce | TS Forecasting | Any-variate zero-shot transformer. | [ArXiv](https://arxiv.org/abs/2402.02592) |
-| **lag-llama** | Lag-Llama Team | TS Forecasting | Llama-based probabilistic zero-shot forecasting. | [ArXiv](https://arxiv.org/abs/2310.03274) |
-| **les-forecast** | Yang et al. | Alpha Generation | Multi-agent framework for stock alpha generation (LES). | [ArXiv](https://arxiv.org/abs/2409.06289) |
-
-## 🛠️ Installation Verification
-
-Python 環境における基盤モデルのインストール状況は、以下のコマンドで一括チェックできるよっ！✨
+## 🛠️ インストールの確認
+Python 環境でこれらのモデルが正しくインストールされているかは、以下のコマンドで確認できます。
 
 ```bash
-# Foundation Models の検証
 task verify
 ```
-
-**現在のサポート状況:**
-- ✅ **Amazon Chronos**: `chronos` (Python)
-- ✅ **Google TimesFM**: `timesfm` (Python)
-- ✅ **Salesforce MOIRAI**: `uni2ts` (Python)
-- ✅ **Lag-Llama**: `lag_llama` (Python)
-- ℹ️ **Microsoft TimeRAF**: R package (`finnts`) のため、Python 環境では検証スキップ。

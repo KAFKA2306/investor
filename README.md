@@ -1,100 +1,93 @@
-# 🎀 Investor Agent: Autonomous Intelligence Ecosystem ✨
+# 投資エージェント：自律型クオンツ・トレードシステム
 
-**Investor Agent** は、LLM（Gemini 2.0 Flash）によるインテリジェンスと厳格な TypeScript プロトコルを活用し、市場データを「富」へと変換する自律型クオンツ・トレードシステムである。
+このシステムは、最新の AI（Gemini）と厳格な TypeScript プログラムを使い、市場データから利益を生み出す自律型の投資システムです。
 
-## 🧬 システム・シーケンス (Execution Flow)
+## 🧬 システムの流れ
 
-市場データの取得からエージェントによる多層分析、最終的な意思決定とダッシュボード反映までの全工程を以下のシーケンスで定義する。
+データの取得から分析、意思決定、結果の表示までを自動で行います。
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant GW as Market Data Gateway
-    participant MR as Model Registry (models.json)
-    participant LES as LesAgent (LES Framework)
-    participant PEAD as PeadAgent (Earnings)
-    participant LOG as Unified Log (Zod)
-    participant DS as Dashboard (GitHub Pages)
+    participant GW as 市場データ・ゲートウェイ
+    participant MR as モデル・レジストリ
+    participant LES as LES エージェント
+    participant PEAD as PEAD エージェント（決算）
+    participant LOG as 統一ログ
+    participant DS as ダッシュボード
 
-    Note over GW, LES: 1. Data Ingestion & Alpha Generation
-    GW->>LES: Raw Market & Financial Data
-    LES->>MR: 1.5 Load Model Metadata (arxiv/github)
-    MR-->>LES: Registry Info
-    LES->>LES: SAF (Seed Alpha Factory): 因子の動的生成
-    LES->>LES: CSA/RPA: 信頼度・リスク評価
+    Note over GW, LES: 1. データ取得とアルファ生成
+    GW->>LES: 市場・財務データを取得
+    LES->>MR: モデル情報の読み込み
+    MR-->>LES: 登録情報を返却
+    LES->>LES: SAF：投資因子の自動生成
+    LES->>LES: 信頼性とリスクの評価
 
-    Note over LES, PEAD: 2. Strategy Execution
-    LES->>PEAD: Alpha Factors & Sentiment
-    PEAD->>PEAD: Hybrid Surprise Analysis
+    Note over LES, PEAD: 2. 戦略の実行
+    LES->>PEAD: アルファ因子と感情分析を共有
+    PEAD->>PEAD: 決算サプライズ分析
     
-    Note over PEAD, LOG: 3. Persistence & Verification
-    PEAD->>LOG: SymbolAnalysis (Zod Schema)
-    LOG->>LOG: runSimpleBacktest (Validation)
+    Note over PEAD, LOG: 3. 保存と検証
+    PEAD->>LOG: 分析結果を保存
+    LOG->>LOG: バックテストで妥当性を検証
     
-    Note over LOG, DS: 4. Deployment
-    LOG->>DS: Generate YYYYMMDD.json & Manifest
-    DS-->>DS: Deploy via GitHub Actions
-    DS-->>User: Visualized Intelligence
+    Note over LOG, DS: 4. 結果の表示
+    LOG->>DS: データを生成
+    DS-->>DS: 自動デプロイ
+    DS-->>User: ダッシュボードで見える化
 ```
 
 ---
 
-## 🎭 知能ユニット (Active Agents)
+## 🎭 働いているエージェント
 
-現在は以下の特化型エージェントが連携して、多角的な市場分析を実行しているよっ！
+以下の専門エージェントが協力して市場を分析しています。
 
-| エージェント | 技術基盤 | 役割 |
+| エージェント | 技術 | 役割 |
 | :--- | :--- | :--- |
-| `LesAgent` | **ArXiv:2409.06289** | LES フレームワークによる因子生成、評価、動的重み付け。 |
-| `PeadAgent` | **Hybrid Surprize** | 決算サプライズと LES センチメントを融合したドリフト捕捉。 |
-| `XIntelligenceAgent` | **Social Analytics** | SNS 熱量とセンチメントの定量化によるトレンド予測。 |
+| `LesAgent` | LES フレームワーク | 因子の生成、評価、重み付け |
+| `PeadAgent` | 決算サプライズ分析 | 業績発表と感情を合わせたトレンド追随 |
+| `XIntelligenceAgent` | SNS 分析 | トレンドの予測 |
 
 ---
 
-## 📈 Supported Forecasting Models (Registry)
+## 📈 対応している予測モデル
 
-`Model Registry` を通じて、以下の最新の時系列予測（TS Forecasting）基盤モデルおよびアルファ生成フレームワークをサポートしているよっ ✨
+最新の時系列予測モデルをサポートしています。
 
-- **Chronos (Amazon)**: ユニバリエート（単変量）時系列データのゼロショット予測。
-- **TimesFM (Google)**: Transformer ベースの事前学習済み時系列基盤モデル。
-- **TimeRAF (Microsoft)**: 金融データに特化した RAG (Retrieval-Augmented) 型予測。
-- **MOIRAI (Salesforce)**: あらゆる時系列データに対応可能な万能トランスフォーマー。
-- **Lag-Llama**: Llama アーキテクチャを時系列に転用した確率的予測。
-- **LES (ArXiv:2409.06289)**: LLM によるマルチエージェント型アルファ因子生成。
-
-> [!TIP]
-> 各モデルの技術論文（ArXiv）や GitHub へのリンクは、[Model Registry README](./ts-agent/src/model_registry/README.md) を参照してねっ！
+- **Chronos (Amazon)**：ゼロショット時系列予測
+- **TimesFM (Google)**：時系列基盤モデル
+- **TimeRAF (Microsoft)**：金融特化型 RAG 予測
+- **MOIRAI (Salesforce)**：万能時系列トランスフォーマー
+- **Lag-Llama**：確率的時系列予測
+- **LES**：LLM によるマルチエージェント型アルファ生成
 
 ---
 
-## 🛠️ 技術スタック & アーキテクチャ
+## 🛠️ 技術構成
 
-- **ランタイム**: [Bun](https://bun.sh/) (最速の JS ランタイム)
-- **言語**: [TypeScript](https://www.typescriptlang.org/) (Strict モード, Zod バリデーション)
-- **ダッシュボード**: [Vite](https://vitejs.dev/) & Vanilla CSS
-- **インテリジェンス**: Gemini 2.0 Flash (Primary LLM)
-- **コア原則**:
-    - **Fail-Fast**: バリデーションエラー発生時は即座に終了。
-    - **不変性 (Immutability)**: シグナルと設定は作成後、厳格に読み取り専用。
-    - **網羅性 (Comprehensiveness)**: [AGENTS.md](./AGENTS.md) に基づく完全な実装。
+- **実行環境**：Bun (JavaScript ランタイム)
+- **言語**：TypeScript (厳格な型チェック)
+- **表示**：Vite & Vanilla CSS (ダッシュボード)
+- **AI**：Gemini 2.0 Flash
 
 ---
 
-## 🚀 利用可能なタスク (Taskfile)
+## 🚀 使えるコマンド
 
-| コマンド | 説明 |
+| コマンド | 内容 |
 | :--- | :--- |
-| `task setup` | 環境の初期化と依存関係（Node.js & Python）のインストール。 |
-| `task check` | Lint (Biome) と TypeScript の厳格な型チェック。 |
-| `task verify` | API とモデル環境（Python）の正常性確認。 |
-| `task run` | **メインパイプライン** (LES 再現 + ベンチマーク + ダッシュボード更新) を実行。 |
-| `task view` | ダッシュボードの開発サーバーを起動して結果を確認。 |
+| `task setup` | 環境のセットアップ |
+| `task check` | プログラムの品質チェック |
+| `task verify` | API と実行環境の確認 |
+| `task run` | 分析の実行（メイン処理） |
+| `task view` | ダッシュボードの確認 |
 
-## 🌐 Dashboard (GitHub Pages)
+## 🌐 公開ダッシュボード
 
-最新の分析結果は以下のパブリック URL で確認できるよっ ✨
-- **URL**: [https://kafka2306.github.io/investor/](https://kafka2306.github.io/investor/)
+以下の URL で最新の分析結果を確認できます。
+- [https://kafka2306.github.io/investor/](https://kafka2306.github.io/investor/)
 
 ---
-世界で一番美しく、正確なロジックで。
-私たちのコードが、未来の富を成就させる。 💖🚀💰✨
+誠実なロジックで、未来の富を。
+💖🚀💰✨

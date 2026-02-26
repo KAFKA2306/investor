@@ -1,65 +1,54 @@
-# Top Tier Autonomous Quant Workflow
+# 高度自律型クオンツ・ワークフロー
 
 ```mermaid
 flowchart TD
-    subgraph Meta
-        ACEPlaybook["ACE Playbook"]
-        Monitor["Regime and Alpha Decay Monitor"]
-        Monitor --> |Trigger Ruthless Pruning| ACEPlaybook
+    subgraph メタ
+        ACEPlaybook["ACE プレイブック"]
+        Monitor["相場状況・アルファ減衰モニタ"]
+        Monitor --> |無慈悲な剪定を実行| ACEPlaybook
     end
 
-    subgraph Discovery
-        MarketData["Market and Alt Data"] --> Miner["LLM Math Alpha Miner"]
-        ArXiv["Research Papers"] --> Miner
-        Miner --> |Proposed Hypotheses| SAF["Seed Alpha Factory"]
-        ACEPlaybook --> |Blind Planning Directives| Miner
+    subgraph 発見
+        MarketData["市場・代替データ"] --> Miner["LLM 数理アルファマイナー"]
+        ArXiv["研究論文"] --> Miner
+        Miner --> |仮説の提案| SAF["シードアルファ・ファクトリー"]
+        ACEPlaybook --> |ブラインドプランニング指示| Miner
     end
 
-    subgraph Evaluation
-        SAF --> ISOEval["Isolated Multi Agent Eval"]
+    subgraph 評価
+        SAF --> ISOEval["独立マルチエージェント評価"]
         
-        ISOEval --> LogicGate{"FRA RPA Logical Purity Check"}
-        LogicGate -- "Logical Flaw or Low RS" --> RejectLogic["Instant Kill Extract Anti Pattern"]
+        ISOEval --> LogicGate{"FRA RPA 論理純度チェック"}
+        LogicGate -- "論理欠陥または低 RS" --> RejectLogic["即時棄却・アンチパターン抽出"]
         
-        LogicGate -- "Pass" --> OrthoCheck{"Orthogonality Check"}
-        OrthoCheck -- "High Correlation" --> RejectLogic
+        LogicGate -- "合格" --> OrthoCheck{"直交性チェック"}
+        OrthoCheck -- "高相関" --> RejectLogic
         
-        OrthoCheck -- "True Alpha" --> Backtest["Cost Aware OOS Backtest"]
-        Backtest --> Metrics["Calc Sharpe DD Capacity"]
+        OrthoCheck -- "真のアルファ" --> Backtest["コスト考慮型 OOS バックテスト"]
+        Backtest --> Metrics["シャープレシオ・最大ドローダウン計算"]
         
-        Metrics --> HuddleGate{"Strict Huddle Rate Check"}
-        HuddleGate -- "Sub par Performance" --> RejectLogic
+        Metrics --> HuddleGate{"厳格なハードルレート判定"}
+        HuddleGate -- "性能不足" --> RejectLogic
         
-        RejectLogic -.-> |Update| ACEPlaybook
+        RejectLogic -.-> |更新| ACEPlaybook
     end
 
-    subgraph Execution
-        HuddleGate -- "Survives ALL Gates" --> DWA["Dynamic Weight Optimizer"]
-        DWA --> Risk["Risk Manager Half Kelly Sizing"]
-        Risk --> HardStops{"Hard Stops and Regime Guards"}
-        HardStops --> OrderGen["Order Generation and Impact Model"]
-        OrderGen --> Gateway["Execution Gateway"]
+    subgraph 実行
+        HuddleGate -- "全ゲートを通過" --> DWA["動的ウェイト最適化"]
+        DWA --> Risk["ハーフケリー・サイジング"]
+        Risk --> HardStops{"ハードストップ・相関ガード"}
+        HardStops --> OrderGen["注文生成・インパクトモデル"]
+        OrderGen --> Gateway["取引ゲートウェイ"]
     end
 
-    subgraph Audit
-        Gateway --> Ledger["Immutable Verification Ledger"]
-        Ledger --> Score["Calculate LLM Readiness and Accuracy"]
-        Score -.-> |Continuous Strict Feedback| Monitor
-        Ledger -.-> |Record Success| ACEPlaybook
+    subgraph 監査
+        Gateway --> Ledger["改ざん不能な検証用台帳"]
+        Ledger --> Score["LLM 準備状況・精度計算"]
+        Score -.-> |継続的なフィードバック| Monitor
+        Ledger -.-> |成功の記録| ACEPlaybook
     end
 
-    Discovery --> Evaluation
-    Evaluation --> Execution
-    Execution --> Audit
-
-    style Meta fill:#f4e8f8,stroke:#9c27b0
-    style Discovery fill:#e3f2fd,stroke:#1e88e5
-    style Evaluation fill:#ffebee,stroke:#d32f2f,stroke-width:2px
-    style LogicGate fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px,color:#b71c1c
-    style OrthoCheck fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px,color:#b71c1c
-    style HuddleGate fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px,color:#b71c1c
-    style RejectLogic fill:#212121,stroke:#000,stroke-width:1px,color:#fff
-    style Execution fill:#fdf1e1,stroke:#f57c00
-    style HardStops fill:#ffe0b2,stroke:#e65100,stroke-width:2px
-    style Audit fill:#eceff1,stroke:#546e7a
+    発見 --> 評価
+    評価 --> 実行
+    実行 --> 監査
 ```
