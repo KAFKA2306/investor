@@ -1,66 +1,61 @@
-# 自律型LLMベース・クオンツ・エージェントにおける投資成果の標準化
+# 自律型LLMベース・クオンツ・エージェントにおける投資成果の標準化 (Standardization of Investment Outcomes)
 
-**要約:**  
-LLMベースの自律型投資エージェントの評価は、モデルの非決定性や市場のノイズにより困難を極める。本論文では、戦略固有のロジックから評価指標を分離する4層の「標準投資成果（Standardized Outcome）」フレームワークを提案する。 (1) アルファの統計的有意性、(2) バックテストの堅牢性、(3) 運用準備状況、(4) 執行忠実度、を定量化することで、AI駆動型クオンツ戦略の継続的な自己改善と監査を可能にする統一プロトコルを定義する。
+## エグゼクティブ・サマリー (Executive Summary)
+本ホワイトペーパーは、LLM（大規模言語モデル）をベースとした自律型投資エージェントのパフォーマンス評価に関する提言です。モデルの推論における非決定性や市場ノイズといった課題を克服するため、戦略固有のロジック評価から切り離された4段階（Tier）の「標準投資成果（Standardized Outcome）」フレームワークを導入し、AI主導のクオンツ戦略における自己改善・監査可能な統一プロトコルを定義します。
 
----
+## 1. 序論・導入の背景 (Background & Introduction)
+旧来のクオンツシステムは、静的ルールに基づくバックテスト検証に依存していました。一方、自律型投資エージェントはLLMの動的推論に依存するため、「成果（Result）」の定義を標準化・厳密化しなければ、発見されたアルファの統計的妥当性や運用に向けた「準備状況（Readiness）」の評価が曖昧となり、資本配分リスクの増大を招きます。
 
-## 1. 序論
+## 2. 4階層・成果評価フレームワーク (4-Tier Standardized Outcome Framework)
+異なる投資戦略間での成果比較を可能とするため、一元化された `StandardOutcome` スキーマを提唱します。
 
-従来のクオンツシステムは、バックテストによって検証された固定的なルールに基づいている。対して、自律型投資エージェントはLLMを活用し、推論や意思決定を非決定的に行う。このため、「成果（Result）」に標準的な定義が欠如していると、発見されたアルファが統計的に妥当か、運用上安全かという「Readiness（準備状況）」の判断が曖昧になる。
+- **Tier 1: アルファの有意性 (Statistical Significance of Alpha)**
+  - 目的: 発見されたリターンが偶然の産物ではないことを統計学的に証明する。
+  - 基本要件: t統計量（t-Stat: $|t| > 2$）、p値（$p < 0.05$）
+- **Tier 2: 検証パフォーマンス (Validation Performance & Robustness)**
+  - 目的: 実稼働環境での手数料・スリッページを織り込んだ上でのエッジの持続性を評価する。
+  - 基本要件: リスク調整後収益（Sharpe Ratio: $\ge 1.0$）、最大ドローダウン制限（Max Drawdown: $\le 10\%$）
+- **Tier 3: 運用準備・システム成熟度 (Operational Readiness & System Maturity)**
+  - 目的: システムの監査可能性（0-100スコア）を定量化する。
+  - 評価軸: 推論プロセスのトレーサビリティ（Traceability）、および同一入力からの監査証跡の再現性（Reproducibility）。
+- **Tier 4: 執行監査 (Execution Audit & Fidelity)**
+  - 目的: ペーパートレード・本番稼働での理論値と実力値の乖離を測定する。
+  - 評価軸: 推定コスト vs. 実約定コスト（スリッページ影響）、および意思決定から約定までの時間・価格遅延（トラッキングエラー）。
 
-## 2. 4層の成果評価フレームワーク
+## 3. 自律運用アーキテクチャ実装 (Autonomous Operational Architecture)
+全ステージは単一の監査ストリームに統合され、`UnifiedLogSchema` に基づく「投資成果報告」として集約されます。
 
-我々は、Post-Earnings Announcement Drift（PEAD）や平均回帰など、異なる戦略間での結果を比較可能にするため、統一された `StandardOutcome` スキーマを提案する。
-
-### Tier 1: アルファの有意性（統計的証明）
-発見されたパターンが運ではないことを、統計学的に担保する。
-- **t値 ($|t| > 2$):** リターンの平均がゼロから有意に離れていることを確認。
-- **p値 ($p < 0.05$):** 純粋な偶然によって結果が生じる確率を定量化。
-
-### Tier 2: 検証パフォーマンス（バックテスト品質）
-手数料やスリッページを考慮した上で、エッジが存続しているかを確認する。
-- **シャープレシオ ($\ge 1.0$):** リスク調整後リターンの基準。
-- **最大ドローダウン ($\le 10\%$):** 資本保護の許容限界。
-
-### Tier 3: 運用準備（システム成熟度）
-再現性と観測可能性を0-100のスコアで評価する。
-- **トレーサビリティ:** 全ての取引がLLMの推論とデータスナップショットまで遡及可能か。
-- **再現性:** 同じ入力から同じ監査証跡を生成できるか。
-
-### Tier 4: 執行監査（実効性の完全性）
-ペーパートレードや本番環境の結果を理論値と比較する。
-- **スリッページ影響:** 理論的なコストと実際の約定コストの比較。
-- **トラッキングエラー:** 「戦略決定」と「最終約定」の間の乖離。
-
-## 3. 実装: 自律型サイクル
-
-本実装では、全てのステージが中央集中型のログストリームに出力される `UnifiedLogSchema` を採用している。「メタ戦略」シナリオは、各ステージの結果を集約し、単一の「投資成果レポート」を生成する。
-
+### 運用ライフサイクル・シーケンス (Operational Lifecycle Sequence)
 ```mermaid
-graph TD
-    A[市場仮説] --> B{戦略エージェント}
-    B --> C[統計的バックテスト]
-    C --> D[運用準備評価]
-    D --> E[成果アグリゲーター]
-    E --> F[統一ダッシュボード]
-    F --> G[本番デプロイ]
+sequenceDiagram
+    autonumber
+    participant Market as 市場環境 (Market Hypothesis)
+    participant Strategy as 戦略・推論層 (Strategy Agent)
+    participant Backtest as 検証エンジン (Statistical Backtest)
+    participant Readiness as 運用準備評価 (Readiness Evaluation)
+    participant Aggregator as 成果集約層 (Outcome Aggregator)
+    participant Deploy as 本番環境ダッシュボード (Production/Dashboard)
+
+    Market->>Strategy: 初期仮説・シグナル候補抽出
+    Strategy->>Backtest: 戦略アルゴリズム・ポートフォリオ送信
+    Backtest->>Backtest: Tier 1 & 2 (統計的有意性・パフォーマンス) 評価
+    alt Tier 1/2 要件未達 (Fail)
+        Backtest-->>Strategy: 戦略棄却・再考命令
+    else Tier 1/2 要件達成 (Pass)
+        Backtest->>Readiness: 監査証跡データ送付
+    end
+    Readiness->>Readiness: Tier 3 (トレーサビリティ・再現性スコア算出)
+    Readiness->>Aggregator: StandardOutcome レポート統合
+    Aggregator->>Deploy: 統一可視化ダッシュボードへ出力
+    Deploy->>Deploy: 検証済戦略としてTier 4(実執行)へ昇格
 ```
 
-### 3.2 Supported Forecasting Models (Foundation Models)
+### 予測基盤モデル (Supported Foundation Models)
+エージェントは `Model Registry` を介し、先端の時系列予測・生成モデルの活用が可能です。
+- **Chronos (Amazon)**、 **TimesFM (Google)**、 **TimeRAF (Microsoft)**、 **MOIRAI (Salesforce)**、 **Lag-Llama**、 **LES (ArXiv:2409.06289; マルチエージェント型)**
 
-エージェントは以下の最新の時系列予測基盤モデルおよびアルファ生成フレームワークを `Model Registry` 経由で活用できる。
-
-- **Chronos (Amazon)**: ユニバリエート（単変量）時系列データのゼロショット予測。
-- **TimesFM (Google)**: Transformer ベースの事前学習済み時系列基盤モデル。
-- **TimeRAF (Microsoft)**: 金融データに特化した RAG (Retrieval-Augmented) 型予測。
-- **MOIRAI (Salesforce)**: あらゆる時系列データに対応可能な万能トランスフォーマー。
-- **Lag-Llama**: Llama アーキテクチャを時系列に転用した確率的予測。
-- **LES (ArXiv:2409.06289)**: LLM によるマルチエージェント型アルファ因子生成。
-
-## 4. 結論
-
-「成果」を戦略に依存しないインターフェースとして形式化することで、自律型エージェントが自らの性能を継続的に改善することが可能となった。このフレームワークは、アルファ発見の速度とシステムの成熟度の向上を比較可能にし、AI投資管理を場当たり的な実験から、厳格で監査可能なエンジニアリングの規律へと昇華させる。
+## 4. 結語 (Conclusion)
+パフォーマンスの「成果」を戦略アーキテクチャ非依存のインターフェースとして形式化・統合することで、自律型エージェントの継続的なメタ学習と最適化が可能となります。本フレームワークは、AI投資運用業務を「実験的試行」から「厳格で監査・スケール可能なエンジニアリングプロセス」へと昇華させるためのプロトコル基盤として機能します。
 
 ---
-*キーワード: 自律型エージェント, クオンツファイナンス, LLM, 運用準備状況, アルファ発見*
+*Key Terms: Autonomous Agents, Quantitative Finance, Foundation Models (LLM), Operational Readiness, Alpha Discovery*

@@ -1,0 +1,177 @@
+{
+  "schema": "investor.daily-log.v1",
+  "generatedAt": "2026-02-25T10:49:45.110Z",
+  "models": [
+    {
+      "id": "amazon-chronos",
+      "vendor": "Amazon",
+      "name": "Chronos",
+      "context7LibraryId": "/amazon-science/chronos-forecasting",
+      "github": "https://github.com/amazon-science/chronos-forecasting",
+      "arxiv": "https://arxiv.org/abs/2403.07815"
+    },
+    {
+      "id": "google-timesfm",
+      "vendor": "Google",
+      "name": "TimesFM",
+      "context7LibraryId": "/google-research/timesfm",
+      "github": "https://github.com/google-research/timesfm",
+      "arxiv": "https://arxiv.org/abs/2310.10688"
+    },
+    {
+      "id": "microsoft-timeraf",
+      "vendor": "Microsoft",
+      "name": "TimeRAF",
+      "context7LibraryId": "/microsoft/finnts",
+      "github": "https://github.com/microsoft/finnts",
+      "arxiv": "https://arxiv.org/abs/2412.20810"
+    },
+    {
+      "id": "salesforce-moirai",
+      "vendor": "Salesforce",
+      "name": "MOIRAI",
+      "context7LibraryId": "/salesforce/uni2ts",
+      "github": "https://github.com/SalesforceAIResearch/uni2ts",
+      "arxiv": "https://arxiv.org/abs/2402.02592"
+    },
+    {
+      "id": "lag-llama",
+      "vendor": "Lag-Llama Team",
+      "name": "Lag-Llama",
+      "context7LibraryId": "/time-series-foundation-models/lag-llama",
+      "github": "https://github.com/time-series-foundation-models/lag-llama",
+      "arxiv": "https://arxiv.org/abs/2310.03274"
+    },
+    {
+      "id": "les-forecast",
+      "vendor": "Yang et al.",
+      "name": "LES (Large-scale Stock Forecasting)",
+      "context7LibraryId": "/les-agent/les-stock-forecasting",
+      "github": "https://github.com/microsoft/investor-agent",
+      "arxiv": "https://arxiv.org/abs/2409.06289"
+    }
+  ],
+  "report": {
+    "scenarioId": "SCN-PEAD-001",
+    "analyzedAt": "2026-02-25T10:49:45.110Z",
+    "date": "20260225",
+    "inputs": {
+      "universe": [
+        "1375",
+        "1332",
+        "2503",
+        "7203",
+        "9984"
+      ]
+    },
+    "evidence": {
+      "jquants": {
+        "listedCount": 5,
+        "matchedSymbols": [
+          "1375",
+          "1332",
+          "2503",
+          "7203",
+          "9984"
+        ],
+        "status": "PASS"
+      }
+    },
+    "market": {
+      "sectorMomentumProxy": 0.05
+    },
+    "analysis": [],
+    "decision": {
+      "strategy": "Earnings Surprise Alpha (PEAD) enhanced by Chronos",
+      "action": "NO_TRADE",
+      "topSymbol": "7203",
+      "reason": "合成αが閾値未達。",
+      "experimentValue": "USELESS"
+    },
+    "signals": {
+      "macro": {
+        "sectorMomentumProxy": 0.05
+      },
+      "symbols": []
+    },
+    "risks": {
+      "kellyFraction": 0,
+      "stopLossPct": 0.03,
+      "maxPositions": 3
+    },
+    "results": {
+      "mode": "PROOF",
+      "status": "FAIL",
+      "expectedEdge": 0,
+      "basketDailyReturn": -0.0015,
+      "paperPnlPerUnit": -0.0015,
+      "backtest": {
+        "from": "20260206",
+        "to": "20260225",
+        "tradingDays": 20,
+        "feeBps": 10,
+        "slippageBps": 5,
+        "totalCostBps": 15,
+        "grossReturn": 0,
+        "netReturn": -0.0015,
+        "pnlPerUnit": -0.0015,
+        "sharpe": 0,
+        "cumulativeReturn": -0.0014989317307853023,
+        "cagr": -0.027004699401291465,
+        "maxDrawdown": -0.0014989317307853023,
+        "winRate": 0,
+        "profitFactor": 0,
+        "history": [
+          1,
+          0.9977338814105269,
+          0.9912601814791417,
+          0.9936332223295778,
+          1.0035209473420157,
+          1.0026518547385805,
+          1.0075898360959092,
+          1.015038019100198,
+          1.0180812159447972,
+          1.0095293396321838,
+          1.0099806530580782,
+          1.011287102388742,
+          1.0096158129096604,
+          1.004085661441804,
+          1.0120146393177465,
+          1.020366262394449,
+          1.0111037262077505,
+          1.008569270541632,
+          1.0052982355604285,
+          1.0143389849362308,
+          1.012259201816865,
+          1.014159747425528,
+          1.0082179725928837,
+          0.9997624638148357,
+          0.9970616050275339,
+          1.0007350511643303,
+          1.0005773887555065,
+          0.9967073680544704,
+          1.0038209581797002,
+          1.0039881170376885,
+          1.0035593066690818
+        ]
+      },
+      "proved": false,
+      "selectedSymbols": [],
+      "generatedAt": "2026-02-25T10:49:45.110Z"
+    },
+    "execution": {
+      "mode": "PAPER",
+      "status": "SKIPPED",
+      "orderCount": 0,
+      "orders": [],
+      "summary": {
+        "grossExposure": 0
+      }
+    },
+    "workflow": {
+      "dataReadiness": "FAIL",
+      "alphaReadiness": "FAIL",
+      "verdict": "USELESS"
+    }
+  }
+}
