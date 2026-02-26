@@ -1,46 +1,38 @@
-/**
- * Generalized Quant Metrics (Numerai-style)
- *
- * Provides CORR, MMC, and FNC calculations for verifiable model evaluation.
- */
-
 export namespace QuantMetrics {
-  /**
-   * CORR: Gauss-ranked, tail-emphasized correlation
-   * Emphasizes the most confident predictions.
-   */
   export function calculateCorr(
     predictions: number[],
     targets: number[],
   ): number {
     if (predictions.length !== targets.length) return 0;
-
-    // Gauss Rank transformation (simple approximation)
     const rankedPreds = gaussRank(predictions);
     const rankedTargets = gaussRank(targets);
-
-    // Pearson Correlation on ranked data
     return pearson(rankedPreds, rankedTargets);
   }
 
-  /**
-   * MMC: Meta-Model Contribution
-   * measures unique alpha against a baseline (system-wide Meta Model).
-   */
+  export function calculateTStat(returns: number[]): number {
+    const n = returns.length;
+    if (n < 2) return 0;
+    const m = mean(returns);
+    const s = std(returns);
+    if (s === 0) return 0;
+    return m / (s / Math.sqrt(n));
+  }
+
+  export function calculatePValue(tStat: number, n: number): number {
+    if (n < 2) return 1.0;
+    const x = Math.abs(tStat);
+    return 2 * (1 - normalCdf(x));
+  }
+
   export function calculateMMC(
     preds: number[],
     metaModelPreds: number[],
     targets: number[],
   ): number {
-    // Neutralize preds to metaModelPreds
     const neutralized = neutralize(preds, metaModelPreds);
     return calculateCorr(neutralized, targets);
   }
 
-  /**
-   * FNC: Feature Neutral Correlation
-   * Measures predictive power that is NOT explained by linear exposure to features.
-   */
   export function calculateFNC(
     preds: number[],
     features: number[][],
@@ -57,7 +49,6 @@ export namespace QuantMetrics {
     const sorted = [...data].sort((a, b) => a - b);
     return data.map((v) => {
       const rank = sorted.indexOf(v) / (data.length - 1);
-      // Inverse Normal CDF approximation
       return invNormalCdf(rank);
     });
   }
@@ -66,11 +57,8 @@ export namespace QuantMetrics {
     const len = Math.min(preds.length, features.length);
     const p = preds.slice(0, len);
     const f = features.slice(0, len);
-
-    // 1D Linear Regression residual: Y - (beta * X)
     const varF = variance(f);
     if (varF === 0) return p;
-
     const b = covariance(p, f) / varF;
     return p.map((val, i) => {
       const fi = f[i];
@@ -79,7 +67,6 @@ export namespace QuantMetrics {
   }
 
   function invNormalCdf(p: number): number {
-    // Simple Approximation for Gauss Ranking
     return Math.sqrt(2) * erfInv(2 * Math.max(0.001, Math.min(0.999, p)) - 1);
   }
 
@@ -94,7 +81,6 @@ export namespace QuantMetrics {
   function pearson(x: number[], y: number[]): number {
     const n = Math.min(x.length, y.length);
     if (n < 2) return 0;
-
     let sumX = 0,
       sumY = 0,
       sumXY = 0,
@@ -109,7 +95,6 @@ export namespace QuantMetrics {
       sumX2 += xi * xi;
       sumY2 += yi * yi;
     }
-
     const num = n * sumXY - sumX * sumY;
     const den = Math.sqrt(
       (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY),
@@ -133,13 +118,30 @@ export namespace QuantMetrics {
   function variance(x: number[]): number {
     const n = x.length;
     if (n < 2) return 0;
-    const mean = x.reduce((a, b) => a + b, 0) / n || 0;
-    return x.reduce((acc, v) => acc + (v - mean) ** 2, 0) / (n - 1);
+    const m = mean(x);
+    return x.reduce((acc, v) => acc + (v - m) ** 2, 0) / (n - 1);
   }
-  /**
-   * Fama-French Five-Factor Model Exposure
-   * (Simplified approximation for in-agent validation)
-   */
+
+  function std(x: number[]): number {
+    return Math.sqrt(variance(x));
+  }
+
+  function mean(x: number[]): number {
+    return x.reduce((a, b) => a + b, 0) / (x.length || 1);
+  }
+
+  function normalCdf(x: number): number {
+    const t = 1 / (1 + 0.2316419 * Math.abs(x));
+    const d = 0.3989423 * Math.exp((-x * x) / 2);
+    const prob =
+      d *
+      t *
+      (0.3193815 +
+        t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    if (x > 0) return 1 - prob;
+    return prob;
+  }
+
   export function calculateFamaFrench(
     returns: number[],
     market: number[],

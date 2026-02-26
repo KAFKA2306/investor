@@ -1,49 +1,51 @@
 import { BaseAgent } from "../core/index.ts";
+import {
+  type YahooBar,
+  YahooFinanceGateway,
+} from "../gateways/yahoo_finance_gateway.ts";
 
-export interface CommodityPrice {
-  symbol: string;
-  price: number;
-  change1d: number;
-}
-
-/**
- * CommodityAgent: Macro-Correlation Model
- *
- * Logic:
- * 1. Gold/Copper Ratio (GCR):
- *    - High Ratio = Risk-Off (Defensive)
- *    - Low Ratio = Risk-On (Cyclical)
- * 2. Oil Volatility Index (OVX) Proxy:
- *    - High Vol = Inflation/Geopolitical Uncertainty.
- * 3. Output: Global Macro Score (-1.0 to 1.0) to adjust Equity Alpha weights.
- */
 export class CommodityAgent extends BaseAgent {
+  private readonly yahoo = new YahooFinanceGateway();
+
   public async run(): Promise<void> {
-    console.log("🚀 CommodityAgent: Executing Macro-Correlation Analysis...");
-    const macroScore = await this.calculateMacroScore();
-    console.log(
-      `[COMMODITY] Resultant Macro Score: ${macroScore.toFixed(2)} (${macroScore > 0 ? "Risk-On" : "Risk-Off"})`,
-    );
+    const score = await this.calculateMacroScore();
+    console.log(`[COMMODITY] Multi-factor Macro Score: ${score.toFixed(2)}`);
   }
 
   private async calculateMacroScore(): Promise<number> {
-    // Mocking specialized commodity data retrieval
-    const gold = 2050; // USD/oz
-    const copper = 3.85; // USD/lb
-    const oil = 78.5; // Brent
+    const [goldBars, copperBars, oilBars]: [
+      YahooBar[],
+      YahooBar[],
+      YahooBar[],
+    ] = await Promise.all([
+      this.yahoo.getChart("GC=F", "5d"),
+      this.yahoo.getChart("HG=F", "5d"),
+      this.yahoo.getChart("CL=F", "5d"),
+    ]);
 
-    const gcRatio = gold / (copper * 100); // Normalized ratio
-    const gcBench = 5.3; // Long-term historical average
+    const getPrice = (bars: YahooBar[]): number =>
+      Number(bars.at(-1)?.Close ?? 0);
+
+    const gold = getPrice(goldBars);
+    const copper = getPrice(copperBars);
+    const oil = getPrice(oilBars);
+
+    if (gold === 0 || copper === 0 || oil === 0) {
+      console.warn(
+        "[COMMODITY] Insufficient data for macro score calculation.",
+      );
+      return 0;
+    }
+
+    const gcRatio = gold / (copper * 100);
+    const gcBench = 5.3;
 
     let score = 0;
 
-    // Gold/Copper logic
-    if (gcRatio < gcBench)
-      score += 0.5; // Growth outperforming haven
+    if (gcRatio < gcBench) score += 0.5;
     else score -= 0.5;
 
-    // Oil trend logic
-    if (oil > 85) score -= 0.2; // High energy cost drag
+    if (oil > 85) score -= 0.2;
 
     return Math.max(-1, Math.min(1, score));
   }

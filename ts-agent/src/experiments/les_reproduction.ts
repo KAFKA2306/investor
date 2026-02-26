@@ -11,76 +11,43 @@ import {
 import type { StandardOutcome } from "../schemas/outcome.ts";
 import { SymbolAnalysisSchema } from "./analysis/daily_alpha.ts";
 
-const Universe = ["7203", "9984", "8035", "6758", "4063"]; // Toyota, SoftBank, Tokyo Electron, Sony, Shin-Etsu
+const Universe = ["7203", "9984", "8035", "6758", "4063"];
 
 async function reproduceLES() {
-  console.log(
-    "🌟 Reproducing LES (Large-scale Stock Forecasting with LLMs) experiment...",
-  );
   const agent = new LesAgent();
   const gateway = await MarketdataLocalGateway.create(Universe);
   const date = await gateway.getMarketDataEndDate();
 
-  // 1. Seed Alpha Factory (SAF) - Agent generates alpha factors with Blind Planning
   const factors = await agent.generateAlphaFactors({
     blindPlanning: true,
     targetDiversity: "HIGH",
   });
-  console.log(
-    `- Generated ${factors.length} alpha factors from Seed Alpha Factory (Blind Planning enabled).`,
-  );
 
-  // 2. Multi-Agent Evaluation (FRA & RPA) - Isolated Reasoning Score (RS)
-  console.log("- Evaluating factors using isolated agent sessions...");
   const evaluations = await Promise.all(
     factors.map(async (f) => {
-      // In a real Agent Teams setup, each of these would be a fresh teammate session.
-      // Here we simulate this by passing NO context of other factors.
       const fra = await agent.evaluateReliability(f);
       const rpa = await agent.evaluateRisk(f);
       const avgRS = (fra.rs + rpa.rs) / 2;
-
-      console.log(
-        `  [Isolated] Factor ${f.id} evaluated. RS: ${avgRS.toFixed(2)}`,
-      );
-      if (fra.rejectionReason)
-        console.log(`    ❌ FRA Rejected: ${fra.rejectionReason}`);
-      if (rpa.rejectionReason)
-        console.log(`    ❌ RPA Rejected: ${rpa.rejectionReason}`);
-
       return { factorId: f.id, fra, rpa, avgRS };
     }),
   );
 
-  // 3. Dynamic Weight Optimization (DWA) - Filter RS > 0.7
   const weights = await agent.optimizeWeights(
     evaluations.map((e) => ({
       factorId: e.factorId,
       rs: e.avgRS,
       logic: e.fra.logic,
+      rejectionReason: e.fra.rejectionReason,
     })),
   );
+
   const integratedRS = evaluations.reduce(
     (acc, e, i) => acc + e.avgRS * (weights[i] ?? 0),
     0,
   );
-
-  console.log("- Multi-Agent Evaluation (Reasoning Scores) complete.");
-  evaluations.forEach((e, i) => {
-    const w = weights[i] ?? 0;
-    console.log(
-      `  - [${e.factorId}] RS: ${e.avgRS.toFixed(2)}, Weight: ${w.toFixed(4)}`,
-    );
-    if (e.avgRS <= 0.7)
-      console.log(`    ⚠️ RS <= 0.7: Factor excluded from signal.`);
-  });
-
-  // Audit Fix: Use T-1 for signal, T for execution
   const executionDate = date;
-  const signalDate = (parseInt(date, 10) - 1).toString(); // Rough T-1 (should use gateway logic in prod)
+  const signalDate = (Number.parseInt(date, 10) - 1).toString();
 
-  // 4. Execution & Verification
-  console.log("- Running forecasting on the selected universe...");
   const results = await Promise.all(
     Universe.map(async (symbol) => {
       const [sBars, eBars, fins] = await Promise.all([
@@ -98,7 +65,6 @@ async function reproduceLES() {
         factors,
         weights,
       );
-
       const eOpen = Number(eBar.Open) || 0;
       const eClose = Number(eBar.Close) || 0;
       const targetReturn = (eClose - eOpen) / Math.max(Math.abs(eOpen), 1e-9);
@@ -134,28 +100,19 @@ async function reproduceLES() {
 
   const selectedRows = results.filter((r) => r.signal === "LONG");
   const backtest = runSimpleBacktest({
-    config: {
-      from: date,
-      to: date,
-      feeBps: 1,
-      slippageBps: 1,
-    },
+    config: { from: date, to: date, feeBps: 1, slippageBps: 1 },
     selectedRows,
     tradingDays: 1,
   });
 
-  const outcome = agent.calculateOutcome("LES-REPRO", integratedRS);
+  const outcome = agent.calculateOutcome(
+    "LES-REPRO",
+    integratedRS,
+    backtest,
+    results.map((r) => r.alphaScore),
+    results.map((r) => r.targetReturn ?? 0),
+  );
   const endedAt = new Date().toISOString();
-
-  console.log("\n📊 Verification Results (LES Reproduction):");
-  console.log(`- Date: ${date}`);
-  console.log(`- Integrated Reasoning Score (RS): ${integratedRS.toFixed(4)}`);
-  console.log(
-    `- Sharpe Ratio: ${outcome.verification?.metrics?.sharpeRatio ?? 0}`,
-  );
-  console.log(
-    `- Directional Accuracy: ${outcome.verification?.metrics?.directionalAccuracy?.toFixed(4) ?? "0.0000"}`,
-  );
 
   const isValid = agent.validateStrategy({
     ...outcome,
@@ -165,9 +122,7 @@ async function reproduceLES() {
       isProductionReady: true,
     },
   } as StandardOutcome);
-  console.log(`- Strategy Validation: ${isValid ? "PASS ✅" : "FAIL ❌"}`);
 
-  // --- Save Logs ---
   const modelRefs = await loadForecastModelReferences();
   const dailyLog = {
     schema: "investor.daily-log.v1",
@@ -184,10 +139,7 @@ async function reproduceLES() {
       scenarioId: "SCN-LES-REPRO",
       analyzedAt: endedAt,
       date,
-      inputs: {
-        estatStatsDataId: "0000010101",
-        universe: [...Universe],
-      },
+      inputs: { estatStatsDataId: "0000010101", universe: [...Universe] },
       evidence: {
         estat: { hasStatsData: true, status: "PASS" },
         jquants: {
@@ -196,12 +148,10 @@ async function reproduceLES() {
           status: "PASS",
         },
       },
-      market: {
-        vegetablePriceMomentum: 0, // Not applicable to LES but required by schema
-      },
+      market: { vegetablePriceMomentum: 0 },
       decision: {
         strategy: "LES Framework (RS-Integrated)",
-        action: isValid ? "LONG_BASKET" : "NO_TRADE", // Aligned with DailyScenarioLogSchema
+        action: isValid ? "LONG_BASKET" : "NO_TRADE",
         topSymbol: results[0]?.symbol ?? "7203",
         reason: "LES integrated reasoning score validation.",
         experimentValue: "USEFUL",
@@ -215,11 +165,7 @@ async function reproduceLES() {
           sueProxy: r.finance.profitMargin,
         })),
       },
-      risks: {
-        kellyFraction: 0.1,
-        stopLossPct: 0.03,
-        maxPositions: 5,
-      },
+      risks: { kellyFraction: 0.1, stopLossPct: 0.03, maxPositions: 5 },
       results: {
         mode: "PROOF",
         status: isValid ? "PASS" : "FAIL",
@@ -256,12 +202,7 @@ async function reproduceLES() {
     join(logsDailyDir, `${date}.json`),
     JSON.stringify(dailyLog, null, 2),
   );
-
-  console.log(`\n✅ Logs saved to logs/daily/${date}.json`);
-
-  // --- Generate & Save ArXiv Report ---
-  const reportPath = await agent.saveArXivReport(outcome);
-  console.log(`✅ ArXiv report generated: ${reportPath}`);
+  await agent.saveArXivReport(outcome);
 }
 
-reproduceLES().catch(console.error);
+reproduceLES().catch(process.exit);

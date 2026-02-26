@@ -2,8 +2,18 @@ import { z } from "zod";
 import type { PeadDataProvider } from "../agents/pead.ts";
 import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
 
-const safeRecordArray = (value: unknown): Record<string, unknown>[] =>
-  z.array(z.record(z.string(), z.unknown())).catch([]).parse(value);
+const safeRecordArray = (
+  value: unknown,
+): Record<string, number | string | boolean | null>[] =>
+  z
+    .array(
+      z.record(
+        z.string(),
+        z.union([z.number(), z.string(), z.boolean(), z.null()]),
+      ),
+    )
+    .catch([])
+    .parse(value);
 
 const findFirstArray = (value: unknown): unknown[] | undefined =>
   Array.isArray(value)
@@ -34,7 +44,7 @@ export class PeadJquantsGateway implements PeadDataProvider {
       headers: { "x-api-key": this.apiKey },
     });
     if (!response.ok) {
-      process.exit(1);
+      throw new Error(`J-Quants API Error: ${response.status}`);
     }
     const payload = z
       .record(z.string(), z.unknown())

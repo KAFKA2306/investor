@@ -30,32 +30,49 @@ export class MarketdataLocalGateway implements MarketDataGateway {
   }
 
   public async getEstatStats(
-    statsDataId: string,
-  ): Promise<Record<string, unknown>> {
+    dataId: string,
+  ): Promise<Record<string, number | string | boolean | null>> {
     const url = new URL(
       "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
     );
     url.searchParams.set("appId", this.estatAppId);
-    url.searchParams.set("statsDataId", statsDataId);
+    url.searchParams.set("statsDataId", dataId);
     url.searchParams.set("lang", "J");
-    return this.httpCache.fetchJson(url.toString(), {}, 24 * 60 * 60 * 1000);
+    const payload = await this.httpCache.fetchJson(
+      url.toString(),
+      {},
+      24 * 60 * 60 * 1000,
+    );
+    return z
+      .record(
+        z.string(),
+        z.union([z.number(), z.string(), z.boolean(), z.null()]),
+      )
+      .parse(payload);
   }
 
-  public async getListedInfo(): Promise<Record<string, unknown>[]> {
-    return this.db.getListedInfo();
+  public async getListedInfo(): Promise<
+    Record<string, number | string | boolean | null>[]
+  > {
+    const info = await this.db.getListedInfo();
+    return info.map(
+      (i) => i as Record<string, number | string | boolean | null>,
+    );
   }
 
   public async getDailyBars(
     symbol: string,
-    dates: readonly string[],
-  ): Promise<Record<string, unknown>[]> {
-    return this.db.getLatestBar(symbol, dates);
+    dates: string[],
+  ): Promise<Record<string, number>[]> {
+    const bars = await this.db.getLatestBar(symbol, dates);
+    return bars.map((b) => b as Record<string, number>);
   }
 
   public async getStatements(
     symbol: string,
-  ): Promise<Record<string, unknown>[]> {
-    return this.db.getLatestFin(symbol);
+  ): Promise<Record<string, number>[]> {
+    const fins = await this.db.getLatestFin(symbol);
+    return fins.map((f) => f as Record<string, number>);
   }
 
   public async getMarketDataEndDate(): Promise<string> {

@@ -15,7 +15,7 @@ export async function runGenericAlphaScenario(params: {
   alpha?: {
     tStat: number;
     pValue: number;
-    informationCoefficient?: number;
+    informationCoefficient: number;
   };
   verification?: {
     sharpe: number;
@@ -86,6 +86,7 @@ if (import.meta.main) {
     alpha: {
       tStat: 2.45,
       pValue: 0.012,
+      informationCoefficient: 0.045,
     },
     verification: {
       sharpe: 1.2,

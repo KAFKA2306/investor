@@ -1,44 +1,44 @@
 import { BaseAgent } from "../core/index.ts";
+import { YahooFinanceGateway } from "../gateways/yahoo_finance_gateway.ts";
 
-export interface OptionPosition {
+export interface VRPResult {
   symbol: string;
-  type: "CALL" | "PUT";
-  strike: number;
-  expiry: string;
-  delta: number;
-  gamma: number;
-  vega: number;
-  theta: number;
   iv: number;
+  rv: number;
+  spread: number;
+  action: "SELL_PREMIUM" | "HOLD";
 }
 
-/**
- * OptionAgent: Strategy Y (Short-term Volatility Risk Premium Harvest)
- *
- * Logic:
- * 1. Calculate the spread between Implied Volatility (IV) and Realized Volatility (RV).
- * 2. If IV > RV + Buffer (e.g., 5%), sell short-dated OTM Puts (Premium Collection).
- * 3. Maintain Delta-Neutrality by calculating the required hedge in the underlying.
- */
 export class OptionAgent extends BaseAgent {
-  public async run() {
-    console.log("🚀 OptionAgent: Running Strategy Y (VRP Harvest)...");
-    const symbols = ["AAPL", "TSLA", "NVDA"]; // Example Universe
+  private readonly yahoo = new YahooFinanceGateway();
 
-    for (const symbol of symbols) {
-      const signal = await this.calculateVRPSignal(symbol);
-      if (signal.action === "SELL_PREMIUM") {
-        console.log(
-          `[OPTION Y] ${symbol}: High IV/RV spread (${signal.spread.toFixed(2)}%). Selling OTM Put.`,
-        );
-      }
+  public async run(): Promise<void> {
+    const signal = await this.calculateVRPSignal("NI225");
+    if (signal) {
+      console.log(
+        `[OPTION] VRP Signal for ${signal.symbol}: IV=${(signal.iv * 100).toFixed(1)}%, RV=${(signal.rv * 100).toFixed(1)}%, Action: ${signal.action}`,
+      );
     }
   }
 
-  private async calculateVRPSignal(symbol: string) {
-    // Mocking Greek calculation logic for specificity
-    const iv = Math.random() * 0.4 + 0.2; // 20% - 60%
-    const rv = Math.random() * 0.3 + 0.1; // 10% - 40%
+  private async calculateVRPSignal(symbol: string): Promise<VRPResult | null> {
+    const bars = await this.yahoo.getChart(symbol, "1mo");
+    if (bars.length < 10) return null;
+
+    const closes: number[] = bars.map((b) => Number(b.Close));
+    const returns: number[] = [];
+    for (let i = 1; i < closes.length; i++) {
+      const prev = closes[i - 1] ?? 1;
+      const curr = closes[i] ?? 1;
+      returns.push(Math.log(curr / prev));
+    }
+
+    const dailyVol = Math.sqrt(
+      returns.reduce((acc, r) => acc + r * r, 0) / returns.length,
+    );
+    const rv = dailyVol * Math.sqrt(252);
+
+    const iv = 0.3;
     const spread = (iv - rv) * 100;
 
     return {
@@ -48,38 +48,5 @@ export class OptionAgent extends BaseAgent {
       spread,
       action: spread > 10 ? "SELL_PREMIUM" : "HOLD",
     };
-  }
-
-  /**
-   * Black-Scholes Approximation for Delta
-   */
-  public calculateDelta(
-    s: number,
-    k: number,
-    t: number,
-    r: number,
-    sigma: number,
-    type: "CALL" | "PUT",
-  ): number {
-    const d1 =
-      (Math.log(s / k) + (r + (sigma * sigma) / 2) * t) /
-      (sigma * Math.sqrt(t));
-    if (type === "CALL") return this.ncdf(d1);
-    return this.ncdf(d1) - 1;
-  }
-
-  private ncdf(x: number): number {
-    const a1 = 0.254829592;
-    const a2 = -0.284496736;
-    const a3 = 1.421413741;
-    const a4 = -1.453152027;
-    const a5 = 1.061405429;
-    const p = 0.3275911;
-    const sign = x < 0 ? -1 : 1;
-    const z = Math.abs(x) / Math.sqrt(2);
-    const t = 1 / (1 + p * z);
-    const y =
-      1 - ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t * Math.exp(-z * z);
-    return 0.5 * (1 + sign * y);
   }
 }

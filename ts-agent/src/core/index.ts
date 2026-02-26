@@ -2,6 +2,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import yaml from "js-yaml";
 import { z } from "zod";
+import { MarketdataDbCache } from "../data_cache/marketdata_db.ts";
+import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
 import type { UnifiedLog } from "../schemas/log.ts";
 import {
   type BenchmarkReportSchema,
@@ -41,9 +43,18 @@ export type Config = z.infer<typeof ConfigSchema>;
 
 class Core {
   public readonly config: Config;
+  public readonly cache: SqliteHttpCache;
+  public readonly db: MarketdataDbCache;
 
   constructor() {
     this.config = this.loadConfig();
+    this.cache = new SqliteHttpCache(
+      join(this.config.paths.logs, "cache", "http_cache.sqlite"),
+    );
+    this.db = new MarketdataDbCache(
+      this.config.paths.data,
+      join(this.config.paths.logs, "cache", "market_cache.sqlite"),
+    );
   }
 
   private loadConfig(): Config {

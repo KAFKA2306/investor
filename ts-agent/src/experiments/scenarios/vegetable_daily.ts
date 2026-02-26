@@ -8,6 +8,7 @@ import {
   average,
   extractEstatValues,
   getNumberByKeys,
+  type SymbolAnalysis,
   SymbolAnalysisSchema,
   scoreDailyAlpha,
 } from "../analysis/daily_alpha.ts";
@@ -134,90 +135,95 @@ export async function runVegetableScenario(
   dateCandidates: readonly string[],
   playbookBullets: AceBullet[] = [],
 ): Promise<VegetableExperimentReport> {
-  const usedBullets = playbookBullets.map((b) => b.id);
-  const date = nowIso.slice(0, 10).replaceAll("-", "");
+  const usedBullets: string[] = playbookBullets.map((b) => b.id);
+  const date: string = nowIso.slice(0, 10).replaceAll("-", "");
   const estatObj = await gateway.getEstatStats("0000010101");
-  const matchedSymbols = [...Universe];
+  const matchedSymbols: string[] = [...Universe];
 
-  const estatValues = extractEstatValues(estatObj.GET_STATS_DATA);
-  const half = Math.max(1, Math.floor(estatValues.length / 2));
-  const older = average(estatValues.slice(0, half));
-  const newer = average(estatValues.slice(half));
-  const vegetablePriceMomentum =
+  const estatValues: number[] = extractEstatValues(estatObj.GET_STATS_DATA);
+  const half: number = Math.max(1, Math.floor(estatValues.length / 2));
+  const older: number = average(estatValues.slice(0, half));
+  const newer: number = average(estatValues.slice(half));
+  const vegetablePriceMomentum: number =
     (newer - older) / Math.max(Math.abs(older), 1e-9);
 
-  const range = [...dateCandidates].sort();
-  const executionDate = range[range.length - 1] ?? date;
-  const signalDates = range.slice(0, -1);
-  if (signalDates.length === 0) signalDates.push(executionDate); // Fallback for single date
+  const range: string[] = [...dateCandidates].sort();
+  const executionDate: string = range[range.length - 1] ?? date;
+  const signalDates: string[] = range.slice(0, -1);
+  if (signalDates.length === 0) signalDates.push(executionDate);
 
   const inference = new InferenceService();
   const analyses = await Promise.all(
-    matchedSymbols.map(async (symbol) => {
-      const [signalBars, executionBars, fins, history] = await Promise.all([
-        gateway.getDailyBars(symbol, signalDates),
-        gateway.getDailyBars(symbol, [executionDate]),
-        gateway.getStatements(symbol),
-        gateway.getHistory(symbol, 512),
-      ]);
+    matchedSymbols.map(
+      async (symbol: string): Promise<SymbolAnalysis | null> => {
+        const [signalBars, executionBars, fins, history] = await Promise.all([
+          gateway.getDailyBars(symbol, signalDates),
+          gateway.getDailyBars(symbol, [executionDate]),
+          gateway.getStatements(symbol),
+          gateway.getHistory(symbol, 512),
+        ]);
 
-      if (
-        signalBars.length === 0 ||
-        executionBars.length === 0 ||
-        fins.length === 0
-      ) {
-        return null;
-      }
+        if (
+          signalBars.length === 0 ||
+          executionBars.length === 0 ||
+          fins.length === 0
+        ) {
+          return null;
+        }
 
-      const lastClose = history[history.length - 1] ?? 0;
-      let predictedReturn = 0;
-      try {
-        const pred = await inference.predict(history, "chronos-tiny");
-        const forecast = pred.forecast[0] ?? lastClose;
-        predictedReturn = (forecast - lastClose) / Math.max(lastClose, 1e-9);
-      } catch {
-        // Prediction failure is non-critical for proof stage
-      }
+        const lastClose: number = history[history.length - 1] ?? 0;
+        let predictedReturn: number = 0;
+        try {
+          const pred = await inference.predict(history, "chronos-tiny");
+          const forecast: number = pred.forecast[0] ?? lastClose;
+          predictedReturn = (forecast - lastClose) / Math.max(lastClose, 1e-9);
+        } catch {}
 
-      const signalBar = z
-        .record(z.string(), z.unknown())
-        .parse(signalBars.at(0));
-      const executionBar = z
-        .record(z.string(), z.unknown())
-        .parse(executionBars.at(0));
-      const fin = z.record(z.string(), z.unknown()).parse(fins.at(0));
+        const signalBar: Record<string, number> = z
+          .record(z.string(), z.number())
+          .parse(signalBars.at(0));
+        const executionBar: Record<string, number> = z
+          .record(z.string(), z.number())
+          .parse(executionBars.at(0));
+        const fin: Record<string, number> = z
+          .record(z.string(), z.number())
+          .parse(fins.at(0));
 
-      const eOpen = getNumberByKeys(executionBar, [
-        "Open",
-        "open_price",
-        "open",
-        "O",
-      ]);
-      const eClose = getNumberByKeys(executionBar, [
-        "Close",
-        "close_price",
-        "close",
-        "C",
-      ]);
-      const targetReturn = (eClose - eOpen) / Math.max(Math.abs(eOpen), 1e-9);
+        const eOpen: number = getNumberByKeys(executionBar, [
+          "Open",
+          "open_price",
+          "open",
+          "O",
+        ]);
+        const eClose: number = getNumberByKeys(executionBar, [
+          "Close",
+          "close_price",
+          "close",
+          "C",
+        ]);
+        const targetReturn: number =
+          (eClose - eOpen) / Math.max(Math.abs(eOpen), 1e-9);
 
-      return scoreDailyAlpha(
-        symbol,
-        signalBar,
-        fin,
-        vegetablePriceMomentum,
-        predictedReturn,
-        targetReturn,
-      );
-    }),
+        return scoreDailyAlpha(
+          symbol,
+          signalBar,
+          fin,
+          vegetablePriceMomentum,
+          predictedReturn,
+          targetReturn,
+        );
+      },
+    ),
   );
 
-  const analysis = analyses.filter(
-    (a): a is NonNullable<typeof a> => a !== null,
+  const analysis: SymbolAnalysis[] = analyses.filter(
+    (a): a is SymbolAnalysis => a !== null,
   );
 
-  const sorted = [...analysis].sort((a, b) => b.alphaScore - a.alphaScore);
-  const top =
+  const sorted: SymbolAnalysis[] = [...analysis].sort(
+    (a, b) => b.alphaScore - a.alphaScore,
+  );
+  const top: SymbolAnalysis =
     sorted[0] ??
     SymbolAnalysisSchema.parse({
       symbol: "1375",
@@ -240,28 +246,29 @@ export async function runVegetableScenario(
       alphaScore: 0,
       signal: "HOLD",
     });
-  const avgAlpha = average(analysis.map((s) => s.alphaScore));
-  const actionable = avgAlpha > 0 && top.alphaScore > 0;
-  const hasPrice = analysis.some(
+  const avgAlpha: number = average(analysis.map((s) => s.alphaScore));
+  const actionable: boolean = avgAlpha > 0 && top.alphaScore > 0;
+  const hasPrice: boolean = analysis.some(
     (s) => s.ohlc6.open > 0 && s.ohlc6.close > 0 && s.ohlc6.high > 0,
   );
-  const hasFinance = analysis.some(
+  const hasFinance: boolean = analysis.some(
     (s) => s.finance.netSales !== 0 || s.finance.operatingProfit !== 0,
   );
-  const dataReadiness = hasPrice && hasFinance ? "PASS" : "FAIL";
-  const alphaReadiness = actionable ? "PASS" : "FAIL";
-  const experimentUseful =
+  const dataReadiness: "PASS" | "FAIL" =
+    hasPrice && hasFinance ? "PASS" : "FAIL";
+  const alphaReadiness: "PASS" | "FAIL" = actionable ? "PASS" : "FAIL";
+  const experimentUseful: boolean =
     dataReadiness === "PASS" && alphaReadiness === "PASS";
-  const kellyFractionRaw = Math.max(0, avgAlpha) * 0.5;
-  const kellyFraction = Math.min(0.2, kellyFractionRaw);
-  const selectedSymbols = sorted
+  const kellyFractionRaw: number = Math.max(0, avgAlpha) * 0.5;
+  const kellyFraction: number = Math.min(0.2, kellyFractionRaw);
+  const selectedSymbols: string[] = sorted
     .filter((s) => s.signal === "LONG")
     .map((s) => s.symbol);
-  const selectedRows = analysis.filter((s) =>
+  const selectedRows: SymbolAnalysis[] = analysis.filter((s) =>
     selectedSymbols.includes(s.symbol),
   );
-  const from = range[0] ?? date;
-  const to = range[range.length - 1] ?? date;
+  const from: string = range[0] ?? date;
+  const to: string = range[range.length - 1] ?? date;
   const backtest = runSimpleBacktest({
     config: {
       from,
@@ -272,27 +279,18 @@ export async function runVegetableScenario(
     selectedRows,
     tradingDays: range.length,
   });
-  const basketDailyReturn = backtest.netReturn;
-  const paperPnlPerUnit = backtest.pnlPerUnit;
+  const basketDailyReturn: number = backtest.netReturn;
+  const paperPnlPerUnit: number = backtest.pnlPerUnit;
 
-  // Information Maximization: Calculate full metrics for the basket
-  const basketLogs = range.map((d) => ({
+  const basketLogs = range.map((d: string) => ({
     date: d,
-    strategyReturn: basketDailyReturn / range.length, // Simplified uniform return for proof
+    strategyReturn: basketDailyReturn / range.length,
   }));
   const fullMetrics = evaluate(basketLogs);
 
-  // Generate synthetic history for sparkline (last 30 bars if available)
-  const historyLimit = 30;
-  const equityHistory: number[] = [1.0];
-  let currentEquity = 1.0;
-  for (let i = 0; i < historyLimit; i++) {
-    const dailyRet = (Math.random() - 0.48) * 0.02; // Small noise around slight positive mean
-    currentEquity *= 1 + dailyRet;
-    equityHistory.push(currentEquity);
-  }
+  const equityHistory: number[] = backtest.history ?? [1.0];
 
-  const proved = basketDailyReturn > 0 && dataReadiness === "PASS";
+  const proved: boolean = basketDailyReturn > 0 && dataReadiness === "PASS";
 
   return VegetableExperimentReportSchema.parse({
     scenarioId: "SCN-VEG-001",
