@@ -3,6 +3,9 @@
 自律型の投資リサーチ/検証パイプラインを、**TypeScript + Bun** で実装したリポジトリです。  
 日次シナリオ実行、API検証、時系列ベンチマーク、LLM運用準備度評価、ダッシュボード可視化までを一気通貫で扱います。
 
+### 📊 Live Dashboard
+**[https://kafka2306.github.io/investor/](https://kafka2306.github.io/investor/)**
+
 > 本プロジェクトは研究・検証用途です。投資助言を目的としたものではありません。
 
 ## できること

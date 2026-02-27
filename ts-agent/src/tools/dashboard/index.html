@@ -1,113 +1,158 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Precision Quant Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&family=JetBrains+Mono&display=swap"
-    rel="stylesheet">
+  <title>Investor Mission Control</title>
 </head>
 
 <body>
   <div id="app">
-    <header>
-      <div class="logo">
-        <span>Precision Quant Dashboard / v2 / High-Density</span>
+    <header class="topbar panel">
+      <div class="brand">
+        <h1>Investor Mission Control</h1>
+        <p>全投資家に共通する判断軸: 期待値・リスク・検証・実行</p>
       </div>
-      <div id="system-info">
-        <div class="static-chip">Zero-Fat Mode</div>
-        <div id="last-update" class="animate-pulse">更新: --</div>
+      <div class="topbar-right">
+        <span id="current-date" class="pill">--</span>
+        <span id="coverage-label" class="pill">--</span>
+        <span id="sync-label" class="pill">同期: --</span>
+        <button id="refresh-btn" class="button" type="button">Refresh</button>
       </div>
     </header>
 
-    <aside class="sidebar">
-      <section class="glass-panel">
-        <div class="section-title">日次ログ <i>History</i></div>
-        <div id="log-list" class="log-list"></div>
-      </section>
-
-      <section class="glass-panel">
-        <div class="section-title">ベンチマーク <i>Benchmark</i></div>
-        <div id="bench-list" class="log-list"></div>
-      </section>
-
-      <section class="glass-panel">
-        <div class="section-title">投資成果 <i>Outcomes</i></div>
-        <div id="outcome-list" class="log-list"></div>
-      </section>
-
-      <section class="glass-panel">
-        <div class="section-title">モデル <i>Registry</i></div>
-        <div id="registry-list" class="log-list"></div>
-      </section>
-
-      <section class="glass-panel">
-        <div class="section-title">判定状態 <i>Workflow</i></div>
-        <div id="workflow-status" class="status-list"></div>
-      </section>
-    </aside>
-
-    <main class="main-content">
-      <section id="leaderboard-section" class="glass-panel">
-        <div class="section-title">🏆 経済的指標比較 (Leaderboard)</div>
-        <div id="leaderboard-table">
-          <div class="log-sub">データを読み込み中...</div>
-        </div>
-      </section>
-
-      <section id="summary-section" class="glass-panel stat-group">
-        <div class="stat-card">
-          <span class="stat-label">期待エッジ (Expected Edge)</span>
-          <span id="stat-edge" class="stat-value">--</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">予測収益 (Daily Return)</span>
-          <span id="stat-return" class="stat-value">--</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">適正投資率 (Kelly)</span>
-          <span id="stat-kelly" class="stat-value">--</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label">注目銘柄 (Top Signal)</span>
-          <span id="stat-top" class="stat-value">--</span>
-        </div>
-      </section>
-
-      <div class="detail-container">
-        <section class="glass-panel" style="grid-column: 1 / -1;">
-          <div class="section-title">
-            <span>銘柄分析（財務・合成α・因子寄与）</span>
-            <i id="symbol-count">-- symbols</i>
+    <div class="layout">
+      <aside class="rail">
+        <section class="panel section">
+          <div class="section-head">
+            <h2>Timeline</h2>
+            <span>Daily Logs</span>
           </div>
-          <div id="symbol-analysis" class="symbol-grid"></div>
+          <div id="timeline-list" class="timeline-list"></div>
         </section>
 
-        <section class="glass-panel">
-          <div class="section-title">実行命令 (Execution Orders)</div>
-          <div id="execution-log" class="metrics-box" style="height: 280px;"></div>
+        <section class="panel section">
+          <div class="section-head">
+            <h3>Data Health</h3>
+          </div>
+          <div id="data-health"></div>
         </section>
 
-        <section class="glass-panel">
-          <div class="section-title">検証フェーズ (Validation)</div>
-          <div id="validation-results" class="metrics-box" style="height: 280px;"></div>
+        <section class="panel section">
+          <div class="section-head">
+            <h3>Benchmark Snapshot</h3>
+          </div>
+          <div id="benchmark-quick"></div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <section class="panel hero">
+          <div>
+            <div class="hero-meta">
+              <span id="posture-chip" class="chip neutral">待機中</span>
+            </div>
+            <h2 id="hero-title" class="hero-title">ログを選択してください</h2>
+            <p id="hero-subtitle" class="hero-subtitle">戦略未選択</p>
+            <p id="hero-reason" class="hero-reason">投資判断の根拠がここに表示されます。</p>
+          </div>
+          <div class="hero-side">
+            <div class="section-head">
+              <h3>Confidence</h3>
+              <span id="confidence-label" class="confidence-label">0 / 100</span>
+            </div>
+            <div class="confidence-track">
+              <div id="confidence-bar" class="confidence-bar"></div>
+            </div>
+          </div>
         </section>
 
-        <section class="glass-panel">
-          <div class="section-title">戦略意志決定 (Verdict Analysis)</div>
-          <div id="verdict-content" class="metrics-box" style="height: 280px;"></div>
+        <section class="kpi-grid">
+          <article class="kpi-card">
+            <div class="label">Expected Edge</div>
+            <div id="kpi-edge" class="value">--</div>
+          </article>
+          <article class="kpi-card">
+            <div class="label">Daily Return</div>
+            <div id="kpi-return" class="value">--</div>
+          </article>
+          <article class="kpi-card">
+            <div class="label">Kelly Fraction</div>
+            <div id="kpi-kelly" class="value">--</div>
+          </article>
+          <article class="kpi-card">
+            <div class="label">Stop Loss</div>
+            <div id="kpi-stop" class="value">--</div>
+          </article>
+          <article class="kpi-card">
+            <div class="label">Top Symbol</div>
+            <div id="kpi-symbol" class="value">--</div>
+          </article>
+          <article class="kpi-card">
+            <div class="label">Liquidity / Share</div>
+            <div id="kpi-liquidity" class="value">--</div>
+          </article>
         </section>
 
-        <section class="glass-panel">
-          <div class="section-title">生JSON (Raw Payload)</div>
-          <div id="json-content" class="metrics-box" style="height: 280px;"></div>
+        <section class="panel section">
+          <div class="section-head">
+            <h3>Investor Actions</h3>
+            <span>長期 / スイング / リスク重視</span>
+          </div>
+          <div id="persona-actions" class="persona-grid"></div>
         </section>
-      </div>
-    </main>
+
+        <section class="split">
+          <section class="panel section">
+            <div class="section-head">
+              <h3>Validation Pipeline</h3>
+            </div>
+            <div id="stage-table" class="table-wrap"></div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <h3>Orthogonal Alpha Discovery</h3>
+            </div>
+            <div id="alpha-discovery" class="table-wrap"></div>
+          </section>
+        </section>
+
+        <section class="panel section">
+          <div class="section-head">
+            <h3>Signal Board</h3>
+            <span>銘柄ごとの分解スコア</span>
+          </div>
+          <div id="symbol-table" class="table-wrap"></div>
+        </section>
+
+        <section class="split">
+          <section class="panel section">
+            <div class="section-head">
+              <h3>Foundation Benchmark</h3>
+            </div>
+            <div id="benchmark-table" class="table-wrap"></div>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <h3>Investment Thesis</h3>
+            </div>
+            <div id="thesis-block" class="thesis-block"></div>
+          </section>
+        </section>
+
+        <section class="panel section">
+          <div class="section-head">
+            <h3>Raw Payload</h3>
+          </div>
+          <div id="raw-json" class="json-block"></div>
+        </section>
+      </main>
+    </div>
   </div>
+
   <script type="module" src="/src/main.ts"></script>
 </body>
 

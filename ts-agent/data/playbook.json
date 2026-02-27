@@ -534,69 +534,133 @@
       }
     },
     {
+      "id": "ctx-tfcw2cmu",
       "content": "Low Sharpe ratio (0.00) detected. Strategy might be too volatile or trend-following in ranging market.",
       "section": "insights",
-      "metadata": {
-        "source": "AceEvaluator",
-        "timestamp": "2026-02-27T09:51:10.700Z"
-      },
-      "id": "ctx-tfcw2cmu",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-27T09:51:10.700Z",
-      "updated_at": "2026-02-27T09:51:10.700Z"
+      "updated_at": "2026-02-27T09:51:10.700Z",
+      "metadata": {
+        "source": "AceEvaluator",
+        "timestamp": "2026-02-27T09:51:10.700Z"
+      }
     },
     {
+      "id": "ctx-vo8i8bfc",
       "content": "Cross-Liquidity Arbitrage: 指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
       "section": "strategies_and_hard_rules",
-      "metadata": {
-        "source": "AceAcquirer",
-        "type": "HYPOTHESIS"
-      },
-      "id": "ctx-vo8i8bfc",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-27T09:51:10.701Z",
-      "updated_at": "2026-02-27T09:51:10.701Z"
+      "updated_at": "2026-02-27T09:51:10.701Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
     },
     {
+      "id": "ctx-64hf9hxa",
       "content": "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフトを基盤モデル（Chronos/TimesFM）で強化した検証系。",
       "section": "strategies_and_hard_rules",
-      "metadata": {
-        "source": "AceAcquirer",
-        "type": "HYPOTHESIS"
-      },
-      "id": "ctx-64hf9hxa",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-27T09:51:10.701Z",
-      "updated_at": "2026-02-27T09:51:10.701Z"
+      "updated_at": "2026-02-27T09:51:10.701Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
     },
     {
+      "id": "ctx-jp85lwa4",
       "content": "Sentiment-Volume Divergence: SNSセンチメントと出来高乖離による反転シグナル。",
       "section": "strategies_and_hard_rules",
-      "metadata": {
-        "source": "AceAcquirer",
-        "type": "HYPOTHESIS"
-      },
-      "id": "ctx-jp85lwa4",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-27T09:51:10.701Z",
-      "updated_at": "2026-02-27T09:51:10.701Z"
+      "updated_at": "2026-02-27T09:51:10.701Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
     },
     {
+      "id": "ctx-7abab7ot",
       "content": "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証する動的配分ロジック。",
       "section": "strategies_and_hard_rules",
-      "metadata": {
-        "source": "AceAcquirer",
-        "type": "HYPOTHESIS"
-      },
-      "id": "ctx-7abab7ot",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-27T09:51:10.701Z",
-      "updated_at": "2026-02-27T09:51:10.701Z"
+      "updated_at": "2026-02-27T09:51:10.701Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-45ktme6z",
+      "content": "INTRA_RANGE_POS Factor: Measures close relative to high-low range. (Close - Low) / (High - Low). Captures end-of-day buy pressure.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-27T11:19:07.461Z",
+      "updated_at": "2026-02-27T11:19:07.461Z",
+      "metadata": {
+        "source": "AlphaDiscoveryStep1",
+        "type": "HYPOTHESIS",
+        "performance": {
+          "sharpe": 7.6,
+          "returnUplift": 0.0057
+        },
+        "reasoning": "Orthogonal to momentum; catches intra-day trend persistence."
+      }
+    },
+    {
+      "id": "ctx-ul9dg47g",
+      "content": "OP_MARGIN Factor: Operating Profit / Net Sales. Serves as a quality-based buffer against purely speculative price movements.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-27T11:19:07.461Z",
+      "updated_at": "2026-02-27T11:19:07.461Z",
+      "metadata": {
+        "source": "AlphaDiscoveryStep1",
+        "type": "HYPOTHESIS",
+        "performance": {
+          "sharpe": 7.6,
+          "returnUplift": 0.0057
+        },
+        "reasoning": "Fundamental quality anchor to filter noise in high-volatility regimes."
+      }
+    },
+    {
+      "content": "[ORTHO-SUPPLY-PASS-THROUGH-01] Supply-shock pass-through alpha using intraday stress and margin resilience | orth=1.000 | ic=0.702 | rationale=価格転嫁力がある企業は供給ショック局面でも利益率が維持されやすい。日中レンジ拡大と利益率の同時観測は、景気循環系のメイン因子と低相関のリターン源になりうる。",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-27T11:35:47.977Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-j1d6isve",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-27T11:35:59.263Z",
+      "updated_at": "2026-02-27T11:35:59.263Z"
+    },
+    {
+      "content": "[ORTHO-EARNINGS-UNDERREACTION-01] Earnings-quality underreaction alpha using margin strength versus weak tape | orth=1.000 | ic=0.913 | rationale=短期の株価弱含みと財務利益率の乖離は、行動ファイナンス上のアンダーリアクションとして説明できる。利益の質が高い銘柄に限定した逆張りは既存モメンタムと直行しやすい。",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-27T11:35:47.977Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-f3xhouux",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-27T11:35:59.263Z",
+      "updated_at": "2026-02-27T11:35:59.263Z"
     }
   ]
 }
