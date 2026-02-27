@@ -11,8 +11,8 @@
   <div id="app">
     <header class="topbar panel">
       <div class="brand">
-        <h1>Investor Mission Control</h1>
-        <p>全投資家に共通する判断軸: 期待値・リスク・検証・実行</p>
+        <h1>Hypothesis Evolution Ledger</h1>
+        <p>Visual Proof + Immutable Evidence + Execution Reality</p>
       </div>
       <div class="topbar-right">
         <span id="current-date" class="pill">--</span>
@@ -48,24 +48,50 @@
       </aside>
 
       <main class="main">
-        <section class="panel hero">
+        <section class="panel hero hero-uqtl">
           <div>
             <div class="hero-meta">
               <span id="posture-chip" class="chip neutral">待機中</span>
+              <span id="entropy-chip" class="chip neutral">Entropy --</span>
             </div>
-            <h2 id="hero-title" class="hero-title">ログを選択してください</h2>
+            <h2 id="hero-title" class="hero-title">UQTL // Task View Reforged</h2>
             <p id="hero-subtitle" class="hero-subtitle">戦略未選択</p>
             <p id="hero-reason" class="hero-reason">投資判断の根拠がここに表示されます。</p>
           </div>
           <div class="hero-side">
             <div class="section-head">
-              <h3>Confidence</h3>
+              <h3>Arbitration Confidence</h3>
               <span id="confidence-label" class="confidence-label">0 / 100</span>
             </div>
             <div class="confidence-track">
               <div id="confidence-bar" class="confidence-bar"></div>
             </div>
+            <div id="integrity-indicator" class="integrity-indicator">証拠整合性: --</div>
           </div>
+        </section>
+
+        <section class="uqtl-grid">
+          <article class="panel section">
+            <div class="section-head">
+              <h3>4D Intelligence Stream</h3>
+              <span>time / logic / risk / data</span>
+            </div>
+            <div id="uqtl-stream" class="uqtl-stream"></div>
+          </article>
+          <article class="panel section">
+            <div class="section-head">
+              <h3>Live Evidence Bonding</h3>
+              <span>uuid-linked</span>
+            </div>
+            <div id="evidence-bonding" class="bonding-list"></div>
+          </article>
+          <article class="panel section uqtl-span-2">
+            <div class="section-head">
+              <h3>Self-Healing DAG</h3>
+              <span>audited route</span>
+            </div>
+            <div id="dag-map" class="dag-host"></div>
+          </article>
         </section>
 
         <section class="kpi-grid">
@@ -95,12 +121,28 @@
           </article>
         </section>
 
-        <section class="panel section">
-          <div class="section-head">
-            <h3>Investor Actions</h3>
-            <span>長期 / スイング / リスク重視</span>
-          </div>
-          <div id="persona-actions" class="persona-grid"></div>
+        <section class="chart-grid">
+          <article class="panel section chart-card">
+            <div class="section-head">
+              <h3>Return Chart</h3>
+              <span>Basket Daily Return</span>
+            </div>
+            <div id="return-chart" class="chart-host"></div>
+          </article>
+          <article class="panel section chart-card">
+            <div class="section-head">
+              <h3>Alpha Chart</h3>
+              <span>平均 Alpha Score 推移</span>
+            </div>
+            <div id="alpha-chart" class="chart-host"></div>
+          </article>
+          <article class="panel section chart-card">
+            <div class="section-head">
+              <h3>Buy / Sell Flow</h3>
+              <span>Signal + Execution</span>
+            </div>
+            <div id="flow-chart" class="flow-host"></div>
+          </article>
         </section>
 
         <section class="split">

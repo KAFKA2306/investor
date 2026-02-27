@@ -149,17 +149,12 @@ interface ReadinessLogPayload {
   };
 }
 
-interface PersonaAction {
-  audience: string;
-  posture: string;
-  action: string;
-  rationale: string;
-}
+type LogBucket = "daily" | "benchmarks" | "unified" | "readiness";
 
-const DAILY_BASE = "./logs/daily";
-const BENCH_BASE = "./logs/benchmarks";
-const UNIFIED_BASE = "./logs/unified";
-const READINESS_BASE = "./logs/readiness";
+interface TimeSeriesPoint {
+  date: string;
+  value: number;
+}
 
 const pickNumber = (value: unknown, fallback = 0): number => {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -189,6 +184,8 @@ const formatSignedPercent = (value: number, digits = 2): string => {
   return `${prefix}${formatPercent(value, digits)}`;
 };
 
+const formatBps = (value: number): string => `${value.toFixed(1)} bps`;
+
 const formatCompact = (value: number): string =>
   new Intl.NumberFormat("ja-JP", {
     notation: "compact",
@@ -207,6 +204,9 @@ const escapeHtml = (value: unknown): string =>
         "'": "&#39;",
       })[m] ?? m,
   );
+
+const shortId = (value: string, width = 8): string =>
+  value.length <= width ? value : `${value.slice(0, width)}…`;
 
 const fetchJson = async <T>(path: string): Promise<T | null> => {
   try {
@@ -252,6 +252,31 @@ class InvestorDashboard {
     });
   }
 
+  private async listLogFiles(bucket: LogBucket): Promise<string[]> {
+    const liveIndex = await fetchJson<string[]>(
+      `/logs/__index?bucket=${encodeURIComponent(bucket)}`,
+    );
+    if (liveIndex && liveIndex.length > 0) {
+      return liveIndex.filter((file) => file.endsWith(".json")).sort();
+    }
+
+    const manifest = await fetchJson<string[]>(
+      `./logs/${bucket}/manifest.json`,
+    );
+    if (!manifest) return [];
+    return manifest.filter((file) => file.endsWith(".json")).sort();
+  }
+
+  private async fetchLogFile<T>(
+    bucket: LogBucket,
+    file: string,
+  ): Promise<T | null> {
+    return (
+      (await fetchJson<T>(`/logs/${bucket}/${file}`)) ??
+      (await fetchJson<T>(`./logs/${bucket}/${file}`))
+    );
+  }
+
   private async refresh() {
     await Promise.all([
       this.loadDailyLogs(),
@@ -276,17 +301,16 @@ class InvestorDashboard {
   }
 
   private async loadDailyLogs() {
-    const manifest = await fetchJson<string[]>(`${DAILY_BASE}/manifest.json`);
-    if (!manifest) return;
-
-    const files = manifest.filter((file) => file.endsWith(".json")).sort();
+    const files = await this.listLogFiles("daily");
+    if (files.length === 0) return;
     const nextDailyMap = new Map<string, DailyLogEnvelope>();
     const stems = new Set<string>();
 
     await Promise.all(
       files.map(async (file) => {
-        const payload = await fetchJson<DailyLogEnvelope>(
-          `${DAILY_BASE}/${file}`,
+        const payload = await this.fetchLogFile<DailyLogEnvelope>(
+          "daily",
+          file,
         );
         if (!payload) return;
         const stem = file.replace(/\.json$/, "");
@@ -308,6 +332,7 @@ class InvestorDashboard {
   private async loadReadinessLogs(stems: Set<string>) {
     const nextReadinessMap = new Map<string, ReadinessLogPayload>();
     const candidates = new Set<string>();
+    const readinessFiles = await this.listLogFiles("readiness");
 
     for (const date of this.timeline) {
       candidates.add(date);
@@ -315,11 +340,15 @@ class InvestorDashboard {
     for (const stem of stems) {
       candidates.add(stem);
     }
+    for (const file of readinessFiles) {
+      candidates.add(file.replace(/\.json$/, ""));
+    }
 
     await Promise.all(
       Array.from(candidates).map(async (stem) => {
-        const payload = await fetchJson<ReadinessLogPayload>(
-          `${READINESS_BASE}/${stem}.json`,
+        const payload = await this.fetchLogFile<ReadinessLogPayload>(
+          "readiness",
+          `${stem}.json`,
         );
         if (!payload?.report) return;
         const date = canonicalDate(stem);
@@ -332,16 +361,15 @@ class InvestorDashboard {
   }
 
   private async loadBenchmarkLogs() {
-    const manifest = await fetchJson<string[]>(`${BENCH_BASE}/manifest.json`);
-    if (!manifest) return;
-
-    const files = manifest.filter((file) => file.endsWith(".json"));
+    const files = await this.listLogFiles("benchmarks");
+    if (files.length === 0) return;
     const nextBenchMap = new Map<string, BenchmarkLogPayload>();
 
     await Promise.all(
       files.map(async (file) => {
-        const payload = await fetchJson<BenchmarkLogPayload>(
-          `${BENCH_BASE}/${file}`,
+        const payload = await this.fetchLogFile<BenchmarkLogPayload>(
+          "benchmarks",
+          file,
         );
         if (!payload) return;
         const date = canonicalDate(
@@ -356,17 +384,16 @@ class InvestorDashboard {
   }
 
   private async loadUnifiedLogs() {
-    const manifest = await fetchJson<string[]>(`${UNIFIED_BASE}/manifest.json`);
-    if (!manifest) return;
-
-    const files = manifest.filter((file) => file.endsWith(".json"));
+    const files = await this.listLogFiles("unified");
+    if (files.length === 0) return;
     const nextUnifiedMap = new Map<string, UnifiedLogPayload>();
     const nextAlphaByDate = new Map<string, AlphaDiscoveryPayload[]>();
 
     await Promise.all(
       files.map(async (file) => {
-        const payload = await fetchJson<Record<string, unknown>>(
-          `${UNIFIED_BASE}/${file}`,
+        const payload = await this.fetchLogFile<Record<string, unknown>>(
+          "unified",
+          file,
         );
         if (!payload) return;
 
@@ -498,6 +525,7 @@ class InvestorDashboard {
           ) / analysis.length
         : 0;
     const confidence = this.computeConfidence(report, readiness);
+    const uqtlVector = this.computeUqtlVector(report, unified, readiness);
 
     const posture =
       confidence >= 0.75 ? "攻め寄り" : confidence >= 0.5 ? "中立" : "守り寄り";
@@ -505,7 +533,7 @@ class InvestorDashboard {
     this.updateText("current-date", formatDate(this.activeDate));
     this.updateText(
       "hero-title",
-      report.decision?.action ?? "次のアクション判定を計算中",
+      `${report.decision?.action ?? "次のアクション判定を計算中"} // UQTL`,
     );
     this.updateText("hero-subtitle", report.decision?.strategy ?? "戦略未設定");
     this.updateText("posture-chip", posture);
@@ -525,6 +553,17 @@ class InvestorDashboard {
       "confidence-label",
       `${(confidence * 100).toFixed(0)} / 100`,
     );
+    const entropyLabel = `Entropy ${(uqtlVector.entropy * 100).toFixed(0)}`;
+    this.updateText("entropy-chip", entropyLabel);
+    const entropyChip = document.getElementById("entropy-chip");
+    entropyChip?.classList.remove("ready", "caution", "risk", "neutral");
+    entropyChip?.classList.add(
+      uqtlVector.entropy < 0.35
+        ? "ready"
+        : uqtlVector.entropy < 0.6
+          ? "caution"
+          : "risk",
+    );
 
     this.renderKpi("kpi-edge", formatPercent(expectedEdge), expectedEdge);
     this.renderKpi("kpi-return", formatSignedPercent(dailyReturn), dailyReturn);
@@ -534,21 +573,21 @@ class InvestorDashboard {
     this.renderKpi("kpi-liquidity", formatCompact(avgLiquidity), avgLiquidity);
 
     this.renderDataHealth(report, readiness, maxPositions);
-    this.renderPersonaActions(
-      this.buildPersonaActions({
-        expectedEdge,
-        dailyReturn,
-        stopLoss,
-        maxPositions,
-        avgProfitMargin,
-        avgRange,
-        topSymbol: report.decision?.topSymbol ?? "--",
-      }),
-    );
+    this.renderTimeSeriesCharts();
+    this.renderFlowChart(report);
     this.renderSymbolTable(analysis);
     this.renderStageTable(unified);
     this.renderBenchmark(benchmark);
     this.renderAlphaDiscovery(alpha);
+    this.renderUqtlStream(uqtlVector);
+    this.renderEvidenceBonding(report, unified);
+    this.renderSelfHealingDag(unified);
+    void this.renderIntegrityIndicator({
+      date: this.activeDate,
+      report,
+      unified,
+      alpha,
+    });
 
     const insightBlocks = [
       `トップ銘柄: ${report.decision?.topSymbol ?? "--"}`,
@@ -580,6 +619,280 @@ class InvestorDashboard {
         ),
       )}</pre>`,
     );
+  }
+
+  private computeUqtlVector(
+    report: DailyReport,
+    unified: UnifiedLogPayload | null,
+    readiness: ReadinessLogPayload | null,
+  ): {
+    time: number;
+    logic: number;
+    risk: number;
+    data: number;
+    entropy: number;
+  } {
+    const readinessScore = clamp01(
+      pickNumber(readiness?.report?.score?.total) / 100,
+    );
+    const stageRows = unified?.stages ?? [];
+    const passStages = stageRows.filter((stage) =>
+      (stage.status ?? "").toUpperCase().includes("PASS"),
+    ).length;
+    const logic =
+      stageRows.length > 0 ? clamp01(passStages / stageRows.length) : 0.45;
+    const stopLoss = pickNumber(report.risks?.stopLossPct);
+    const kelly = pickNumber(report.risks?.kellyFraction);
+    const risk = clamp01(1 - stopLoss * 4 + kelly * 0.6);
+    const evidencePassCount = [
+      report.evidence?.estat?.status,
+      report.evidence?.jquants?.status,
+      report.results?.status,
+    ].filter((status) => (status ?? "").toUpperCase().includes("PASS")).length;
+    const data = clamp01(evidencePassCount / 3);
+    const time = clamp01(readinessScore * 0.6 + data * 0.4);
+    const certainty = (time + logic + risk + data) / 4;
+    const entropy = clamp01(1 - certainty);
+    return { time, logic, risk, data, entropy };
+  }
+
+  private renderUqtlStream(vector: {
+    time: number;
+    logic: number;
+    risk: number;
+    data: number;
+    entropy: number;
+  }) {
+    const rows = [
+      { key: "Time Axis", value: vector.time, hint: "readiness clock sync" },
+      { key: "Logic Axis", value: vector.logic, hint: "validated stage ratio" },
+      { key: "Risk Axis", value: vector.risk, hint: "kelly / stop-loss" },
+      { key: "Data Axis", value: vector.data, hint: "evidence freshness" },
+    ];
+
+    this.updateHTML(
+      "uqtl-stream",
+      `
+      <div class="entropy-head">
+        <div class="entropy-value ${
+          vector.entropy < 0.35 ? "pos" : vector.entropy < 0.6 ? "" : "neg"
+        }">
+          ${(vector.entropy * 100).toFixed(1)}
+        </div>
+        <div class="entropy-sub">Quantum Entropy</div>
+      </div>
+      ${rows
+        .map((row) => {
+          const width = (row.value * 100).toFixed(1);
+          return `
+            <div class="uqtl-row">
+              <div>
+                <div class="uqtl-label">${escapeHtml(row.key)}</div>
+                <div class="uqtl-hint">${escapeHtml(row.hint)}</div>
+              </div>
+              <div class="uqtl-track">
+                <div class="uqtl-bar" style="width:${width}%"></div>
+              </div>
+              <div class="uqtl-value">${width}%</div>
+            </div>
+          `;
+        })
+        .join("")}
+      `,
+    );
+  }
+
+  private renderEvidenceBonding(
+    report: DailyReport,
+    unified: UnifiedLogPayload | null,
+  ) {
+    const evidenceRows: Array<{ kind: string; id: string; value: string }> = [];
+    const analysis = report.analysis ?? [];
+    const topSymbols = [...analysis]
+      .sort((a, b) => pickNumber(b.alphaScore) - pickNumber(a.alphaScore))
+      .slice(0, 4);
+
+    for (const symbol of topSymbols) {
+      const alpha = pickNumber(symbol.alphaScore).toFixed(3);
+      evidenceRows.push({
+        kind: "factor",
+        id: `${this.activeDate}-sym-${symbol.symbol}`,
+        value: `${symbol.symbol} / alpha ${alpha}`,
+      });
+    }
+
+    const orders = report.execution?.orders ?? [];
+    for (const order of orders.slice(0, 3)) {
+      const orderId =
+        typeof order.executedAt === "string"
+          ? `${order.symbol}-${order.executedAt}`
+          : order.symbol;
+      evidenceRows.push({
+        kind: "execution",
+        id: orderId,
+        value: `${order.symbol} ${order.side} ${formatBps(pickNumber(order.fillPrice) * 0.01)}`,
+      });
+    }
+
+    const stages = unified?.stages ?? [];
+    for (const stage of stages.slice(0, 3)) {
+      evidenceRows.push({
+        kind: "logic",
+        id: `${this.activeDate}-stg-${stage.name ?? "unknown"}`,
+        value: `${stage.name ?? "Unknown"} / ${stage.status ?? "UNKNOWN"}`,
+      });
+    }
+
+    if (evidenceRows.length === 0) {
+      this.updateHTML(
+        "evidence-bonding",
+        `<div class="empty">結合できる証拠データが見つかりません。</div>`,
+      );
+      return;
+    }
+
+    this.updateHTML(
+      "evidence-bonding",
+      evidenceRows
+        .slice(0, 10)
+        .map(
+          (row, index) => `
+          <div class="bonding-row" style="--pulse-delay:${(index * 120) % 700}ms">
+            <span class="bond-dot ${row.kind}"></span>
+            <span class="bond-id">${escapeHtml(shortId(row.id, 24))}</span>
+            <span class="bond-value">${escapeHtml(row.value)}</span>
+          </div>
+        `,
+        )
+        .join(""),
+    );
+  }
+
+  private renderSelfHealingDag(unified: UnifiedLogPayload | null) {
+    const stages = (unified?.stages ?? []).slice(0, 7);
+    if (stages.length === 0) {
+      this.updateHTML(
+        "dag-map",
+        `<div class="empty">DAG ログがありません。</div>`,
+      );
+      return;
+    }
+
+    const width = 980;
+    const height = 220;
+    const left = 56;
+    const right = 50;
+    const top = 64;
+    const step = (width - left - right) / Math.max(1, stages.length - 1);
+
+    const points = stages.map((stage, index) => {
+      const x = left + step * index;
+      const status = (stage.status ?? "UNKNOWN").toUpperCase();
+      const y =
+        status.includes("FAIL") || status.includes("ERROR")
+          ? top + 62
+          : status.includes("WARN")
+            ? top + 34
+            : top;
+      return {
+        x,
+        y,
+        stage,
+        status,
+      };
+    });
+
+    const edges = points
+      .slice(0, -1)
+      .map((point, index) => {
+        const next = points[index + 1];
+        if (!next) return "";
+        const rejected =
+          point.status.includes("FAIL") || point.status.includes("ERROR");
+        const clazz = rejected ? "dag-edge blocked" : "dag-edge";
+        return `<line x1="${point.x}" y1="${point.y}" x2="${next.x}" y2="${next.y}" class="${clazz}" />`;
+      })
+      .join("");
+
+    const reroutes = points
+      .slice(0, -2)
+      .map((point, index) => {
+        if (
+          !(point.status.includes("FAIL") || point.status.includes("ERROR"))
+        ) {
+          return "";
+        }
+        const target = points[index + 2];
+        if (!target) return "";
+        return `<path d="M ${point.x} ${point.y} Q ${(point.x + target.x) / 2} ${point.y - 48}, ${target.x} ${target.y}" class="dag-reroute" />`;
+      })
+      .join("");
+
+    const nodes = points
+      .map((point) => {
+        const stateClass = point.status.includes("PASS")
+          ? "pass"
+          : point.status.includes("FAIL") || point.status.includes("ERROR")
+            ? "fail"
+            : point.status.includes("WARN")
+              ? "warn"
+              : "unknown";
+        return `
+          <g transform="translate(${point.x},${point.y})" class="dag-node ${stateClass}">
+            <circle r="14"></circle>
+            <text y="34">${escapeHtml(shortId(point.stage.name ?? "Unknown", 11))}</text>
+          </g>
+        `;
+      })
+      .join("");
+
+    this.updateHTML(
+      "dag-map",
+      `
+      <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" class="dag-svg" role="img" aria-label="self-healing DAG">
+        ${edges}
+        ${reroutes}
+        ${nodes}
+      </svg>
+      `,
+    );
+  }
+
+  private async renderIntegrityIndicator(input: {
+    date: string;
+    report: DailyReport;
+    unified: UnifiedLogPayload | null;
+    alpha: AlphaDiscoveryPayload | null;
+  }) {
+    const host = document.getElementById("integrity-indicator");
+    if (!host) return;
+    host.classList.remove("verified");
+    host.textContent = "証拠整合性: 計算中...";
+
+    try {
+      const digest = await this.sha256Hex(
+        JSON.stringify({
+          date: input.date,
+          report: input.report,
+          unified: input.unified,
+          alpha: input.alpha,
+        }),
+      );
+      if (this.activeDate !== input.date) return;
+      host.textContent = `証拠整合性: VERIFIED / ${shortId(digest, 14)}`;
+      host.classList.add("verified");
+    } catch (_error) {
+      host.textContent = "証拠整合性: HASH ERROR";
+      host.classList.remove("verified");
+    }
+  }
+
+  private async sha256Hex(input: string): Promise<string> {
+    const encoded = new TextEncoder().encode(input);
+    const digest = await crypto.subtle.digest("SHA-256", encoded);
+    return [...new Uint8Array(digest)]
+      .map((byte) => byte.toString(16).padStart(2, "0"))
+      .join("");
   }
 
   private renderDataHealth(
@@ -621,87 +934,265 @@ class InvestorDashboard {
     );
   }
 
-  private buildPersonaActions(input: {
-    expectedEdge: number;
-    dailyReturn: number;
-    stopLoss: number;
-    maxPositions: number;
-    avgProfitMargin: number;
-    avgRange: number;
-    topSymbol: string;
-  }): PersonaAction[] {
-    const longTerm: PersonaAction =
-      input.expectedEdge > 0.12 && input.avgProfitMargin > 0.08
-        ? {
-            audience: "長期投資家",
-            posture: "積極維持",
-            action:
-              "既存コアを維持しつつ、トップ銘柄の比率を段階的に引き上げる。",
-            rationale:
-              "収益性と期待エッジが同時にプラス。短期ノイズより継続性を優先できる局面。",
-          }
-        : {
-            audience: "長期投資家",
-            posture: "防御重視",
-            action: "新規一括投資を避け、定期積立のみ継続する。",
-            rationale:
-              "エッジが弱いため、時間分散でエントリーコストを平準化する方が合理的。",
-          };
+  private renderTimeSeriesCharts() {
+    const returnSeries = this.buildReturnSeries(80);
+    const alphaSeries = this.buildAlphaSeries(80);
 
-    const swing: PersonaAction =
-      input.dailyReturn >= 0 && input.avgRange >= 0.01
-        ? {
-            audience: "スイング投資家",
-            posture: "トレンド追随",
-            action: `${input.topSymbol} を軸に短期順張り。逆指値を ${formatPercent(input.stopLoss)} で固定。`,
-            rationale:
-              "当日リターンとボラティリティが両立しており、機動的な回転に向く。",
-          }
-        : {
-            audience: "スイング投資家",
-            posture: "様子見",
-            action: "新規建てを最小化し、翌営業日の値動き確認後に再判定する。",
-            rationale: "方向感が弱く、損益比が崩れやすい局面。",
-          };
-
-    const riskAware: PersonaAction =
-      input.maxPositions <= 5 && input.stopLoss <= 0.03
-        ? {
-            audience: "リスク重視投資家",
-            posture: "許容範囲",
-            action: "分散数を維持しつつ、1銘柄あたりの投入額を固定する。",
-            rationale:
-              "ポジション上限と損切り幅が明確で、最大損失の見通しが立てやすい。",
-          }
-        : {
-            audience: "リスク重視投資家",
-            posture: "縮小",
-            action: "資金配分を半分に抑え、ドローダウン監視を優先する。",
-            rationale:
-              "保護ラインが広めで、急変時の損失許容が大きくなりやすい。",
-          };
-
-    return [longTerm, swing, riskAware];
+    this.renderLineChart("return-chart", {
+      series: returnSeries,
+      formatter: (value) => formatSignedPercent(value),
+      yAxisLabel: "Return",
+      positiveIsGood: true,
+    });
+    this.renderLineChart("alpha-chart", {
+      series: alphaSeries,
+      formatter: (value) => value.toFixed(3),
+      yAxisLabel: "Alpha",
+      positiveIsGood: true,
+    });
   }
 
-  private renderPersonaActions(actions: PersonaAction[]) {
+  private buildReturnSeries(limit: number): TimeSeriesPoint[] {
+    return [...this.timeline]
+      .slice(0, limit)
+      .reverse()
+      .map((date) => ({
+        date,
+        value: pickNumber(
+          this.dailyByDate.get(date)?.report?.results?.basketDailyReturn,
+        ),
+      }));
+  }
+
+  private buildAlphaSeries(limit: number): TimeSeriesPoint[] {
+    return [...this.timeline]
+      .slice(0, limit)
+      .reverse()
+      .map((date) => {
+        const analysis = this.dailyByDate.get(date)?.report?.analysis ?? [];
+        const avgAlpha =
+          analysis.length > 0
+            ? analysis.reduce(
+                (sum, row) => sum + pickNumber(row.alphaScore),
+                0,
+              ) / analysis.length
+            : 0;
+        return { date, value: avgAlpha };
+      });
+  }
+
+  private renderLineChart(
+    id: string,
+    input: {
+      series: TimeSeriesPoint[];
+      formatter: (value: number) => string;
+      yAxisLabel: string;
+      positiveIsGood: boolean;
+    },
+  ) {
+    const series = input.series;
+    if (series.length < 2) {
+      this.updateHTML(
+        id,
+        `<div class="empty">時系列データが不足しています。</div>`,
+      );
+      return;
+    }
+
+    const values = series.map((point) => point.value);
+    let min = Math.min(...values);
+    let max = Math.max(...values);
+    if (min === max) {
+      min -= 1;
+      max += 1;
+    }
+
+    const width = 760;
+    const height = 220;
+    const left = 46;
+    const right = 16;
+    const top = 16;
+    const bottom = 32;
+    const chartWidth = width - left - right;
+    const chartHeight = height - top - bottom;
+
+    const x = (index: number) =>
+      left +
+      (series.length === 1 ? 0 : (index / (series.length - 1)) * chartWidth);
+    const y = (value: number) =>
+      top + ((max - value) / (max - min)) * chartHeight;
+
+    const polyline = series
+      .map(
+        (point, index) => `${x(index).toFixed(2)},${y(point.value).toFixed(2)}`,
+      )
+      .join(" ");
+    const areaPath = `M ${x(0).toFixed(2)} ${height - bottom} L ${polyline.replaceAll(" ", " L ")} L ${x(series.length - 1).toFixed(2)} ${height - bottom} Z`;
+
+    const active = series.find((point) => point.date === this.activeDate);
+    const latest = series[series.length - 1];
+    const previous = series[series.length - 2];
+    if (!latest || !previous) return;
+    const delta = latest.value - previous.value;
+    const axisMid = (max + min) / 2;
+    const trendClass =
+      input.positiveIsGood && delta > 0
+        ? "pos"
+        : input.positiveIsGood && delta < 0
+          ? "neg"
+          : delta < 0
+            ? "pos"
+            : "neg";
+
+    const pointsHtml = series
+      .map((point, index) => {
+        if (point.date !== this.activeDate) return "";
+        return `<circle cx="${x(index).toFixed(2)}" cy="${y(point.value).toFixed(2)}" r="4.5" class="chart-point-active" />`;
+      })
+      .join("");
+
     this.updateHTML(
-      "persona-actions",
-      actions
-        .map(
-          (item, index) => `
-            <article class="persona-card" style="--delay:${index * 80}ms">
-              <div class="persona-head">
-                <h3>${escapeHtml(item.audience)}</h3>
-                <span class="chip ${this.chipClass(item.posture)}">${escapeHtml(item.posture)}</span>
-              </div>
-              <p class="persona-action">${escapeHtml(item.action)}</p>
-              <p class="persona-rationale">${escapeHtml(item.rationale)}</p>
-            </article>
-          `,
-        )
-        .join(""),
+      id,
+      `
+      <div class="chart-meta">
+        <div>
+          <div class="chart-label">${escapeHtml(input.yAxisLabel)}</div>
+          <div class="chart-value ${latest.value >= 0 ? "pos" : "neg"}">${escapeHtml(input.formatter(latest.value))}</div>
+        </div>
+        <div>
+          <div class="chart-label">前日差分</div>
+          <div class="chart-value ${trendClass}">${escapeHtml(input.formatter(delta))}</div>
+        </div>
+        <div>
+          <div class="chart-label">選択日</div>
+          <div class="chart-value">${escapeHtml(active ? input.formatter(active.value) : "--")}</div>
+        </div>
+      </div>
+      <svg class="line-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="${escapeHtml(input.yAxisLabel)} chart">
+        <line x1="${left}" y1="${y(max).toFixed(2)}" x2="${width - right}" y2="${y(max).toFixed(2)}" class="chart-grid-line" />
+        <line x1="${left}" y1="${y(axisMid).toFixed(2)}" x2="${width - right}" y2="${y(axisMid).toFixed(2)}" class="chart-grid-line mid" />
+        <line x1="${left}" y1="${y(min).toFixed(2)}" x2="${width - right}" y2="${y(min).toFixed(2)}" class="chart-grid-line" />
+        <path d="${areaPath}" class="chart-area" />
+        <polyline points="${polyline}" class="chart-line" />
+        ${pointsHtml}
+      </svg>
+      <div class="chart-axis">
+        <span>${escapeHtml(series[0] ? formatDate(series[0].date) : "")}</span>
+        <span>${escapeHtml(formatDate(series.at(-1)?.date ?? ""))}</span>
+      </div>
+      `,
     );
+  }
+
+  private renderFlowChart(report: DailyReport) {
+    const analysis = report.analysis ?? [];
+    const signals = {
+      buy: 0,
+      sell: 0,
+      hold: 0,
+    };
+
+    for (const row of analysis) {
+      const normalized = this.normalizeSignal(row.signal);
+      if (normalized === "buy") signals.buy += 1;
+      if (normalized === "sell") signals.sell += 1;
+      if (normalized === "hold") signals.hold += 1;
+    }
+
+    const orders = report.execution?.orders ?? [];
+    const executed = {
+      buy: 0,
+      sell: 0,
+      buyNotional: 0,
+      sellNotional: 0,
+    };
+    for (const order of orders) {
+      const side = this.normalizeSignal(order.side);
+      if (side === "buy") {
+        executed.buy += 1;
+        executed.buyNotional += pickNumber(order.notional);
+      } else if (side === "sell") {
+        executed.sell += 1;
+        executed.sellNotional += pickNumber(order.notional);
+      }
+    }
+
+    const signalTotal = Math.max(1, signals.buy + signals.sell + signals.hold);
+    const maxNotional = Math.max(
+      1,
+      executed.buyNotional,
+      executed.sellNotional,
+      executed.buyNotional + executed.sellNotional,
+    );
+
+    this.updateHTML(
+      "flow-chart",
+      `
+      <div class="flow-grid">
+        <div class="flow-card">
+          <div class="flow-head">
+            <span>Signals</span>
+            <span class="flow-total">${signals.buy + signals.sell + signals.hold} symbols</span>
+          </div>
+          ${this.renderFlowRow("BUY", signals.buy, signalTotal, "buy")}
+          ${this.renderFlowRow("SELL", signals.sell, signalTotal, "sell")}
+          ${this.renderFlowRow("HOLD", signals.hold, signalTotal, "hold")}
+        </div>
+        <div class="flow-card">
+          <div class="flow-head">
+            <span>Executed Orders</span>
+            <span class="flow-total">${orders.length} orders</span>
+          </div>
+          ${this.renderFlowRow("BUY Notional", executed.buyNotional, maxNotional, "buy", true)}
+          ${this.renderFlowRow("SELL Notional", executed.sellNotional, maxNotional, "sell", true)}
+          <div class="flow-order-meta">
+            BUY ${executed.buy}件 / SELL ${executed.sell}件
+          </div>
+        </div>
+      </div>
+      `,
+    );
+  }
+
+  private renderFlowRow(
+    label: string,
+    value: number,
+    total: number,
+    kind: "buy" | "sell" | "hold",
+    notional = false,
+  ): string {
+    const width = clamp01(value / total) * 100;
+    const display = notional ? `${formatCompact(value)} JPY` : `${value}`;
+    return `
+      <div class="flow-row">
+        <span class="flow-label">${escapeHtml(label)}</span>
+        <div class="flow-track">
+          <div class="flow-bar ${kind}" style="width:${width.toFixed(1)}%"></div>
+        </div>
+        <span class="flow-value">${escapeHtml(display)}</span>
+      </div>
+    `;
+  }
+
+  private normalizeSignal(signal: string | undefined): "buy" | "sell" | "hold" {
+    const normalized = (signal ?? "").toUpperCase();
+    if (
+      normalized.includes("BUY") ||
+      normalized.includes("LONG") ||
+      normalized.includes("ENTRY") ||
+      normalized === "2"
+    ) {
+      return "buy";
+    }
+    if (
+      normalized.includes("SELL") ||
+      normalized.includes("SHORT") ||
+      normalized.includes("EXIT") ||
+      normalized === "1"
+    ) {
+      return "sell";
+    }
+    return "hold";
   }
 
   private renderSymbolTable(rows: AnalysisSymbol[]) {
@@ -961,21 +1452,25 @@ class InvestorDashboard {
   private pickAlphaDiscovery(date: string): AlphaDiscoveryPayload | null {
     const byDate = this.alphaByDate.get(date);
     if (byDate && byDate.length > 0) {
-      return byDate.sort((a, b) => {
-        const at = new Date(a.endedAt ?? a.startedAt ?? 0).getTime();
-        const bt = new Date(b.endedAt ?? b.startedAt ?? 0).getTime();
-        return bt - at;
-      })[0];
+      return (
+        byDate.sort((a, b) => {
+          const at = new Date(a.endedAt ?? a.startedAt ?? 0).getTime();
+          const bt = new Date(b.endedAt ?? b.startedAt ?? 0).getTime();
+          return bt - at;
+        })[0] ?? null
+      );
     }
 
     const all = Array.from(this.alphaByDate.values()).flat();
     if (all.length === 0) return null;
 
-    return all.sort((a, b) => {
-      const at = new Date(a.endedAt ?? a.startedAt ?? 0).getTime();
-      const bt = new Date(b.endedAt ?? b.startedAt ?? 0).getTime();
-      return bt - at;
-    })[0];
+    return (
+      all.sort((a, b) => {
+        const at = new Date(a.endedAt ?? a.startedAt ?? 0).getTime();
+        const bt = new Date(b.endedAt ?? b.startedAt ?? 0).getTime();
+        return bt - at;
+      })[0] ?? null
+    );
   }
 
   private renderKpi(id: string, value: string, signal: number) {
@@ -993,22 +1488,35 @@ class InvestorDashboard {
 
   private renderEmptyState() {
     this.updateText("current-date", "--");
-    this.updateText("hero-title", "ログを選択してください");
+    this.updateText("hero-title", "UQTL // ログを選択してください");
     this.updateText("hero-subtitle", "データ未選択");
     this.updateText("posture-chip", "待機中");
+    this.updateText("entropy-chip", "Entropy --");
     this.updateText(
       "hero-reason",
       "左側のタイムラインから日付を選ぶと表示されます。",
     );
     this.updateText("confidence-label", "0 / 100");
+    this.updateText("integrity-indicator", "証拠整合性: --");
     const bar = document.getElementById("confidence-bar");
     if (bar) bar.setAttribute("style", "width:0%");
+    const entropyChip = document.getElementById("entropy-chip");
+    entropyChip?.classList.remove("ready", "caution", "risk");
+    entropyChip?.classList.add("neutral");
     this.updateHTML("symbol-table", `<div class="empty">データ未選択</div>`);
     this.updateHTML("stage-table", `<div class="empty">データ未選択</div>`);
     this.updateHTML("benchmark-table", `<div class="empty">データ未選択</div>`);
     this.updateHTML("benchmark-quick", `<div class="empty">データ未選択</div>`);
     this.updateHTML("alpha-discovery", `<div class="empty">データ未選択</div>`);
-    this.updateHTML("persona-actions", `<div class="empty">データ未選択</div>`);
+    this.updateHTML("uqtl-stream", `<div class="empty">データ未選択</div>`);
+    this.updateHTML(
+      "evidence-bonding",
+      `<div class="empty">データ未選択</div>`,
+    );
+    this.updateHTML("dag-map", `<div class="empty">データ未選択</div>`);
+    this.updateHTML("return-chart", `<div class="empty">データ未選択</div>`);
+    this.updateHTML("alpha-chart", `<div class="empty">データ未選択</div>`);
+    this.updateHTML("flow-chart", `<div class="empty">データ未選択</div>`);
     this.updateHTML("thesis-block", `<div class="empty">データ未選択</div>`);
     this.updateHTML("raw-json", `<pre>{}</pre>`);
   }
