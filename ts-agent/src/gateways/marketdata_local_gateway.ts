@@ -84,4 +84,11 @@ export class MarketdataLocalGateway implements MarketDataGateway {
     const bars = this.db.getBars(symbol, limit);
     return bars.map((b) => Number(b.Close ?? 0));
   }
+
+  public async getBars(
+    symbol: string,
+    limit: number,
+  ): Promise<Record<string, unknown>[]> {
+    return this.db.getBars(symbol, limit);
+  }
 }

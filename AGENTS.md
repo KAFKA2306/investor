@@ -1,52 +1,41 @@
-# エージェント開発仕様書 (AGENTS.md)
+# Repository Guidelines
 
-このドキュメントは、投資 AI エージェントの設計と仕組みについて説明したガイドラインです。
+## Project Structure & Module Organization
+- `ts-agent/` is the core TypeScript/Bun codebase.
+- `ts-agent/src/agents/`, `core/`, `gateways/`, and `schemas/` contain strategy logic, orchestration, provider interfaces, and Zod contracts.
+- `ts-agent/src/experiments/` contains runnable research and pipeline entrypoints (for example `01_vegetable.ts`, `les_reproduction.ts`).
+- `ts-agent/src/tools/dashboard/` is a Vite dashboard for local and Pages deployment.
+- `logs/` stores generated run artifacts (`daily/`, `unified/`, `benchmarks/`, `readiness/`).
+- `docs/` contains architecture diagrams and reports.
 
----
+## Build, Test, and Development Commands
+- `task check`: format, lint, and typecheck the TypeScript code.
+- `task run`: run reproduction + benchmark pipeline and regenerate dashboard manifests.
+- `task view`: start the dashboard dev server.
+- `cd ts-agent && bun run <script>`: run package scripts directly (example: `bun run pipeline:llm-readiness`).
 
-## 🏗️ 1. 基本となる設計 (BaseAgent)
+## Coding Style & Naming Conventions
+- Language/runtime: TypeScript on Bun, ESM modules.
+- Formatting/linting: Biome (`indentWidth: 2`, spaces, organized imports). Run `task check` before committing.
+- Typing: strict TypeScript (`@tsconfig/strictest`); avoid `any` (`noExplicitAny` is error).
+- Naming: use descriptive file names aligned to existing patterns (`snake_case` for experiment scripts, domain-oriented module names elsewhere).
 
-すべてのエージェントは `BaseAgent` を元に作られています。
+## Testing Guidelines
+- Preferred test runner is Bun (`bun test`) when adding automated tests.
+- Existing verification scripts are in `ts-agent/src/tests/` and `ts-agent/src/experiments/*test*.ts`; keep new checks deterministic and data-light.
+- Validate behavior changes with:
+  - `task check`
+  - targeted script run (example: `cd ts-agent && bun src/experiments/test_audit_loop.ts`)
 
-### 🧬 実行の流れ
+## Commit & Pull Request Guidelines
+- Follow Conventional Commit style used in history: `feat: ...`, `fix: ...`, `docs: ...`, `refactor(scope): ...`, `chore: ...`.
+- Keep commits focused; separate refactors from behavior changes.
+- PRs should include:
+  - concise problem/solution summary
+  - affected paths (example: `ts-agent/src/gateways/...`)
+  - verification evidence (commands run + key output)
+  - dashboard/report screenshot when UI or published docs are changed.
 
-1.  **初期化 (constructor)**：設定の読み込みと確認。
-2.  **データ取得 (fetch)**：市場データや財務データを取得。
-3.  **解析 (analyze)**：AI によるデータの解析。
-4.  **決定 (decide)**：投資シグナルやスコアの決定。
-5.  **出力 (output)**：結果をログとして保存。
-
----
-
-## 🎭 2. 稼働中のエージェント
-
-現在動いているエージェントの種類と、その仕組みです。
-
-| エージェント | 役割と仕組み |
-| :--- | :--- |
-| **PeadAgent** | **[決算分析]** 決算発表後の株価の動きを狙う。<br>1. 当日決算の銘柄を探す。<br>2. 利益のサプライズ（前期比）を計算。<br>3. 決算短信の感情分析を行う。<br>4. サプライズ 20% 以上、かつ感情が良い場合に「買い」と判断。 |
-| **XIntelligenceAgent** | **[SNS 分析]** X（Twitter）の盛り上がりを分析する。<br>1. 指定ワード（銘柄名、"決算" など）を監視。<br>2. 強気/弱気のスコアを計算。<br>3. 投稿数などの「熱量」を計算。<br>4. スコアが高い銘柄を報告。 |
-| **LesAgent** | **[アルファ因子生成]** 論文 ArXiv:2409.06289 に基づく。<br>AI が独自の投資因子を作り、自ら評価・重み付けを行う。 |
-
----
-
-## 🔄 3. 設計のルール
-
-システムをきれいに保つためのルールです。
-
-- **Gateway パターン**：外部データ（J-Quants など）へのアクセスは専用クラスに任せ、直接書かない。
-- **コンテキストの分離**：過去の成功例に惑わされないよう、各分析は独立して行う。
-- **DI (依存性の注入)**：テストをしやすくするため、必要な部品は後から入れられるように作る。
-- **Fail-Fast**：エラーが起きたらすぐに検知し、安全に停止またはスキップする。
-
----
-
-## 🛡️ 4. 開発の約束事
-
-1.  **網羅性**：データの欠けやエラーなど、あらゆるケースを想定して作る。
-2.  **型安全性**：TypeScript の機能を使い、予期せぬエラーを防ぐ。
-3.  **再現性**：誰が実行しても同じ結果が出るように、ログと設定を固定する。
-4.  **無状態評価**：その時々のデータのみで判断し、外部の情報に汚染されないようにする。
-
----
-💖🚀💰✨
+## Security & Configuration Tips
+- Never commit secrets. Keep API keys in local env files (Bun auto-loads `.env`).
+- Treat `logs/` outputs as generated artifacts; review before publishing if they may include sensitive data.

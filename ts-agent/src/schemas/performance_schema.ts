@@ -19,6 +19,14 @@ export const EvaluationResultSchema = z.object({
   volatility: z.number(),
   profitFactor: z.number().optional(), // Added for completeness
   informationRatio: z.number().optional(),
+  informationCoefficient: z.number().optional(), // IC (Pearson correlation)
+});
+
+export const ExecutionAuditSchema = z.object({
+  theoreticalCostBps: z.number(),
+  realizedCostBps: z.number().optional(),
+  slippageImpact: z.number(),
+  executionEfficiency: z.number(), // (Theoretical / Realized) or similar
 });
 
 export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;

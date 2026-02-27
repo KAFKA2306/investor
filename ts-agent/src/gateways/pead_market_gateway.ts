@@ -1,5 +1,8 @@
+import { join } from "node:path";
 import { z } from "zod";
 import type { PeadDataProvider } from "../agents/pead.ts";
+import { core } from "../core/index.ts";
+import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
 import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
 
 const safeRecordArray = (
@@ -32,6 +35,10 @@ export class PeadJquantsGateway implements PeadDataProvider {
     .object({ JQUANTS_API_KEY: z.string().min(1) })
     .parse(process.env).JQUANTS_API_KEY;
 
+  private readonly cache = new SqliteHttpCache(
+    join(core.config.paths.logs, "cache", "jquants_pead_cache.sqlite"),
+  );
+
   private async fetchRows(
     endpoint: string,
     params: Record<string, string>,
@@ -40,16 +47,23 @@ export class PeadJquantsGateway implements PeadDataProvider {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.set(key, value);
     });
-    const response = await fetch(url.toString(), {
-      headers: { "x-api-key": this.apiKey },
-    });
-    if (!response.ok) {
-      throw new Error(`J-Quants API Error: ${response.status}`);
+
+    const payload = await this.cache.fetchJson(
+      url.toString(),
+      { "x-api-key": this.apiKey },
+      43200000, // 12 hours
+    );
+
+    if (
+      payload &&
+      !("message" in payload && typeof payload.message === "string")
+    ) {
+      return safeRecordArray(extractRows(payload));
     }
-    const payload = z
-      .record(z.string(), z.unknown())
-      .parse(await response.json());
-    return safeRecordArray(extractRows(payload));
+
+    throw new Error(
+      `J-Quants API Error at ${endpoint}: ${JSON.stringify(payload)}`,
+    );
   }
 
   public async getEarningsCalendar(

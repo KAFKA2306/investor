@@ -6,65 +6,25 @@ vars:
 
 tasks:
   default:
-    desc: Default task (Runs check)
     cmds:
       - task: check
 
-  setup:
-    desc: Install all dependencies (Node.js & Python) 🔧
-    cmds:
-      - cd {{.TS_DIR}} && bun install
-      - cd {{.TS_DIR}}/src/experiments/foundation_models && uv sync
-      - echo "✨ Setup complete!"
-
   check:
-    desc: Lint, Format, and Typecheck 🧹
+    dir: "{{.TS_DIR}}"
     cmds:
-      - cd {{.TS_DIR}} && bun run format
-      - cd {{.TS_DIR}} && bun run lint
-      - cd {{.TS_DIR}} && bun run typecheck
-      - echo "✨ Code is clean and safe!"
-
-  verify:
-    desc: Verify environment (API & Models) 🔍
-    cmds:
-      - cd {{.TS_DIR}} && bun run verify:api
-      - cd {{.TS_DIR}}/src/experiments/foundation_models && uv run python check_installation.py
-      - echo "✨ Environment is ready!"
-
-  daily:
-    desc: Run the Practical Integrated Workflow (Vegetable Proof + Readiness) 🥕
-    cmds:
-      - cd {{.TS_DIR}} && bun src/experiments/01_vegetable.ts
-      - echo "✨ Daily workflow complete! Check logs for results and readiness score."
+      - bun run format
+      - bun run lint
+      - bun run typecheck
 
   run:
-    desc: Run the Main Pipeline (LES Reproduction + Benchmarks + Dashboard Update) 🚀
-    deps: [check, verify]
+    deps: [check]
     cmds:
-      - echo "Running LES Reproduction..."
-      - cd {{.TS_DIR}} && bun src/experiments/les_reproduction.ts
-      - echo "Running Foundation Benchmark..."
-      - cd {{.TS_DIR}} && bun src/experiments/04_foundation_benchmark.ts
-      - echo "Updating Dashboard Manifests..."
-      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/daily
-      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/unified
-      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/benchmarks
-      - echo "✨ Run complete! Use 'task view' to see results."
+      - cmd: bun src/experiments/les_reproduction.ts
+        dir: "{{.TS_DIR}}"
+      - cmd: bun src/experiments/04_foundation_benchmark.ts
+        dir: "{{.TS_DIR}}"
 
   view:
-    desc: Start the Dashboard 📊
+    dir: "{{.DASHBOARD_DIR}}"
     cmds:
-      - cd {{.DASHBOARD_DIR}} && npm run dev
-
-  score:
-    desc: Calculate LLM Readiness Score 🎯
-    cmds:
-      - cd {{.TS_DIR}} && bun run pipeline:llm-readiness
-
-  start:outcome:
-    desc: Generate Standardized Investment Outcome Log 🏆
-    cmds:
-      - cd {{.TS_DIR}} && bun src/experiments/scenarios/generic_alpha_scenario.ts
-      - cd {{.DASHBOARD_DIR}} && bun scripts/generate-log-manifest.mjs ../../../../logs/unified
-      - echo "✨ Outcome generated and dashboard manifest updated!"
+      - npm run dev

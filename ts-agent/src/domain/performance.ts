@@ -30,7 +30,28 @@ export function computeMaxDrawdown(returns: readonly number[]): number {
   return maxDD;
 }
 
-export function evaluate(logs: readonly DailyLog[]): EvaluationResult {
+export function calculateCorrelation(
+  xs: readonly number[],
+  ys: readonly number[],
+): number {
+  if (xs.length !== ys.length || xs.length === 0) return 0;
+  const muX = mean(xs);
+  const muY = mean(ys);
+  const stdX = std(xs);
+  const stdY = std(ys);
+  if (stdX < EPS || stdY < EPS) return 0;
+
+  let sum = 0;
+  for (let i = 0; i < xs.length; i++) {
+    sum += (xs[i]! - muX) * (ys[i]! - muY);
+  }
+  return sum / (xs.length * stdX * stdY);
+}
+
+export function evaluate(
+  logs: readonly DailyLog[],
+  predictions?: { predicted: number[]; actual: number[] },
+): EvaluationResult {
   const returns = logs.map((l) => l.strategyReturn);
   if (returns.length === 0) {
     return EvaluationResultSchema.parse({
@@ -66,6 +87,10 @@ export function evaluate(logs: readonly DailyLog[]): EvaluationResult {
     informationRatio = volDiff < EPS ? 0 : (muDiff / volDiff) * Math.sqrt(365);
   }
 
+  const informationCoefficient = predictions
+    ? calculateCorrelation(predictions.predicted, predictions.actual)
+    : undefined;
+
   const positives = returns.filter((r) => r > 0);
   const negatives = returns.filter((r) => r < 0);
   const grossProfit = positives.reduce((a, b) => a + b, 0);
@@ -84,5 +109,6 @@ export function evaluate(logs: readonly DailyLog[]): EvaluationResult {
     volatility: vol,
     profitFactor,
     informationRatio,
+    informationCoefficient,
   });
 }

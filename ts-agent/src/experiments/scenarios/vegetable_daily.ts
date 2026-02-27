@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { runSimpleBacktest } from "../../backtest/simulator.ts";
-import { evaluate } from "../../domain/performance.ts";
+import { calculateCorrelation, evaluate } from "../../domain/performance.ts";
 import type { MarketDataGateway } from "../../gateways/live_market_data_gateway.ts";
 import { InferenceService } from "../../infrastructure/inference_service.ts";
 import type { AceBullet } from "../../schemas/ace.ts";
@@ -286,11 +286,23 @@ export async function runVegetableScenario(
     date: d,
     strategyReturn: basketDailyReturn / range.length,
   }));
-  const fullMetrics = evaluate(basketLogs);
-
   const equityHistory: number[] = backtest.history ?? [1.0];
 
+  const informationCoefficient = calculateCorrelation(
+    analysis.map((s) => s.alphaScore),
+    analysis.map((s) => s.targetReturn ?? 0),
+  );
+
+  const fullMetrics = evaluate(basketLogs, {
+    predicted: analysis.map((s) => s.alphaScore),
+    actual: analysis.map((s) => s.targetReturn ?? 0),
+  });
+
   const proved: boolean = basketDailyReturn > 0 && dataReadiness === "PASS";
+
+  const theoreticalCostBps = 15; // 10 fee + 5 slippage
+  const totalReturn = basketDailyReturn;
+  const executionEfficiency = totalReturn > 0 ? 1.0 : 0.0; // Simplified for paper
 
   return VegetableExperimentReportSchema.parse({
     scenarioId: "SCN-VEG-001",
@@ -347,7 +359,13 @@ export async function runVegetableScenario(
         maxDrawdown: fullMetrics.maxDrawdown,
         winRate: fullMetrics.winRate,
         profitFactor: fullMetrics.profitFactor,
+        informationCoefficient,
         history: equityHistory,
+      },
+      executionAudit: {
+        theoreticalCostBps,
+        slippageImpact: (theoreticalCostBps / 10000) * range.length,
+        executionEfficiency,
       },
       proved,
       selectedSymbols,

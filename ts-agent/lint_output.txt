@@ -1,592 +1,77 @@
 $ biome check src
-src/agents/les.ts:21:3 lint/complexity/noUselessConstructor  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+src/gateways/pead_market_gateway.ts:58:23 lint/style/useExponentiationOperator  FIXABLE  ━━━━━━━━━━
 
-  i This constructor is unnecessary.
+  i Use the '**' operator instead of 'Math.pow'.
   
-    20 │ export class LesAgent extends BaseAgent {
-  > 21 │   constructor() {
-       │   ^^^^^^^^^^^^^^^
-  > 22 │     super();
-  > 23 │   }
-       │   ^
-    24 │ 
-    25 │   /**
+    57 │       if (response.status === 429 && i < retries - 1) {
+  > 58 │         const delay = Math.pow(2, i) * 1000;
+       │                       ^^^^^^^^^^^^^^
+    59 │         console.warn(`J-Quants 429 hit at ${endpoint}. Retrying in ${delay}ms...`);
+    60 │         await new Promise((resolve) => setTimeout(resolve, delay));
   
-  i Unsafe fix: Remove the unnecessary constructor.
+  i Safe fix: Use the '**' operator instead of 'Math.pow'.
   
-     19  19 │   
-     20  20 │   export class LesAgent extends BaseAgent {
-     21     │ - ··constructor()·{
-     22     │ - ····super();
-     23     │ - ··}
-     24  21 │   
-     25  22 │     /**
+    56 56 │   
+    57 57 │         if (response.status === 429 && i < retries - 1) {
+    58    │ - ········const·delay·=·Math.pow(2,·i)·*·1000;
+       58 │ + ········const·delay·=·2·**·i·*·1000;
+    59 59 │           console.warn(`J-Quants 429 hit at ${endpoint}. Retrying in ${delay}ms...`);
+    60 60 │           await new Promise((resolve) => setTimeout(resolve, delay));
   
 
-src/agents/les.ts:5:8 lint/style/useImportType  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  ! All these imports are only used as types.
-  
-    3 │ import * as path from "node:path";
-    4 │ import { loadModelRegistry } from "../model_registry/registry.ts";
-  > 5 │ import { type StandardOutcome } from "../schemas/outcome.ts";
-      │        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    6 │ 
-    7 │ export interface AlphaFactor {
-  
-  i Importing the types with import type ensures that they are removed by the compilers and avoids loading unnecessary modules.
-  
-  i Safe fix: Use import type.
-  
-      3   3 │   import * as path from "node:path";
-      4   4 │   import { loadModelRegistry } from "../model_registry/registry.ts";
-      5     │ - import·{·type·StandardOutcome·}·from·"../schemas/outcome.ts";
-          5 │ + import·type·{·StandardOutcome·}·from·"../schemas/outcome.ts";
-      6   6 │   
-      7   7 │   export interface AlphaFactor {
-  
-
-src/core/metrics.ts:7:8 lint/complexity/noStaticOnlyClass ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  ! Avoid classes that contain only static members.
-  
-      5 │  */
-      6 │ 
-    > 7 │ export class QuantMetrics {
-        │        ^^^^^^^^^^^^^^^^^^^^
-    > 8 │   /**
-         ...
-  > 160 │     };
-  > 161 │   }
-  > 162 │ }
-        │ ^
-    163 │ 
-  
-  i Prefer using simple functions instead of classes with only static members.
-  
-
-src/agents/les.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+src/experiments/scenarios/vegetable_daily.ts:1:1 assist/source/organizeImports  FIXABLE  ━━━━━━━━━━
 
   × The imports and exports are not sorted.
   
-  > 1 │ import { BaseAgent } from "../core/index.ts";
-      │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    2 │ import * as fs from "node:fs";
-    3 │ import * as path from "node:path";
+  > 1 │ import { z } from "zod";
+      │ ^^^^^^^^^^^^^^^^^^^^^^^^
+    2 │ import { runSimpleBacktest } from "../../backtest/simulator.ts";
+    3 │ import { evaluate, calculateCorrelation } from "../../domain/performance.ts";
   
   i Safe fix: Organize Imports (Biome)
   
-      1     │ - import·{·BaseAgent·}·from·"../core/index.ts";
-      2     │ - import·*·as·fs·from·"node:fs";
-      3     │ - import·*·as·path·from·"node:path";
-          1 │ + import·*·as·fs·from·"node:fs";
-          2 │ + import·*·as·path·from·"node:path";
-          3 │ + import·{·BaseAgent·}·from·"../core/index.ts";
-      4   4 │   import { loadModelRegistry } from "../model_registry/registry.ts";
-      5   5 │   import { type StandardOutcome } from "../schemas/outcome.ts";
+      1   1 │   import { z } from "zod";
+      2   2 │   import { runSimpleBacktest } from "../../backtest/simulator.ts";
+      3     │ - import·{·evaluate,·calculateCorrelation·}·from·"../../domain/performance.ts";
+          3 │ + import·{·calculateCorrelation,·evaluate·}·from·"../../domain/performance.ts";
+      4   4 │   import type { MarketDataGateway } from "../../gateways/live_market_data_gateway.ts";
+      5   5 │   import { InferenceService } from "../../infrastructure/inference_service.ts";
   
 
-src/agents/les.ts:44:28 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    42 │         reasoning: "LLM detected non-linear relationship between revenue surprise and forward returns.",
-    43 │         expression: (_: unknown, fin: unknown) => {
-  > 44 │           const f = fin as any;
-       │                            ^^^
-    45 │           const accel = (f.NetSales_Growth || 0) - (f.NetSales_Prev_Growth || 0);
-    46 │           return accel > 0.05 ? 0.8 : accel < -0.02 ? 0.1 : 0.4;
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/agents/les.ts:54:28 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    52 │         reasoning: "Market micro-structure analysis shows price drift persistence when volume-weighted.",
-    53 │         expression: (bar: unknown) => {
-  > 54 │           const b = bar as any;
-       │                            ^^^
-    55 │           const v = b.Volume_Z || 0;
-    56 │           const r = b.Return_1d || 0;
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/agents/les.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+src/experiments/scenarios/vegetable_daily.ts format ━━━━━━━━━━━━━━━━━━━
 
   × Formatter would have printed the following content:
   
-     32  32 │       const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
-     33  33 │   
-     34     │ - ····console.log(`🚀·LES:·Seed·Alpha·Factory·is·generating·candidates·using·registry·metadata${source}...`);
-         34 │ + ····console.log(
-         35 │ + ······`🚀·LES:·Seed·Alpha·Factory·is·generating·candidates·using·registry·metadata${source}...`,
-         36 │ + ····);
-     35  37 │   
-     36  38 │       // In production, this would call core.ai.generate() with a detailed prompt.
-    ······· │ 
-     40  42 │           id: "LES-NONLINEAR-SENT-01",
-     41  43 │           description: "Non-linear sentiment shift based on revenue acceleration",
-     42     │ - ········reasoning:·"LLM·detected·non-linear·relationship·between·revenue·surprise·and·forward·returns.",
-         44 │ + ········reasoning:
-         45 │ + ··········"LLM·detected·non-linear·relationship·between·revenue·surprise·and·forward·returns.",
-     43  46 │           expression: (_: unknown, fin: unknown) => {
-     44  47 │             const f = fin as any;
-     45     │ - ··········const·accel·=·(f.NetSales_Growth·||·0)·-·(f.NetSales_Prev_Growth·||·0);
-         48 │ + ··········const·accel·=
-         49 │ + ············(f.NetSales_Growth·||·0)·-·(f.NetSales_Prev_Growth·||·0);
-     46  50 │             return accel > 0.05 ? 0.8 : accel < -0.02 ? 0.1 : 0.4;
-     47  51 │           },
-    ······· │ 
-     50  54 │           id: "LES-VOL-DYNAMICS-01",
-     51  55 │           description: "Intraday volume z-score vs price drift",
-     52     │ - ········reasoning:·"Market·micro-structure·analysis·shows·price·drift·persistence·when·volume-weighted.",
-         56 │ + ········reasoning:
-         57 │ + ··········"Market·micro-structure·analysis·shows·price·drift·persistence·when·volume-weighted.",
-     53  58 │           expression: (bar: unknown) => {
-     54  59 │             const b = bar as any;
-    ······· │ 
-     64  69 │      * Financial Reliability Agent (FRA)
-     65  70 │      */
-     66     │ - ··public·async·evaluateReliability(factor:·AlphaFactor):·Promise<FactorEvaluation>·{
-         71 │ + ··public·async·evaluateReliability(
-         72 │ + ····factor:·AlphaFactor,
-         73 │ + ··):·Promise<FactorEvaluation>·{
-     67  74 │       const rs = factor.id.includes("SENT") ? 0.85 : 0.72;
-     68  75 │       return {
-    ······· │ 
-     90  97 │     public neutralizeFactors(scores: number[]): number[] {
-     91  98 │       const mean = scores.reduce((a, b) => a + b, 0) / (scores.length || 1);
-     92     │ - ····const·std·=·Math.sqrt(scores.reduce((a,·b)·=>·a·+·(b·-·mean)·**·2,·0)·/·(scores.length·||·1));
-     93     │ - ····return·scores.map(s·=>·(s·-·mean)·/·(std·||·1));
-         99 │ + ····const·std·=·Math.sqrt(
-        100 │ + ······scores.reduce((a,·b)·=>·a·+·(b·-·mean)·**·2,·0)·/·(scores.length·||·1),
-        101 │ + ····);
-        102 │ + ····return·scores.map((s)·=>·(s·-·mean)·/·(std·||·1));
-     94 103 │     }
-     95 104 │   
-    ······· │ 
-     99 108 │     public async optimizeWeights(evals: FactorEvaluation[]): Promise<number[]> {
-    100 109 │       // Filter RS > 0.7 as per requirement
-    101     │ - ····const·validEvals·=·evals.filter(e·=>·e.rs·>·0.7);
-        110 │ + ····const·validEvals·=·evals.filter((e)·=>·e.rs·>·0.7);
-    102 111 │       const totalRS = validEvals.reduce((a, b) => a + b.rs, 0);
-    103     │ - ····return·evals.map(e·=>·(e.rs·>·0.7·?·e.rs·/·(totalRS·||·1)·:·0));
-        112 │ + ····return·evals.map((e)·=>·(e.rs·>·0.7·?·e.rs·/·(totalRS·||·1)·:·0));
-    104 113 │     }
-    105 114 │   
-    ······· │ 
-    121 130 │     }
-    122 131 │   
-    123     │ - ··public·calculateOutcome(strategyId:·string,·integratedRS:·number):·StandardOutcome·{
-        132 │ + ··public·calculateOutcome(
-        133 │ + ····strategyId:·string,
-        134 │ + ····integratedRS:·number,
-        135 │ + ··):·StandardOutcome·{
-    124 136 │       return {
-    125 137 │         strategyId,
-    126 138 │         strategyName: "LES-Multi-Agent-Forecasting",
-    127 139 │         timestamp: new Date().toISOString(),
-    128     │ - ······summary:·"LES·Framework·implementation·with·Discretionary·Intuition·factor.",
-        140 │ + ······summary:
-        141 │ + ········"LES·Framework·implementation·with·Discretionary·Intuition·factor.",
-    129 142 │         reasoningScore: integratedRS,
-    130 143 │         alpha: {
-    ······· │ 
-    165 178 │       const s = outcome.stability;
-    166 179 │   
-    167     │ - ····const·isAlphaValid·=·a·&&·(a.tStat·??·0)·>=·crit.ALPHA.minTStat·&&·(a.pValue·??·1)·<=·crit.ALPHA.maxPValue;
-    168     │ - ····const·isPerfValid·=·p·&&·(p.sharpeRatio·??·0)·>=·crit.PERFORMANCE.minSharpe·&&·(p.maxDrawdown·??·1)·<=·crit.PERFORMANCE.maxDrawdown;
-    169     │ - ····const·isStable·=·(s?.trackingError·??·0.01)·<=·crit.STABILITY.maxTrackingError;
-    170     │ - ····const·isReasoningValid·=·(outcome.reasoningScore·??·0)·>=·crit.REASONING.minRS;
-        180 │ + ····const·isAlphaValid·=
-        181 │ + ······a·&&
-        182 │ + ······(a.tStat·??·0)·>=·crit.ALPHA.minTStat·&&
-        183 │ + ······(a.pValue·??·1)·<=·crit.ALPHA.maxPValue;
-        184 │ + ····const·isPerfValid·=
-        185 │ + ······p·&&
-        186 │ + ······(p.sharpeRatio·??·0)·>=·crit.PERFORMANCE.minSharpe·&&
-        187 │ + ······(p.maxDrawdown·??·1)·<=·crit.PERFORMANCE.maxDrawdown;
-        188 │ + ····const·isStable·=
-        189 │ + ······(s?.trackingError·??·0.01)·<=·crit.STABILITY.maxTrackingError;
-        190 │ + ····const·isReasoningValid·=
-        191 │ + ······(outcome.reasoningScore·??·0)·>=·crit.REASONING.minRS;
-    171 192 │   
-    172     │ - ····console.log(`[EVALUATION]·Alpha:·${isAlphaValid},·Perf:·${isPerfValid},·Stable:·${isStable},·RS:·${isReasoningValid}`);
-        193 │ + ····console.log(
-        194 │ + ······`[EVALUATION]·Alpha:·${isAlphaValid},·Perf:·${isPerfValid},·Stable:·${isStable},·RS:·${isReasoningValid}`,
-        195 │ + ····);
-    173 196 │       return !!(isAlphaValid && isPerfValid && isStable && isReasoningValid);
-    174 197 │     }
-    ······· │ 
-    177 200 │       console.log("🚀 LES: Running Large-scale Stock Forecasting Agent...");
-    178 201 │       const factors = await this.generateAlphaFactors();
-    179     │ - ····const·evals_FRA·=·await·Promise.all(factors.map(f·=>·this.evaluateReliability(f)));
-        202 │ + ····const·evals_FRA·=·await·Promise.all(
-        203 │ + ······factors.map((f)·=>·this.evaluateReliability(f)),
-        204 │ + ····);
-    180 205 │       const weights = await this.optimizeWeights(evals_FRA);
-    181     │ - ····console.log(`✅·LES:·Weights·optimized·(${weights.length}·factors)·based·on·Reasoning·Score·(RS).`);
-        206 │ + ····console.log(
-        207 │ + ······`✅·LES:·Weights·optimized·(${weights.length}·factors)·based·on·Reasoning·Score·(RS).`,
-        208 │ + ····);
-    182 209 │     }
-    183 210 │   
-    184 211 │     public async analyzeSentiment(text: string): Promise<number> {
-    185 212 │       // LLM-based sentiment analysis (mocked for now)
-    186     │ - ····if·(text.includes("positive")·||·text.includes("growth")·||·text.includes("SUCCESS"))·return·0.8;
-    187     │ - ····if·(text.includes("negative")·||·text.includes("down")·||·text.includes("Fake"))·return·0.2;
-        213 │ + ····if·(
-        214 │ + ······text.includes("positive")·||
-        215 │ + ······text.includes("growth")·||
-        216 │ + ······text.includes("SUCCESS")
-        217 │ + ····)
-        218 │ + ······return·0.8;
-        219 │ + ····if·(
-        220 │ + ······text.includes("negative")·||
-        221 │ + ······text.includes("down")·||
-        222 │ + ······text.includes("Fake")
-        223 │ + ····)
-        224 │ + ······return·0.2;
-    188 225 │       return 0.5;
-    189 226 │     }
-  
+    180 │ ········}·catch·{·}
+        │                  - 
 
-src/experiments/les_reproduction.ts:104:96 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    102 │   console.log(`- Directional Accuracy: ${outcome.verification?.metrics?.directionalAccuracy?.toFixed(4) ?? "0.0000"}`);
-    103 │ 
-  > 104 │   const isValid = agent.validateStrategy({ ...outcome, stability: { trackingError: 0.01 } } as any);
-        │                                                                                                ^^^
-    105 │   console.log(`- Strategy Validation: ${isValid ? "PASS ✅" : "FAIL ❌"}`);
-    106 │ 
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/experiments/les_reproduction.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+src/gateways/pead_market_gateway.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Formatter would have printed the following content:
   
-     10  10 │   
-     11  11 │   async function reproduceLES() {
-     12     │ - ··console.log("🌟·Reproducing·LES·(Large-scale·Stock·Forecasting·with·LLMs)·experiment...");
-         12 │ + ··console.log(
-         13 │ + ····"🌟·Reproducing·LES·(Large-scale·Stock·Forecasting·with·LLMs)·experiment...",
-         14 │ + ··);
-     13  15 │     const agent = new LesAgent();
-     14  16 │     const gateway = await MarketdataLocalGateway.create(Universe);
-    ······· │ 
-     17  19 │     // 1. Seed Alpha Factory (SAF) - Agent generates alpha factors
-     18  20 │     const factors = await agent.generateAlphaFactors();
-     19     │ - ··console.log(`-·Generated·${factors.length}·alpha·factors·from·Seed·Alpha·Factory.`);
-         21 │ + ··console.log(
-         22 │ + ····`-·Generated·${factors.length}·alpha·factors·from·Seed·Alpha·Factory.`,
-         23 │ + ··);
-     20  24 │   
-     21  25 │     // 2. Multi-Agent Evaluation (FRA & RPA) - Reasoning Score (RS)
-    ······· │ 
-     30  34 │   
-     31  35 │     // 3. Dynamic Weight Optimization (DWA) - Filter RS > 0.7
-     32     │ - ··const·weights·=·await·agent.optimizeWeights(evaluations.map(e·=>·({·factorId:·e.factorId,·rs:·e.avgRS,·logic:·e.fra.logic·})));
-     33     │ - ··const·integratedRS·=·evaluations.reduce((acc,·e,·i)·=>·acc·+·e.avgRS·*·(weights[i]·??·0),·0);
-         36 │ + ··const·weights·=·await·agent.optimizeWeights(
-         37 │ + ····evaluations.map((e)·=>·({
-         38 │ + ······factorId:·e.factorId,
-         39 │ + ······rs:·e.avgRS,
-         40 │ + ······logic:·e.fra.logic,
-         41 │ + ····})),
-         42 │ + ··);
-         43 │ + ··const·integratedRS·=·evaluations.reduce(
-         44 │ + ····(acc,·e,·i)·=>·acc·+·e.avgRS·*·(weights[i]·??·0),
-         45 │ + ····0,
-         46 │ + ··);
-     34  47 │   
-     35  48 │     console.log("- Multi-Agent Evaluation (Reasoning Scores) complete.");
-     36  49 │     evaluations.forEach((e, i) => {
-     37  50 │       const w = weights[i] ?? 0;
-     38     │ - ····console.log(`··-·[${e.factorId}]·RS:·${e.avgRS.toFixed(2)},·Weight:·${w.toFixed(4)}`);
-     39     │ - ····if·(e.avgRS·<=·0.7)·console.log(`····!�·RS·<=·0.7:·Factor·excluded·from·signal.`);
-         51 │ + ····console.log(
-         52 │ + ······`··-·[${e.factorId}]·RS:·${e.avgRS.toFixed(2)},·Weight:·${w.toFixed(4)}`,
-         53 │ + ····);
-         54 │ + ····if·(e.avgRS·<=·0.7)
-         55 │ + ······console.log(`····!�·RS·<=·0.7:·Factor·excluded·from·signal.`);
-     40  56 │     });
-     41  57 │   
-    ······· │ 
-     51  67 │         const fin = fins.at(0) || {};
-     52  68 │   
-     53     │ - ······const·rawAlphaScore·=·await·agent.runForecasting(bar,·fin,·factors,·weights);
-         69 │ + ······const·rawAlphaScore·=·await·agent.runForecasting(
-         70 │ + ········bar,
-         71 │ + ········fin,
-         72 │ + ········factors,
-         73 │ + ········weights,
-         74 │ + ······);
-     54  75 │   
-     55  76 │         // Convert to SymbolAnalysis for backtest simulator
-    ······· │ 
-     99 120 │     console.log(`- Date: ${date}`);
-    100 121 │     console.log(`- Integrated Reasoning Score (RS): ${integratedRS.toFixed(4)}`);
-    101     │ - ··console.log(`-·Sharpe·Ratio:·${outcome.verification?.metrics?.sharpeRatio·??·0}`);
-    102     │ - ··console.log(`-·Directional·Accuracy:·${outcome.verification?.metrics?.directionalAccuracy?.toFixed(4)·??·"0.0000"}`);
-        122 │ + ··console.log(
-        123 │ + ····`-·Sharpe·Ratio:·${outcome.verification?.metrics?.sharpeRatio·??·0}`,
-        124 │ + ··);
-        125 │ + ··console.log(
-        126 │ + ····`-·Directional·Accuracy:·${outcome.verification?.metrics?.directionalAccuracy?.toFixed(4)·??·"0.0000"}`,
-        127 │ + ··);
-    103 128 │   
-    104     │ - ··const·isValid·=·agent.validateStrategy({·...outcome,·stability:·{·trackingError:·0.01·}·}·as·any);
-        129 │ + ··const·isValid·=·agent.validateStrategy({
-        130 │ + ····...outcome,
-        131 │ + ····stability:·{·trackingError:·0.01·},
-        132 │ + ··}·as·any);
-    105 133 │     console.log(`- Strategy Validation: ${isValid ? "PASS ✅" : "FAIL ❌"}`);
-    106 134 │   
-    ······· │ 
-    116 144 │           action: isValid ? "INVEST" : "WAIT",
-    117 145 │           reasoningScore: integratedRS,
-    118     │ - ········factors:·factors.map((f,·i)·=>·({·id:·f.id,·weight:·weights[i]·??·0,·rs:·evaluations[i]?.avgRS·??·0·})),
-        146 │ + ········factors:·factors.map((f,·i)·=>·({
-        147 │ + ··········id:·f.id,
-        148 │ + ··········weight:·weights[i]·??·0,
-        149 │ + ··········rs:·evaluations[i]?.avgRS·??·0,
-        150 │ + ········})),
-    119 151 │         },
-    120 152 │         results: {
-    ······· │ 
-    128 160 │     const logsDailyDir = join(core.config.paths.logs, "daily");
-    129 161 │     await mkdir(logsDailyDir, { recursive: true });
-    130     │ - ··await·writeFile(join(logsDailyDir,·`${date}.json`),·JSON.stringify(dailyLog,·null,·2));
-        162 │ + ··await·writeFile(
-        163 │ + ····join(logsDailyDir,·`${date}.json`),
-        164 │ + ····JSON.stringify(dailyLog,·null,·2),
-        165 │ + ··);
-    131 166 │   
-    132 167 │     console.log(`\n✅ Logs saved to logs/daily/${date}.json`);
+    21 21 │       : typeof value === "object" && value !== null
+    22 22 │         ? Object.values(value as Record<string, unknown>)
+    23    │ - ········.map((v)·=>·findFirstArray(v))
+    24    │ - ········.find((v)·=>·v·!==·undefined)
+       23 │ + ··········.map((v)·=>·findFirstArray(v))
+       24 │ + ··········.find((v)·=>·v·!==·undefined)
+    25 25 │         : undefined;
+    26 26 │   
+    ····· │ 
+    57 57 │         if (response.status === 429 && i < retries - 1) {
+    58 58 │           const delay = Math.pow(2, i) * 1000;
+    59    │ - ········console.warn(`J-Quants·429·hit·at·${endpoint}.·Retrying·in·${delay}ms...`);
+       59 │ + ········console.warn(
+       60 │ + ··········`J-Quants·429·hit·at·${endpoint}.·Retrying·in·${delay}ms...`,
+       61 │ + ········);
+    60 62 │           await new Promise((resolve) => setTimeout(resolve, delay));
+    61 63 │           continue;
   
 
-src/experiments/scenarios/generic_alpha_scenario.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Formatter would have printed the following content:
-  
-    37 37 │       verification: params.verification
-    38 38 │         ? {
-    39    │ - ········metrics:·{
-    40    │ - ··········mae:·0,·//·Placeholder·for·template
-    41    │ - ··········rmse:·0,
-    42    │ - ··········smape:·0,
-    43    │ - ··········directionalAccuracy:·0,
-    44    │ - ··········sharpeRatio:·params.verification.sharpe,
-    45    │ - ········},
-    46    │ - ········upliftOverBaseline:·params.verification.totalReturn·>·0·?·0.05·:·0,·//·Mock·uplift
-    47    │ - ······}
-       39 │ + ··········metrics:·{
-       40 │ + ············mae:·0,·//·Placeholder·for·template
-       41 │ + ············rmse:·0,
-       42 │ + ············smape:·0,
-       43 │ + ············directionalAccuracy:·0,
-       44 │ + ············sharpeRatio:·params.verification.sharpe,
-       45 │ + ··········},
-       46 │ + ··········upliftOverBaseline:·params.verification.totalReturn·>·0·?·0.05·:·0,·//·Mock·uplift
-       47 │ + ········}
-    48 48 │         : undefined,
-    49 49 │       stability: {
-  
-
-src/tools/dashboard/src/main.ts:153:12 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    151 │     };
-    152 │   };
-  > 153 │   models?: any[];
-        │            ^^^
-    154 │ }
-    155 │ 
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/tools/dashboard/src/main.ts:202:21 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    200 │   private outcomes: OutcomeSummary[] = [];
-    201 │   private benches: BenchSummary[] = [];
-  > 202 │   private registry: any[] = [];
-        │                     ^^^
-    203 │ 
-    204 │   private staticPayloadByDate = new Map<string, LogPayload>();
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/tools/dashboard/src/main.ts:353:44 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    352 │   private renderSidebar() {
-  > 353 │     const renderList = (id: string, items: any[], template: (i: any) => string, clickHandler: (val: string) => void, attr: string) => {
-        │                                            ^^^
-    354 │       const el = document.getElementById(id);
-    355 │       if (!el) return;
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/tools/dashboard/src/main.ts:353:65 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    352 │   private renderSidebar() {
-  > 353 │     const renderList = (id: string, items: any[], template: (i: any) => string, clickHandler: (val: string) => void, attr: string) => {
-        │                                                                 ^^^
-    354 │       const el = document.getElementById(id);
-    355 │       if (!el) return;
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/tools/dashboard/src/main.ts:357:40 lint/suspicious/useIterableCallbackReturn ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × This callback passed to forEach() iterable method should not return a value.
-  
-    355 │       if (!el) return;
-    356 │       el.innerHTML = items.map(template).join("");
-  > 357 │       el.querySelectorAll(".log-item").forEach(i => i.addEventListener("click", () => clickHandler(i.getAttribute(attr)!)));
-        │                                        ^^^^^^^
-    358 │     };
-    359 │ 
-  
-  i Either remove this return or remove the returned value.
-  
-    355 │       if (!el) return;
-    356 │       el.innerHTML = items.map(template).join("");
-  > 357 │       el.querySelectorAll(".log-item").forEach(i => i.addEventListener("click", () => clickHandler(i.getAttribute(attr)!)));
-        │                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    358 │     };
-    359 │ 
-  
-
-src/tools/dashboard/src/main.ts:383:19 lint/suspicious/useIterableCallbackReturn ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × This callback passed to forEach() iterable method should not return a value.
-  
-    381 │     if (!el) return;
-    382 │     const items: LeaderboardRow[] = [{ id: "VEGETABLE", type: "ALPHA", sharpe: 1.25, totalReturn: 0.15, maxDrawdown: -0.05, verdict: "READY" }];
-  > 383 │     this.outcomes.forEach(o => items.push({ id: o.name, type: "ALPHA", sharpe: o.sharpe, totalReturn: 0, maxDrawdown: 0, verdict: o.readiness >= 75 ? "READY" : "CAUTION" }));
-        │                   ^^^^^^^
-    384 │     items.sort((a, b) => b.sharpe - a.sharpe);
-    385 │ 
-  
-  i Either remove this return or remove the returned value.
-  
-    381 │     if (!el) return;
-    382 │     const items: LeaderboardRow[] = [{ id: "VEGETABLE", type: "ALPHA", sharpe: 1.25, totalReturn: 0.15, maxDrawdown: -0.05, verdict: "READY" }];
-  > 383 │     this.outcomes.forEach(o => items.push({ id: o.name, type: "ALPHA", sharpe: o.sharpe, totalReturn: 0, maxDrawdown: 0, verdict: o.readiness >= 75 ? "READY" : "CAUTION" }));
-        │                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    384 │     items.sort((a, b) => b.sharpe - a.sharpe);
-    385 │ 
-  
-
-src/tools/dashboard/src/main.ts:429:96 lint/suspicious/useIterableCallbackReturn ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × This callback passed to forEach() iterable method should not return a value.
-  
-    427 │   public escapeHtml(v: unknown): string { return String(v ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]!)); }
-    428 │   private formatDate(s: string) { return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`; }
-  > 429 │   private updateActiveItem(attr: string, val: string) { document.querySelectorAll(".log-item").forEach(el => el.classList.toggle("active", el.getAttribute(attr) === val)); }
-        │                                                                                                ^^^^^^^
-    430 │ }
-    431 │ 
-  
-  i Either remove this return or remove the returned value.
-  
-    427 │   public escapeHtml(v: unknown): string { return String(v ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]!)); }
-    428 │   private formatDate(s: string) { return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`; }
-  > 429 │   private updateActiveItem(attr: string, val: string) { document.querySelectorAll(".log-item").forEach(el => el.classList.toggle("active", el.getAttribute(attr) === val)); }
-        │                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    430 │ }
-    431 │ 
-  
-
-src/tools/dashboard/src/main.ts:520:12 lint/suspicious/noExplicitAny ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Unexpected any. Specify a different type.
-  
-    518 │ }
-    519 │ 
-  > 520 │ (window as any).dashboardShell = new DashboardShell();
-        │            ^^^
-    521 │ 
-  
-  i any disables many type checking rules. Its use should be avoided.
-  
-
-src/tools/dashboard/src/style.css:71:2 lint/correctness/noInvalidPositionAtImportRule ━━━━━━━━━━━━━━━━━━━━━━━
-
-  × This @import is in the wrong position.
-  
-    69 │ }
-    70 │ 
-  > 71 │ @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800&display=swap");
-       │  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    72 │ 
-    73 │ header {
-  
-  i Any @import rules must precede all other valid at-rules and style rules in a stylesheet (ignoring @charset and @layer), or else the @import rule is invalid.
-  
-  i Consider moving import position.
-  
-
-src/tools/dashboard/src/style.css format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  × Formatter would have printed the following content:
-  
-     32  32 │     background:
-     33  33 │       radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.15), transparent 40%),
-     34     │ - ····radial-gradient(circle·at·100%·0%,
-         34 │ + ····radial-gradient(
-         35 │ + ······circle·at·100%·0%,
-     35  36 │         rgba(192, 132, 252, 0.12),
-     36     │ - ······transparent·40%),
-         37 │ + ······transparent·40%
-         38 │ + ····),
-     37  39 │       radial-gradient(circle at 50% 100%, rgba(34, 197, 94, 0.1), transparent 50%),
-     38  40 │       var(--bg-deep);
-    ······· │ 
-     88  90 │     font-weight: 800;
-     89  91 │     letter-spacing: -0.02em;
-     90     │ - ··background:·linear-gradient(135deg,·var(--text-primary),·var(--text-secondary));
-         92 │ + ··background:·linear-gradient(
-         93 │ + ····135deg,
-         94 │ + ····var(--text-primary),
-         95 │ + ····var(--text-secondary)
-         96 │ + ··);
-     91  97 │     -webkit-background-clip: text;
-     92  98 │     background-clip: text;
-    ······· │ 
-    381 387 │       grid-template-columns: 1fr;
-    382 388 │     }
-    383     │ - }
-        389 │ + }
-        390 │ + 
-  
-
-The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
-Diagnostics not shown: 6.
-Checked 61 files in 28ms. No fixes applied.
-Found 18 errors.
-Found 7 warnings.
+Checked 76 files in 38ms. No fixes applied.
+Found 3 errors.
 Found 1 info.
-check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   × Some errors were emitted while running checks.
   

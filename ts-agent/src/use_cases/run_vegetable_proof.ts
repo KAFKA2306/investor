@@ -47,7 +47,7 @@ export async function runVegetableProof(): Promise<UnifiedLog> {
   const report = await runVegetableScenario(
     gateway,
     nowIso,
-    lastCalendarDays(20, anchor),
+    lastCalendarDays(756, anchor),
     playbookBullets,
   );
   const execution = executePaperOrders(report, nowIso);

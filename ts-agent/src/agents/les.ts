@@ -26,6 +26,7 @@ export interface FactorEvaluation {
 export interface FactorGenerationOptions {
   blindPlanning?: boolean;
   targetDiversity?: "HIGH" | "MEDIUM" | "LOW";
+  feedback?: string[];
 }
 
 export class LesAgent extends BaseAgent {

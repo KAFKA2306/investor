@@ -186,6 +186,15 @@
       "dataReadiness": "PASS",
       "alphaReadiness": "PASS",
       "verdict": "USEFUL"
+    },
+    "execution": {
+      "mode": "PAPER",
+      "status": "SKIPPED",
+      "orderCount": 0,
+      "orders": [],
+      "summary": {
+        "grossExposure": 0
+      }
     }
   }
 }

@@ -113,33 +113,40 @@ export const DailyScenarioLogSchema = z.object({
         maxDrawdown: z.number().optional(),
         winRate: z.number().optional(),
         profitFactor: z.number().optional(),
+        informationCoefficient: z.number().optional(),
         history: z.array(z.number()).optional(),
+      })
+      .optional(),
+    executionAudit: z
+      .object({
+        theoreticalCostBps: z.number(),
+        realizedCostBps: z.number().optional(),
+        slippageImpact: z.number(),
+        executionEfficiency: z.number(),
       })
       .optional(),
     proved: z.boolean(),
     selectedSymbols: z.array(z.string().length(4)),
     generatedAt: z.string().datetime(),
   }),
-  execution: z
-    .object({
-      mode: z.literal("PAPER"),
-      status: z.enum(["EXECUTED", "SKIPPED"]),
-      orderCount: z.number().int().nonnegative(),
-      orders: z.array(
-        z.object({
-          symbol: z.string().length(4),
-          side: z.literal("BUY"),
-          quantity: z.number().int().positive(),
-          fillPrice: z.number().nonnegative(),
-          notional: z.number().nonnegative(),
-          executedAt: z.string().datetime(),
-        }),
-      ),
-      summary: z.object({
-        grossExposure: z.number().nonnegative(),
+  execution: z.object({
+    mode: z.literal("PAPER"),
+    status: z.enum(["EXECUTED", "SKIPPED"]),
+    orderCount: z.number().int().nonnegative(),
+    orders: z.array(
+      z.object({
+        symbol: z.string().length(4),
+        side: z.literal("BUY"),
+        quantity: z.number().int().positive(),
+        fillPrice: z.number().nonnegative(),
+        notional: z.number().nonnegative(),
+        executedAt: z.string().datetime(),
       }),
-    })
-    .optional(),
+    ),
+    summary: z.object({
+      grossExposure: z.number().nonnegative(),
+    }),
+  }),
   workflow: z.object({
     dataReadiness: z.enum(["PASS", "FAIL"]),
     alphaReadiness: z.enum(["PASS", "FAIL"]),
