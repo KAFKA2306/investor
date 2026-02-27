@@ -1,93 +1,133 @@
-# 投資エージェント：自律型クオンツ・トレードシステム
+# investor
 
-このシステムは、最新の AI（Gemini）と厳格な TypeScript プログラムを使い、市場データから利益を生み出す自律型の投資システムです。
+自律型の投資リサーチ/検証パイプラインを、**TypeScript + Bun** で実装したリポジトリです。  
+日次シナリオ実行、API検証、時系列ベンチマーク、LLM運用準備度評価、ダッシュボード可視化までを一気通貫で扱います。
 
-## 🧬 システムの流れ
+> 本プロジェクトは研究・検証用途です。投資助言を目的としたものではありません。
 
-データの取得から分析、意思決定、結果の表示までを自動で行います。
+## できること
+
+- 日次シナリオの実行と `logs/daily` への構造化ログ保存
+- e-Stat / J-Quants 連携を含む API ヘルス検証
+- 基盤時系列モデルのベンチマーク（Naive 比較、RMSE/SMAPE/DA）
+- LLM エージェント運用準備度（Readiness）のスコアリング
+- Vite ダッシュボードによる結果の可視化
+
+## アーキテクチャ（概要）
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    participant GW as 市場データ・ゲートウェイ
-    participant MR as モデル・レジストリ
-    participant LES as LES エージェント
-    participant PEAD as PEAD エージェント（決算）
-    participant LOG as 統一ログ
-    participant DS as ダッシュボード
-
-    Note over GW, LES: 1. データ取得とアルファ生成
-    GW->>LES: 市場・財務データを取得
-    LES->>MR: モデル情報の読み込み
-    MR-->>LES: 登録情報を返却
-    LES->>LES: SAF：投資因子の自動生成
-    LES->>LES: 信頼性とリスクの評価
-
-    Note over LES, PEAD: 2. 戦略の実行
-    LES->>PEAD: アルファ因子と感情分析を共有
-    PEAD->>PEAD: 決算サプライズ分析
-    
-    Note over PEAD, LOG: 3. 保存と検証
-    PEAD->>LOG: 分析結果を保存
-    LOG->>LOG: バックテストで妥当性を検証
-    
-    Note over LOG, DS: 4. 結果の表示
-    LOG->>DS: データを生成
-    DS-->>DS: 自動デプロイ
-    DS-->>User: ダッシュボードで見える化
+flowchart LR
+  A[外部データ API\nJ-Quants / e-Stat / Yahoo] --> B[Gateway 層]
+  B --> C[Use Cases / Experiments]
+  C --> D[Agents\n戦略生成・評価]
+  C --> E[Pipeline\nbenchmark/readiness/validation]
+  D --> F[Zod Schema Validation]
+  E --> F
+  F --> G[logs/daily・benchmarks・readiness・unified]
+  G --> H[Dashboard Vite]
 ```
 
----
+## ディレクトリ構成
 
-## 🎭 働いているエージェント
+```text
+.
+├── ts-agent/                 # コア実装 TypeScript/Bun
+│   └── src/
+│       ├── agents/           # 戦略ロジック
+│       ├── gateways/         # 外部API接続
+│       ├── schemas/          # Zodスキーマ
+│       ├── pipeline/         # 評価・検証パイプライン
+│       ├── experiments/      # 再現実験/検証スクリプト
+│       └── tools/dashboard/  # 可視化UI Vite
+├── logs/                     # 実行成果物（生成物）
+│   ├── daily/
+│   ├── benchmarks/
+│   ├── readiness/
+│   └── unified/
+└── docs/                     # 図・レポート
+```
 
-以下の専門エージェントが協力して市場を分析しています。
+## セットアップ
 
-| エージェント | 技術 | 役割 |
-| :--- | :--- | :--- |
-| `LesAgent` | LES フレームワーク | 因子の生成、評価、重み付け |
-| `PeadAgent` | 決算サプライズ分析 | 業績発表と感情を合わせたトレンド追随 |
-| `XIntelligenceAgent` | SNS 分析 | トレンドの予測 |
+### 前提
 
----
+- Bun
+- Node.js（ダッシュボード用）
+- Task（`task` コマンド）
+- （任意）Python + `uv`：基盤モデルベンチマークを実行する場合
 
-## 📈 対応している予測モデル
+### 1. 依存関係をインストール
 
-最新の時系列予測モデルをサポートしています。
+```bash
+# core
+cd ts-agent
+bun install
 
-- **Chronos (Amazon)**：ゼロショット時系列予測
-- **TimesFM (Google)**：時系列基盤モデル
-- **TimeRAF (Microsoft)**：金融特化型 RAG 予測
-- **MOIRAI (Salesforce)**：万能時系列トランスフォーマー
-- **Lag-Llama**：確率的時系列予測
-- **LES**：LLM によるマルチエージェント型アルファ生成
+# dashboard
+cd src/tools/dashboard
+npm install
+```
 
----
+### 2. 環境変数を設定
 
-## 🛠️ 技術構成
+`ts-agent/.env` 例:
 
-- **実行環境**：Bun (JavaScript ランタイム)
-- **言語**：TypeScript (厳格な型チェック)
-- **表示**：Vite & Vanilla CSS (ダッシュボード)
-- **AI**：Gemini 2.0 Flash
+```env
+JQUANTS_API_KEY=your_jquants_api_key
+ESTAT_APP_ID=your_estat_app_id
+# 任意: 検証対象を絞る場合
+VERIFY_TARGETS=jquants,estat
+```
 
----
+## クイックスタート
 
-## 🚀 使えるコマンド
+```bash
+# リポジトリルートで実行
 
-| コマンド | 内容 |
-| :--- | :--- |
-| `task setup` | 環境のセットアップ |
-| `task check` | プログラムの品質チェック |
-| `task verify` | API と実行環境の確認 |
-| `task run` | 分析の実行（メイン処理） |
-| `task view` | ダッシュボードの確認 |
+task check   # format + lint + typecheck
+task run     # 再現実験 + foundation benchmark
+task view    # ダッシュボード起動
+```
 
-## 🌐 公開ダッシュボード
+ダッシュボードは通常 `http://localhost:5173` で確認できます。
 
-以下の URL で最新の分析結果を確認できます。
-- [https://kafka2306.github.io/investor/](https://kafka2306.github.io/investor/)
+## 主要コマンド
 
----
-誠実なロジックで、未来の富を。
-💖🚀💰✨
+| コマンド | 目的 |
+| --- | --- |
+| `task check` | `format` / `lint` / `typecheck` をまとめて実行 |
+| `task run` | `les_reproduction` と `foundation_benchmark` を実行 |
+| `task view` | ダッシュボード開発サーバーを起動 |
+| `cd ts-agent && bun run verify:api` | API接続検証 |
+| `cd ts-agent && bun run pipeline:llm-readiness` | Readinessスコア算出 |
+| `cd ts-agent && bun run pipeline:full-validation` | 総合検証パイプライン |
+
+## ログと成果物
+
+- `logs/daily/`: 日次シナリオログ（`investor.daily-log.v1`）
+- `logs/benchmarks/`: 基盤モデルの比較結果
+- `logs/readiness/`: LLM運用準備度レポート
+- `logs/unified/`: 統合ログ
+- `logs/cache/`: API/マーケットデータのキャッシュ
+
+生成ログはダッシュボードのデータソースとして利用されます。
+
+## 開発ガイド（要点）
+
+- 型安全: `@tsconfig/strictest` + Zod 検証
+- フォーマット/静的解析: Biome
+- 命名: 実験スクリプトは `snake_case`、ドメインモジュールは意味ベースで命名
+- コミット: Conventional Commits（`feat:`, `fix:`, `docs:` など）
+
+詳細は以下を参照:
+
+- `AGENTS.md`
+- `Taskfile.yml`
+- `ts-agent/README.md`
+
+## 補足ドキュメント
+
+- `docs/diagrams/`: 処理フロー図
+- `docs/reports/`: 実験/検証レポート
+- `ts-agent/src/model_registry/README.md`: モデルレジストリ運用
+- `ts-agent/src/pipeline/README.md`: パイプライン概要
