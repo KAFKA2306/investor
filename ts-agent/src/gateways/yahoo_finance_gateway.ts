@@ -25,11 +25,7 @@ interface ChartResult {
   };
 }
 
-interface QuoteResult {
-  quoteSummary: {
-    result: Record<string, number | string | boolean | null>[];
-  };
-}
+// [REMOVED] Unused QuoteResult interface
 
 export class YahooFinanceGateway {
   private readonly cache = new SqliteHttpCache(
@@ -109,12 +105,16 @@ export class YahooFinanceGateway {
       24 * 60 * 60 * 1000,
     );
 
-    const raw = (payload as unknown as QuoteResult).quoteSummary.result[0];
+    if (!payload) throw new Error(`Fetch failed for ${symbol} quoteSummary`);
+    const raw = (
+      payload as { quoteSummary?: { result?: Array<Record<string, unknown>> } }
+    ).quoteSummary?.result?.[0];
     if (!raw) throw new Error(`No summary for ${symbol}`);
+
     return z
       .record(
         z.string(),
-        z.union([z.number(), z.string(), z.boolean(), z.null()]),
+        z.union([z.any(), z.number(), z.string(), z.boolean(), z.null()]),
       )
       .parse(raw);
   }
