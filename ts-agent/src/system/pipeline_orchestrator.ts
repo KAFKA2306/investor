@@ -9,6 +9,7 @@ import type {
   StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "./app_runtime_core.ts";
+import { logIO, logMetric } from "./telemetry_logger.ts";
 
 type VerificationVerdict =
   | "ADOPTED"
@@ -728,7 +729,12 @@ export class DataEngineerBridge implements IDataEngineer {
   }
 
   async collectData(_sources: string[]): Promise<DataSourceRow[]> {
-    console.log(`[DataEngineer] Collecting data from configured sources`);
+    logIO({
+      stage: "data_engineer.collect",
+      direction: "IN",
+      name: "collect_sources",
+      values: { source_count: 5 },
+    });
     const gateway = await this.getGateway(this.baseSymbols);
     const sampleSymbols = this.baseSymbols.slice(0, 4);
     const barsPerSymbol = await Promise.all(
@@ -756,7 +762,7 @@ export class DataEngineerBridge implements IDataEngineer {
     ).length;
     const schemaMatch = rows > 0 ? 1 - invalidRows / rows : 0;
     const leakFlag = leakRows > 0;
-    return [
+    const collected = [
       {
         source: "finance",
         rows,
@@ -785,10 +791,35 @@ export class DataEngineerBridge implements IDataEngineer {
         schemaMatch: Math.max(0, schemaMatch - 0.05),
       },
     ];
+    logIO({
+      stage: "data_engineer.collect",
+      direction: "OUT",
+      name: "data.describe",
+      values: {
+        symbols: sampleSymbols.length,
+        rows,
+        expected_rows: expectedRows,
+        missing_rate: Number(missingRate.toFixed(6)),
+        invalid_rows: invalidRows,
+        leak_rows: leakRows,
+        schema_match: Number(schemaMatch.toFixed(6)),
+        as_of_date: asOfDate,
+      },
+    });
+    return collected;
   }
 
   async integrateData(raw: DataSourceRow[]): Promise<IntegratedData> {
-    console.log(`[DataEngineer] Integrating multi-modal data`);
+    logIO({
+      stage: "data_engineer.integrate",
+      direction: "IN",
+      name: "raw.describe",
+      values: {
+        source_count: raw.length,
+        total_rows: raw.reduce((sum, x) => sum + x.rows, 0),
+        total_expected_rows: raw.reduce((sum, x) => sum + x.expectedRows, 0),
+      },
+    });
     const sourceCount = raw.length;
     const coverageRate =
       raw.reduce((sum, x) => sum + x.rows / x.expectedRows, 0) / sourceCount;
@@ -801,7 +832,7 @@ export class DataEngineerBridge implements IDataEngineer {
     const sourceConsistency =
       raw.reduce((sum, x) => sum + x.schemaMatch, 0) / sourceCount;
 
-    return {
+    const integrated = {
       integrated: true,
       rows: raw,
       deliveryMetrics: {
@@ -812,15 +843,34 @@ export class DataEngineerBridge implements IDataEngineer {
         sourceConsistency,
       },
     };
+    logMetric({
+      stage: "data_engineer.integrate",
+      name: "delivery_metrics",
+      values: {
+        coverage_rate: Number(coverageRate.toFixed(6)),
+        missing_rate: Number(missingRate.toFixed(6)),
+        latency_score: Number(latencyScore.toFixed(6)),
+        leak_free_score: Number(leakFreeScore.toFixed(6)),
+        source_consistency: Number(sourceConsistency.toFixed(6)),
+      },
+    });
+    return integrated;
   }
 
   async preparePITData(
     requirement: PipelineRequirement,
     attempt: number,
   ): Promise<PITDataset> {
-    console.log(
-      `[DataEngineer] Step 6: Preparing PIT data (Attempt: ${attempt})...`,
-    );
+    logIO({
+      stage: "data_engineer.prepare",
+      direction: "IN",
+      name: "prepare_request",
+      values: {
+        requirement_id: requirement.id,
+        attempt,
+        symbol_count: requirement.universe.length,
+      },
+    });
 
     const rawData = await this.collectData([
       "finance",
@@ -842,7 +892,7 @@ export class DataEngineerBridge implements IDataEngineer {
         attemptLift,
     );
 
-    return {
+    const dataset = {
       id: `ds-${Date.now()}`,
       asOfDate: String(
         (
@@ -863,6 +913,24 @@ export class DataEngineerBridge implements IDataEngineer {
         outlierHandling: "winsorize_1_99",
       },
     };
+    logIO({
+      stage: "data_engineer.prepare",
+      direction: "OUT",
+      name: "dataset.describe",
+      values: {
+        dataset_id: dataset.id,
+        as_of_date: dataset.asOfDate,
+        symbol_count: dataset.symbols.length,
+        feature_count: dataset.features.length,
+        quality_score: Number(dataset.qualityScore.toFixed(6)),
+        coverage_rate: Number(dataset.deliveryMetrics.coverageRate.toFixed(6)),
+        missing_rate: Number(dataset.deliveryMetrics.missingRate.toFixed(6)),
+        leak_free_score: Number(
+          dataset.deliveryMetrics.leakFreeScore.toFixed(6),
+        ),
+      },
+    });
+    return dataset;
   }
 
   async generateScenario(_dataset: PITDataset): Promise<string> {

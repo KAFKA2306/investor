@@ -1,17 +1,16 @@
 {
   "models": [
-    "chronos-tiny",
-    "chronos-mini",
+    "amazon-chronos",
     "google-timesfm",
-    "salesforce-moirai",
-    "lag-llama"
+    "microsoft-timeraf",
+    "salesforce-moirai"
   ],
   "paths": {
-    "chronos-tiny": "amazon/chronos-t5-tiny",
-    "chronos-mini": "amazon/chronos-t5-mini",
+    "amazon-chronos": "amazon/chronos-t5-tiny",
+    "amazon-chronos-mini": "amazon/chronos-t5-mini",
     "google-timesfm": "google/timesfm-2.5-200m-pytorch",
-    "salesforce-moirai": "Salesforce/moirai-1.0-R-tiny",
-    "lag-llama": "time-series-foundation-models/lag-llama"
+    "microsoft-timeraf": "microsoft/finnts",
+    "salesforce-moirai": "Salesforce/moirai-1.0-R-tiny"
   },
   "params": {
     "context_length": 32,

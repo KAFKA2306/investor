@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import { FactorComputeEngine } from "../pipeline/factor_mining/factor_compute_engine.ts";
@@ -13,6 +13,52 @@ import {
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 
+type PlaybookBullet = {
+  updated_at: string;
+  content: string;
+  metadata?: {
+    id?: string;
+    status?: string;
+    ast?: Record<string, unknown>;
+  };
+};
+
+type PlaybookData = { bullets: PlaybookBullet[] };
+
+function getLatestSelectedStrategyFromPlaybook(): {
+  id: string;
+  name: string;
+  description: string;
+  ast: Record<string, unknown> | null;
+} | null {
+  const playbookPath = join(process.cwd(), "data", "playbook.json");
+  const raw = readFileSync(playbookPath, "utf8");
+  const data = JSON.parse(raw) as PlaybookData;
+  const selected = data.bullets
+    .filter(
+      (b) =>
+        b.metadata?.id &&
+        b.metadata?.status === "SELECTED" &&
+        b.metadata?.ast &&
+        b.updated_at,
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+    )[0];
+  if (!selected || !selected.metadata?.id) return null;
+  const text = selected.content.trim();
+  const split = text.indexOf(":");
+  const name = split > 0 ? text.slice(0, split).trim() : selected.metadata.id;
+  const description = split > 0 ? text.slice(split + 1).trim() : text;
+  return {
+    id: selected.metadata.id,
+    name,
+    description,
+    ast: selected.metadata.ast ?? null,
+  };
+}
+
 async function generateStandardVerificationReport() {
   const args = process.argv.slice(2);
   const getArg = (key: string) => {
@@ -20,15 +66,19 @@ async function generateStandardVerificationReport() {
     return found ? found.split("=")[1] : undefined;
   };
 
-  const strategyId = getArg("--id") || "GEN3-FACTORY-VP-001";
-  const strategyName = getArg("--name") || "Volume-Price Divergence";
+  const latestSelected = getLatestSelectedStrategyFromPlaybook();
+  const strategyId = getArg("--id") || latestSelected?.id || "GEN3-FACTORY-VP-001";
+  const strategyName =
+    getArg("--name") || latestSelected?.name || "Volume-Price Divergence";
   const strategyDescription =
     getArg("--desc") ||
+    latestSelected?.description ||
     "Detects price-volume decoupling to identify underreaction in supply-shock regimes. Net-of-cost performance.";
 
-  // [NEW] Load AST from CLI if provided (passed as JSON string)
   const astRaw = getArg("--ast");
-  const strategyAST = astRaw ? JSON.parse(astRaw) : null;
+  const strategyAST = astRaw
+    ? (JSON.parse(astRaw) as Record<string, unknown>)
+    : (latestSelected?.ast ?? null);
 
   console.log(
     `🛠️ 標準実証レポート用データの生成開始 [${strategyId}] (Audit-Ready)...`,

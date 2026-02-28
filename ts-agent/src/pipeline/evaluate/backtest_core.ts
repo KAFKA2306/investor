@@ -3,7 +3,11 @@ import { join } from "node:path";
 import { z } from "zod";
 import { extractEstatValues } from "../../experiments/analysis/daily_alpha_feature_calculations.ts";
 import { MarketdataLocalGateway } from "../../providers/unified_market_data_gateway.ts";
-import { QuantMetrics } from "./evaluation_metrics_core.ts";
+import { logIO, logMetric } from "../../system/telemetry_logger.ts";
+import {
+  QuantMetrics,
+  calculatePerformanceMetrics,
+} from "./evaluation_metrics_core.ts";
 
 /**
  * Backtest and Trading Types
@@ -85,21 +89,41 @@ export async function runFoundationBenchmark() {
     ),
   );
   const gateway = await MarketdataLocalGateway.create(["1375"]);
-  const estatObj = (await gateway.getEstatStats("0000010101")) as {
-    GET_STATS_DATA: unknown;
-  };
-  let values = extractEstatValues(estatObj?.GET_STATS_DATA);
+  logIO({
+    stage: "benchmark.foundation",
+    direction: "IN",
+    name: "benchmark_config",
+    values: {
+      symbol: "1375",
+      window_size: constants.params.window_size,
+      test_size: constants.params.test_size,
+    },
+  });
+  const localHistory = await gateway.getHistory(
+    "1375",
+    constants.params.window_size + constants.params.test_size + 10,
+  );
+  let values = localHistory.map((v) => Number(v));
   if (
     !values ||
     values.length < constants.params.window_size + constants.params.test_size
   ) {
-    values = Array.from(
-      {
-        length: constants.params.window_size + constants.params.test_size + 10,
-      },
-      (_, i) => 100 + 10 * Math.sin(i / 5) + Math.random(),
-    );
+    const estatObj = (await gateway.getEstatStats("0000010101")) as {
+      GET_STATS_DATA: unknown;
+    };
+    values = extractEstatValues(estatObj?.GET_STATS_DATA);
   }
+  logIO({
+    stage: "benchmark.foundation",
+    direction: "OUT",
+    name: "data.describe",
+    values: {
+      observations: values.length,
+      train_window: constants.params.window_size,
+      test_window: constants.params.test_size,
+      source: values.length === localHistory.length ? "local" : "estat",
+    },
+  });
   const targets = values.slice(constants.params.window_size),
     previous = values.slice(constants.params.window_size - 1, -1);
   const naiveMetrics = {
@@ -109,6 +133,40 @@ export async function runFoundationBenchmark() {
     directionalAccuracy: QuantMetrics.calculateDA(targets, previous, previous),
   };
   console.log(`[Benchmark] Naive Baseline MAE: ${naiveMetrics.mae.toFixed(4)}`);
+  const returns = targets.map((t, i) => {
+    const base = previous[i]!;
+    return base === 0 ? 0 : (t - base) / base;
+  });
+  const perf = calculatePerformanceMetrics(returns);
+  const pnlPerUnit = perf.cumulativeReturn;
+  logMetric({
+    stage: "benchmark.foundation",
+    name: "forecast_metrics",
+    values: {
+      mae: Number(naiveMetrics.mae.toFixed(6)),
+      rmse: Number(naiveMetrics.rmse.toFixed(6)),
+      smape: Number(naiveMetrics.smape.toFixed(6)),
+      directional_accuracy: Number(naiveMetrics.directionalAccuracy.toFixed(6)),
+    },
+  });
+  logMetric({
+    stage: "benchmark.foundation",
+    name: "finance_metrics",
+    values: {
+      cumulative_return: Number(perf.cumulativeReturn.toFixed(6)),
+      sharpe: Number(perf.sharpe.toFixed(6)),
+      max_drawdown: Number(perf.maxDrawdown.toFixed(6)),
+      win_rate: Number(perf.winRate.toFixed(6)),
+      pnl_per_unit: Number(pnlPerUnit.toFixed(6)),
+    },
+  });
+  console.log(
+    `[Finance] cumulative_return=${perf.cumulativeReturn.toFixed(6)}`,
+  );
+  console.log(`[Finance] sharpe=${perf.sharpe.toFixed(4)}`);
+  console.log(`[Finance] max_drawdown=${perf.maxDrawdown.toFixed(6)}`);
+  console.log(`[Finance] win_rate=${perf.winRate.toFixed(4)}`);
+  console.log(`[Finance] pnl_per_unit=${pnlPerUnit.toFixed(6)}`);
 }
 
 if (import.meta.main) {

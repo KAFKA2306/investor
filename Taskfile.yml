@@ -8,16 +8,11 @@ vars:
 
 tasks:
   default:
-    desc: タスク一覧を表示
-    cmds:
-      - task: help
-
-  help:
-    desc: 利用可能なタスクを表示
+    desc: タスク一覧
     cmds:
       - task --list-all
 
-  setup:
+  deps:
     desc: 依存関係をインストール
     cmds:
       - cmd: bun install
@@ -25,25 +20,7 @@ tasks:
       - cmd: npm install
         dir: "{{.DASHBOARD_DIR}}"
 
-  format:
-    desc: Biome format
-    dir: "{{.TS_DIR}}"
-    cmds:
-      - bun run format
-
-  lint:
-    desc: Biome lint
-    dir: "{{.TS_DIR}}"
-    cmds:
-      - bun run lint
-
-  typecheck:
-    desc: TypeScript 型検査
-    dir: "{{.TS_DIR}}"
-    cmds:
-      - bun run typecheck
-
-  check:
+  qa:
     desc: format + lint + typecheck
     dir: "{{.TS_DIR}}"
     cmds:
@@ -51,67 +28,125 @@ tasks:
       - bun run lint
       - bun run typecheck
 
+  qa:fast:
+    desc: lint + typecheck
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run lint
+      - bun run typecheck
+
+  format:
+    desc: format
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run format
+
+  lint:
+    desc: lint
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run lint
+
+  typecheck:
+    desc: typecheck
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run typecheck
+
   api:
-    desc: UQTL API サーバ起動
+    desc: API起動
     dir: "{{.TS_DIR}}"
     cmds:
       - UQTL_API_PORT={{.API_PORT}} bun run start:api
 
   ui:
-    desc: ダッシュボード起動
+    desc: UI起動
     dir: "{{.DASHBOARD_DIR}}"
     cmds:
       - npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}
 
   view:
-    desc: API とダッシュボードを同時起動
+    desc: API + UI 起動
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
           cleanup() {
-            echo "[view] cleaning up processes...";
             [ -n "${api_pid:-}" ] && kill "$api_pid" 2>/dev/null || true;
             [ -n "${ui_pid:-}" ] && kill "$ui_pid" 2>/dev/null || true;
-            # 念のためポートを占有しているプロセスを掃除
             fuser -k {{.API_PORT}}/tcp 2>/dev/null || true;
             fuser -k {{.UI_PORT}}/tcp 2>/dev/null || true;
           };
           trap cleanup EXIT INT TERM;
-          if curl -fsS "http://127.0.0.1:{{.API_PORT}}/api/stats" >/dev/null 2>&1; then
-            echo "[view] API already running on :{{.API_PORT}}";
-          else
-            (cd {{.TS_DIR}} && UQTL_API_PORT={{.API_PORT}} bun run start:api) & api_pid=$!;
-            echo "[view] started API on :{{.API_PORT}} (pid: $api_pid)";
-          fi;
+          (cd {{.TS_DIR}} && UQTL_API_PORT={{.API_PORT}} bun run start:api) & api_pid=$!;
           (cd {{.DASHBOARD_DIR}} && npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}) & ui_pid=$!;
-          echo "[view] started UI on :{{.UI_PORT}} (pid: $ui_pid)";
           wait "$ui_pid"'
 
-  benchmark:foundation:
-    desc: 基礎モデル（Chronos/TimesFM）による e-Stat ベンチマーク実行
+  pipeline:orchestrate:
+    desc: 設計本流（sequence/simpleflowchart準拠）
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run start
+
+  pipeline:verify:
+    desc: API検証
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run verify:api
+
+  pipeline:discover:
+    desc: 因子探索
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run experiments:alpha-discovery
+
+  pipeline:benchmark:
+    desc: 基礎ベンチマーク
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run pipeline:backtest
 
-  discovery:
-    desc: 直行アルファ探索と基礎モデルによる相関チェック (Full Workflow)
+  pipeline:analyze:
+    desc: モデル分析
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run verify:api
-      - bun run experiments:alpha-discovery
-      - task: benchmark:foundation
+      - bun run experiments:model-analysis
+
+  pipeline:mine:
+    desc: マイニング
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run pipeline:mine
+
+  pipeline:verification-plot:
+    desc: 監査プロット生成（JSON+4パネルPNG）
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run experiments:verification-json
+      - bun run experiments:verification-plot
+      - test -f data/standard_verification_data.json
+      - bash -lc 'f=$(python3 -c "import json;print(json.load(open(\"data/standard_verification_data.json\"))[\"fileName\"])"); test -n "$f" && test -f "data/$f"'
 
   run:
-    desc: 全パイプラインの実行
-    dir: "{{.TS_DIR}}"
+    desc: 本番同等の全実行
     cmds:
-      - task: discovery
-      - bun run experiments:model-analysis
-      - bun run pipeline:mine
+      - task: pipeline:orchestrate
+      - task: pipeline:verify
+      - task: pipeline:discover
+      - task: pipeline:benchmark
+      - task: pipeline:analyze
+      - task: pipeline:mine
+      - task: pipeline:verification-plot
 
-  run:newalphasearch:
-    desc: .agent/workflows/newalphasearch.md と同等の探索を実行
-    dir: "{{.TS_DIR}}"
+  run:quick:
+    desc: 高速実行（検証+探索+ベンチ+監査プロット）
     cmds:
-      - bun run experiments:alpha-discovery
-      - bun run pipeline:mine
+      - task: pipeline:verify
+      - task: pipeline:discover
+      - task: pipeline:benchmark
+      - task: pipeline:verification-plot
+
+  clean:logs:
+    desc: ログ掃除
+    cmds:
+      - rm -rf logs/unified/*
+      - rm -rf ts-agent/logs/cache/*
