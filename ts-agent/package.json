@@ -7,6 +7,7 @@
     "lint": "biome check src",
     "format": "biome format src --write",
     "start": "bun src/index.ts",
+    "start:api": "bun src/providers/uqtl_event_api_server.ts",
     "verify:api": "bun src/experiments/verify_market_api_connectivity.ts",
     "verify:scenario": "bun src/experiments/01_vegetable.ts",
     "experiments:comparison": "bun src/experiments/compare_model_forecasts.ts",
