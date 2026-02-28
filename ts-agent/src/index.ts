@@ -6,9 +6,15 @@ import { core } from "./system/app_runtime_core.ts";
 async function main() {
   console.log("🌟 Starting Autonomous Quant Alpha Pipeline 🌟");
   
+  // 19. Human Input: Accept from CLI arguments
+  const args = process.argv.slice(2);
+  const userRequirement = args.length > 0 ? args.join(" ") : "Discover high-Sharpe alpha factors in the current market regime with low drawdown.";
+  
+  console.log(`[Human Input] Requirement: ${userRequirement}`);
+
   const requirement: PipelineRequirement = {
     id: `REQ-${Date.now()}`,
-    description: "Discover high-Sharpe alpha factors in the current market regime with low drawdown.",
+    description: userRequirement,
     universe: core.config.universe.symbols,
     targetMetrics: {
       minSharpe: 1.5,

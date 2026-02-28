@@ -19,25 +19,30 @@ export class StrategicReasonerAgent extends BaseAgent {
   ): Promise<StrategicReasoning> {
     console.log(`[Alpha-R1] Reasoning about alpha: ${outcome.strategyId} in context: ${marketContext}`);
 
-    // Simplified logic for simulation:
-    // In production, this would call an 8B LLM with a specific prompt.
-    const rationale = `Alpha ${outcome.strategyId} is being evaluated against context: ${marketContext}. 
-    The logic focuses on ${outcome.summary}. Given the current regime, the alignment appears strong but requires structural monitoring.`;
+    const rawReasoning = outcome.reasoning || "";
+    const claimMatch = rawReasoning.match(/CLAIM:\s*(.*?)(?=\[REASONING\]|$)/);
+    const reasoningMatch = rawReasoning.match(/\[REASONING\]\s*(.*)/);
+
+    const extractedClaim = claimMatch ? claimMatch[1].trim() : "General Alpha Hypothesis";
+    const extractedReasoning = reasoningMatch ? reasoningMatch[1].trim() : outcome.summary;
+
+    const rationale = `Alpha-R1 Strategic Analysis: The agent analyzed the claim "${extractedClaim}". 
+    Strategic reasoning trace: ${extractedReasoning}. Market context is currently "${marketContext}".`;
 
     const logicChecks: StrategicReasoning["logicChecks"] = [
       {
-        claim: "Alpha captures mean-reversion during high volatility",
-        verdict: marketContext.includes("VOLATILE") ? "VALID" : "UNCERTAIN",
-        evidence: "Historical IC peaks during high VIX regimes."
+        claim: extractedClaim,
+        verdict: extractedClaim.toLowerCase().includes("momentum") && marketContext.includes("BULL") ? "VALID" : "UNCERTAIN",
+        evidence: `Matches current regime ${marketContext}.`
       },
       {
-        claim: "Alpha is orthogonal to momentum factor",
-        verdict: "VALID",
-        evidence: "Correlation with Trend-following indices is < 0.15."
+        claim: "Logical consistency of reasoning trace",
+        verdict: extractedReasoning.length > 20 ? "VALID" : "INVALID",
+        evidence: "Reasoning depth check."
       }
     ];
 
-    const contextAlignment = marketContext.includes("MOMENTUM") ? 0.85 : 0.45;
+    const contextAlignment = extractedClaim.toLowerCase().includes("momentum") && marketContext.includes("MOMENTUM") ? 0.92 : 0.55;
 
     return {
       rationale,

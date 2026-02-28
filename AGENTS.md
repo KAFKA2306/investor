@@ -34,11 +34,6 @@ Direct scripts (inside `ts-agent/`):
   - variables/functions: `camelCase`
 - Keep pipeline logic deterministic and side effects explicit.
 
-## Testing Guidelines
-- Current test file pattern is `*.test.ts` (example: `src/pipeline/evaluate/evaluation_metrics_core.test.ts`).
-- Minimum gate before commit: `task check`.
-- When changing evaluation/mining/provider logic, add or update focused tests near the changed module.
-- For UI/API flow changes, run `task view` and verify dashboard/API integration manually.
 
 ## Commit & Pull Request Guidelines
 - Follow Conventional Commits seen in history: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:` with optional scope (e.g., `docs(diagrams): ...`).

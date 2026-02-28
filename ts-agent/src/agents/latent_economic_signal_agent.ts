@@ -152,11 +152,11 @@ export class LesAgent extends BaseAgent {
     ];
 
     const reasoningTemplates = [
-      "This {0} focused alpha, proposed by a {5}, identifies {1} patterns using {2} logic to capture {3} in a {4} environment.",
-      "By synthesizing {0} and {1}, the {5} persona targets {3} via a {2} approach, optimized for {4} market regimes.",
-      "A {2} model that leverages {0} signals to predict {3}. Our {5} engine focuses on {1} during {4} periods.",
-      "Strategic {0} extraction using {2} filters. It detects {1} and exploits {3} in {4} markets, verified by {5} protocols.",
-      "Autonomous hypothesis generation using {0} via {2}. This model identifies {1} trajectories to extract {3} edge in {4} regimes, as proposed in 2026 by {5}.",
+      "CLAIM: Alpha captures {1} patterns in {0} via {2} logic. [REASONING] Leveraging {3} signals in {4} markets ensures robustness. Persona: {5}.",
+      "CLAIM: Structural drift identification via {0} and {1}. [REASONING] The {5} persona targets {3} using a {2} approach. Optimized for {4} regimes.",
+      "CLAIM: High-precision {3} forecasting using {0}. [REASONING] A {2} model that uses {1} to filter noise during {4} periods. Proposed by {5}.",
+      "CLAIM: Strategic {0} extraction using {2}. [REASONING] Detects {1} and exploits {3} in {4} markets. Verified by {5} protocols.",
+      "CLAIM: Autonomous hypothesis on {0} using {2}. [REASONING] This model identifies {1} trajectories to extract {3} edge in {4} regimes. Reasoning trace by {5}.",
     ];
 
     const count = _options.count || 2;
