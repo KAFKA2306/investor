@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z } from "zod";
-import { core } from "../../core/index.ts";
+import { core } from "../../system/core.ts";
 import { ReadinessReportSchema, UnifiedLogSchema } from "../../schemas/log.ts";
 
 const YYYMMDD = z.string().regex(/^\d{8}$/);

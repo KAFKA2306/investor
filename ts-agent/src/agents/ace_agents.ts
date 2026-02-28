@@ -6,8 +6,8 @@ import type {
   IEvaluator,
   IEvolver,
   IProcessor,
-} from "../core/opence/interfaces";
-import type { ContextPlaybook } from "../core/playbook";
+} from "../system/opence/interfaces";
+import type { ContextPlaybook } from "../context/playbook";
 import type { DailyScenarioLogSchema, UnifiedLog } from "../schemas/log";
 
 /**

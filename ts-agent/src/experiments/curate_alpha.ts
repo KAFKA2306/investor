@@ -1,4 +1,4 @@
-import { ContextPlaybook } from "../core/playbook.ts";
+import { ContextPlaybook } from "../context/playbook.ts";
 
 async function curate() {
   const playbook = new ContextPlaybook();

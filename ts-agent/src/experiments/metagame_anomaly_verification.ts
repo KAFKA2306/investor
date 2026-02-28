@@ -1,4 +1,4 @@
-import { QuantMetrics } from "../core/metrics.ts";
+import { QuantMetrics } from "../analysis/metrics.ts";
 import { MarketdataLocalGateway } from "../providers/marketdata_local_gateway.ts";
 import { runGenericAlphaScenario } from "./scenarios/generic_alpha_scenario.ts";
 

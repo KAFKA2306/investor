@@ -1,4 +1,4 @@
-import { core } from "../core/index.ts";
+import { core } from "../system/core.ts";
 import { PeadJquantsGateway } from "./pead_market_gateway.ts";
 
 export interface MarketDataGateway {

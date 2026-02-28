@@ -1,4 +1,4 @@
-import { BaseAgent } from "../core/index.ts";
+import { BaseAgent } from "../system/core.ts";
 import {
   type YahooBar,
   YahooFinanceGateway,

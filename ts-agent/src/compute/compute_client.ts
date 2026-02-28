@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { spawn } from "bun";
-import { core } from "./index.ts";
+import { core } from "../system/core.ts";
 
 export interface ComputeFactor {
   id: string;

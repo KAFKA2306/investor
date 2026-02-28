@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { BacktestResult } from "../pipeline/backtest/simulator.ts";
-import { BaseAgent } from "../core/index.ts";
-import { QuantMetrics } from "../core/metrics.ts";
+import { BaseAgent } from "../system/core.ts";
+import { QuantMetrics } from "../analysis/metrics.ts";
 import { loadModelRegistry } from "../model_registry/registry.ts";
 import type { StandardOutcome } from "../schemas/outcome.ts";
 
@@ -45,7 +45,7 @@ export class LesAgent extends BaseAgent {
       `🚀 LES: Seed Alpha Factory is requesting DSL generation from LLM${source}...`,
     );
 
-    const { MemoryCenter } = await import("../core/memory_center.ts");
+    const { MemoryCenter } = await import("../storage/memory_center.ts");
     const memory = new MemoryCenter();
     const pastSuccesses = memory.getRecentSuccesses(3);
     const pastFailures = memory.getRecentFailures(3);
@@ -143,7 +143,7 @@ export class LesAgent extends BaseAgent {
     marketData: unknown[],
     baselineScores?: number[],
   ): Promise<unknown> {
-    const { ComputeEngineClient } = await import("../core/compute_client.ts");
+    const { ComputeEngineClient } = await import("../compute/compute_client.ts");
     const client = new ComputeEngineClient();
 
     return client.evaluateFactors({
@@ -355,7 +355,7 @@ ${outcome.reasoning || "特記事項なし。"}
       console.log(
         `⚠️ [ACE CURATOR] Low reasoning score detected (${outcome.reasoningScore}). Triggering context pruning...`,
       );
-      const { ContextPlaybook } = await import("../core/playbook.ts");
+      const { ContextPlaybook } = await import("../context/playbook.ts");
       const playbook = new ContextPlaybook(playbookPath);
       await playbook.load();
       const pruned = await playbook.prune(2);

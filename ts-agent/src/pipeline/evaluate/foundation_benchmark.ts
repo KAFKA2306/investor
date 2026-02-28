@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { core } from "../../core/index.ts";
+import { core } from "../../system/core.ts";
 import {
   average,
   extractEstatValues,

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { z } from "zod";
 import type { PeadDataProvider } from "../agents/pead.ts";
-import { core } from "../core/index.ts";
+import { core } from "../system/core.ts";
 import { SqliteHttpCache } from "./sqlite_http_cache.ts";
 import type { CalendarEntry, DailyQuote, FinancialStatement } from "../schemas/pead.ts";
 

@@ -4,7 +4,7 @@ import {
   evaluatePromotionGate,
   toPromotionInput,
 } from "../backtest/promotion_gate.ts";
-import { core } from "../../core/index.ts";
+import { core } from "../../system/core.ts";
 import { compareForecastAndOutcome } from "../../experiments/02_comparison.ts";
 import { runTimeSeriesAnalysis } from "../../experiments/03_timeseries_analysis.ts";
 import { runApiVerification } from "../../experiments/api_verify.ts";

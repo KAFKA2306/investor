@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { core } from "../core/index.ts";
+import { core } from "../system/core.ts";
 
 const extractRows = (payload: Record<string, unknown>): unknown[] => {
   const topLevel = Object.values(payload).find((v) => Array.isArray(v));

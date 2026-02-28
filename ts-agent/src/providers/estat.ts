@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { core } from "../core/index.ts";
+import { core } from "../system/core.ts";
 
 export class EstatProvider {
   private readonly baseUrl =
