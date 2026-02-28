@@ -35,7 +35,9 @@ export class MemoryCenter {
   private db: Database;
 
   constructor(dbPath?: string) {
-    const targetPath = dbPath || join(process.cwd(), "logs", "memory.sqlite");
+    const cwd = process.cwd();
+    const baseDir = /(^|[\\/])ts-agent$/.test(cwd) ? join(cwd, "..") : cwd;
+    const targetPath = dbPath || join(baseDir, "logs", "memory.sqlite");
     this.db = new Database(targetPath, { create: true });
     this.initializeSchema();
   }
