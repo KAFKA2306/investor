@@ -39,10 +39,22 @@ function average(values: readonly number[]): number {
 export function runSimpleBacktest(args: RunBacktestArgs): BacktestResult {
   const config = BacktestConfigSchema.parse(args.config);
   const tradingDays = Math.max(1, args.tradingDays);
+  if (args.selectedRows.length === 0) {
+    throw new Error(
+      "[AUDIT] runSimpleBacktest failed: selectedRows is empty. No evidence to process.",
+    );
+  }
   // Audit Fix: Use realized targetReturn (T-day), not the signal feature (T-1)
-  const grossReturn = average(
-    args.selectedRows.map((s) => s.targetReturn ?? 0),
-  );
+  const returns = args.selectedRows.map((s) => {
+    if (s.targetReturn === undefined || s.targetReturn === null) {
+      throw new Error(
+        "[AUDIT] runSimpleBacktest failed: Null/Undefined targetReturn detected in selectedRows.",
+      );
+    }
+    return s.targetReturn;
+  });
+
+  const grossReturn = average(returns);
   const totalCostBps = config.feeBps + config.slippageBps;
   const costRate = totalCostBps / 10_000;
   const netReturn = grossReturn - costRate;
