@@ -32,6 +32,7 @@ const ConfigSchema = z.object({
   paths: z.object({
     data: z.string(),
     logs: z.string(),
+    verification: z.string(),
   }),
   providers: z.object({
     yfinance: z.object({ enabled: z.boolean() }),
@@ -120,6 +121,9 @@ class Core {
         logs: isAbsolute(result.data.paths.logs)
           ? result.data.paths.logs
           : resolve(configDir, result.data.paths.logs),
+        verification: isAbsolute(result.data.paths.verification)
+          ? result.data.paths.verification
+          : resolve(configDir, result.data.paths.verification),
       },
     };
   }

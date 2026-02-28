@@ -372,6 +372,7 @@ export class LesAgent extends BaseAgent {
     let tStat = 0;
     let pValue = 1.0;
     let ic = 0;
+    let maxDrawdown = 0;
 
     if (backtest?.history && backtest.history.length > 0) {
       tStat = QuantMetrics.calculateTStat(backtest.history);
@@ -389,6 +390,16 @@ export class LesAgent extends BaseAgent {
         backtest.netReturn,
         backtest.tradingDays || 1,
       );
+      let peak = 1;
+      let nav = 1;
+      let worst = 0;
+      for (const r of backtest.history) {
+        nav *= 1 + r;
+        if (nav > peak) peak = nav;
+        const dd = nav / peak - 1;
+        if (dd < worst) worst = dd;
+      }
+      maxDrawdown = Math.abs(worst);
     }
 
     // [NEW] Linguistic Plausibility (格下げ) vs Quantitative Proof
@@ -420,7 +431,7 @@ export class LesAgent extends BaseAgent {
           directionalAccuracy: predictions && targets ? ic + 0.5 : 0.5,
           sharpeRatio,
           annualizedReturn,
-          maxDrawdown: 0,
+          maxDrawdown,
         },
         upliftOverBaseline: 0,
       },

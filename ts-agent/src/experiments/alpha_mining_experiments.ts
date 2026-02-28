@@ -1,8 +1,15 @@
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { ContextPlaybook } from "../context/unified_context_services.ts";
-import { core, writeCanonicalEnvelope } from "../system/app_runtime_core.ts";
+import { readFileSync } from "node:fs";
+import {
+  FactorComputeEngine,
+  type FactorAST,
+} from "../pipeline/factor_mining/factor_compute_engine.ts";
+import { writeCanonicalEnvelope } from "../system/app_runtime_core.ts";
+import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
+import { paths } from "../system/path_registry.ts";
 
-const Universe = core.config.universe.symbols;
+const Universe = new DataPipelineRuntime().resolveUniverse([], 120);
 const DISCOVERY_SELECTION_THRESHOLD = 0.62;
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
@@ -44,12 +51,46 @@ const buildNoveltyScoreMap = (
   return noveltyById;
 };
 
+const astExecutable = (ast: unknown): boolean => {
+  if (!ast || typeof ast !== "object") return false;
+  const candidate = ast as FactorAST;
+  const barA = {
+    Date: "2022-01-04",
+    Open: 100,
+    High: 103,
+    Low: 99,
+    Close: 102,
+    Volume: 2_000_000,
+  };
+  const barB = {
+    Date: "2022-01-05",
+    Open: 101,
+    High: 106,
+    Low: 100,
+    Close: 104,
+    Volume: 1_500_000,
+  };
+  const v1 = FactorComputeEngine.evaluate(candidate, barA);
+  const v2 = FactorComputeEngine.evaluate(candidate, barB);
+  if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
+  return Math.abs(v1 - v2) > 1e-10 || Math.abs(v1) > 1e-10 || Math.abs(v2) > 1e-10;
+};
+
 /**
  * Playbook Curation Logic
  */
 export async function curateAlphaPlaybook() {
   const playbook = new ContextPlaybook();
   await playbook.load();
+  const verification = JSON.parse(
+    readFileSync(paths.verificationJson, "utf8"),
+  ) as {
+    metrics: { sharpe: number; totalReturn: number };
+  };
+  const measured = {
+    sharpe: verification.metrics.sharpe,
+    returnUplift: verification.metrics.totalReturn / 100,
+  };
   console.log("📝 Curating successful Alpha Factors into Playbook...");
   playbook.addBullet({
     content:
@@ -58,7 +99,7 @@ export async function curateAlphaPlaybook() {
     metadata: {
       source: "AlphaDiscovery",
       type: "HYPOTHESIS",
-      performance: { sharpe: 7.6, returnUplift: 0.0057 },
+      performance: measured,
     },
   });
   playbook.addBullet({
@@ -68,7 +109,7 @@ export async function curateAlphaPlaybook() {
     metadata: {
       source: "AlphaDiscovery",
       type: "HYPOTHESIS",
-      performance: { sharpe: 7.6, returnUplift: 0.0057 },
+      performance: measured,
     },
   });
   await playbook.save();
@@ -130,13 +171,20 @@ export async function discoverAlphaFactors() {
     .filter(
       (candidate) =>
         candidate.scores.priority >= DISCOVERY_SELECTION_THRESHOLD &&
-        !candidate.rejectionFromReasoning,
+        !candidate.rejectionFromReasoning &&
+        astExecutable(astById.get(candidate.id)),
     )
     .map((candidate) => candidate.id);
   const forcedSelection =
     thresholdSelections.length > 0
       ? thresholdSelections
-      : sortedCandidates.slice(0, 1).map((candidate) => candidate.id);
+      : sortedCandidates
+          .filter((candidate) => astExecutable(astById.get(candidate.id)))
+          .slice(0, 1)
+          .map((candidate) => candidate.id);
+  if (forcedSelection.length === 0) {
+    throw new Error("No executable hypothesis AST available for selection");
+  }
   const selectedSet = new Set(forcedSelection);
   const candidates = scoredCandidates.map((candidate) => ({
     id: candidate.id,

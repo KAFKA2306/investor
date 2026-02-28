@@ -4,7 +4,8 @@ import numpy as np
 import os
 
 def generate_schema_driven_plot():
-    json_path = 'data/standard_verification_data.json'
+    verification_dir = os.environ.get('VERIFICATION_DIR', 'data')
+    json_path = os.path.join(verification_dir, 'standard_verification_data.json')
     if not os.path.exists(json_path):
         print(f"Error: {json_path} not found")
         return
@@ -95,7 +96,7 @@ def generate_schema_driven_plot():
     plt.suptitle(ly['mainTitle'], fontsize=20, y=0.98, fontweight='bold')
     plt.figtext(0.5, 0.94, ly['subTitle'], ha='center', fontsize=12, color='gray')
 
-    out_path = os.path.join('data', data['fileName'])
+    out_path = os.path.join(verification_dir, data['fileName'])
     plt.savefig(out_path, bbox_inches='tight', dpi=120)
     print(f"✅ Schema-driven standard verification plot saved to: {out_path}")
 

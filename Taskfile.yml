@@ -121,14 +121,25 @@ tasks:
     desc: 監査プロット生成（JSON+4パネルPNG）
     dir: "{{.TS_DIR}}"
     cmds:
+      - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); rm -f "$v/standard_verification_data.json"'
       - bun run experiments:verification-json
-      - bun run experiments:verification-plot
-      - test -f data/standard_verification_data.json
-      - bash -lc 'f=$(python3 -c "import json;print(json.load(open(\"data/standard_verification_data.json\"))[\"fileName\"])"); test -n "$f" && test -f "data/$f"'
+      - bun run experiments:verification-check
+      - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); VERIFICATION_DIR="$v" bun run experiments:verification-plot'
+      - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); test -f "$v/standard_verification_data.json"'
+      - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); f=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))[\"fileName\"])" "$v/standard_verification_data.json"); test -n "$f" && test -f "$v/$f"'
+
+  pipeline:proof-layers:
+    desc: 管理レイヤー実証（ユニバース動的解決 + 研究マニフェスト）
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun -e 'import { DataPipelineRuntime } from "./src/system/data_pipeline_runtime.ts"; const r=new DataPipelineRuntime(); const u=r.resolveUniverse([],20); console.log(JSON.stringify({proof:"dynamic_universe", count:u.length, sample:u.slice(0,10)},null,2)); if(u.length===0) throw new Error("universe unresolved");'
+      - bun -e 'import { QuantResearchRuntime } from "./src/system/quant_research_runtime.ts"; const q=new QuantResearchRuntime(); const m=q.buildManifest(["1301","1332"],"20220831",0.8); console.log(JSON.stringify({proof:"quant_manifest", manifest:m, window:q.deriveVerificationWindow("20220831")},null,2));'
 
   run:
-    desc: 本番同等の全実行
+    desc: 本番同等の全実行（型検査 + 管理レイヤー実証 + パイプライン）
     cmds:
+      - task: typecheck
+      - task: pipeline:proof-layers
       - task: pipeline:orchestrate
       - task: pipeline:verify
       - task: pipeline:discover
@@ -138,8 +149,10 @@ tasks:
       - task: pipeline:verification-plot
 
   run:quick:
-    desc: 高速実行（検証+探索+ベンチ+監査プロット）
+    desc: 高速実行（型検査+実証+検証+探索+ベンチ+監査プロット）
     cmds:
+      - task: typecheck
+      - task: pipeline:proof-layers
       - task: pipeline:verify
       - task: pipeline:discover
       - task: pipeline:benchmark

@@ -1,17 +1,19 @@
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
-import { FactorComputeEngine } from "../pipeline/factor_mining/factor_compute_engine.ts";
 import {
-  type YahooBar,
-  YahooFinanceGateway,
-} from "../providers/external_market_providers.ts";
+  FactorComputeEngine,
+  type FactorAST,
+} from "../pipeline/factor_mining/factor_compute_engine.ts";
+import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
   type QuantitativeVerification,
   QuantitativeVerificationSchema,
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
+import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
+import { paths } from "../system/path_registry.ts";
 
 type PlaybookBullet = {
   updated_at: string;
@@ -24,6 +26,105 @@ type PlaybookBullet = {
 };
 
 type PlaybookData = { bullets: PlaybookBullet[] };
+type LocalBar = {
+  Date: string;
+  Open: number;
+  High: number;
+  Low: number;
+  Close: number;
+  Volume: number;
+};
+
+function astExecutable(ast: FactorAST): boolean {
+  const barA = {
+    Date: "2022-01-04",
+    Open: 100,
+    High: 103,
+    Low: 99,
+    Close: 102,
+    Volume: 2_000_000,
+  };
+  const barB = {
+    Date: "2022-01-05",
+    Open: 101,
+    High: 106,
+    Low: 100,
+    Close: 104,
+    Volume: 1_500_000,
+  };
+  const v1 = FactorComputeEngine.evaluate(ast, barA);
+  const v2 = FactorComputeEngine.evaluate(ast, barB);
+  if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
+  return Math.abs(v1 - v2) > 1e-10 || Math.abs(v1) > 1e-10 || Math.abs(v2) > 1e-10;
+}
+
+function hashString(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function buildDynamicUniverse(
+  strategyId: string,
+  pool: string[],
+  size: number,
+): string[] {
+  const seed = hashString(strategyId);
+  if (pool.length < size) {
+    throw new Error(`universe size insufficient: pool=${pool.length}, need=${size}`);
+  }
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = (seed + i * 1103515245) % (i + 1);
+    const tmp = pool[i];
+    pool[i] = pool[j] as string;
+    pool[j] = tmp as string;
+  }
+  return pool.slice(0, size);
+}
+
+function normalizeLocalBar(row: Record<string, unknown>): LocalBar {
+  const dateRaw = String(row.Date ?? "");
+  const date = dateRaw.includes("-")
+    ? dateRaw
+    : `${dateRaw.slice(0, 4)}-${dateRaw.slice(4, 6)}-${dateRaw.slice(6, 8)}`;
+  return {
+    Date: date,
+    Open: Number(row.Open ?? 0),
+    High: Number(row.High ?? 0),
+    Low: Number(row.Low ?? 0),
+    Close: Number(row.Close ?? 0),
+    Volume: Number(row.Volume ?? 0),
+  };
+}
+
+async function loadLocalHistory(
+  symbols4: string[],
+  lookbackDays: number,
+): Promise<{ symbol: string; bars: LocalBar[] }[]> {
+  const gateway = await MarketdataLocalGateway.create(symbols4);
+  const rows = await Promise.all(symbols4.map((s) => gateway.getBars(s, lookbackDays)));
+  const histories = symbols4.map((symbol, idx) => {
+    const bars = (rows[idx] ?? [])
+      .map((r) => normalizeLocalBar(r))
+      .filter(
+        (b) =>
+          b.Date.length === 10 &&
+          Number.isFinite(b.Open) &&
+          Number.isFinite(b.High) &&
+          Number.isFinite(b.Low) &&
+          Number.isFinite(b.Close) &&
+          Number.isFinite(b.Volume) &&
+          b.Open > 0 &&
+          b.Close > 0,
+      )
+      .reverse();
+    return { symbol: `${symbol}.T`, bars };
+  });
+  return histories.filter((h) => h.bars.length > 0);
+}
 
 function getLatestSelectedStrategyFromPlaybook(): {
   id: string;
@@ -45,7 +146,8 @@ function getLatestSelectedStrategyFromPlaybook(): {
     .sort(
       (a, b) =>
         new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-    )[0];
+    )
+    .find((b) => astExecutable(b.metadata?.ast as FactorAST));
   if (!selected || !selected.metadata?.id) return null;
   const text = selected.content.trim();
   const split = text.indexOf(":");
@@ -77,20 +179,17 @@ async function generateStandardVerificationReport() {
 
   const astRaw = getArg("--ast");
   const strategyAST = astRaw
-    ? (JSON.parse(astRaw) as Record<string, unknown>)
-    : (latestSelected?.ast ?? null);
+    ? (JSON.parse(astRaw) as FactorAST)
+    : ((latestSelected?.ast as FactorAST | null) ?? null);
+  if (!strategyAST) {
+    throw new Error(`No executable AST found for strategy=${strategyId}`);
+  }
 
   console.log(
     `🛠️ 標準実証レポート用データの生成開始 [${strategyId}] (Audit-Ready)...`,
   );
 
-  // [監査証跡] Git Commit Hashの取得
-  let commitHash = "unknown";
-  try {
-    commitHash = execSync("git rev-parse HEAD").toString().trim();
-  } catch (_e) {
-    console.warn("⚠️ Gitハッシュの取得に失敗しました。");
-  }
+  const commitHash = execSync("git rev-parse HEAD").toString().trim();
 
   const strategyMetadata = {
     id: strategyId,
@@ -98,37 +197,29 @@ async function generateStandardVerificationReport() {
     description: strategyDescription,
   };
 
-  const symbols = ["7203.T", "9984.T", "8035.T", "6758.T", "4063.T"];
-  const gateway = new YahooFinanceGateway();
-
-  const allHistoryResults = await Promise.all(
-    symbols.map(async (s) => {
-      try {
-        const bars = await gateway.getChart(s, "6mo");
-        return bars.length > 0 ? { symbol: s, bars } : null;
-      } catch (e) {
-        console.warn(`⚠️ ${s} のデータ取得に失敗しました:`, e);
-        return null;
-      }
-    }),
-  );
-
-  const allHistory = allHistoryResults.filter(
-    (h): h is { symbol: string; bars: YahooBar[] } => h !== null,
-  );
+  const universePool = new DataPipelineRuntime().resolveUniverse([], 200);
+  const selectedSymbols4 = buildDynamicUniverse(strategyId, [...universePool], 8);
+  const localHistory = await loadLocalHistory(selectedSymbols4, 160);
+  if (localHistory.length === 0) {
+    throw new Error("No local market history available in /mnt/d/marketdata");
+  }
+  const dateSet = localHistory.map((h) => new Set(h.bars.map((b) => b.Date)));
+  const commonDates = localHistory[0]!.bars
+    .map((b) => b.Date)
+    .filter((d) => dateSet.every((s) => s.has(d)));
+  if (commonDates.length < 40) {
+    throw new Error(`Insufficient common dates for verification: ${commonDates.length}`);
+  }
+  const allHistory = localHistory.map(({ symbol, bars }) => {
+    const byDate = new Map(bars.map((b) => [b.Date, b]));
+    return {
+      symbol,
+      bars: commonDates.map((d) => byDate.get(d)!).filter((b) => b !== undefined),
+    };
+  });
   const activeSymbols = allHistory.map((h) => h.symbol);
-
-  if (activeSymbols.length === 0) return;
-
-  const firstHistory = allHistory[0];
-  if (!firstHistory) return;
-
-  const commonDates = firstHistory.bars.map((b) => b.Date);
-  const endDate = commonDates[commonDates.length - 1];
-  if (!endDate) return;
   const n = commonDates.length;
 
-  // [Standardization] Use core config for costs
   const feeBps = core.config.execution.costs.feeBps;
   const slippageBps = core.config.execution.costs.slippageBps;
   const totalCostRate = (feeBps + slippageBps) / 10000;
@@ -140,6 +231,9 @@ async function generateStandardVerificationReport() {
 
   const strategyDailyReturns: number[] = new Array(n).fill(0);
   const benchmarkDailyReturns: number[] = new Array(n).fill(0);
+  const previousPositions: Record<string, number> = Object.fromEntries(
+    activeSymbols.map((s) => [s, 0]),
+  );
 
   for (let i = 0; i < n; i++) {
     let mktReturnSum = 0;
@@ -155,20 +249,14 @@ async function generateStandardVerificationReport() {
 
       data.prices.push((b.Close / initialPrice) * 100);
 
-      // [GEN 4] Real factor computation from AST if available, fallback to seed
-      let factor = 0;
-      if (strategyAST) {
-        factor = FactorComputeEngine.evaluate(strategyAST, b);
-      } else {
-        const seed = strategyId
-          .split("")
-          .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        factor =
-          ((b.Close - b.Open) / (b.Volume + 1e-9)) * (seed % 2 === 0 ? 1 : -1);
+      const factor = FactorComputeEngine.evaluate(strategyAST, b);
+      if (!Number.isFinite(factor)) {
+        throw new Error(`Non-finite factor at ${symbol} ${b.Date}`);
       }
 
       data.factors.push(factor);
-      const pos = factor > 0 ? 1 : -1;
+      const threshold = 0.001;
+      const pos = factor > threshold ? 1 : factor < -threshold ? -1 : 0;
       data.positions.push(pos);
 
       if (i < n - 1) {
@@ -176,8 +264,10 @@ async function generateStandardVerificationReport() {
         if (next) {
           const ret = (next.Close - next.Open) / next.Open;
           mktReturnSum += ret / activeSymbols.length;
-          // [コスト控除] 収益からコストを減算
-          const netRet = pos * ret - totalCostRate;
+          const prevPos = previousPositions[symbol] ?? 0;
+          const turnover = Math.abs(pos - prevPos);
+          const netRet = pos * ret - turnover * totalCostRate;
+          previousPositions[symbol] = pos;
           stratReturnSum += netRet / activeSymbols.length;
         }
       }
@@ -202,6 +292,23 @@ async function generateStandardVerificationReport() {
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const fileName = `VERIF_${strategyMetadata.id}_${activeSymbols.length}S_${timestamp}.png`;
+  const predictions: number[] = [];
+  const targets: number[] = [];
+  for (const symbol of activeSymbols) {
+    const d = individualData[symbol];
+    if (!d) continue;
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = d.prices[i] ?? 0;
+      const p1 = d.prices[i + 1] ?? 0;
+      if (p0 <= 0 || p1 <= 0) continue;
+      const ret = (p1 - p0) / p0;
+      const factor = d.factors[i] ?? 0;
+      if (!Number.isFinite(ret) || !Number.isFinite(factor)) continue;
+      predictions.push(factor);
+      targets.push(ret);
+    }
+  }
+  const ic = QuantMetrics.calculateCorr(predictions, targets);
 
   const report: QuantitativeVerification = QuantitativeVerificationSchema.parse(
     {
@@ -214,13 +321,18 @@ async function generateStandardVerificationReport() {
         commitHash,
         environment: `Node ${process.version} / ${process.platform}`,
       },
+      evaluationWindow: {
+        from: commonDates[0] ?? "",
+        to: commonDates[n - 1] ?? "",
+        days: n,
+      },
       fileName,
       dates: commonDates,
       strategyCum,
       benchmarkCum,
       individualData,
       metrics: {
-        ic: -0.0459,
+        ic: Number(ic.toFixed(4)),
         sharpe: Number(
           QuantMetrics.calculateSharpeRatio(strategyDailyReturns).toFixed(2),
         ),
@@ -254,15 +366,40 @@ async function generateStandardVerificationReport() {
     },
   );
 
-  const jsonPath = join(
-    process.cwd(),
-    "data",
-    "standard_verification_data.json",
-  );
+  const outDir = paths.verificationRoot;
+  mkdirSync(outDir, { recursive: true });
+  const jsonPath = join(outDir, "standard_verification_data.json");
   writeFileSync(jsonPath, JSON.stringify(report, null, 2));
+  const annualizedReturn = QuantMetrics.calculateAnnualizedReturn(
+    (report.metrics.totalReturn ?? 0) / 100,
+    report.evaluationWindow.days,
+  );
+  console.log(
+    JSON.stringify(
+      {
+        financial_summary: {
+          strategyId: report.strategyId,
+          period: `${report.evaluationWindow.from}..${report.evaluationWindow.to}`,
+          days: report.evaluationWindow.days,
+          symbols: report.metrics.universe.length,
+          costsBps: report.costs.totalCostBps,
+          sharpe: report.metrics.sharpe,
+          ic: report.metrics.ic,
+          totalReturnPct: report.metrics.totalReturn,
+          maxDrawdownPct: report.metrics.maxDD,
+          annualizedReturn: Number(annualizedReturn.toFixed(6)),
+        },
+      },
+      null,
+      2,
+    ),
+  );
   console.log(
     `✅ 監査準備完了（CommitHash: ${commitHash.substring(0, 7)}）: ${jsonPath}`,
   );
 }
 
-generateStandardVerificationReport().catch(console.error);
+generateStandardVerificationReport().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

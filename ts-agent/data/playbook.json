@@ -3051,8 +3051,13 @@
       }
     },
     {
+      "id": "ctx-xj1rmhm8",
       "content": "DAG-based Evolution (AlphaPROBE) Hypothesis (Fundamental Researcher): CLAIM: Strategic DAG-based Evolution (AlphaPROBE) extraction using retrieval. [REASONING] Detects graph and exploits biased in evolution markets. Verified by Fundamental Researcher protocols.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T10:12:46.520Z",
+      "updated_at": "2026-02-28T10:12:46.520Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -3114,16 +3119,16 @@
         "score": 0.5278688524590165,
         "generation": 1,
         "mutationType": "NEW_SEED"
-      },
-      "id": "ctx-xj1rmhm8",
+      }
+    },
+    {
+      "id": "ctx-lbo8wvpz",
+      "content": "DAG-based Evolution (AlphaPROBE) Hypothesis (Macro Strategist): CLAIM: High-precision biased forecasting using DAG-based Evolution (AlphaPROBE). [REASONING] A retrieval model that uses graph to filter noise during evolution periods. Proposed by Macro Strategist.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T10:12:46.520Z",
-      "updated_at": "2026-02-28T10:12:46.520Z"
-    },
-    {
-      "content": "DAG-based Evolution (AlphaPROBE) Hypothesis (Macro Strategist): CLAIM: High-precision biased forecasting using DAG-based Evolution (AlphaPROBE). [REASONING] A retrieval model that uses graph to filter noise during evolution periods. Proposed by Macro Strategist.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T10:12:46.520Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -3157,12 +3162,367 @@
         "score": 0.5278688524590165,
         "generation": 1,
         "mutationType": "NEW_SEED"
-      },
-      "id": "ctx-lbo8wvpz",
+      }
+    },
+    {
+      "id": "ctx-mcug4sr2",
+      "content": "Evolved STRUCTURAL_SHIFT: Liquidity Shock Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-BEHAVIORAL-049CEACC. CLAIM: Strategic Cross-Asset Signal extraction using spread. [REASONING] Detects correlation and exploits basis in parity markets. Verified by Quant Analyst protocols.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T10:12:46.520Z",
-      "updated_at": "2026-02-28T10:12:46.520Z"
+      "created_at": "2026-02-28T10:36:02.698Z",
+      "updated_at": "2026-02-28T10:36:02.698Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-C22732CB",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "mul",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "col",
+                "name": "volume"
+              }
+            },
+            "right": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "col",
+              "name": "turnover_value"
+            },
+            "right": {
+              "op": "col",
+              "name": "net_sales"
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6232098765432099,
+        "generation": 2,
+        "parentId": "ALPHA-BEHAVIORAL-049CEACC",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-y0505b39",
+      "content": "Evolved STRUCTURAL_SHIFT: DAG-based Evolution (AlphaPROBE) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-E79E7EA3. CLAIM: Structural drift identification via Volatility Regime and dispersion. [REASONING] The Macro Strategist persona targets skew using a uncertainty approach. Optimized for tail regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T10:36:02.698Z",
+      "updated_at": "2026-02-28T10:36:02.698Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-DA8E5419",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "volume"
+            },
+            "right": {
+              "op": "mul",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "col",
+                "name": "close"
+              }
+            }
+          },
+          "right": {
+            "op": "sub",
+            "left": {
+              "op": "mul",
+              "left": {
+                "op": "col",
+                "name": "profit_margin"
+              },
+              "right": {
+                "op": "col",
+                "name": "net_sales"
+              }
+            },
+            "right": {
+              "op": "mul",
+              "left": {
+                "op": "lit",
+                "value": 4.15
+              },
+              "right": {
+                "op": "col",
+                "name": "net_sales"
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6282098765432099,
+        "generation": 2,
+        "parentId": "ALPHA-FUNDAMENTAL-E79E7EA3",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-pl61skwk",
+      "content": "Liquidity Shock Hypothesis (Quant Analyst): CLAIM: Autonomous hypothesis on Liquidity Shock using flow. [REASONING] This model identifies illiquidity trajectories to extract impact edge in imbalance regimes. Reasoning trace by Quant Analyst.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T10:39:21.563Z",
+      "updated_at": "2026-02-28T10:39:21.563Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-5C0B2452",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "mul",
+            "left": {
+              "op": "mul",
+              "left": {
+                "op": "col",
+                "name": "open"
+              },
+              "right": {
+                "op": "col",
+                "name": "net_sales"
+              }
+            },
+            "right": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "col",
+                "name": "turnover_value"
+              }
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "add",
+              "left": {
+                "op": "lit",
+                "value": 1.16
+              },
+              "right": {
+                "op": "col",
+                "name": "close"
+              }
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "col",
+                "name": "close"
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5318867924528302,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-ndi9vywo",
+      "content": "Volatility Regime Hypothesis (Behavioral Economist): CLAIM: Autonomous hypothesis on Volatility Regime using uncertainty. [REASONING] This model identifies dispersion trajectories to extract skew edge in tail regimes. Reasoning trace by Behavioral Economist.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T10:39:21.563Z",
+      "updated_at": "2026-02-28T10:39:21.563Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-4F2DC594",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "net_sales"
+            },
+            "right": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "profit_margin"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            }
+          },
+          "right": {
+            "op": "div",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            },
+            "right": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "volume"
+              },
+              "right": {
+                "op": "col",
+                "name": "close"
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5618867924528301,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "content": "Evolved STRUCTURAL_SHIFT: Volatility Regime Hypothesis (HFT Engineer) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-HFT-38BC01DB. CLAIM: Structural drift identification via Efficiency Divergence and margin. [REASONING] The Behavioral Economist persona targets leverage using a operating approach. Optimized for structural regimes.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-75DD8ACB",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "net_sales"
+            },
+            "right": {
+              "op": "col",
+              "name": "open"
+            }
+          },
+          "right": {
+            "op": "col",
+            "name": "operating_profit"
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5765068493150686,
+        "generation": 2,
+        "parentId": "ALPHA-HFT-38BC01DB",
+        "mutationType": "STRUCTURAL_SHIFT"
+      },
+      "id": "ctx-8gt6ufv5",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T10:48:16.694Z",
+      "updated_at": "2026-02-28T10:48:16.694Z"
+    },
+    {
+      "content": "Evolved POINT_MUTATION: Volatility Regime Hypothesis (HFT Engineer) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-HFT-38BC01DB. CLAIM: Strategic Corporate Governance (J-Quants) extraction using shareholder. [REASONING] Detects board and exploits payout in disclosure markets. Verified by Fundamental Researcher protocols.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-F54F8680",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "mul",
+            "left": {
+              "op": "col",
+              "name": "open"
+            },
+            "right": {
+              "op": "mul",
+              "left": {
+                "op": "col",
+                "name": "turnover_value"
+              },
+              "right": {
+                "op": "col",
+                "name": "open"
+              }
+            }
+          },
+          "right": {
+            "op": "sub",
+            "left": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "lit",
+                "value": 4.86
+              }
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5865068493150685,
+        "generation": 2,
+        "parentId": "ALPHA-HFT-38BC01DB",
+        "mutationType": "POINT_MUTATION"
+      },
+      "id": "ctx-mez71c57",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T10:48:16.695Z",
+      "updated_at": "2026-02-28T10:48:16.695Z"
     }
   ]
 }

@@ -1,6 +1,6 @@
-import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../system/app_runtime_core.ts";
+import { paths } from "../system/path_registry.ts";
 import { MarketdataDbCache } from "./cache_providers.ts";
 import {
   EstatProvider,
@@ -161,10 +161,7 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
   public static async create(
     symbols4: readonly string[],
   ): Promise<MarketdataLocalGateway> {
-    const db = new MarketdataDbCache(
-      core.config.paths.data,
-      join(core.config.paths.logs, "cache", "marketdata.sqlite"),
-    );
+    const db = new MarketdataDbCache(paths.dataRoot, paths.marketdataSqlite);
     await db.ensureLoaded(symbols4);
     return new MarketdataLocalGateway(db);
   }

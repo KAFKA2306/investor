@@ -1,4 +1,3 @@
-import { core } from "./system/app_runtime_core.ts";
 import type { PipelineRequirement } from "./system/pipeline_orchestrator.ts";
 import {
   DataEngineerBridge,
@@ -20,7 +19,7 @@ async function main() {
   const requirement: PipelineRequirement = {
     id: `REQ-${Date.now()}`,
     description: userRequirement,
-    universe: core.config.universe.symbols,
+    universe: [],
     targetMetrics: {
       minSharpe: 1.5,
       minIC: 0.03,

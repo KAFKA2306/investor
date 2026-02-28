@@ -13,6 +13,7 @@
     "experiments:alpha-timeseries": "bun src/experiments/generate_standardized_alpha_timeseries.ts",
     "experiments:model-analysis": "bun src/experiments/model_experiments_core.ts",
     "experiments:verification-json": "bun src/experiments/quantitative_performance_proof.ts",
+    "experiments:verification-check": "bun src/experiments/verification_consistency_check.ts",
     "experiments:verification-plot": "python3 src/experiments/plot_generator.py",
     "pipeline:mine": "bun src/pipeline/factor_mining/mining_core.ts",
     "pipeline:backtest": "bun src/pipeline/evaluate/backtest_core.ts"

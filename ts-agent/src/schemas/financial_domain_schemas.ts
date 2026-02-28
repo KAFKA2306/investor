@@ -373,6 +373,11 @@ export const QuantitativeVerificationSchema = z.object({
   description: z.string(),
   generatedAt: z.string().datetime(),
   audit: z.object({ commitHash: z.string(), environment: z.string() }),
+  evaluationWindow: z.object({
+    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    days: z.number().int().positive(),
+  }),
   fileName: z.string(),
   dates: z.array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
   strategyCum: z.array(z.number()),

@@ -3,12 +3,19 @@ import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
 import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { MemoryCenter } from "../context/unified_context_services.ts";
+import { readFileSync } from "node:fs";
+import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
+import { QuantitativeVerificationSchema } from "../schemas/financial_domain_schemas.ts";
 import type {
   Metrics,
+  QuantitativeVerification,
   StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
-import { BaseAgent } from "./app_runtime_core.ts";
+import { BaseAgent, core } from "./app_runtime_core.ts";
+import { DataPipelineRuntime } from "./data_pipeline_runtime.ts";
+import { paths } from "./path_registry.ts";
+import { QuantResearchRuntime } from "./quant_research_runtime.ts";
 import { logIO, logMetric } from "./telemetry_logger.ts";
 
 type VerificationVerdict =
@@ -484,8 +491,21 @@ export class PipelineOrchestrator extends BaseAgent {
     if (result.failureType === "MODEL") return "REJECTED_MODEL";
 
     const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
-    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.5;
-    return sharpe >= minSharpe ? "ADOPTED" : "REJECTED_GENERAL";
+    const ic = result.alpha?.informationCoefficient ?? 0;
+    const maxDrawdownAbs = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
+    const annualizedReturn = result.verification?.metrics?.annualizedReturn ?? 0;
+    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.0;
+    const minIC = requirement.targetMetrics?.minIC ?? 0.02;
+    const maxDrawdown = requirement.targetMetrics?.maxDrawdown ?? 0.1;
+    if (
+      sharpe >= minSharpe &&
+      ic >= minIC &&
+      maxDrawdownAbs <= maxDrawdown &&
+      annualizedReturn > 0
+    ) {
+      return "ADOPTED";
+    }
+    return "REJECTED_GENERAL";
   }
 
   private evaluateDataDelivery(
@@ -701,26 +721,19 @@ export class StateMonitorBridge implements IStateMonitor {
 }
 
 export class DataEngineerBridge implements IDataEngineer {
-  private readonly baseSymbols = [
-    "7203",
-    "6758",
-    "9984",
-    "8306",
-    "9432",
-  ] as const;
-  private gatewayPromise = MarketdataLocalGateway.create(this.baseSymbols);
-
-  private getGateway(
-    symbols: readonly string[],
-  ): Promise<MarketdataLocalGateway> {
-    if (symbols.join(",") === this.baseSymbols.join(","))
-      return this.gatewayPromise;
-    this.gatewayPromise = MarketdataLocalGateway.create(symbols);
-    return this.gatewayPromise;
-  }
+  private static readonly LOOKBACK_DAYS = 80;
+  private readonly runtime = new DataPipelineRuntime();
+  private gatewayPromise: Promise<MarketdataLocalGateway> | null = null;
+  private gatewayKey = "";
+  private runtimeSymbols: string[] = core.config.universe.symbols;
+  private runtimeAsOfDate = "";
 
   private normalizeSymbol(symbol: string): string {
-    return symbol.replace(".T", "");
+    return symbol.replace(".T", "").slice(0, 4);
+  }
+
+  private safeDivide(numerator: number, denominator: number): number {
+    return denominator > 0 ? numerator / denominator : 0;
   }
 
   private getDateKey(row: Record<string, string | number>): string {
@@ -728,85 +741,154 @@ export class DataEngineerBridge implements IDataEngineer {
     return String(value).replaceAll("-", "").slice(0, 8);
   }
 
-  async collectData(_sources: string[]): Promise<DataSourceRow[]> {
+  private hasValidPriceRow(row: Record<string, unknown>): boolean {
+    const close = Number(row.Close ?? row.close ?? Number.NaN);
+    const volume = Number(row.Volume ?? row.volume ?? Number.NaN);
+    const open = Number(row.Open ?? row.open ?? Number.NaN);
+    return (
+      Number.isFinite(close) &&
+      close > 0 &&
+      Number.isFinite(volume) &&
+      volume >= 0 &&
+      Number.isFinite(open) &&
+      open > 0
+    );
+  }
+
+  private hasValidFundamentalRow(row: Record<string, unknown>): boolean {
+    const netSales = Number(row.NetSales ?? Number.NaN);
+    const disclosedDate = String(row.DisclosedDate ?? "");
+    return Number.isFinite(netSales) && disclosedDate.length > 0;
+  }
+
+  private async getGateway(
+    symbols: readonly string[],
+  ): Promise<MarketdataLocalGateway> {
+    const normalized = [...new Set(symbols.map((s) => this.normalizeSymbol(s)))];
+    const key = normalized.join(",");
+    if (this.gatewayPromise && key === this.gatewayKey) return this.gatewayPromise;
+    this.gatewayKey = key;
+    this.gatewayPromise = MarketdataLocalGateway.create(normalized);
+    return this.gatewayPromise;
+  }
+
+  private buildPriceRow(
+    source: string,
+    barsPerSymbol: Record<string, unknown>[][],
+    asOfDate: string,
+  ): DataSourceRow {
+    const mergedBars = barsPerSymbol.flat();
+    const expectedRows = this.runtimeSymbols.length * DataEngineerBridge.LOOKBACK_DAYS;
+    const rows = mergedBars.length;
+    const invalidRows = mergedBars.filter((row) => !this.hasValidPriceRow(row)).length;
+    const leakRows = mergedBars.filter(
+      (row) => this.getDateKey(row as Record<string, string | number>) > asOfDate,
+    ).length;
+    const missingRate = Math.max(0, 1 - this.safeDivide(rows, expectedRows));
+    const schemaMatch = rows > 0 ? 1 - this.safeDivide(invalidRows, rows) : 0;
+    return {
+      source,
+      rows,
+      expectedRows,
+      missingRate,
+      latencyMinutes: 5,
+      leakFlag: leakRows > 0,
+      schemaMatch,
+    };
+  }
+
+  private buildFundamentalRow(
+    source: string,
+    finsPerSymbol: Record<string, number>[][],
+    asOfDate: string,
+  ): DataSourceRow {
+    const merged = finsPerSymbol.flat();
+    const expectedRows = this.runtimeSymbols.length;
+    const rows = merged.length;
+    const invalidRows = merged.filter((row) => !this.hasValidFundamentalRow(row)).length;
+    const leakRows = merged.filter(
+      (row) => this.getDateKey(row as Record<string, string | number>) > asOfDate,
+    ).length;
+    const missingRate = Math.max(0, 1 - this.safeDivide(rows, expectedRows));
+    const schemaMatch = rows > 0 ? 1 - this.safeDivide(invalidRows, rows) : 0;
+    return {
+      source,
+      rows,
+      expectedRows,
+      missingRate,
+      latencyMinutes: 30,
+      leakFlag: leakRows > 0,
+      schemaMatch,
+    };
+  }
+
+  async collectData(sources: string[]): Promise<DataSourceRow[]> {
+    const normalizedSources = this.runtime.resolveSources(sources);
     logIO({
       stage: "data_engineer.collect",
       direction: "IN",
       name: "collect_sources",
-      values: { source_count: 5 },
+      values: {
+        source_count: normalizedSources.length,
+        symbols: this.runtimeSymbols.length,
+      },
     });
-    const gateway = await this.getGateway(this.baseSymbols);
-    const sampleSymbols = this.baseSymbols.slice(0, 4);
-    const barsPerSymbol = await Promise.all(
-      sampleSymbols.map((s) => gateway.getBars(this.normalizeSymbol(s), 40)),
-    );
+    const gateway = await this.getGateway(this.runtimeSymbols);
     const asOfDate = await gateway.getMarketDataEndDate();
-    const mergedBars = barsPerSymbol.flat();
-    const expectedRows = sampleSymbols.length * 40;
-    const rows = mergedBars.length;
-    const missingRate = Math.max(0, 1 - rows / expectedRows);
-    const invalidRows = mergedBars.filter((row) => {
-      const close = Number(row.Close ?? row.close ?? Number.NaN);
-      const volume = Number(row.Volume ?? row.volume ?? Number.NaN);
-      return (
-        !Number.isFinite(close) ||
-        close <= 0 ||
-        !Number.isFinite(volume) ||
-        volume < 0
-      );
-    }).length;
-    const latencyMinutes = 10;
-    const leakRows = mergedBars.filter(
-      (row) =>
-        this.getDateKey(row as Record<string, string | number>) > asOfDate,
-    ).length;
-    const schemaMatch = rows > 0 ? 1 - invalidRows / rows : 0;
-    const leakFlag = leakRows > 0;
-    const collected = [
-      {
-        source: "finance",
-        rows,
-        expectedRows,
-        missingRate,
-        latencyMinutes,
-        leakFlag,
-        schemaMatch,
-      },
-      {
-        source: "news",
-        rows: Math.floor(rows * 0.7),
-        expectedRows: Math.floor(expectedRows * 0.7),
-        missingRate,
-        latencyMinutes: latencyMinutes + 8,
-        leakFlag,
-        schemaMatch: Math.max(0, schemaMatch - 0.03),
-      },
-      {
-        source: "onchain",
-        rows: Math.floor(rows * 0.5),
-        expectedRows: Math.floor(expectedRows * 0.5),
-        missingRate: Math.min(0.2, missingRate + 0.02),
-        latencyMinutes: latencyMinutes + 12,
-        leakFlag,
-        schemaMatch: Math.max(0, schemaMatch - 0.05),
-      },
-    ];
+    this.runtimeAsOfDate = asOfDate;
+    const barsPerSymbol = await Promise.all(
+      this.runtimeSymbols.map((s) =>
+        gateway.getBars(this.normalizeSymbol(s), DataEngineerBridge.LOOKBACK_DAYS),
+      ),
+    );
+    const finsPerSymbol = await Promise.all(
+      this.runtimeSymbols.map((s) => gateway.getStatements(this.normalizeSymbol(s))),
+    );
+
+    const rows: DataSourceRow[] = [];
+    const includePrice = normalizedSources.includes("finance");
+    const includeFundamental = normalizedSources.includes("financials");
+    const includeContext = normalizedSources.includes("context");
+
+    includePrice && rows.push(this.buildPriceRow("finance", barsPerSymbol, asOfDate));
+    includeFundamental &&
+      rows.push(this.buildFundamentalRow("financials", finsPerSymbol, asOfDate));
+    includeContext &&
+      rows.push({
+        source: "context",
+        rows: this.runtimeSymbols.length,
+        expectedRows: this.runtimeSymbols.length,
+        missingRate: 0,
+        latencyMinutes: 60,
+        leakFlag: false,
+        schemaMatch: 1,
+      });
+
+    const totalRows = rows.reduce((sum, row) => sum + row.rows, 0);
+    const totalExpectedRows = rows.reduce((sum, row) => sum + row.expectedRows, 0);
+    const weightedMissing = this.safeDivide(
+      rows.reduce((sum, row) => sum + row.missingRate * row.expectedRows, 0),
+      totalExpectedRows,
+    );
+    const weightedSchema = this.safeDivide(
+      rows.reduce((sum, row) => sum + row.schemaMatch * row.expectedRows, 0),
+      totalExpectedRows,
+    );
     logIO({
       stage: "data_engineer.collect",
       direction: "OUT",
       name: "data.describe",
       values: {
-        symbols: sampleSymbols.length,
-        rows,
-        expected_rows: expectedRows,
-        missing_rate: Number(missingRate.toFixed(6)),
-        invalid_rows: invalidRows,
-        leak_rows: leakRows,
-        schema_match: Number(schemaMatch.toFixed(6)),
+        symbols: this.runtimeSymbols.length,
+        rows: totalRows,
+        expected_rows: totalExpectedRows,
+        missing_rate: Number(weightedMissing.toFixed(6)),
+        schema_match: Number(weightedSchema.toFixed(6)),
         as_of_date: asOfDate,
+        source_count: rows.length,
       },
     });
-    return collected;
+    return rows;
   }
 
   async integrateData(raw: DataSourceRow[]): Promise<IntegratedData> {
@@ -820,17 +902,20 @@ export class DataEngineerBridge implements IDataEngineer {
         total_expected_rows: raw.reduce((sum, x) => sum + x.expectedRows, 0),
       },
     });
-    const sourceCount = raw.length;
-    const coverageRate =
-      raw.reduce((sum, x) => sum + x.rows / x.expectedRows, 0) / sourceCount;
-    const missingRate =
-      raw.reduce((sum, x) => sum + x.missingRate, 0) / sourceCount;
-    const latencyAverage =
-      raw.reduce((sum, x) => sum + x.latencyMinutes, 0) / sourceCount;
-    const latencyScore = Math.max(0, 1 - latencyAverage / 60);
+    const totalExpectedRows = raw.reduce((sum, x) => sum + x.expectedRows, 0);
+    const totalRows = raw.reduce((sum, x) => sum + x.rows, 0);
+    const coverageRate = this.safeDivide(totalRows, totalExpectedRows);
+    const missingRate = Math.max(0, 1 - coverageRate);
+    const latencyAverage = this.safeDivide(
+      raw.reduce((sum, x) => sum + x.latencyMinutes * x.expectedRows, 0),
+      totalExpectedRows,
+    );
+    const latencyScore = Math.max(0, 1 - latencyAverage / 120);
     const leakFreeScore = raw.every((x) => !x.leakFlag) ? 1 : 0;
-    const sourceConsistency =
-      raw.reduce((sum, x) => sum + x.schemaMatch, 0) / sourceCount;
+    const sourceConsistency = this.safeDivide(
+      raw.reduce((sum, x) => sum + x.schemaMatch * x.expectedRows, 0),
+      totalExpectedRows,
+    );
 
     const integrated = {
       integrated: true,
@@ -861,6 +946,11 @@ export class DataEngineerBridge implements IDataEngineer {
     requirement: PipelineRequirement,
     attempt: number,
   ): Promise<PITDataset> {
+    const normalizedSymbols = this.runtime.resolveUniverse(
+      requirement.universe.map((s) => String(s)),
+      120,
+    );
+    this.runtimeSymbols = normalizedSymbols;
     logIO({
       stage: "data_engineer.prepare",
       direction: "IN",
@@ -868,41 +958,29 @@ export class DataEngineerBridge implements IDataEngineer {
       values: {
         requirement_id: requirement.id,
         attempt,
-        symbol_count: requirement.universe.length,
+        symbol_count: normalizedSymbols.length,
       },
     });
 
-    const rawData = await this.collectData([
-      "finance",
-      "news",
-      "sns",
-      "chart",
-      "onchain",
-    ]);
+    const rawData = await this.collectData(["finance", "financials", "news"]);
     const integrated = await this.integrateData(rawData);
     const deliveryMetrics = integrated.deliveryMetrics;
-    const attemptLift = Math.min(0.08, attempt * 0.015);
+    const attemptLift = Math.min(0.06, attempt * 0.01);
     const qualityScore = Math.min(
-      0.98,
-      deliveryMetrics.coverageRate * 0.35 +
+      0.99,
+      deliveryMetrics.coverageRate * 0.4 +
         (1 - deliveryMetrics.missingRate) * 0.25 +
         deliveryMetrics.latencyScore * 0.15 +
-        deliveryMetrics.leakFreeScore * 0.15 +
+        deliveryMetrics.leakFreeScore * 0.1 +
         deliveryMetrics.sourceConsistency * 0.1 +
         attemptLift,
     );
 
     const dataset = {
       id: `ds-${Date.now()}`,
-      asOfDate: String(
-        (
-          await this.getGateway(
-            requirement.universe.map((s) => this.normalizeSymbol(String(s))),
-          )
-        ).getMarketDataEndDate(),
-      ),
-      symbols: requirement.universe,
-      features: ["close", "volume", "news_sentiment", "onchain_flow"],
+      asOfDate: this.runtimeAsOfDate,
+      symbols: normalizedSymbols,
+      features: ["open", "high", "low", "close", "volume", "net_sales"],
       data: [integrated],
       context: "",
       qualityScore,
@@ -942,6 +1020,79 @@ export class DataEngineerBridge implements IDataEngineer {
 export class QuantResearcherBridge implements IQuantResearcher {
   private les = new LesAgent();
   private reasoner = new StrategicReasonerAgent();
+  private runtime = new QuantResearchRuntime();
+
+  private loadVerificationReport(): QuantitativeVerification {
+    const raw = readFileSync(paths.verificationJson, "utf8");
+    const parsed = JSON.parse(raw) as {
+      dates?: string[];
+      evaluationWindow?: { from: string; to: string; days: number };
+    };
+    if (!parsed.evaluationWindow) {
+      const dates = parsed.dates ?? [];
+      if (dates.length === 0) {
+        throw new Error("verification report has no dates");
+      }
+      parsed.evaluationWindow = {
+        from: dates[0] ?? "",
+        to: dates[dates.length - 1] ?? "",
+        days: dates.length,
+      };
+    }
+    return QuantitativeVerificationSchema.parse(parsed);
+  }
+
+  private buildBacktestFromVerification(
+    report: QuantitativeVerification,
+  ): BacktestResult {
+    const history: number[] = new Array(report.strategyCum.length).fill(0);
+    for (let i = 1; i < report.strategyCum.length; i++) {
+      const prev = 1 + (report.strategyCum[i - 1] ?? 0) / 100;
+      const curr = 1 + (report.strategyCum[i] ?? 0) / 100;
+      history[i] = curr / prev - 1;
+    }
+    const from = report.evaluationWindow.from.replaceAll("-", "");
+    const to = report.evaluationWindow.to.replaceAll("-", "");
+    return {
+      from,
+      to,
+      tradingDays: report.evaluationWindow.days,
+      feeBps: report.costs.feeBps,
+      slippageBps: report.costs.slippageBps,
+      totalCostBps: report.costs.totalCostBps,
+      grossReturn: report.metrics.totalReturn / 100 + report.costs.totalCostBps / 10000,
+      netReturn: report.metrics.totalReturn / 100,
+      pnlPerUnit: report.metrics.totalReturn / 100,
+      history,
+    };
+  }
+
+  private buildPredictionTargetPairs(report: QuantitativeVerification): {
+    predictions: number[];
+    targets: number[];
+  } {
+    const predictions: number[] = [];
+    const targets: number[] = [];
+    for (const symbol of Object.keys(report.individualData)) {
+      const series = report.individualData[symbol];
+      if (!series) continue;
+      const len = Math.min(series.factors.length, series.prices.length - 1);
+      for (let i = 0; i < len; i++) {
+        const price0 = series.prices[i] ?? 0;
+        const price1 = series.prices[i + 1] ?? 0;
+        if (price0 <= 0 || price1 <= 0) continue;
+        const prediction = series.factors[i] ?? 0;
+        const target = (price1 - price0) / price0;
+        if (!Number.isFinite(prediction) || !Number.isFinite(target)) continue;
+        predictions.push(prediction);
+        targets.push(target);
+      }
+    }
+    if (predictions.length === 0 || targets.length === 0) {
+      throw new Error("No prediction-target pairs in verification report");
+    }
+    return { predictions, targets };
+  }
 
   async selectFoundationModel(
     _candidate: IdeaCandidate,
@@ -950,12 +1101,11 @@ export class QuantResearcherBridge implements IQuantResearcher {
     console.log(
       `[QuantResearcher] Selecting Foundation Model based on context`,
     );
+    const foundationModelId = this.runtime.selectFoundationModelId(context, 0.75);
     return {
-      foundationModelId: context.includes("Bullish")
-        ? "les-forecast-v2-momentum"
-        : "les-forecast-v1",
+      foundationModelId,
       adaptationPolicy: "",
-      parameters: { learningRate: 1e-4 },
+      parameters: { learningRate: this.runtime.selectLearningRate("NONE") },
       selectedReason: `Context indicates ${context.slice(0, 10)}...`,
     };
   }
@@ -979,7 +1129,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     );
     return {
       ...candidate,
-      noveltyScore: candidate.noveltyScore + 0.05,
+      noveltyScore: this.runtime.scoreNoveltyBoost(candidate.noveltyScore),
     };
   }
 
@@ -991,44 +1141,22 @@ export class QuantResearcherBridge implements IQuantResearcher {
     forbiddenZones: string[] = [],
   ): Promise<VerificationResult> {
     console.log(`[QuantResearcher] Co-optimizing factor, model, and backtest`);
+    const manifest = this.runtime.buildManifest(dataset.symbols, dataset.asOfDate, dataset.qualityScore);
 
     forbiddenZones.some((fz) => candidate.description.includes(fz)) &&
       console.log(`[QuantResearcher] Candidate overlaps with forbidden zone`);
 
-    modelConfig.parameters.learningRate = retryMode === "MODEL" ? 5e-5 : 1e-4;
-
-    const modelRejected = candidate.id.includes("-1") && retryMode === "NONE";
-    const dataRejected =
-      candidate.id.includes("-2") && dataset.qualityScore < 0.85;
-    const failureType: VerificationResult["failureType"] = dataRejected
-      ? "DATA"
-      : modelRejected
-        ? "MODEL"
-        : "NONE";
-
-    const baseSharpe = failureType === "NONE" ? candidate.priority * 3.0 : 0.4;
-    const optimizedSharpe =
-      retryMode === "MODEL" ? baseSharpe * 1.2 : baseSharpe;
-
-    const mockBacktest = {
-      from: "20250101",
-      to: "20251231",
-      netReturn: candidate.priority * 0.2,
-      tradingDays: 252,
-      feeBps: 1.0,
-      slippageBps: 0.5,
-      totalCostBps: 1.5,
-      grossReturn: candidate.priority * 0.20015,
-      pnlPerUnit: candidate.priority * 0.2,
-      history: Array.from({ length: 20 }, () => candidate.priority * 0.01),
-    };
+    modelConfig.parameters.learningRate = this.runtime.selectLearningRate(retryMode);
+    const report = this.loadVerificationReport();
+    const backtest = this.buildBacktestFromVerification(report);
+    const { predictions, targets } = this.buildPredictionTargetPairs(report);
 
     const outcome = this.les.calculateOutcome(
       candidate.id,
       candidate.noveltyScore,
-      mockBacktest,
-      [1, 2],
-      [1.1, 1.9],
+      backtest,
+      predictions,
+      targets,
       candidate.requirementId,
     );
 
@@ -1041,10 +1169,10 @@ export class QuantResearcherBridge implements IQuantResearcher {
     return {
       ...outcome,
       modelConfig,
-      failureType,
+      failureType: "NONE",
       strategicReasoning: reasoning,
       alphaScreening: screening,
-      adoptionReason: `Co-optimization finished with Sharpe ${optimizedSharpe}`,
+      adoptionReason: `Co-optimization finished with measured OOS Sharpe=${report.metrics.sharpe}; period=${report.evaluationWindow.from}..${report.evaluationWindow.to}; data=${manifest.dataRoot}; asof=${manifest.asOfDate}`,
     };
   }
 }
@@ -1056,7 +1184,12 @@ export class ExecutionAgentBridge implements IExecutionAgent {
     console.log(
       `[ExecutionAgent] Step 22-A: Optimizing allocations for ${verification.strategyId}`,
     );
-    return { AAPL: 0.4, MSFT: 0.6 };
+    const report = QuantitativeVerificationSchema.parse(
+      JSON.parse(readFileSync(paths.verificationJson, "utf8")),
+    );
+    const universe = report.metrics.universe;
+    const perSymbol = 1 / Math.max(1, universe.length);
+    return Object.fromEntries(universe.map((symbol) => [symbol, perSymbol]));
   }
 
   async applyRiskControl(

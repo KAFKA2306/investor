@@ -4,6 +4,34 @@ project:
 paths:
   data: /mnt/d/marketdata
   logs: ../../../logs
+  verification: ../../../ts-agent/data
+  marketdataRoot: /mnt/d/marketdata
+  marketdataPricesGz: /mnt/d/marketdata/raw_stock_price.csv.gz
+  marketdataPricesCsv: /mnt/d/marketdata/raw_stock_price.csv
+  marketdataFinGz: /mnt/d/marketdata/raw_stock_fin.csv.gz
+  marketdataFinCsv: /mnt/d/marketdata/raw_stock_fin.csv
+  marketdataListGz: /mnt/d/marketdata/stock_list.csv.gz
+  marketdataListCsv: /mnt/d/marketdata/stock_list.csv
+  marketdataLabelsGz: /mnt/d/marketdata/stock_labels.csv.gz
+  marketdataLabelsCsv: /mnt/d/marketdata/stock_labels.csv
+  marketdataStatementsDir: /mnt/d/marketdata/raw_statements
+  outputsRoot: ../../../ts-agent/data
+  outputsVerificationJson: ../../../ts-agent/data/standard_verification_data.json
+  outputsVerificationPlotDir: ../../../ts-agent/data
+  outputsPlaybook: ../../../ts-agent/data/playbook.json
+  cacheDir: ../../../logs/cache
+  cacheMarketSqlite: ../../../logs/cache/market_cache.sqlite
+  cacheMarketdataSqlite: ../../../logs/cache/marketdata.sqlite
+  cacheHttpSqlite: ../../../logs/cache/http_cache.sqlite
+  cacheYahooSqlite: ../../../logs/cache/yahoo_finance_cache.sqlite
+  cacheJquantsPeadSqlite: ../../../logs/cache/jquants_pead_cache.sqlite
+  cacheUqtlSqlite: ../../../logs/cache/uqtl.sqlite
+  logsUnifiedDir: ../../../logs/unified
+  docsRoot: ../../../docs
+  docsDiagramsDir: ../../../docs/diagrams
+  docsPaperDir: ../../../docs/paper
+  docsNikkiDir: ../../../docs/nikki
+  workflowsDir: ../../../.agent/workflows
 
 providers:
   yfinance:
@@ -26,7 +54,7 @@ benchmark:
   orthogonalityThreshold: 0.5
 
 universe:
-  symbols: ["7203", "9984", "8035", "6758", "4063"]
+  symbols: []
 
 execution:
   costs:
