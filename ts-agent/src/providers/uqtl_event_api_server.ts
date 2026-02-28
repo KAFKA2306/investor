@@ -35,9 +35,10 @@ const timeSeriesDir = resolve(repoRoot, "ts-agent/data");
 const maxStdoutChars = 12000;
 const maxCommandMs = 8 * 60 * 1000;
 const allowedCommandPatterns = [
-  /^cd\s+ts-agent\s*&&\s*bun\s+run\s+[\w:-]+$/,
-  /^bun\s+run\s+[\w:-]+$/,
-  /^task\s+[\w:-]+$/,
+  /^cd\s+ts-agent\s*&&\s*bun\s+run\s+[\w:-]+(\s+.*)?$/,
+  /^bun\s+run\s+[\w:-]+(\s+.*)?$/,
+  /^task\s+[\w:-]+(\s+.*)?$/,
+  /^ls\s+.*$/,
 ];
 
 const jsonHeaders = {
@@ -91,7 +92,8 @@ const runShellCommand = async (
   command: string,
 ): Promise<WorkflowStepResult> => {
   const started = Date.now();
-  const proc = Bun.spawn(["bash", "-lc", command], {
+  // Using 'bash -c' instead of '-lc' to reduce login shell overhead unless needed
+  const proc = Bun.spawn(["bash", "-c", command], {
     cwd: repoRoot,
     stdout: "pipe",
     stderr: "pipe",
@@ -279,6 +281,23 @@ serve({
             "Cache-Control": "no-store",
           },
         });
+      }
+
+      if (url.pathname === "/api/kill" && req.method === "POST") {
+        console.warn("[API] !!! KILL SWITCH ACTIVATED !!!");
+        const event = {
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          type: "SYSTEM_LOG",
+          payload: { message: "KILL SWITCH ACTIVATED via Dashboard" },
+        };
+        memory.pushEvent(event);
+        return new Response(
+          JSON.stringify({ ok: true, message: "Kill signal received" }),
+          {
+            headers: jsonHeaders,
+          },
+        );
       }
 
       if (

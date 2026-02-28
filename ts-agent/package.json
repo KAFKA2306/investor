@@ -8,11 +8,10 @@
     "format": "biome format src --write",
     "start": "bun src/index.ts",
     "start:api": "bun src/providers/uqtl_event_api_server.ts",
+    "verify:api": "bun src/system/system_verifications.ts",
     "experiments:alpha-discovery": "bun src/experiments/alpha_mining_experiments.ts",
     "experiments:alpha-timeseries": "bun src/experiments/generate_standardized_alpha_timeseries.ts",
     "experiments:model-analysis": "bun src/experiments/model_experiments_core.ts",
-    "pipeline:ab": "bun src/pipeline/evaluate/compare_daily_log_performance.ts",
-    "pipeline:llm-readiness": "bun src/pipeline/evaluate/llm_agent_readiness.ts",
     "pipeline:mine": "bun src/pipeline/factor_mining/mining_core.ts",
     "pipeline:backtest": "bun src/pipeline/evaluate/backtest_core.ts"
   },

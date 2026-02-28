@@ -2,15 +2,15 @@ import { Database } from "bun:sqlite";
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import {
+  BaseEventSchema,
+  type EventType,
+  type UQTLEvent,
+} from "../schemas/system_event_schemas.ts";
+import {
   type AceBullet,
   type AcePlaybook,
   AcePlaybookSchema,
 } from "../schemas/financial_domain_schemas.ts";
-import {
-  BaseEventSchema,
-  type EventType,
-  type UQTLEvent,
-} from "../system/runtime_engine.ts";
 
 /**
  * ContextPlaybook handles the persistence and management of ACE context bullets.
@@ -42,11 +42,13 @@ export class ContextPlaybook {
   async save(): Promise<void> {
     const dir = path.dirname(this.filePath);
     await fs.mkdir(dir, { recursive: true });
+    const tempPath = `${this.filePath}.tmp.${Date.now()}`;
     await fs.writeFile(
-      this.filePath,
+      tempPath,
       JSON.stringify(this.playbook, null, 2),
       "utf-8",
     );
+    await fs.rename(tempPath, this.filePath);
   }
 
   addBullet(
@@ -169,7 +171,9 @@ export class MemoryCenter {
         timestamp TEXT NOT NULL,
         type TEXT NOT NULL,
         agent_id TEXT,
+        operator_id TEXT,
         experiment_id TEXT,
+        parent_event_id TEXT,
         payload_json TEXT NOT NULL,
         metadata_json TEXT
       );
@@ -179,6 +183,7 @@ export class MemoryCenter {
       CREATE INDEX IF NOT EXISTS idx_evaluations_score ON evaluations(overall_score DESC);
       CREATE INDEX IF NOT EXISTS idx_uqtl_timestamp ON uqtl_events(timestamp);
       CREATE INDEX IF NOT EXISTS idx_uqtl_type ON uqtl_events(type);
+      CREATE INDEX IF NOT EXISTS idx_uqtl_parent ON uqtl_events(parent_event_id);
     `);
   }
 

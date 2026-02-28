@@ -1,35 +1,10 @@
 import { z } from "zod";
-import { core } from "./app_runtime_core.ts";
+import { type EventType } from "../schemas/system_event_schemas.ts";
 
 /**
- * UQTL (Unified Quantum Task Ledger) Event Schemas
+ * ACE (Agentic Context Engineering) Playbook Schema
+ * Based on ArXiv 2510.04618 and JRay-Lin/ace-agents
  */
-export const EventTypeSchema = z.enum([
-  "MARKET_DATA_FETCHED",
-  "ALPHA_GENERATED",
-  "ALPHA_EVALUATED",
-  "BACKTEST_COMPLETED",
-  "STRATEGY_DECIDED",
-  "OPERATOR_MUTATED",
-  "SYSTEM_LOG",
-  "ERROR_OCCURRED",
-]);
-
-export type EventType = z.infer<typeof EventTypeSchema>;
-
-export const BaseEventSchema = z.object({
-  id: z.string(),
-  timestamp: z.string(),
-  type: EventTypeSchema,
-  agentId: z.string().optional(),
-  operatorId: z.string().optional(),
-  experimentId: z.string().optional(),
-  parentEventId: z.string().optional(),
-  payload: z.record(z.string(), z.unknown()),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-});
-
-export type UQTLEvent = z.infer<typeof BaseEventSchema>;
 
 /**
  * OpenCE (Open Control Engine) Contract Interfaces
@@ -88,12 +63,13 @@ export abstract class UIFOperator<TState, TEvent, TEffect> {
     newState: TState;
   };
 
-  protected emitEvent(
+  async emitEvent(
     type: EventType,
     payload: Record<string, unknown>,
     context: OperatorContext,
     metadata?: Record<string, unknown>,
   ) {
+    const { core } = await import("./app_runtime_core.ts");
     core.eventStore.appendEvent({
       id: globalThis.crypto.randomUUID(),
       timestamp: new Date().toISOString(),
@@ -114,22 +90,18 @@ export class UIFRuntime {
     event: TEvent,
     parentEventId?: string,
   ): Promise<TEffect> {
-    const state =
-      (this.states.get(operator.metadata.id) as TState) ||
-      this.getInitialState(operator);
+    const operatorId = operator.metadata.id;
+    if (!this.states.has(operatorId)) {
+      this.states.set(operatorId, this.getInitialState(operator));
+    }
+    const state = this.states.get(operatorId) as TState;
 
     const context: OperatorContext = {
       operatorId: operator.metadata.id,
       parentEventId: parentEventId ?? undefined,
     };
 
-    const { effect, newState } = operator.process(
-      // biome-ignore lint/suspicious/noExplicitAny: intentional any
-      state as any,
-      event,
-      context,
-      // biome-ignore lint/suspicious/noExplicitAny: intentional any
-    ) as any;
+    const { effect, newState } = operator.process(state, event, context);
 
     this.states.set(operator.metadata.id, newState);
     return effect;
@@ -138,6 +110,7 @@ export class UIFRuntime {
   private getInitialState(
     _operator: UIFOperator<unknown, unknown, unknown>,
   ): unknown {
+    // In a real system, this might look up a manifest or use a factory
     return {};
   }
 }
@@ -148,20 +121,77 @@ export const uifRuntime = new UIFRuntime();
  * Orchestrator: Launches parallel agents.
  */
 export class Orchestrator {
-  private readonly agentCount = 16;
+  private readonly agentCount: number;
 
-  public async runParallel(task: () => Promise<void>) {
-    console.log(`Launching ${this.agentCount} parallel agents... ✨`);
-    const agents = Array.from({ length: this.agentCount }, (_, i) =>
-      this.spawnAgent(i, task),
-    );
-    await Promise.all(agents);
-    console.log("All parallel missions accomplished! ✨");
+  constructor(agentCount = 4) {
+    this.agentCount = Number(process.env.UIF_AGENT_COUNT) || agentCount;
   }
 
-  private async spawnAgent(id: number, task: () => Promise<void>) {
-    console.log(`Agent ${id} is starting mission... ✨`);
-    await task();
-    console.log(`Agent ${id} completed mission! ✨`);
+  public async runParallel(task: () => Promise<void>) {
+    const runId = globalThis.crypto.randomUUID();
+    console.log(
+      `[Orchestrator] Launching ${this.agentCount} parallel agents... ✨`,
+    );
+    await this.emitSystemEvent("RUN_STARTED", {
+      runId,
+      agentCount: this.agentCount,
+    });
+    try {
+      const agents = Array.from({ length: this.agentCount }, (_, i) =>
+        this.spawnAgent(i, task, runId),
+      );
+      await Promise.all(agents);
+      await this.emitSystemEvent("RUN_FINISHED", {
+        runId,
+        agentCount: this.agentCount,
+      });
+      console.log("[Orchestrator] All parallel missions accomplished! ✨");
+    } catch (error) {
+      await this.emitSystemEvent("RUN_FAILED", {
+        runId,
+        agentCount: this.agentCount,
+      });
+      throw error;
+    }
+  }
+
+  private async spawnAgent(id: number, task: () => Promise<void>, runId: string) {
+    console.log(`[Orchestrator] Agent ${id} is starting mission... ✨`);
+    await this.emitSystemEvent("AGENT_STARTED", { runId, agentId: id });
+    try {
+      await task();
+      await this.emitSystemEvent("AGENT_COMPLETED", { runId, agentId: id });
+      console.log(`[Orchestrator] Agent ${id} completed mission! ✨`);
+    } catch (error) {
+      await this.emitSystemEvent("AGENT_FAILED", {
+        runId,
+        agentId: id,
+        reason: error instanceof Error ? error.message : String(error),
+      });
+      console.error(`[Orchestrator] Agent ${id} failed:`, error);
+      throw error;
+    }
+  }
+
+  private async emitSystemEvent(
+    type: Extract<
+      EventType,
+      | "RUN_STARTED"
+      | "RUN_FINISHED"
+      | "RUN_FAILED"
+      | "AGENT_STARTED"
+      | "AGENT_COMPLETED"
+      | "AGENT_FAILED"
+    >,
+    payload: Record<string, unknown>,
+  ) {
+    const { core } = await import("./app_runtime_core.ts");
+    core.eventStore.appendEvent({
+      id: globalThis.crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      type,
+      operatorId: "Orchestrator",
+      payload,
+    });
   }
 }

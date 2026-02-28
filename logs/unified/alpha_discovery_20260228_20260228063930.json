@@ -1,0 +1,71 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "cec3a61a-d5b6-48c0-abaf-5afc6e537fef",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260228",
+  "generatedAt": "2026-02-28T06:39:30.805Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260228",
+    "generatedAt": "2026-02-28T06:39:30.805Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-QUANT-2635C93E"
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-BEHAVIORAL-EE32273B",
+        "description": "Regime Transition Hypothesis (Behavioral Economist)",
+        "reasoning": "A stability model that leverages Regime Transition signals to predict entropy. Our Behavioral Economist engine focuses on breakout during chaos periods.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-02-28T06:39:30.805Z",
+        "scores": {
+          "priority": 0.42600000000000005,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.2,
+          "novelty": 0.5800000000000001
+        }
+      },
+      {
+        "id": "ALPHA-QUANT-2635C93E",
+        "description": "Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst)",
+        "reasoning": "A labor model that leverages Macro-Socio Divergence (e-Stat) signals to predict industrial. Our Quant Analyst engine focuses on demographic during household periods.",
+        "status": "SELECTED",
+        "recency": "2026-02-28T06:39:30.805Z",
+        "scores": {
+          "priority": 0.481,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.3,
+          "novelty": 0.5800000000000001
+        }
+      }
+    ],
+    "universe": [
+      "7203",
+      "9984",
+      "8035",
+      "6758",
+      "4063"
+    ],
+    "startedAt": "2026-02-28T06:39:30.768Z"
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

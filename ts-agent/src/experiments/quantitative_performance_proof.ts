@@ -15,15 +15,19 @@ import { core } from "../system/app_runtime_core.ts";
 async function generateStandardVerificationReport() {
   const args = process.argv.slice(2);
   const getArg = (key: string) => {
-    const found = args.find(a => a.startsWith(`${key}=`));
-    return found ? found.split('=')[1] : undefined;
+    const found = args.find((a) => a.startsWith(`${key}=`));
+    return found ? found.split("=")[1] : undefined;
   };
 
-  const strategyId = getArg('--id') || "GEN3-FACTORY-VP-001";
-  const strategyName = getArg('--name') || "Volume-Price Divergence";
-  const strategyDescription = getArg('--desc') || "Detects price-volume decoupling to identify underreaction in supply-shock regimes. Net-of-cost performance.";
+  const strategyId = getArg("--id") || "GEN3-FACTORY-VP-001";
+  const strategyName = getArg("--name") || "Volume-Price Divergence";
+  const strategyDescription =
+    getArg("--desc") ||
+    "Detects price-volume decoupling to identify underreaction in supply-shock regimes. Net-of-cost performance.";
 
-  console.log(`🛠️ 標準実証レポート用データの生成開始 [${strategyId}] (Audit-Ready)...`);
+  console.log(
+    `🛠️ 標準実証レポート用データの生成開始 [${strategyId}] (Audit-Ready)...`,
+  );
 
   // [監査証跡] Git Commit Hashの取得
   let commitHash = "unknown";
@@ -97,8 +101,11 @@ async function generateStandardVerificationReport() {
       data.prices.push((b.Close / initialPrice) * 100);
 
       // Seed logic based on ID hash for pseudo-uniqueness in placeholder mode
-      const seed = strategyId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const factor = ((b.Close - b.Open) / (b.Volume + 1e-9)) * (seed % 2 === 0 ? 1 : -1);
+      const seed = strategyId
+        .split("")
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const factor =
+        ((b.Close - b.Open) / (b.Volume + 1e-9)) * (seed % 2 === 0 ? 1 : -1);
 
       data.factors.push(factor);
       const pos = factor < 0 ? 1 : -1;
@@ -133,7 +140,7 @@ async function generateStandardVerificationReport() {
     return (cumB - 1) * 100;
   });
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const fileName = `VERIF_${strategyMetadata.id}_${activeSymbols.length}S_${timestamp}.png`;
 
   const report: QuantitativeVerification = QuantitativeVerificationSchema.parse(

@@ -97,6 +97,7 @@ tasks:
     desc: 直行アルファ探索と基礎モデルによる相関チェック (Full Workflow)
     dir: "{{.TS_DIR}}"
     cmds:
+      - bun run verify:api
       - bun run experiments:alpha-discovery
       - task: benchmark:foundation
 
@@ -106,11 +107,11 @@ tasks:
     cmds:
       - task: discovery
       - bun run experiments:model-analysis
-      - bun run pipeline:llm-readiness
+      - bun run pipeline:mine
 
   run:newalphasearch:
     desc: .agent/workflows/newalphasearch.md と同等の探索を実行
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run experiments:alpha-discovery
-      - bun run pipeline:ab
+      - bun run pipeline:mine

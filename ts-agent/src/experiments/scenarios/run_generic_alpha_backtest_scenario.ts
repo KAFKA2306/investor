@@ -27,7 +27,7 @@ export async function runGenericAlphaScenario(params: {
     maxDrawdown: number;
     upliftOverBaseline?: number;
   };
-  readinessScore: number;
+  reasoningScore: number;
   isProductionReady: boolean;
 }) {
   const generatedAt = new Date().toISOString();
@@ -61,7 +61,7 @@ export async function runGenericAlphaScenario(params: {
       tradingDaysHorizon: 252,
       isProductionReady: params.isProductionReady,
     },
-    reasoningScore: params.readinessScore / 100,
+    reasoningScore: params.reasoningScore,
   };
 
   const unifiedLog = {

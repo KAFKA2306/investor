@@ -1326,8 +1326,13 @@
       }
     },
     {
+      "id": "ctx-4eiza478",
       "content": "Inventory Lead Hypothesis (Quant Analyst): By synthesizing Inventory Lead and cycle, the Quant Analyst persona targets utilization via a backlog approach, optimized for bottleneck market regimes.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:41:59.898Z",
+      "updated_at": "2026-02-28T05:41:59.898Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1343,16 +1348,16 @@
             "name": "turnover_value"
           }
         }
-      },
-      "id": "ctx-4eiza478",
+      }
+    },
+    {
+      "id": "ctx-3ndjgzax",
+      "content": "Liquidity Shock Hypothesis (HFT Engineer): Strategic Liquidity Shock extraction using flow filters. It detects illiquidity and exploits impact in imbalance markets, verified by HFT Engineer protocols.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T05:41:59.898Z",
-      "updated_at": "2026-02-28T05:41:59.898Z"
-    },
-    {
-      "content": "Liquidity Shock Hypothesis (HFT Engineer): Strategic Liquidity Shock extraction using flow filters. It detects illiquidity and exploits impact in imbalance markets, verified by HFT Engineer protocols.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T05:41:59.898Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1368,12 +1373,543 @@
             "name": "profit_margin"
           }
         }
-      },
-      "id": "ctx-3ndjgzax",
+      }
+    },
+    {
+      "id": "ctx-t4v0hnqe",
+      "content": "Cross-Asset Signal Hypothesis (Quant Analyst): Strategic Cross-Asset Signal extraction using spread filters. It detects correlation and exploits basis in parity markets, verified by Quant Analyst protocols.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T05:41:59.898Z",
-      "updated_at": "2026-02-28T05:41:59.898Z"
+      "created_at": "2026-02-28T06:18:07.893Z",
+      "updated_at": "2026-02-28T06:18:07.893Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-A7581F08",
+        "ast": {
+          "op": "mul",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "turnover_value"
+            },
+            "right": {
+              "op": "lit",
+              "value": 0.75
+            }
+          },
+          "right": {
+            "op": "sub",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "open"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "ctx-2wfp7odf",
+      "content": "Efficiency Divergence Hypothesis (Quant Analyst): By synthesizing Efficiency Divergence and margin, the Quant Analyst persona targets leverage via a operating approach, optimized for structural market regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:18:07.893Z",
+      "updated_at": "2026-02-28T06:18:07.893Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-07F91CA8",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "col",
+            "name": "operating_profit"
+          },
+          "right": {
+            "op": "col",
+            "name": "volume"
+          }
+        }
+      }
+    },
+    {
+      "id": "ctx-k9jcevgt",
+      "content": "Efficiency Divergence Hypothesis (Quant Analyst): A operating model that leverages Efficiency Divergence signals to predict leverage. Our Quant Analyst engine focuses on margin during structural periods.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:22:54.335Z",
+      "updated_at": "2026-02-28T06:22:54.335Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-5664CAC0",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "col",
+            "name": "turnover_value"
+          },
+          "right": {
+            "op": "col",
+            "name": "turnover_value"
+          }
+        }
+      }
+    },
+    {
+      "id": "ctx-ir69iop9",
+      "content": "Cross-Asset Signal Hypothesis (Behavioral Economist): A spread model that leverages Cross-Asset Signal signals to predict basis. Our Behavioral Economist engine focuses on correlation during parity periods.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:22:54.336Z",
+      "updated_at": "2026-02-28T06:22:54.336Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-ED5D2318",
+        "ast": {
+          "op": "col",
+          "name": "volume"
+        }
+      }
+    },
+    {
+      "id": "ctx-dy3xibic",
+      "content": "Behavioral Momentum Hypothesis (Behavioral Economist): A overreaction model that leverages Behavioral Momentum signals to predict drift. Our Behavioral Economist engine focuses on sentiment during crowding periods.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:23:30.436Z",
+      "updated_at": "2026-02-28T06:23:30.436Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-32B9D814",
+        "ast": {
+          "op": "sub",
+          "left": {
+            "op": "sub",
+            "left": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "lit",
+                "value": 2.96
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          },
+          "right": {
+            "op": "mul",
+            "left": {
+              "op": "lit",
+              "value": 4.5
+            },
+            "right": {
+              "op": "div",
+              "left": {
+                "op": "lit",
+                "value": 3.71
+              },
+              "right": {
+                "op": "col",
+                "name": "turnover_value"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "ctx-8t0l3l4s",
+      "content": "Volatility Regime Hypothesis (Quant Analyst): This Volatility Regime focused alpha, proposed by a Quant Analyst, identifies dispersion patterns using uncertainty logic to capture skew in a tail environment.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:23:30.436Z",
+      "updated_at": "2026-02-28T06:23:30.436Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-045008AA",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "mul",
+            "left": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "turnover_value"
+              },
+              "right": {
+                "op": "col",
+                "name": "open"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "net_sales"
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "col",
+                "name": "turnover_value"
+              }
+            },
+            "right": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "col",
+                "name": "open"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "ctx-f70l3e07",
+      "content": "Corporate Governance (J-Quants) Hypothesis (Fundamental Researcher): Strategic Corporate Governance (J-Quants) extraction using shareholder filters. It detects board and exploits payout in disclosure markets, verified by Fundamental Researcher protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:38:17.490Z",
+      "updated_at": "2026-02-28T06:38:17.490Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-80D46CE4",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "net_sales"
+            },
+            "right": {
+              "op": "div",
+              "left": {
+                "op": "lit",
+                "value": 4.9
+              },
+              "right": {
+                "op": "col",
+                "name": "volume"
+              }
+            }
+          },
+          "right": {
+            "op": "sub",
+            "left": {
+              "op": "lit",
+              "value": 4.56
+            },
+            "right": {
+              "op": "mul",
+              "left": {
+                "op": "col",
+                "name": "volume"
+              },
+              "right": {
+                "op": "lit",
+                "value": 3.96
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5611940298507463
+      }
+    },
+    {
+      "id": "ctx-kicxouqo",
+      "content": "Cross-Asset Signal Hypothesis (HFT Engineer): A spread model that leverages Cross-Asset Signal signals to predict basis. Our HFT Engineer engine focuses on correlation during parity periods.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:38:17.490Z",
+      "updated_at": "2026-02-28T06:38:17.490Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-1CB25732",
+        "ast": {
+          "op": "sub",
+          "left": {
+            "op": "mul",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "net_sales"
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "net_sales"
+            }
+          },
+          "right": {
+            "op": "sub",
+            "left": {
+              "op": "col",
+              "name": "profit_margin"
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "lit",
+                "value": 0.3
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.4211940298507463
+      }
+    },
+    {
+      "id": "ctx-lx74tt4m",
+      "content": "Regime Transition Hypothesis (Behavioral Economist): A stability model that leverages Regime Transition signals to predict entropy. Our Behavioral Economist engine focuses on breakout during chaos periods.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:39:30.805Z",
+      "updated_at": "2026-02-28T06:39:30.805Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-EE32273B",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "add",
+            "left": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "profit_margin"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "open"
+            }
+          },
+          "right": {
+            "op": "div",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "close"
+              },
+              "right": {
+                "op": "col",
+                "name": "close"
+              }
+            },
+            "right": {
+              "op": "div",
+              "left": {
+                "op": "lit",
+                "value": 1.58
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.42600000000000005
+      }
+    },
+    {
+      "id": "ctx-qdw1p70c",
+      "content": "Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst): A labor model that leverages Macro-Socio Divergence (e-Stat) signals to predict industrial. Our Quant Analyst engine focuses on demographic during household periods.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:39:30.805Z",
+      "updated_at": "2026-02-28T06:39:30.805Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-2635C93E",
+        "ast": {
+          "op": "sub",
+          "left": {
+            "op": "col",
+            "name": "turnover_value"
+          },
+          "right": {
+            "op": "col",
+            "name": "open"
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.481
+      }
+    },
+    {
+      "content": "Information Asymmetry Hypothesis (Macro Strategist): This Information Asymmetry focused alpha, proposed by a Macro Strategist, identifies insider patterns using leakage logic to capture latency in a skewness environment.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-909A228F",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "volume"
+            },
+            "right": {
+              "op": "sub",
+              "left": {
+                "op": "lit",
+                "value": 0.47
+              },
+              "right": {
+                "op": "col",
+                "name": "open"
+              }
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "col",
+              "name": "operating_profit"
+            },
+            "right": {
+              "op": "div",
+              "left": {
+                "op": "lit",
+                "value": 1.91
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5701612903225807
+      },
+      "id": "ctx-xfy80b1h",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:40:42.878Z",
+      "updated_at": "2026-02-28T06:40:42.878Z"
+    },
+    {
+      "content": "Liquidity Shock Hypothesis (Behavioral Economist): Strategic Liquidity Shock extraction using flow filters. It detects illiquidity and exploits impact in imbalance markets, verified by Behavioral Economist protocols.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-049CEACC",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "sub",
+            "left": {
+              "op": "col",
+              "name": "operating_profit"
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          },
+          "right": {
+            "op": "div",
+            "left": {
+              "op": "add",
+              "left": {
+                "op": "lit",
+                "value": 0.74
+              },
+              "right": {
+                "op": "col",
+                "name": "net_sales"
+              }
+            },
+            "right": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "profit_margin"
+              },
+              "right": {
+                "op": "col",
+                "name": "open"
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5751612903225807
+      },
+      "id": "ctx-uiam0jv7",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:40:42.878Z",
+      "updated_at": "2026-02-28T06:40:42.878Z"
     }
   ]
 }

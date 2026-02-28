@@ -13,12 +13,15 @@ import {
 import {
   type BenchmarkReportSchema,
   type DailyScenarioLogSchema,
-  type ReadinessReportSchema,
   type StandardOutcomeSchema,
   type UnifiedLog,
   UnifiedLogSchema,
 } from "../schemas/financial_domain_schemas.ts";
-import type { EventType } from "./runtime_engine.ts";
+import {
+  CanonicalLogEnvelopeSchema,
+  type CanonicalLogKind,
+  type EventType,
+} from "../schemas/system_event_schemas.ts";
 
 const ConfigSchema = z.object({
   project: z.object({
@@ -60,6 +63,15 @@ const ConfigSchema = z.object({
       slippageBps: z.number().min(0),
     }),
   }),
+  logging: z
+    .object({
+      envelope: z
+        .object({
+          version: z.string().default("v2"),
+        })
+        .default({ version: "v2" }),
+    })
+    .optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -92,7 +104,9 @@ class Core {
     const result = ConfigSchema.safeParse(data);
 
     if (!result.success) {
-      process.exit(1);
+      throw new Error(
+        `Invalid configuration: ${JSON.stringify(result.error.format())}`,
+      );
     }
 
     return {
@@ -111,7 +125,7 @@ class Core {
   public getEnv(key: string): string {
     const value = process.env[key];
     if (!value) {
-      process.exit(1);
+      throw new Error(`Environment variable ${key} is required but not found.`);
     }
     return value;
   }
@@ -126,13 +140,14 @@ class Core {
   public getUvPath(): string {
     return this.config.providers.python?.uvPath || "uv";
   }
+
 }
 
 export abstract class BaseAgent {
   protected readonly core = core;
   constructor() {
     if (!this.core.config.project.name) {
-      process.exit(1);
+      throw new Error("Project name is not configured.");
     }
   }
 
@@ -168,45 +183,134 @@ export abstract class BaseAgent {
 
 export const core = new Core();
 
-function createLogPath(date: string): string {
+function createLogPath(bucket: string, fileName: string): string {
   const logsBase = core.config.paths.logs;
-  const logsDir = join(logsBase, "daily");
+  const logsDir = join(logsBase, bucket);
   mkdirSync(logsDir, { recursive: true });
-  return join(logsDir, `${date}.json`);
+  return join(logsDir, fileName);
 }
 
-export function writeDailyLog(data: UnifiedLog): void {
-  const validated = UnifiedLogSchema.parse(data);
-  let dateStr = "";
+function toDateKeyFromIso(isoLike: string): string {
+  return isoLike.split("T")[0]?.replaceAll("-", "") || "";
+}
 
+function extractAsOfDate(validated: UnifiedLog): string {
   if (validated.schema === "investor.daily-log.v1") {
-    dateStr = (validated.report as z.infer<typeof DailyScenarioLogSchema>).date;
-  } else if (validated.schema === "investor.benchmark-log.v1") {
-    dateStr = (validated.report as z.infer<typeof BenchmarkReportSchema>).date;
-  } else if (validated.schema === "investor.readiness-report.v1") {
-    dateStr = (validated.report as z.infer<typeof ReadinessReportSchema>)
-      .dateRange.to;
-  } else if (validated.schema === "investor.investment-outcome.v1") {
-    dateStr = (
-      validated.report as z.infer<typeof StandardOutcomeSchema>
-    ).timestamp
-      .split("T")[0]
-      ?.replaceAll("-", "") as string;
+    return (validated.report as z.infer<typeof DailyScenarioLogSchema>).date;
   }
-
-  if (!dateStr) {
-    dateStr = new Date().toISOString().split("T")[0]?.replaceAll("-", "") || "";
+  if (validated.schema === "investor.benchmark-log.v1") {
+    return (validated.report as z.infer<typeof BenchmarkReportSchema>).date;
   }
-
-  const logPath = createLogPath(dateStr);
-  writeFileSync(logPath, JSON.stringify(validated, null, 2), "utf8");
-  console.log(`Unified daily log written to ${logPath}`);
+  if (validated.schema === "investor.investment-outcome.v1") {
+    const ts = (validated.report as z.infer<typeof StandardOutcomeSchema>)
+      .timestamp;
+    return toDateKeyFromIso(ts);
+  }
+  return "";
 }
 
-export function readDailyLog(date: string): UnifiedLog {
-  const logPath = createLogPath(date);
-  const content = readFileSync(logPath, "utf8");
-  return UnifiedLogSchema.parse(JSON.parse(content) as unknown);
+function resolveSourceBucket(schema: UnifiedLog["schema"]): string {
+  switch (schema) {
+    case "investor.daily-log.v1":
+      return "unified";
+    case "investor.benchmark-log.v1":
+      return "unified";
+    case "investor.investment-outcome.v1":
+      return "unified";
+    default:
+      return "unknown";
+  }
+}
+
+function resolveCanonicalKind(schema: UnifiedLog["schema"]): CanonicalLogKind {
+  switch (schema) {
+    case "investor.daily-log.v1":
+      return "daily_decision";
+    case "investor.benchmark-log.v1":
+      return "benchmark";
+    case "investor.investment-outcome.v1":
+      return "investment_outcome";
+    default:
+      return "system_event";
+  }
+}
+
+function buildCanonicalFileName(
+  kind: CanonicalLogKind,
+  asOfDate: string,
+  generatedAt: string,
+): string {
+  const compactTs = generatedAt.replace(/[^\d]/g, "").slice(0, 14);
+  return `${kind}_${asOfDate}_${compactTs}.json`;
+}
+
+export function writeCanonicalLog(data: UnifiedLog): void {
+  const validated = UnifiedLogSchema.parse(data);
+  let dateStr = extractAsOfDate(validated);
+  if (!dateStr || !/^\d{8}$/.test(dateStr)) {
+    dateStr = toDateKeyFromIso(new Date().toISOString());
+  }
+
+  writeCanonicalEnvelope({
+    kind: resolveCanonicalKind(validated.schema),
+    asOfDate: dateStr,
+    generatedAt: validated.generatedAt || new Date().toISOString(),
+    payload: validated,
+    producerComponent: "app_runtime_core.writeCanonicalLog",
+    sourceSchema: validated.schema,
+    sourceBucket: resolveSourceBucket(validated.schema),
+    derived: false,
+  });
+}
+
+export function writeCanonicalEnvelope(input: {
+  kind: CanonicalLogKind;
+  payload: unknown;
+  asOfDate?: string;
+  generatedAt?: string;
+  producerComponent?: string;
+  sourceSchema?: string;
+  sourceBucket?: string;
+  sourceFile?: string;
+  parentIds?: string[];
+  derived?: boolean;
+}): string {
+  const generatedAt = input.generatedAt || new Date().toISOString();
+  const asOfDate =
+    input.asOfDate && /^\d{8}$/.test(input.asOfDate)
+      ? input.asOfDate
+      : toDateKeyFromIso(generatedAt);
+
+  const canonical = CanonicalLogEnvelopeSchema.parse({
+    schema: "investor.log-envelope.v2",
+    id: crypto.randomUUID(),
+    runId: process.env.UQTL_RUN_ID,
+    kind: input.kind,
+    asOfDate,
+    generatedAt,
+    producer: {
+      component: input.producerComponent || "app_runtime_core.writeCanonicalEnvelope",
+    },
+    payload: input.payload,
+    derived: input.derived ?? false,
+    lineage:
+      input.sourceSchema || input.sourceBucket || input.sourceFile || input.parentIds
+        ? {
+            sourceSchema: input.sourceSchema,
+            sourceBucket: input.sourceBucket,
+            sourceFile: input.sourceFile,
+            parentIds: input.parentIds,
+          }
+        : undefined,
+  });
+
+  const canonicalPath = createLogPath(
+    "unified",
+    buildCanonicalFileName(canonical.kind, asOfDate, generatedAt),
+  );
+  writeFileSync(canonicalPath, JSON.stringify(canonical, null, 2), "utf8");
+  console.log(`[Core] Canonical log written to ${canonicalPath}`);
+  return canonicalPath;
 }
 
 export async function runParallel(task: () => Promise<void>): Promise<void> {

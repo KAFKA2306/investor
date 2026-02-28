@@ -66,10 +66,15 @@ export const DailyReportSchema = z.object({
           totalCostBps: z.number().optional(),
           netReturn: z.number().optional(),
           grossReturn: z.number().optional(),
+          feeBps: z.number().optional(),
+          slippageBps: z.number().optional(),
           tradingDays: z.number().optional(),
+          sharpe: z.number().optional(),
+          maxDrawdown: z.number().optional(),
         })
         .optional(),
       selectedSymbols: z.array(z.string()).optional(),
+      paperPnlPerUnit: z.number().optional(),
     })
     .optional(),
   risks: z
@@ -131,45 +136,72 @@ export const UnifiedLogPayloadSchema = z.object({
 export type UnifiedLogPayload = z.infer<typeof UnifiedLogPayloadSchema>;
 
 export const AlphaDiscoveryPayloadSchema = z.object({
-  schema: z.string().optional(),
-  date: z.string().optional(),
-  evidence: z
+  schema: z.literal("investor.alpha-discovery.v3"),
+  date: z.string().regex(/^\d{8}$/),
+  generatedAt: z.string().datetime(),
+  stage: z.literal("DISCOVERY_PRECHECK"),
+  scoreType: z.literal("LINGUISTIC_PRECHECK"),
+  evidence: z.object({
+    sampleSize: z.number().int().positive(),
+    selectedCount: z.number().int().nonnegative(),
+    selectionRate: z.number().min(0).max(1),
+  }),
+  quality: z
     .object({
-      sampleSize: z.number().optional(),
-      avgIntradayRange: z.number().optional(),
-      avgProfitMargin: z.number().optional(),
-      positiveReturnRatio: z.number().optional(),
+      completeness: z.enum(["COMPLETE", "PARTIAL", "MISSING"]),
+      missingFields: z.array(z.string()),
     })
-    .optional(),
-  selected: z.array(z.string()).optional(),
+    .default({ completeness: "COMPLETE", missingFields: [] }),
+  selected: z.array(z.string()),
   candidates: z
     .array(
       z.object({
         id: z.string(),
-        score: z.number().optional(),
-        reasoning: z.string().optional(),
-        icProxy: z.number().optional(),
-        orthogonality: z.number().optional(),
-        correlationToBaseline: z.number().optional(),
+        description: z.string(),
+        reasoning: z.string(),
+        status: z.enum(["SELECTED", "REJECTED"]),
+        rejectReason: z.string().optional(),
+        recency: z.string().datetime(),
+        scores: z.object({
+          priority: z.number().min(0).max(1),
+          plausibility: z.number().min(0).max(1),
+          riskAdjusted: z.number().min(0).max(1),
+          novelty: z.number().min(0).max(1),
+        }),
       }),
     )
-    .optional(),
+    .min(1),
 });
 
 export type AlphaDiscoveryPayload = z.infer<typeof AlphaDiscoveryPayloadSchema>;
 
-export const ReadinessLogPayloadSchema = z.object({
-  schema: z.string().optional(),
-  report: z
-    .object({
-      verdict: z.string().optional(),
-      score: z.object({ total: z.number().optional() }).optional(),
-      recommendations: z.array(z.string()).optional(),
-    })
-    .optional(),
+const ConnectivityStatusSchema = z.enum(["PASS", "FAIL", "SKIP", "MISSING"]);
+
+export const QualityGatePayloadSchema = z.object({
+  verdict: z.enum(["NOT_READY", "CAUTION", "READY"]),
+  score: z.number().min(0).max(100),
+  components: z.record(z.string(), z.number()),
+  derivedFrom: z.array(z.string()),
+  generatedAt: z.string().datetime(),
+  connectivity: z.object({
+    jquants: z.object({
+      status: ConnectivityStatusSchema,
+      listedCount: z.number().optional(),
+    }),
+    estat: z.object({
+      status: ConnectivityStatusSchema,
+      hasStatsData: z.boolean().optional(),
+    }),
+    kabucom: z.object({
+      status: ConnectivityStatusSchema,
+    }),
+    edinet: z.object({
+      status: ConnectivityStatusSchema,
+    }),
+  }),
 });
 
-export type ReadinessLogPayload = z.infer<typeof ReadinessLogPayloadSchema>;
+export type QualityGatePayload = z.infer<typeof QualityGatePayloadSchema>;
 
 export const UQTLEventSchema = z.object({
   id: z.string(),
@@ -179,14 +211,60 @@ export const UQTLEventSchema = z.object({
 });
 export type UQTLEvent = z.infer<typeof UQTLEventSchema>;
 
+export const CanonicalLogKindSchema = z.enum([
+  "daily_decision",
+  "benchmark",
+  "investment_outcome",
+  "alpha_discovery",
+  "quality_gate",
+  "system_event",
+]);
+
+export type CanonicalLogKind = z.infer<typeof CanonicalLogKindSchema>;
+
+export const CanonicalLogEnvelopeV2Schema = z.object({
+  schema: z.literal("investor.log-envelope.v2"),
+  id: z.string().optional(),
+  runId: z.string().optional(),
+  kind: CanonicalLogKindSchema,
+  asOfDate: z.string().regex(/^\d{8}$/),
+  generatedAt: z.string().datetime(),
+  producer: z
+    .object({
+      component: z.string().optional(),
+      version: z.string().optional(),
+    })
+    .optional(),
+  payload: z.unknown(),
+  derived: z.boolean().optional(),
+  lineage: z
+    .object({
+      sourceSchema: z.string().optional(),
+      sourceBucket: z.string().optional(),
+      sourceFile: z.string().optional(),
+      parentIds: z.array(z.string()).optional(),
+    })
+    .optional(),
+});
+
 /**
  * Formatters and Utilities
  */
-export const pickNumber = (v: unknown, fallback = 0): number =>
-  typeof v === "number" && Number.isFinite(v) ? v : fallback;
+export const pickNumber = (v: unknown): number | undefined => {
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  if (typeof v === "string") {
+    const parsed = Number.parseFloat(v);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+};
 export const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
-export const canonicalDate = (v: string | undefined): string =>
-  v ? v.replace(/[^\d]/g, "").slice(0, 8) : "";
+export const canonicalDate = (v: unknown): string => {
+  if (typeof v !== "string") return "";
+  const cleaned = v.replace(/[^\d]/g, "");
+  if (cleaned.length >= 8) return cleaned.slice(0, 8);
+  return "";
+};
 export const formatDate = (v: string): string =>
   v.length === 8 ? `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}` : v;
 export const formatPercent = (v: number, d = 2): string =>
@@ -196,13 +274,39 @@ export const formatCompact = (v: number): string =>
   v >= 10000 ? `${(v / 10000).toFixed(1)}万` : v.toLocaleString();
 export const formatSignedPercent = (v: number, d = 2): string =>
   `${v >= 0 ? "+" : ""}${(v * 100).toFixed(d)}%`;
+export const formatNullableNumber = (
+  v: number | undefined,
+  d = 3,
+  suffix = "",
+): string => (v === undefined ? "欠損" : `${v.toFixed(d)}${suffix}`);
+export const formatPercentNullable = (v: number | undefined, d = 2): string =>
+  v === undefined ? "欠損" : formatPercent(v, d);
+export const formatSignedPercentNullable = (
+  v: number | undefined,
+  d = 2,
+): string => (v === undefined ? "欠損" : formatSignedPercent(v, d));
+export const formatBpsNullable = (v: number | undefined): string =>
+  v === undefined ? "欠損" : formatBps(v);
 export const chipClass = (verdict: string): string => {
-  const v = verdict.toUpperCase();
-  if (v.includes("PASS") || v.includes("ACTIVE") || v.includes("READY"))
+  const normalized = verdict.toUpperCase();
+  if (
+    normalized.includes("PASS") ||
+    normalized.includes("ACTIVE") ||
+    normalized.includes("READY")
+  )
     return "ready";
-  if (v.includes("CAUTION") || v.includes("REJECT") || v.includes("WARNING"))
+  if (
+    normalized.includes("CAUTION") ||
+    normalized.includes("REJECT") ||
+    normalized.includes("WARNING")
+  )
     return "caution";
-  if (v.includes("RISK") || v.includes("FAIL") || v.includes("ERROR"))
+  if (
+    normalized.includes("RISK") ||
+    normalized.includes("FAIL") ||
+    normalized.includes("ERROR") ||
+    normalized.includes("MISSING")
+  )
     return "risk";
   return "neutral";
 };
@@ -212,24 +316,89 @@ export const chipClass = (verdict: string): string => {
  */
 export const computeConfidence = (
   report: DailyReport,
-  readiness: ReadinessLogPayload | null,
-): number => {
-  const readinessScore = pickNumber(readiness?.report?.score?.total) / 100;
-  const edgeScore = clamp01(pickNumber(report.results?.expectedEdge) / 0.25);
-  const returnScore = clamp01(
-    (pickNumber(report.results?.basketDailyReturn) + 0.03) / 0.06,
-  );
-  return clamp01(
-    edgeScore * 0.35 + returnScore * 0.25 + (readinessScore || 0) * 0.15,
-  );
+  qualityGate: QualityGatePayload | null,
+): number | undefined => {
+  const qualityRaw = pickNumber(qualityGate?.score);
+  const edgeRaw = pickNumber(report.results?.expectedEdge);
+  const basketReturnRaw = pickNumber(report.results?.basketDailyReturn);
+
+  if (
+    qualityRaw === undefined ||
+    edgeRaw === undefined ||
+    basketReturnRaw === undefined
+  ) {
+    return undefined;
+  }
+
+  const qualityScore = clamp01(qualityRaw / 100);
+  const edgeScore = clamp01(edgeRaw / 0.25);
+  const returnScore = clamp01((basketReturnRaw + 0.03) / 0.06);
+  return clamp01(edgeScore * 0.4 + returnScore * 0.35 + qualityScore * 0.25);
 };
 
 export const computeUqtlVector = (
   report: DailyReport,
   _unified: UnifiedLogPayload | null,
-  readiness: ReadinessLogPayload | null,
+  qualityGate: QualityGatePayload | null,
 ) => {
-  const confidence = computeConfidence(report, readiness);
+  const confidence = computeConfidence(report, qualityGate);
+  if (confidence === undefined) return undefined;
   const entropy = 1.0 - confidence;
   return { confidence, entropy, date: report.date };
+};
+
+const normalizeMetricKey = (value: string): string =>
+  value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+const stageMetricEntries = (
+  payload: UnifiedLogPayload | null | undefined,
+): Array<{ stage: string; status: string; key: string; rawValue: unknown }> => {
+  if (!payload?.stages) return [];
+  const rows: Array<{
+    stage: string;
+    status: string;
+    key: string;
+    rawValue: unknown;
+  }> = [];
+  for (const stage of payload.stages) {
+    const metrics = stage.metrics;
+    if (!metrics) continue;
+    for (const [key, rawValue] of Object.entries(metrics)) {
+      rows.push({
+        stage: stage.name ?? "unnamed-stage",
+        status: stage.status ?? "MISSING",
+        key,
+        rawValue,
+      });
+    }
+  }
+  return rows;
+};
+
+export const collectStageMetricRows = (
+  payload: UnifiedLogPayload | null | undefined,
+): Array<{
+  stage: string;
+  status: string;
+  key: string;
+  value: number | undefined;
+}> =>
+  stageMetricEntries(payload).map((row) => ({
+    stage: row.stage,
+    status: row.status,
+    key: row.key,
+    value: pickNumber(row.rawValue),
+  }));
+
+export const readStageMetric = (
+  payload: UnifiedLogPayload | null | undefined,
+  candidateKeys: readonly string[],
+): number | undefined => {
+  const wanted = new Set(candidateKeys.map(normalizeMetricKey));
+  for (const row of stageMetricEntries(payload)) {
+    if (!wanted.has(normalizeMetricKey(row.key))) continue;
+    const value = pickNumber(row.rawValue);
+    if (value !== undefined) return value;
+  }
+  return undefined;
 };

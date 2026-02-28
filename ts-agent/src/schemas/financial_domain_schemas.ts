@@ -161,31 +161,8 @@ export const StandardOutcomeSchema = z.object({
 export type StandardOutcome = z.infer<typeof StandardOutcomeSchema>;
 
 /**
- * Unified Log and Pipeline Readiness
+ * Unified Log Schemas
  */
-export const ReadinessReportSchema = z.object({
-  generatedAt: z.string().datetime(),
-  dateRange: z.object({
-    from: z.string().regex(/^\d{8}$/),
-    to: z.string().regex(/^\d{8}$/),
-  }),
-  sampleSize: z.number().int().nonnegative(),
-  score: z.object({
-    dataHorizon: z.number(),
-    costAwareness: z.number(),
-    outOfSampleDiscipline: z.number(),
-    modelTraceability: z.number(),
-    reproducibility: z.number(),
-    executionObservability: z.number(),
-    total: z.number(),
-  }),
-  thresholds: z.object({
-    productionReadyMin: z.number(),
-    cautionMin: z.number(),
-  }),
-  verdict: z.enum(["NOT_READY", "CAUTION", "READY"]),
-  recommendations: z.array(z.string()),
-});
 
 export const SymbolAnalysisLogSchema = z.object({
   symbol: z.string().length(4),
@@ -310,7 +287,6 @@ export const UnifiedLogSchema = z.object({
   schema: z.enum([
     "investor.daily-log.v1",
     "investor.benchmark-log.v1",
-    "investor.readiness-report.v1",
     "investor.investment-outcome.v1",
   ]),
   generatedAt: z.string().datetime(),
@@ -318,7 +294,6 @@ export const UnifiedLogSchema = z.object({
   report: z.union([
     DailyScenarioLogSchema,
     BenchmarkReportSchema,
-    ReadinessReportSchema,
     StandardOutcomeSchema,
   ]),
 });

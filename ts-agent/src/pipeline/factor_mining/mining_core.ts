@@ -58,7 +58,7 @@ export function runFactorMining(logsBaseDir: string, registryDir: string) {
   if (rows.length < 2)
     return FactorMiningReportSchema.parse({
       generatedAt: new Date().toISOString(),
-      source: { logsDir: resolve(logsBaseDir, "daily"), rows: rows.length },
+      source: { logsDir: resolve(logsBaseDir, "unified"), rows: rows.length },
       config: { generations: 0, candidatesPerGeneration: 0, eliteCount: 0 },
       acceptedCount: 0,
       top: [],
@@ -112,7 +112,7 @@ export function runFactorMining(logsBaseDir: string, registryDir: string) {
   );
   return FactorMiningReportSchema.parse({
     generatedAt: new Date().toISOString(),
-    source: { logsDir: resolve(logsBaseDir, "daily"), rows: rows.length },
+    source: { logsDir: resolve(logsBaseDir, "unified"), rows: rows.length },
     config,
     acceptedCount,
     top: top.map((e) => ({

@@ -1,7 +1,8 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z } from "zod";
 import { UnifiedLogSchema } from "../../schemas/financial_domain_schemas.ts";
+import { CanonicalLogEnvelopeSchema } from "../../schemas/system_event_schemas.ts";
 import {
   calculatePerformanceMetrics,
   PerformanceMetricsSchema,
@@ -101,16 +102,24 @@ export function mutateFromElite(
  * Feature Extraction and Loading
  */
 export function loadFeatureRows(logsBaseDir: string): FeatureRow[] {
-  const logsDir = resolve(logsBaseDir, "daily");
+  const logsDir = resolve(logsBaseDir, "unified");
+  if (!existsSync(logsDir)) return [];
   const files = readdirSync(logsDir)
-    .filter((f) => /^\d{8}\.json$/.test(f))
+    .filter((f) => f.endsWith(".json"))
     .sort();
   const rows: FeatureRow[] = [];
   for (const file of files) {
     const raw = JSON.parse(readFileSync(join(logsDir, file), "utf8"));
-    if (raw.schema !== "investor.daily-log.v1") continue;
-    const result = UnifiedLogSchema.safeParse(raw);
-    if (!result.success || typeof result.data.report !== "object") continue;
+    const envelope = CanonicalLogEnvelopeSchema.safeParse(raw);
+    if (!envelope.success || envelope.data.kind !== "daily_decision") continue;
+    const result = UnifiedLogSchema.safeParse(envelope.data.payload);
+    if (
+      !result.success ||
+      result.data.schema !== "investor.daily-log.v1" ||
+      typeof result.data.report !== "object"
+    )
+      continue;
+
     const report = result.data.report as {
       date: string;
       results: { basketDailyReturn: number };

@@ -5,6 +5,7 @@ import {
   type DailyScenarioLogSchema,
   UnifiedLogSchema,
 } from "../../schemas/financial_domain_schemas.ts";
+import { CanonicalLogEnvelopeSchema } from "../../schemas/system_event_schemas.ts";
 
 const EPS = 1e-12;
 
@@ -179,25 +180,28 @@ export function loadPerformanceLedgerRows(
   const rows: PerformanceLedgerRow[] = [];
   for (const file of files) {
     try {
-      const log = UnifiedLogSchema.parse(
-        JSON.parse(fs.readFileSync(path.join(logsDir, file), "utf8")),
-      );
-      if (log.schema === "investor.daily-log.v1") {
-        const report = log.report as z.infer<typeof DailyScenarioLogSchema>;
-        if (report.scenarioId && report.results?.backtest) {
-          const b = report.results.backtest;
-          rows.push({
-            date: report.date,
-            strategyId: report.scenarioId,
-            grossReturn: b.grossReturn,
-            netReturn: b.netReturn,
-            feeBps: b.feeBps,
-            slippageBps: b.slippageBps,
-            totalCostBps: b.totalCostBps,
-            grossExposure: 1.0,
-            metadata: { file },
-          });
-        }
+      const raw = JSON.parse(fs.readFileSync(path.join(logsDir, file), "utf8"));
+      const envelope = CanonicalLogEnvelopeSchema.safeParse(raw);
+      if (!envelope.success || envelope.data.kind !== "daily_decision") continue;
+
+      const payload = UnifiedLogSchema.safeParse(envelope.data.payload);
+      if (!payload.success || payload.data.schema !== "investor.daily-log.v1")
+        continue;
+
+      const report = payload.data.report as z.infer<typeof DailyScenarioLogSchema>;
+      if (report.scenarioId && report.results?.backtest) {
+        const b = report.results.backtest;
+        rows.push({
+          date: envelope.data.asOfDate || report.date,
+          strategyId: report.scenarioId,
+          grossReturn: b.grossReturn,
+          netReturn: b.netReturn,
+          feeBps: b.feeBps,
+          slippageBps: b.slippageBps,
+          totalCostBps: b.totalCostBps,
+          grossExposure: 1.0,
+          metadata: { file, runId: envelope.data.runId },
+        });
       }
     } catch (_e) {}
   }

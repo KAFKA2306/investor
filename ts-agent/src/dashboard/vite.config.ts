@@ -4,7 +4,7 @@ import { extname, resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const repoLogsDir = resolve(__dirname, "../../../../logs");
+const repoLogsDir = resolve(__dirname, "../../../logs");
 
 const json = (value: unknown) => JSON.stringify(value, null, 2);
 
@@ -19,8 +19,11 @@ const contentType = (path: string): string => {
 const normalizePath = (value: string): string =>
   value.replace(/^\/+/, "").replaceAll("\\", "/");
 
-const isSafePath = (fullPath: string): boolean =>
-  fullPath === repoLogsDir || fullPath.startsWith(`${repoLogsDir}/`);
+const isSafePath = (fullPath: string): boolean => {
+  const normalizedRoot = resolve(repoLogsDir);
+  const normalizedTarget = resolve(fullPath);
+  return normalizedTarget.startsWith(normalizedRoot);
+};
 
 const createLogsMiddleware =
   () =>

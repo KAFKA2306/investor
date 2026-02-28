@@ -745,9 +745,20 @@ body {
   stroke-linejoin: round;
 }
 
+.chart-line-alt {
+  stroke: var(--accent);
+  stroke-dasharray: 5 4;
+}
+
 .chart-point-active {
   fill: #fff;
   stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.chart-point-alt {
+  fill: #fff;
+  stroke: var(--brand);
   stroke-width: 2;
 }
 
@@ -757,6 +768,40 @@ body {
   color: var(--ink-soft);
   font-family: var(--mono);
   font-size: 0.68rem;
+}
+
+.financial-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot-net {
+  background: var(--brand);
+}
+
+.legend-dot-daily {
+  background: var(--accent);
+}
+
+.legend-boundary {
+  padding-left: 0.2rem;
 }
 
 .flow-host {

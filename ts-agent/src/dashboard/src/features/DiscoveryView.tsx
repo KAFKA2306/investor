@@ -1,9 +1,9 @@
 import type React from "react";
 import type { AlphaDiscoveryPayload } from "../dashboard_core";
-import { formatPercent, pickNumber } from "../dashboard_core";
+import { formatNullableNumber, formatPercent } from "../dashboard_core";
 
 interface DiscoveryViewProps {
-  payload: AlphaDiscoveryPayload | null;
+  payload?: AlphaDiscoveryPayload;
 }
 
 export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ payload }) => {
@@ -13,7 +13,10 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ payload }) => {
 
   const selected = payload.selected ?? [];
   const candidates = [...payload.candidates].sort(
-    (a, b) => pickNumber(b.score) - pickNumber(a.score),
+    (a, b) => b.scores.priority - a.scores.priority,
+  );
+  const rejected = candidates.filter(
+    (candidate) => candidate.status === "REJECTED",
   );
 
   return (
@@ -31,22 +34,30 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ payload }) => {
           )}
         </div>
         <div className="alpha-meta">
-          sample {pickNumber(payload.evidence?.sampleSize, 0)} / positive ratio{" "}
-          {formatPercent(
-            pickNumber(payload.evidence?.positiveReturnRatio, 0),
-            1,
-          )}
+          sample {payload.evidence.sampleSize} / selected ratio{" "}
+          {formatPercent(payload.evidence.selectionRate, 1)}
         </div>
       </div>
+
+      {payload.quality.missingFields.length > 0 && (
+        <div
+          className="integrity-indicator risk"
+          style={{ marginBottom: "0.7rem" }}
+        >
+          欠損フィールド: {payload.quality.missingFields.join(", ")}
+        </div>
+      )}
+
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
               <th>候補</th>
-              <th>Score</th>
-              <th>IC proxy</th>
-              <th>直行性</th>
-              <th>相関</th>
+              <th>Priority</th>
+              <th>Plausibility</th>
+              <th>Risk-Adjusted</th>
+              <th>Novelty</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
@@ -55,17 +66,42 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ payload }) => {
                 <td title={candidate.reasoning ?? ""}>
                   <strong>{candidate.id}</strong>
                 </td>
-                <td>{pickNumber(candidate.score).toFixed(3)}</td>
-                <td>{pickNumber(candidate.icProxy).toFixed(3)}</td>
-                <td>{pickNumber(candidate.orthogonality).toFixed(2)}</td>
+                <td>{formatNullableNumber(candidate.scores.priority, 3)}</td>
                 <td>
-                  {pickNumber(candidate.correlationToBaseline).toFixed(3)}
+                  {formatNullableNumber(candidate.scores.plausibility, 3)}
+                </td>
+                <td>
+                  {formatNullableNumber(candidate.scores.riskAdjusted, 3)}
+                </td>
+                <td>{formatNullableNumber(candidate.scores.novelty, 3)}</td>
+                <td>
+                  <span
+                    className={`chip ${candidate.status === "SELECTED" ? "ready" : "caution"}`}
+                  >
+                    {candidate.status}
+                  </span>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {rejected.length > 0 && (
+        <section className="panel section" style={{ marginTop: "0.8rem" }}>
+          <div className="section-head">
+            <h3>棄却理由</h3>
+            <span>{rejected.length} 件</span>
+          </div>
+          <div className="thesis-block">
+            {rejected.slice(0, 5).map((candidate) => (
+              <div key={candidate.id} className="thesis-row">
+                {candidate.id}: {candidate.rejectReason ?? "No reason provided"}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

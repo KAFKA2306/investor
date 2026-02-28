@@ -9,7 +9,7 @@ export interface AuditReport {
   scores: {
     alphaStability: number;
     riskAdjustedReturn: number;
-    readinessScore: number;
+    reasoningScore: number;
   };
   critique: string[];
   isProductionReady: boolean;
@@ -72,11 +72,11 @@ export class CqoAgent extends BaseAgent {
       );
     }
 
-    // 3. Overall Readiness
-    const readinessScore = outcome.reasoningScore ?? 0;
-    if (readinessScore < crit.REASONING.minRS) {
+    // 3. Reasoning quality
+    const reasoningScore = outcome.reasoningScore ?? 0;
+    if (reasoningScore < crit.REASONING.minRS) {
       critique.push(
-        `Low reasoning score (${readinessScore.toFixed(2)} < ${crit.REASONING.minRS}). Hypothesis logic is not robust.`,
+        `Low reasoning score (${reasoningScore.toFixed(2)} < ${crit.REASONING.minRS}). Hypothesis logic is not robust.`,
       );
     }
 
@@ -94,7 +94,7 @@ export class CqoAgent extends BaseAgent {
       scores: {
         alphaStability: tStat / crit.ALPHA.minTStat,
         riskAdjustedReturn: sharpe / crit.PERFORMANCE.minSharpe,
-        readinessScore: readinessScore,
+        reasoningScore: reasoningScore,
       },
       critique,
       isProductionReady,
@@ -124,7 +124,7 @@ ${audit.critique.length > 0 ? audit.critique.map((c) => `- ${c}`).join("\n") : "
 ## 2. Audit Scores (Normalized to Thresholds)
 - **Alpha Stability**: ${audit.scores.alphaStability.toFixed(2)}x
 - **Risk-Adjusted Return**: ${audit.scores.riskAdjustedReturn.toFixed(2)}x
-- **Logic Readiness**: ${(audit.scores.readinessScore * 100).toFixed(1)}%
+- **Reasoning Quality**: ${(audit.scores.reasoningScore * 100).toFixed(1)}%
 
 ## 3. Deployment Recommendation
 **Production Ready**: ${audit.isProductionReady ? "**YES** - Proceed to execution stage." : "**NO** - Back to research/backtest phase."}

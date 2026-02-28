@@ -1,9 +1,9 @@
 import type React from "react";
 import type { DailyReport } from "../dashboard_core";
 import {
-  formatBps,
+  formatBpsNullable,
   formatCompact,
-  formatPercent,
+  formatPercentNullable,
   pickNumber,
 } from "../dashboard_core";
 
@@ -16,6 +16,12 @@ export const AuditView: React.FC<AuditViewProps> = ({ report }) => {
 
   const orders = report.execution?.orders ?? [];
   const backtest = report.results?.backtest;
+  const netReturn = pickNumber(backtest?.netReturn);
+  const totalCostBps = pickNumber(backtest?.totalCostBps);
+  const tradingDays =
+    typeof backtest?.tradingDays === "number"
+      ? backtest.tradingDays
+      : undefined;
 
   return (
     <div
@@ -26,20 +32,20 @@ export const AuditView: React.FC<AuditViewProps> = ({ report }) => {
         <article className="kpi-card">
           <div className="label">実現リターン (Net)</div>
           <div
-            className={`value ${pickNumber(backtest?.netReturn) >= 0 ? "pos" : "neg"}`}
+            className={`value ${netReturn === undefined ? "risk" : netReturn >= 0 ? "pos" : "neg"}`}
           >
-            {formatPercent(pickNumber(backtest?.netReturn))}
+            {formatPercentNullable(netReturn)}
           </div>
         </article>
         <article className="kpi-card">
           <div className="label">取引日数</div>
-          <div className="value">{backtest?.tradingDays ?? 0} 日</div>
+          <div className="value">
+            {tradingDays === undefined ? "欠損" : `${tradingDays} 日`}
+          </div>
         </article>
         <article className="kpi-card">
           <div className="label">推定コスト</div>
-          <div className="value">
-            {formatBps(pickNumber(backtest?.totalCostBps))}
-          </div>
+          <div className="value">{formatBpsNullable(totalCostBps)}</div>
         </article>
       </section>
 

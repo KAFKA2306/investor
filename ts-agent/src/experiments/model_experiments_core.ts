@@ -1,7 +1,9 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getTSModels } from "../model_registry/model_registry_loader.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
+import { UnifiedLogSchema } from "../schemas/financial_domain_schemas.ts";
+import { CanonicalLogEnvelopeSchema } from "../schemas/system_event_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { extractEstatValues } from "./analysis/daily_alpha_feature_calculations.ts";
 
@@ -9,17 +11,26 @@ import { extractEstatValues } from "./analysis/daily_alpha_feature_calculations.
  * Model Forecast Comparison
  */
 export async function compareForecastAndOutcome() {
-  const logsDir = join(core.config.paths.logs, "daily");
+  const logsDir = join(core.config.paths.logs, "unified");
+  if (!existsSync(logsDir)) return;
   const files = readdirSync(logsDir)
-    .filter((f) => /^\d{8}\.json$/.test(f))
+    .filter((f) => f.endsWith(".json"))
     .sort();
   console.log("| Date     | Forecast (Alpha) | Outcome (Return) | Accuracy |");
   for (const file of files) {
     const content = readFileSync(join(logsDir, file), "utf8");
-    const log = JSON.parse(content);
-    const date = log.report.date;
-    const forecast = log.report.results.expectedEdge;
-    const outcome = log.report.results.basketDailyReturn;
+    const raw = JSON.parse(content);
+    const envelope = CanonicalLogEnvelopeSchema.safeParse(raw);
+    if (!envelope.success || envelope.data.kind !== "daily_decision") continue;
+
+    const payload = UnifiedLogSchema.safeParse(envelope.data.payload);
+    if (!payload.success || payload.data.schema !== "investor.daily-log.v1")
+      continue;
+
+    const report = payload.data.report as any;
+    const date = envelope.data.asOfDate || report?.date;
+    const forecast = Number(report?.results?.expectedEdge ?? 0);
+    const outcome = Number(report?.results?.basketDailyReturn ?? 0);
     const ratio = forecast === 0 ? 0 : outcome / forecast;
     console.log(
       `| ${date} | ${forecast.toFixed(6)} | ${outcome.toFixed(6)} | ${(ratio * 100).toFixed(2)}% |`,
