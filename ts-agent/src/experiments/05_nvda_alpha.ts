@@ -70,10 +70,6 @@ async function main() {
     const outcome = agent.calculateOutcome(bestFactor.f.id, bestFactor.score);
     outcome.strategyName = `NVDA Event Alpha: ${bestFactor.f.description}`;
     outcome.summary = `Orthogonal alpha search based on NVDA OHLC, Earnings (${earningsDate}), and PE Ratio (${trailingPE.toFixed(2)}). Hypothesis: ${bestFactor.f.reasoning}`;
-    if (outcome.verification?.metrics) {
-      outcome.verification.metrics.annualizedReturn = 0.28;
-      outcome.verification.metrics.sharpeRatio = 1.85;
-    }
     await agent.saveArXivReport(outcome);
     console.log(`PASS: ${bestFactor.f.id}`);
   }
