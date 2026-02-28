@@ -235,18 +235,17 @@ export class MemoryCenter {
       INSERT INTO uqtl_events (id, timestamp, type, agent_id, experiment_id, payload_json, metadata_json)
       VALUES ($id, $ts, $type, $agent, $exp, $payload, $meta)
     `);
-    // biome-ignore lint/suspicious/noExplicitAny: Bun SQLite named parameters binding
-    (stmt.run as any)({
+    stmt.run({
       $id:
-        event.id ||
+        (event.id as string | undefined) ||
         `evt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-      $ts: (event.timestamp as string) || new Date().toISOString(),
+      $ts: (event.timestamp as string | undefined) || new Date().toISOString(),
       $type: event.type as string,
-      $agent: (event.agentId as string) || null,
-      $exp: (event.experimentId as string) || null,
+      $agent: (event.agentId as string | undefined) || null,
+      $exp: (event.experimentId as string | undefined) || null,
       $payload: JSON.stringify(event.payload),
       $meta: event.metadata ? JSON.stringify(event.metadata) : null,
-    });
+    } as Record<string, string | number | boolean | null>);
   }
 
   public getRecentSuccesses(limit: number = 5): unknown[] {

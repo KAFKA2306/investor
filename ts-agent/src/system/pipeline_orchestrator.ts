@@ -19,6 +19,12 @@ type VerificationVerdict =
   | "REJECTED_MODEL"
   | "REJECTED_GENERAL";
 
+type DataDeliveryGate = {
+  accepted: boolean;
+  threshold: number;
+  failedChecks: string[];
+};
+
 export class PipelineOrchestrator extends BaseAgent {
   private cqo = new CqoAgent();
 
@@ -69,7 +75,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
       let dataset = phaseOne.dataset as PITDataset;
       let dataAttempt = phaseOne.nextAttempt;
-      await this.persistDataset(dataset);
+      await this.persistDataset(dataset, requirement);
 
       let retryMode: "MODEL" | "NONE" = "NONE";
       let verificationAttempt = 1;
@@ -128,7 +134,7 @@ export class PipelineOrchestrator extends BaseAgent {
               default:
                 dataset = nextData.dataset as PITDataset;
                 dataAttempt = nextData.nextAttempt;
-                await this.persistDataset(dataset);
+                await this.persistDataset(dataset, requirement);
                 retryMode = "NONE";
                 break;
             }
@@ -231,11 +237,12 @@ export class PipelineOrchestrator extends BaseAgent {
       );
       current.context = await this.dataEngineer.generateScenario(current);
       dataset = current;
-      accepted = this.isDataDeliveryAccepted(current, requirement);
+      const dataGate = this.evaluateDataDelivery(current, requirement);
+      accepted = dataGate.accepted;
       accepted ||
         (await this.elder.reflectLearning(
           candidateId,
-          `Data delivery unmet at attempt=${attempt}, quality=${current.qualityScore}`,
+          `Data delivery unmet at attempt=${attempt}, quality=${current.qualityScore.toFixed(3)}, failed=${dataGate.failedChecks.join("|")}`,
         ));
       attempt += 1;
     }
@@ -246,13 +253,18 @@ export class PipelineOrchestrator extends BaseAgent {
     };
   }
 
-  private async persistDataset(dataset: PITDataset): Promise<void> {
+  private async persistDataset(
+    dataset: PITDataset,
+    requirement: PipelineRequirement,
+  ): Promise<void> {
     await this.elder.saveDatasetInfo(
       dataset.id,
       {
         asOfDate: dataset.asOfDate,
         context: dataset.context,
-        metadata: "PIT_CLEANED",
+        qualityScore: dataset.qualityScore,
+        deliveryMetrics: dataset.deliveryMetrics,
+        gate: this.evaluateDataDelivery(dataset, requirement),
       },
       dataset.preprocessingConditions,
     );
@@ -283,13 +295,33 @@ export class PipelineOrchestrator extends BaseAgent {
     return sharpe >= minSharpe ? "ADOPTED" : "REJECTED_GENERAL";
   }
 
-  private isDataDeliveryAccepted(
+  private evaluateDataDelivery(
     dataset: PITDataset,
     requirement: PipelineRequirement,
-  ): boolean {
+  ): DataDeliveryGate {
     const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.5;
-    const threshold = Math.max(0.75, Math.min(0.9, 0.7 + minSharpe * 0.05));
-    return dataset.qualityScore >= threshold;
+    const derivedQuality = Math.max(0.75, Math.min(0.9, 0.7 + minSharpe * 0.05));
+    const criteria = requirement.targetMetrics?.dataDelivery;
+    const threshold = criteria?.minQualityScore ?? derivedQuality;
+    const minCoverageRate = criteria?.minCoverageRate ?? 0.8;
+    const maxMissingRate = criteria?.maxMissingRate ?? 0.08;
+    const minLatencyScore = criteria?.minLatencyScore ?? 0.75;
+    const minLeakFreeScore = criteria?.minLeakFreeScore ?? 1;
+    const minSourceConsistency = criteria?.minSourceConsistency ?? 0.9;
+    const m = dataset.deliveryMetrics;
+    const failedChecks = [
+      dataset.qualityScore >= threshold ? "" : "quality",
+      m.coverageRate >= minCoverageRate ? "" : "coverage",
+      m.missingRate <= maxMissingRate ? "" : "missing",
+      m.latencyScore >= minLatencyScore ? "" : "latency",
+      m.leakFreeScore >= minLeakFreeScore ? "" : "leak",
+      m.sourceConsistency >= minSourceConsistency ? "" : "consistency",
+    ].filter((x) => x.length > 0);
+    return {
+      accepted: failedChecks.length === 0,
+      threshold,
+      failedChecks,
+    };
   }
 
   private async generateHighLevelIdeas(
@@ -313,7 +345,7 @@ export class PipelineOrchestrator extends BaseAgent {
         requirementId: requirement.id,
         ast: {},
         description: "Mean Reversion Seed",
-        reasoning: `Regime=${(currentState["regime"] as string) ?? "UNKNOWN"}`,
+        reasoning: `Regime=${(currentState.regime as string) ?? "UNKNOWN"}`,
         noveltyScore: 0.9,
         priority: 0.9,
       },

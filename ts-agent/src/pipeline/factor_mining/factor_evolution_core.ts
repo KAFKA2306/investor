@@ -1,7 +1,10 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z } from "zod";
-import { UnifiedLogSchema } from "../../schemas/financial_domain_schemas.ts";
+import {
+  type DailyScenarioLog,
+  UnifiedLogSchema,
+} from "../../schemas/financial_domain_schemas.ts";
 import { CanonicalLogEnvelopeSchema } from "../../schemas/system_event_schemas.ts";
 import {
   calculatePerformanceMetrics,
@@ -120,11 +123,7 @@ export function loadFeatureRows(logsBaseDir: string): FeatureRow[] {
     )
       continue;
 
-    const report = result.data.report as {
-      date: string;
-      results: { basketDailyReturn: number };
-      market: { vegetablePriceMomentum: number };
-    };
+    const report = result.data.report as DailyScenarioLog;
     rows.push(
       FeatureRowSchema.parse({
         date: report.date,

@@ -2151,8 +2151,13 @@
       }
     },
     {
+      "id": "ctx-luqzil83",
       "content": "Evolved POINT_MUTATION: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-90284A54. A skill model that leverages Cross-Asset Retrieval (FactorMiner) signals to predict cross-asset. Our Behavioral Economist engine focuses on memory during experience periods.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:38:26.414Z",
+      "updated_at": "2026-02-28T07:38:26.414Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -2205,16 +2210,16 @@
         },
         "status": "REJECTED",
         "score": 0.4656666666666667
-      },
-      "id": "ctx-luqzil83",
+      }
+    },
+    {
+      "id": "ctx-3q89duun",
+      "content": "Evolved STRUCTURAL_SHIFT: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-90284A54. Autonomous hypothesis generation using Behavioral Momentum via overreaction. This model identifies sentiment trajectories to extract drift edge in crowding regimes, as proposed in 2026 by Quant Analyst.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T07:38:26.414Z",
-      "updated_at": "2026-02-28T07:38:26.414Z"
-    },
-    {
-      "content": "Evolved STRUCTURAL_SHIFT: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-90284A54. Autonomous hypothesis generation using Behavioral Momentum via overreaction. This model identifies sentiment trajectories to extract drift edge in crowding regimes, as proposed in 2026 by Quant Analyst.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T07:38:26.414Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -2267,12 +2272,94 @@
         },
         "status": "SELECTED",
         "score": 0.5806666666666668
+      }
+    },
+    {
+      "content": "Corporate Governance (J-Quants) Hypothesis (Quant Analyst): CLAIM: Autonomous hypothesis on Corporate Governance (J-Quants) using shareholder. [REASONING] This model identifies board trajectories to extract payout edge in disclosure regimes. Reasoning trace by Quant Analyst.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-8ECA053B",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "net_sales"
+            },
+            "right": {
+              "op": "col",
+              "name": "turnover_value"
+            }
+          },
+          "right": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "operating_profit"
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5143939393939394,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
       },
-      "id": "ctx-3q89duun",
+      "id": "ctx-8d2xfbfq",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T07:38:26.414Z",
-      "updated_at": "2026-02-28T07:38:26.414Z"
+      "created_at": "2026-02-28T09:25:50.594Z",
+      "updated_at": "2026-02-28T09:25:50.594Z"
+    },
+    {
+      "content": "Evolved POINT_MUTATION: Evolved STRUCTURAL_SHIFT [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-QUANT-8D7EA1F9. CLAIM: Structural drift identification via Corporate Governance (J-Quants) and board. [REASONING] The Macro Strategist persona targets payout using a shareholder approach. Optimized for disclosure regimes.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-18A7A916",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "add",
+            "left": {
+              "op": "col",
+              "name": "turnover_value"
+            },
+            "right": {
+              "op": "col",
+              "name": "volume"
+            }
+          },
+          "right": {
+            "op": "mul",
+            "left": {
+              "op": "col",
+              "name": "volume"
+            },
+            "right": {
+              "op": "lit",
+              "value": 2.61
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5643939393939394,
+        "generation": 2,
+        "parentId": "ALPHA-QUANT-8D7EA1F9",
+        "mutationType": "POINT_MUTATION"
+      },
+      "id": "ctx-9qlbea6l",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T09:25:50.594Z",
+      "updated_at": "2026-02-28T09:25:50.594Z"
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { core } from "./system/app_runtime_core.ts";
+import { PipelineOrchestrator } from "./system/pipeline_orchestrator.ts";
 import {
   DataEngineerBridge,
   ElderBridge,
@@ -6,7 +7,6 @@ import {
   QuantResearcherBridge,
   StateMonitorBridge,
 } from "./system/pipeline_roles_bridge.ts";
-import { PipelineOrchestrator } from "./system/pipeline_orchestrator.ts";
 import type { PipelineRequirement } from "./system/pipeline_types.ts";
 
 async function main() {
@@ -26,6 +26,14 @@ async function main() {
       minSharpe: 1.5,
       minIC: 0.03,
       maxDrawdown: 0.1,
+      dataDelivery: {
+        minQualityScore: 0.82,
+        minCoverageRate: 0.8,
+        maxMissingRate: 0.08,
+        minLatencyScore: 0.7,
+        minLeakFreeScore: 1,
+        minSourceConsistency: 0.88,
+      },
     },
   };
 

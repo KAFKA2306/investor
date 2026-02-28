@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { getTSModels } from "../model_registry/model_registry_loader.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
-  DailyScenarioLog,
+  type DailyScenarioLog,
   UnifiedLogSchema,
 } from "../schemas/financial_domain_schemas.ts";
 import { CanonicalLogEnvelopeSchema } from "../schemas/system_event_schemas.ts";

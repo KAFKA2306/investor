@@ -11,6 +11,14 @@ export interface PipelineRequirement {
     minSharpe?: number;
     minIC?: number;
     maxDrawdown?: number;
+    dataDelivery?: {
+      minQualityScore?: number;
+      minCoverageRate?: number;
+      maxMissingRate?: number;
+      minLatencyScore?: number;
+      minLeakFreeScore?: number;
+      minSourceConsistency?: number;
+    };
   };
   universe: string[];
 }
@@ -29,6 +37,13 @@ export interface PITDataset {
   data: unknown[];
   context: string;
   qualityScore: number;
+  deliveryMetrics: {
+    coverageRate: number;
+    missingRate: number;
+    latencyScore: number;
+    leakFreeScore: number;
+    sourceConsistency: number;
+  };
   preprocessingConditions: {
     imputation: string;
     normalization: string;
