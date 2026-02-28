@@ -30,10 +30,10 @@ export class StrategicReasonerAgent extends BaseAgent {
     const reasoningMatch = rawReasoning.match(/\[REASONING\]\s*(.*)/);
 
     const extractedClaim = claimMatch
-      ? claimMatch[1].trim()
+      ? (claimMatch[1] ?? "").trim()
       : "General Alpha Hypothesis";
     const extractedReasoning = reasoningMatch
-      ? reasoningMatch[1].trim()
+      ? (reasoningMatch[1] ?? "").trim()
       : outcome.summary;
 
     const rationale = `Alpha-R1 Strategic Analysis: The agent analyzed the claim "${extractedClaim}". 

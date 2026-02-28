@@ -184,7 +184,7 @@ export class PipelineOrchestrator extends BaseAgent {
         await this.elder.saveRejectionReason(
           candidateId,
           "ORDER_GATE_REJECTED",
-          reason,
+          verification.verification?.metrics,
         );
         await this.elder.reflectLearning(
           candidateId,
@@ -295,7 +295,7 @@ export class PipelineOrchestrator extends BaseAgent {
   private async generateHighLevelIdeas(
     requirement: PipelineRequirement,
     history: { forbiddenZones: string[]; knowledge: string[] },
-    currentState: Record<string, any>,
+    currentState: Record<string, unknown>,
   ): Promise<IdeaCandidate[]> {
     const playbook = new ContextPlaybook();
     await playbook.load();
@@ -313,7 +313,7 @@ export class PipelineOrchestrator extends BaseAgent {
         requirementId: requirement.id,
         ast: {},
         description: "Mean Reversion Seed",
-        reasoning: `Regime=${currentState.regime ?? "UNKNOWN"}`,
+        reasoning: `Regime=${(currentState["regime"] as string) ?? "UNKNOWN"}`,
         noveltyScore: 0.9,
         priority: 0.9,
       },

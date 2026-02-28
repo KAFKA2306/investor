@@ -1,6 +1,7 @@
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { MemoryCenter } from "../context/unified_context_services.ts";
+import type { Metrics } from "../schemas/financial_domain_schemas.ts";
 import type {
   AuditRecord,
   DriftReport,
@@ -26,9 +27,11 @@ export class ElderBridge implements IElder {
     forbiddenZones: string[];
     knowledge: string[];
   }> {
-    const successes = this.memory.getRecentSuccesses(5);
+    const successes = this.memory.getRecentSuccesses(5) as {
+      description: string;
+    }[];
     return {
-      seeds: successes.map((s: any) => s.description),
+      seeds: successes.map((s) => s.description),
       forbiddenZones: ["Random Noise Strategy", "High Leverage Martingale"],
       knowledge: [
         "Volatility spikes often lead to mean reversion.",
@@ -50,7 +53,7 @@ export class ElderBridge implements IElder {
 
   async saveDatasetInfo(
     datasetId: string,
-    metadata: any,
+    metadata: unknown,
     preprocessingConditions: PITDataset["preprocessingConditions"],
   ): Promise<void> {
     this.memory.pushEvent({
@@ -103,7 +106,7 @@ export class ElderBridge implements IElder {
   async saveRejectionReason(
     strategyId: string,
     reason: string,
-    metrics?: any,
+    metrics?: Metrics,
   ): Promise<void> {
     this.memory.pushEvent({
       type: "STRATEGY_REJECTED",
@@ -139,7 +142,7 @@ export class StateMonitorBridge implements IStateMonitor {
     });
   }
 
-  async getCurrentState(): Promise<Record<string, any>> {
+  async getCurrentState(): Promise<Record<string, unknown>> {
     console.log(`[StateMonitor] Retrieving current market state`);
     return {
       regime: "BULL_MOMENTUM",
@@ -150,7 +153,7 @@ export class StateMonitorBridge implements IStateMonitor {
 }
 
 export class DataEngineerBridge implements IDataEngineer {
-  async collectData(sources: string[]): Promise<any[]> {
+  async collectData(sources: string[]): Promise<unknown[]> {
     console.log(
       `[DataEngineer] Collecting data from sources: ${sources.join(", ")}`,
     );
@@ -160,7 +163,7 @@ export class DataEngineerBridge implements IDataEngineer {
     ];
   }
 
-  async integrateData(raw: any[]): Promise<any> {
+  async integrateData(raw: unknown[]): Promise<unknown> {
     console.log(`[DataEngineer] Integrating multi-modal data`);
     return { integrated: true, rawCount: raw.length };
   }
