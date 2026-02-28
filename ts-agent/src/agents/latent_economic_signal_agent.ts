@@ -121,6 +121,14 @@ export class LesAgent extends BaseAgent {
         terms: ["cycle", "backlog", "utilization", "bottleneck", "delivery"],
       },
       {
+        name: "Macro-Socio Divergence (e-Stat)",
+        terms: ["demographic", "labor", "industrial", "household", "regional"],
+      },
+      {
+        name: "Corporate Governance (J-Quants)",
+        terms: ["board", "shareholder", "payout", "disclosure", "transparency"],
+      },
+      {
         name: "Cross-Asset Signal",
         terms: ["correlation", "spread", "basis", "parity", "convergence"],
       },

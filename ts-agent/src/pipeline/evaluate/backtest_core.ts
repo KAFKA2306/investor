@@ -110,3 +110,7 @@ export async function runFoundationBenchmark() {
   };
   console.log(`[Benchmark] Naive Baseline MAE: ${naiveMetrics.mae.toFixed(4)}`);
 }
+
+if (import.meta.main) {
+  runFoundationBenchmark().catch(console.error);
+}

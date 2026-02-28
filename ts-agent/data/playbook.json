@@ -1092,18 +1092,96 @@
       }
     },
     {
+      "id": "ctx-3gx4c9eo",
       "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T04:46:31.326Z",
+      "updated_at": "2026-02-28T04:46:31.326Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T04:46:18.719Z",
         "baseline": "foundation-benchmark-fallback (20260228.json)"
+      }
+    },
+    {
+      "content": "Cross-Asset Signal Hypothesis (Macro Strategist): Strategic Cross-Asset Signal extraction using spread filters. It detects correlation and exploits basis in parity markets, verified by Macro Strategist protocols.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-A73B94AC",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "close"
+              },
+              "right": {
+                "op": "lit",
+                "value": 3.35
+              }
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "turnover_value"
+              },
+              "right": {
+                "op": "col",
+                "name": "open"
+              }
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "volume"
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          }
+        }
       },
-      "id": "ctx-3gx4c9eo",
+      "id": "ctx-hwxs8u4w",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T04:46:31.326Z",
-      "updated_at": "2026-02-28T04:46:31.326Z"
+      "created_at": "2026-02-28T05:28:57.341Z",
+      "updated_at": "2026-02-28T05:28:57.341Z"
+    },
+    {
+      "content": "Inventory Lead Hypothesis (HFT Engineer): This Inventory Lead focused alpha, proposed by a HFT Engineer, identifies cycle patterns using backlog logic to capture utilization in a bottleneck environment.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-0AF19B8E",
+        "ast": {
+          "op": "col",
+          "name": "volume"
+        }
+      },
+      "id": "ctx-z637d813",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:28:57.341Z",
+      "updated_at": "2026-02-28T05:28:57.341Z"
     }
   ]
 }

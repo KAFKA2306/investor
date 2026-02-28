@@ -45,6 +45,26 @@ export async function discoverAlphaFactors() {
   console.log(`🚀 Starting Discovery over Universe: ${Universe.join(", ")}`);
   const hypotheses = await agent.generateHypotheses(playbook.getBullets());
   console.log(`Generated ${hypotheses.length} hypotheses.`);
+
+  for (const h of hypotheses) {
+    console.log(`\n🧪 Hypothesis: ${h.description}`);
+    console.log(`   ID: ${h.id}`);
+    console.log(`   Reasoning: ${h.reasoning}`);
+
+    playbook.addBullet({
+      content: `${h.description}: ${h.reasoning}`,
+      section: "strategies_and_hard_rules",
+      metadata: {
+        source: "AlphaDiscovery",
+        type: "HYPOTHESIS",
+        id: h.id,
+        ast: h.ast,
+      },
+    });
+  }
+
+  await playbook.save();
+  console.log("\n✅ Playbook updated with new hypotheses.");
 }
 
 if (import.meta.main) {

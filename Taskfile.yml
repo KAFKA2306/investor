@@ -91,7 +91,7 @@ tasks:
     desc: 基礎モデル（Chronos/TimesFM）による e-Stat ベンチマーク実行
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run pipeline:foundation-benchmark
+      - bun run pipeline:backtest
 
   discovery:
     desc: 直行アルファ探索と基礎モデルによる相関チェック (Full Workflow)
@@ -105,7 +105,7 @@ tasks:
     dir: "{{.TS_DIR}}"
     cmds:
       - task: discovery
-      - bun run experiments:benchmark
+      - bun run experiments:model-analysis
       - bun run pipeline:llm-readiness
 
   run:newalphasearch:

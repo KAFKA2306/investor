@@ -1,0 +1,14 @@
+{
+  "schema": "investor.readiness-log.v1",
+  "report": {
+    "verdict": "CAUTION",
+    "score": {
+      "total": 60
+    },
+    "recommendations": [
+      "Improve model traceability",
+      "Ensure cost data is recorded"
+    ],
+    "sampleSize": 756
+  }
+}

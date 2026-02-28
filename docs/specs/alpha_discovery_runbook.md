@@ -6,22 +6,23 @@
 
 以下の手順を順番に実行し、各手順の完了ごとに自律的に結果を分析して次に進んでください。
 
-### 1. 直行アルファ探索の実行 (Alpha Mining)
-`cd ts-agent && bun run experiments:alpha-discovery` を実行する。
+### 1. 直行アルファ探索の実行 (Alpha Discovery)
+`task run:newalphasearch` を実行する。
 - **指示 (Agent Prompt)**: 
-  - スクリプトの実行ログや生成されたJSONを読み込み、**「どのような新しいアルファ仮説が生成されたか」**（ロジックと経済学的背景）を深く理解すること。
-  - もし実行時にTSエラーやランタイムエラーが発生した場合、直ちにユーザーに報告するのではなく、**最大2回まで自律的にコードを修正し再実行**を試みること（Zero-Fatプロトコル遵守）。
+  - `ts-agent/src/experiments/alpha_mining_experiments.ts` が駆動する `LesAgent` の生成プロセス（ personas × themes ）を監視し、**「どのような新しいアルファ仮説が生成されたか」**（ロジックと経済学的背景）を深く理解すること。
+  - 生成された仮説は `financial_domain_schemas.ts` で定義された Zod スキーマで即座に検証される。
 
-### 2. 生存バイアスの排除と定量評価 (Context Isolation & Evaluation)
-生成されたアルファが既存のベースラインに対してどの程度優位性や独自性を持つか確認するため、`bun run pipeline:ab`（または利用可能なベンチマークパイプライン）を実行する。
+### 2. 定量評価とバックテスト (Backtest & Metrics)
+発見されたアルファを `backtest_core.ts` を用いて検証し、結果を `evaluation_metrics_core.ts` の `QuantMetrics` エンジンで分析する。
 - **指示 (Agent Prompt)**: 
-  - 探索結果が既存アルファに対して「有意な改善」または「全く異なるアプローチでのプラスリターン」を示しているか分析すること。
-  - シャープレシオや最大ドローダウンだけでなく、「既存戦略との相関の低さ（直行性）」に注目して評価すること。
+  - `bun run pipeline:ab`（A/Bテスト）を実行し、既存のベースラインに対する優位性と、相関係数（直行性）を確認すること。
+  - シャープレシオや最大ドローダウンだけでなく、市場の地合い（Market Regime）に対する耐性を評価すること。
 
-### 3. 自律的なキュレーションと進化 (Curate & Evolve)
-発見されたアルファが有望である（定量的にプラスの期待値がある）と判断した場合、それをただ報告するだけで終わらせないこと。
+### 3. モデルレジストリとの統合 (Model Registry Integration)
+アルファが時系列基盤モデル（Chronos等）の予測とどう連動するか、`model_experiments_core.ts` で確認する。
 - **指示 (Agent Prompt)**:
-  - そのアルファ仮説を恒久的なシステム（例：`LES Agent` のファクター生成ロジックや `Playbook`）に統合するための**具体的なコード修正の準備**をすること。
+  - `python run_inference.py` を介した高速なバッチ推論結果と、アルファシグナルの適合性を分析すること。
+  - 有望なアルファは `ts-agent/data/playbook.json` へ自動登録するための準備を行う。
 
 ### 4. ユーザーへの完了報告 (Executive Reporting)
 すべての探索と評価が完了したら、以下のフォーマットで簡潔かつ魅力的な「アルファ発見レポート」を作成し、ユーザーに通知 (`notify_user`) すること。
