@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { core } from "../system/core.ts";
+import { core } from "./core.ts";
 import type { EventType } from "./uqtl.ts";
 
 /**

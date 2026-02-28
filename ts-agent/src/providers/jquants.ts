@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { core } from "../system/core.ts";
+import { SqliteHttpCache } from "./sqlite_http_cache.ts";
 
 const extractRows = (payload: Record<string, unknown>): unknown[] => {
   const topLevel = Object.values(payload).find((v) => Array.isArray(v));
@@ -14,15 +15,19 @@ const extractRows = (payload: Record<string, unknown>): unknown[] => {
 export class JQuantsProvider {
   private readonly baseUrl = "https://api.jquants.com/v2";
   private readonly apiKey: string;
+  private readonly cache?: SqliteHttpCache;
+  private readonly cacheTtlMs: number;
 
-  constructor() {
+  constructor(options?: { cache?: SqliteHttpCache; cacheTtlMs?: number }) {
     if (!core.config.providers.jquants.enabled) {
       process.exit(1);
     }
     this.apiKey = core.getEnv("JQUANTS_API_KEY");
+    this.cache = options?.cache;
+    this.cacheTtlMs = options?.cacheTtlMs ?? 5 * 60 * 1000;
   }
 
-  protected async request(
+  public async request(
     endpoint: string,
     params: Record<string, string> = {},
   ): Promise<Record<string, unknown>> {
@@ -31,17 +36,29 @@ export class JQuantsProvider {
       url.searchParams.append(key, value);
     }
 
+    if (this.cache) {
+      return this.cache.fetchJson(
+        url.toString(),
+        { "x-api-key": this.apiKey },
+        this.cacheTtlMs,
+      );
+    }
+
     const response = await fetch(url.toString(), {
       headers: {
         "x-api-key": this.apiKey,
       },
     });
-
-    if (!response.ok) {
-      process.exit(1);
-    }
-
+    response.ok || process.exit(1);
     return z.record(z.string(), z.unknown()).parse(await response.json());
+  }
+
+  public async requestRows(
+    endpoint: string,
+    params: Record<string, string> = {},
+  ): Promise<unknown[]> {
+    const payload = await this.request(endpoint, params);
+    return extractRows(payload);
   }
 
   public async probeListedInfo(): Promise<{
@@ -63,22 +80,19 @@ export class JQuantsProvider {
   }
 
   public async getListedInfo(): Promise<unknown[]> {
-    const res = await this.request("/equities/master");
-    return extractRows(res);
+    return this.requestRows("/equities/master");
   }
 
   public async getEarningsCalendar(
     params: Record<string, string>,
   ): Promise<unknown[]> {
-    const res = await this.request("/equities/earnings-calendar", params);
-    return extractRows(res);
+    return this.requestRows("/equities/earnings-calendar", params);
   }
 
   public async getStatements(
     params: Record<string, string>,
   ): Promise<unknown[]> {
-    const res = await this.request("/fins/summary", params);
-    return extractRows(res);
+    return this.requestRows("/fins/summary", params);
   }
 }
 

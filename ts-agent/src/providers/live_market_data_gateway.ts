@@ -1,4 +1,5 @@
 import { core } from "../system/core.ts";
+import { EstatProvider } from "./estat.ts";
 import { PeadJquantsGateway } from "./pead_market_gateway.ts";
 
 export interface MarketDataGateway {
@@ -31,6 +32,7 @@ interface YahooChartPayload {
 
 export class LiveMarketDataGateway implements MarketDataGateway {
   private readonly jquants = new PeadJquantsGateway();
+  private readonly estat = new EstatProvider();
   private readonly cache = core.cache;
 
   public async getDailyBars(
@@ -84,21 +86,7 @@ export class LiveMarketDataGateway implements MarketDataGateway {
   }
 
   public async getEstatStats(dataId: string): Promise<Record<string, unknown>> {
-    const url = new URL(
-      "http://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
-    );
-    const appId = process.env.ESTAT_APP_ID;
-    if (!appId) throw new Error("ESTAT_APP_ID is required");
-
-    url.searchParams.append("appId", appId);
-    url.searchParams.append("statsDataId", dataId);
-
-    const payload = await this.cache.fetchJson(
-      url.toString(),
-      {},
-      7 * 24 * 60 * 60 * 1000,
-    );
-    return payload as Record<string, unknown>;
+    return (await this.estat.getStats(dataId)) as Record<string, unknown>;
   }
 
   public async getHistory(symbol: string, limit: number): Promise<number[]> {

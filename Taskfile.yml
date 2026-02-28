@@ -2,7 +2,7 @@ version: "3"
 
 vars:
   TS_DIR: ts-agent
-  DASHBOARD_DIR: ts-agent/src/tools/dashboard
+  DASHBOARD_DIR: ts-agent/src/dashboard
 
 tasks:
   default:
