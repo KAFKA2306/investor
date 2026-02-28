@@ -26,12 +26,6 @@ The system operates as a network of specialized **Autonomous Analysts**:
 
 ## Building and Running
 
-### Setup
-Ensure you have `bun` and `uv` installed.
-```bash
-task setup
-```
-
 ### Development Cycle
 | Command | Description |
 | :--- | :--- |
@@ -56,11 +50,6 @@ bun src/experiments/les_reproduction.ts
 - **Agent Pattern**: New strategies should extend `BaseAgent` and implement a `run()` method.
 - **Data Safety**: Use schemas in `ts-agent/src/schemas/` to validate any incoming data from gateways.
 
-### Testing & Validation
-- **Reproduction**: Before applying fixes, use scripts in `ts-agent/src/experiments/` to reproduce issues.
-- **Backtesting**: Use `ts-agent/src/backtest/simulator.ts` to verify strategy performance before integration.
-- **Logs**: Execution results are stored in `logs/unified/` and `logs/daily/`. Always check these after a run.
 
 ### Documentation
-- **ArXiv Reports**: The system automatically generates verification reports in `docs/arxiv/` (Markdown format).
 - **Diagrams**: Mermaid diagrams in `docs/diagrams/` describe the system flow.
