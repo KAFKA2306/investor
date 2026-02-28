@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ApiVerifyGateway } from "../gateways/api_verify_gateway.ts";
+import { ApiVerifyGateway } from "../providers/api_verify_gateway.ts";
 
 const VerifyTargetSchema = z.enum(["jquants", "kabucom", "edinet", "estat"]);
 type VerifyTarget = z.infer<typeof VerifyTargetSchema>;

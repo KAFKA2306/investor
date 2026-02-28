@@ -5,7 +5,7 @@ import {
   average,
   extractEstatValues,
 } from "../../experiments/analysis/daily_alpha.ts";
-import { MarketdataLocalGateway } from "../../gateways/marketdata_local_gateway.ts";
+import { MarketdataLocalGateway } from "../../providers/marketdata_local_gateway.ts";
 import { getTSModels } from "../../model_registry/registry.ts";
 import { BenchmarkReportSchema, UnifiedLogSchema } from "../../schemas/log.ts";
 

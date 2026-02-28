@@ -2,7 +2,7 @@ import { BaseAgent } from "../core/index.ts";
 import {
   type YahooBar,
   YahooFinanceGateway,
-} from "../gateways/yahoo_finance_gateway.ts";
+} from "../providers/yahoo_finance_gateway.ts";
 
 export class CommodityAgent extends BaseAgent {
   private readonly yahoo = new YahooFinanceGateway();

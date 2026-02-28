@@ -4,7 +4,7 @@ import type { AlphaFactor } from "../agents/les.ts";
 import { LesAgent } from "../agents/les.ts";
 import { core } from "../core/index.ts";
 import { ContextPlaybook } from "../core/playbook.ts";
-import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
+import { MarketdataLocalGateway } from "../providers/marketdata_local_gateway.ts";
 
 const Universe = ["7203", "9984", "8035"];
 

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   type PerformanceLedgerRow,
   PerformanceLedgerRowSchema,
-} from "../../contracts/performance_ledger.ts";
+} from "../../backtest/performance_ledger.ts";
 import { UnifiedLogSchema } from "../../schemas/log.ts";
 
 const DEFAULT_STRATEGY_ID = "VEGETABLE_STRATEGY";

@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { PerformanceLedgerRow } from "../../contracts/performance_ledger.ts";
+import type { PerformanceLedgerRow } from "../../backtest/performance_ledger.ts";
 import { evaluate } from "../../domain/performance.ts";
 import {
   type DailyLog,

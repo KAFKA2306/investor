@@ -107,9 +107,9 @@ export class PeadAgent extends BaseAgent {
     const sharpeRatio = QuantMetrics.calculateSharpeRatio(returnsHistory);
     const annualizedReturn = backtest
       ? QuantMetrics.calculateAnnualizedReturn(
-          backtest.netReturn,
-          backtest.tradingDays || returnsHistory.length || 1,
-        )
+        backtest.netReturn,
+        backtest.tradingDays || returnsHistory.length || 1,
+      )
       : 0;
     const maxDrawdown = calculateMaxDrawdown(returnsHistory);
     const evidenceSource = backtest ? "QUANT_BACKTEST" : "LINGUISTIC_ONLY";
@@ -198,7 +198,7 @@ ${outcome.summary}
 
 if (import.meta.main) {
   const { PeadJquantsGateway } = await import(
-    "../gateways/pead_market_gateway.ts"
+    "../providers/pead_market_gateway.ts"
   );
   const agent = new PeadAgent(new PeadJquantsGateway(), new LesAgent());
   await agent.run();
