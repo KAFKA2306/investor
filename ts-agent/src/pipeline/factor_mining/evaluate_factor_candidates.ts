@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { z } from "zod";
-import { UnifiedLogSchema } from "../../schemas/log.ts";
+import { UnifiedLogSchema } from "../../schemas/unified_log_schema.ts";
 import {
   calculatePerformanceMetrics,
   PerformanceMetricsSchema,
@@ -9,7 +9,7 @@ import {
 import {
   type FactorExpression,
   FactorExpressionSchema,
-} from "./generate_candidates.ts";
+} from "./generate_factor_candidates.ts";
 
 const FeatureRowSchema = z.object({
   date: z.string().regex(/^\d{8}$/),

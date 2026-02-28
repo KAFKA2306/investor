@@ -1,5 +1,5 @@
-import { YahooFinanceGateway } from "../providers/yahoo_finance_gateway.ts";
-import { BaseAgent } from "../system/core.ts";
+import { YahooFinanceGateway } from "../providers/yahoo_finance_market_provider.ts";
+import { BaseAgent } from "../system/app_runtime_core.ts";
 
 export interface VRPResult {
   symbol: string;

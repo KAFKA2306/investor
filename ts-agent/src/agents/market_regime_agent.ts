@@ -1,4 +1,4 @@
-import { BaseAgent } from "../system/core.ts";
+import { BaseAgent } from "../system/app_runtime_core.ts";
 
 /**
  * RegimeAgent: Macro & Market Condition Classifier

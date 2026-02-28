@@ -4,7 +4,7 @@ import {
   type AceBullet,
   type AcePlaybook,
   AcePlaybookSchema,
-} from "../schemas/ace";
+} from "../schemas/ace_playbook_schema";
 
 /**
  * ContextPlaybook handles the persistence and management of ACE context bullets.

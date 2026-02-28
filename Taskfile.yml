@@ -19,8 +19,8 @@ tasks:
   run:
     dir: "{{.TS_DIR}}"
     cmds:
-      - cmd: bun ./src/experiments/new_alpha_discovery.ts
-      - cmd: bun ./src/pipeline/evaluate/foundation_benchmark.ts
+      - cmd: bun ./src/experiments/discover_alpha_factors.ts
+      - cmd: bun ./src/pipeline/evaluate/run_foundation_benchmark_pipeline.ts
 
   view:
     dir: "{{.DASHBOARD_DIR}}"

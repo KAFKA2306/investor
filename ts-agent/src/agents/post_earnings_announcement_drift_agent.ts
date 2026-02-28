@@ -1,10 +1,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { QuantMetrics } from "../pipeline/evaluate/quant_metrics.ts";
-import type { BacktestResult } from "../pipeline/evaluate/simulator.ts";
-import type { StandardOutcome } from "../schemas/outcome.ts";
-import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
-import { BaseAgent } from "../system/core.ts";
+import { QuantMetrics } from "../pipeline/evaluate/quantitative_factor_metrics.ts";
+import type { BacktestResult } from "../pipeline/evaluate/backtest_simulator.ts";
+import type { StandardOutcome } from "../schemas/standard_outcome_schema.ts";
+import type { CalendarEntry, FinancialStatement } from "../schemas/pead_domain_schema.ts";
+import { BaseAgent } from "../system/app_runtime_core.ts";
 import { LesAgent } from "./les.ts";
 
 function calculateMaxDrawdown(returns: readonly number[]): number {
@@ -197,7 +197,7 @@ ${outcome.summary}
 }
 
 if (import.meta.main) {
-  const { PeadJquantsGateway } = await import("../providers/jquants.ts");
+  const { PeadJquantsGateway } = await import("../providers/jquants_market_provider.ts");
   const agent = new PeadAgent(new PeadJquantsGateway(), new LesAgent());
   await agent.run();
 }

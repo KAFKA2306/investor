@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import type { ContextPlaybook } from "../context/playbook.ts";
-import type { DailyScenarioLogSchema, UnifiedLog } from "../schemas/log.ts";
+import type { ContextPlaybook } from "../context/context_playbook_manager.ts";
+import type { DailyScenarioLogSchema, UnifiedLog } from "../schemas/unified_log_schema.ts";
 import type {
   EvaluationResult,
   IAcquirer,
@@ -8,7 +8,7 @@ import type {
   IEvaluator,
   IEvolver,
   IProcessor,
-} from "../system/opence/interfaces.ts";
+} from "../system/opence/opence_contract_interfaces.ts";
 
 /**
  * OpenCE: Evaluation Pillar

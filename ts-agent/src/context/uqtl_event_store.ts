@@ -3,7 +3,7 @@ import {
   BaseEventSchema,
   type EventType,
   type UQTLEvent,
-} from "../system/uqtl.ts";
+} from "../system/uqtl_event_types.ts";
 
 /**
  * SQLite-based Event Store for the Infinity Architecture.

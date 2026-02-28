@@ -1,16 +1,16 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { z } from "zod";
-import { core } from "../../system/core.ts";
+import { core } from "../../system/app_runtime_core.ts";
 import {
   evaluateFactorCandidates,
   loadFeatureRows,
-} from "./evaluate_candidates.ts";
+} from "./evaluate_factor_candidates.ts";
 import {
   type FactorExpression,
   FactorExpressionSchema,
   generateFactorCandidates,
-} from "./generate_candidates.ts";
+} from "./generate_factor_candidates.ts";
 
 const FactorMiningReportSchema = z.object({
   generatedAt: z.string().datetime(),

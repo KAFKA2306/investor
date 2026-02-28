@@ -1,8 +1,8 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
-import { loadModelRegistry } from "../model_registry/registry.ts";
-import { core } from "../system/core.ts";
+import { loadModelRegistry } from "../model_registry/model_registry_loader.ts";
+import { core } from "../system/app_runtime_core.ts";
 
 const ComparisonRowSchema = z.object({
   date: z.string().regex(/^\d{8}$/),

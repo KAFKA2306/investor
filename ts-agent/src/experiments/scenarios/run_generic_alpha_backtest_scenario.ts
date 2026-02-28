@@ -1,5 +1,5 @@
-import { UnifiedLogSchema } from "../../schemas/log.ts";
-import type { StandardOutcome } from "../../schemas/outcome.ts";
+import { UnifiedLogSchema } from "../../schemas/unified_log_schema.ts";
+import type { StandardOutcome } from "../../schemas/standard_outcome_schema.ts";
 
 /**
  * GenericAlphaScenario
@@ -69,7 +69,7 @@ export async function runGenericAlphaScenario(params: {
   };
 
   // Persist to unified logs directory
-  const { core } = await import("../../system/core.ts");
+  const { core } = await import("../../system/app_runtime_core.ts");
   const { join } = await import("node:path");
   const { mkdirSync, writeFileSync } = await import("node:fs");
 

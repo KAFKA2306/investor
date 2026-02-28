@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { z } from "zod";
-import { core } from "../system/core.ts";
-import { SqliteHttpCache } from "./sqlite_http_cache.ts";
+import { core } from "../system/app_runtime_core.ts";
+import { SqliteHttpCache } from "./sqlite_http_response_cache.ts";
 
 export interface YahooBar {
   Date: string;

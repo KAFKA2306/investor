@@ -1,6 +1,6 @@
 {
   "schema": "investor.benchmark-log.v1",
-  "generatedAt": "2026-02-28T03:17:02.423Z",
+  "generatedAt": "2026-02-28T03:19:04.679Z",
   "models": [
     {
       "id": "google-timesfm",
@@ -100121,7 +100121,7 @@
         17000,
         16000
       ],
-      "latencyMs": 116766
+      "latencyMs": 110159
     }
   }
 }

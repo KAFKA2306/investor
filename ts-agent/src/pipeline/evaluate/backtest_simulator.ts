@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { BacktestInputRow } from "./trading.ts";
+import type { BacktestInputRow } from "./trading_input_types.ts";
 
 export const BacktestConfigSchema = z.object({
   from: z.string().regex(/^\d{8}$/),

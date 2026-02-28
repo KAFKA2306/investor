@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { z } from "zod";
-import { UnifiedLogSchema } from "../../schemas/log.ts";
+import { UnifiedLogSchema } from "../../schemas/unified_log_schema.ts";
 
 const YYYMMDD = z.string().regex(/^\d{8}$/);
 

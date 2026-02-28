@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import { z as zod } from "zod";
-import type { PerformanceLedgerRow } from "./performance_ledger.ts";
+import type { PerformanceLedgerRow } from "./performance_ledger_loader.ts";
 
 const EPS = 1e-12;
 

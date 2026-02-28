@@ -1,6 +1,6 @@
-import { QuantMetrics } from "../pipeline/evaluate/quant_metrics.ts";
-import { MarketdataLocalGateway } from "../providers/market_data_gateway.ts";
-import { runGenericAlphaScenario } from "./scenarios/generic_alpha_scenario.ts";
+import { QuantMetrics } from "../pipeline/evaluate/quantitative_factor_metrics.ts";
+import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
+import { runGenericAlphaScenario } from "./scenarios/run_generic_alpha_backtest_scenario.ts";
 
 const UNIVERSE = ["7203", "9984", "8035", "6758", "6501"]; // Major liquid stocks
 

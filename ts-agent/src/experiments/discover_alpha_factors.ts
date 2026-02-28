@@ -1,10 +1,10 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { AlphaFactor } from "../agents/les.ts";
-import { LesAgent } from "../agents/les.ts";
-import { ContextPlaybook } from "../context/playbook.ts";
-import { MarketdataLocalGateway } from "../providers/market_data_gateway.ts";
-import { core } from "../system/core.ts";
+import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
+import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
+import { ContextPlaybook } from "../context/context_playbook_manager.ts";
+import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
+import { core } from "../system/app_runtime_core.ts";
 
 const Universe = ["7203", "9984", "8035"];
 
