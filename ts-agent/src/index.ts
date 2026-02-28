@@ -6,17 +6,16 @@ import {
   ExecutionAgentBridge,
   QuantResearcherBridge,
   StateMonitorBridge,
-} from "./system/pipeline_roles_bridge.ts";
-import type { PipelineRequirement } from "./system/pipeline_types.ts";
+} from "./system/pipeline_orchestrator.ts";
+import type { PipelineRequirement } from "./system/pipeline_orchestrator.ts";
 
 async function main() {
   console.log("Starting Autonomous Quant Alpha Pipeline");
 
   const args = process.argv.slice(2);
-  const userRequirement =
-    args.length > 0
-      ? args.join(" ")
-      : "Discover high-Sharpe alpha factors in the current market regime with low drawdown.";
+  const defaultRequirement =
+    "Discover high-Sharpe alpha factors in the current market regime with low drawdown.";
+  const userRequirement = args.join(" ") || defaultRequirement;
 
   const requirement: PipelineRequirement = {
     id: `REQ-${Date.now()}`,

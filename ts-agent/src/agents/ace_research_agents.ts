@@ -7,7 +7,7 @@ import type {
   IEvaluator,
   IEvolver,
   IProcessor,
-} from "../system/runtime_engine.ts";
+} from "../system/app_runtime_core.ts";
 
 /**
  * OpenCE: Evaluation Pillar
