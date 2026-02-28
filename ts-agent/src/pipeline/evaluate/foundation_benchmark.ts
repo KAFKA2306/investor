@@ -45,7 +45,7 @@ export async function runFoundationBenchmark() {
   const startTime = Date.now();
   const constantsPath = join(
     process.cwd(),
-    "src/experiments/foundation_models/constants.json",
+    "src/model_registry/constants.json",
   );
   const constants = JSON.parse(readFileSync(constantsPath, "utf8"));
   const gateway = await MarketdataLocalGateway.create(["1375"]);
@@ -100,7 +100,7 @@ export async function runFoundationBenchmark() {
       const proc = Bun.spawn(
         [core.getUvPath(), "run", "python", "run_inference.py"],
         {
-          cwd: join(process.cwd(), "src/experiments/foundation_models"),
+          cwd: join(process.cwd(), "src/model_registry"),
           stdin: "pipe",
           stdout: "pipe",
         },

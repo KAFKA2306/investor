@@ -16,6 +16,8 @@ providers:
     enabled: true
   ai:
     enabled: true
+  python:
+    uvPath: /root/.local/bin/uv
 
 benchmark:
   foundation:

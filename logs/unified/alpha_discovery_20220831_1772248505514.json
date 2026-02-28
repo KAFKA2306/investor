@@ -1,0 +1,29 @@
+{
+  "schema": "investor.alpha-discovery.v1",
+  "startedAt": "2026-02-28T03:14:48.592Z",
+  "endedAt": "2026-02-28T03:15:05.513Z",
+  "date": "20220831",
+  "universe": [
+    "7203",
+    "9984",
+    "8035"
+  ],
+  "evidence": {
+    "sampleSize": 3,
+    "avgIntradayRange": 0.017684188628425652,
+    "avgTurnoverValue": 56808634866.666664,
+    "avgProfitMargin": 0.10541992549151658,
+    "positiveReturnRatio": 1
+  },
+  "baseline": {
+    "name": "same-day-return-fallback",
+    "sourceFile": "N/A",
+    "scores": [
+      0.005502392344497608,
+      0.007608695652173913,
+      0.019390581717451522
+    ]
+  },
+  "candidates": [],
+  "selected": []
+}

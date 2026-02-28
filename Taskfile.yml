@@ -17,12 +17,10 @@ tasks:
       - bun run typecheck
 
   run:
-    deps: [check]
+    dir: "{{.TS_DIR}}"
     cmds:
       - cmd: bun ./src/experiments/new_alpha_discovery.ts
-        dir: "{{.TS_DIR}}"
       - cmd: bun ./src/pipeline/evaluate/foundation_benchmark.ts
-        dir: "{{.TS_DIR}}"
 
   view:
     dir: "{{.DASHBOARD_DIR}}"
