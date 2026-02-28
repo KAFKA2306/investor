@@ -25,18 +25,25 @@ export interface PITDataset {
   features: string[];
   data: any[];
   context: string;
-  qualityScore: number; // 納入条件判定用
+  qualityScore: number; // For Data Acceptance Judgment
+  preprocessingConditions: {
+    imputation: string;
+    normalization: string;
+    outlierHandling: string;
+  };
 }
 
 export interface ModelConfiguration {
   foundationModelId: string;
   adaptationPolicy: string;
   parameters: Record<string, any>;
+  selectedReason?: string;
 }
 
 export interface VerificationResult extends StandardOutcome {
   modelConfig: ModelConfiguration;
   failureType?: "DATA" | "MODEL" | "NONE";
+  adoptionReason?: string;
 }
 
 export interface OrderPlan {
@@ -63,6 +70,7 @@ export interface AuditRecord {
   executionResult: ExecutionResult;
   timestamp: string;
   complianceStatus: "PASS" | "FAIL";
+  violations?: string[];
 }
 
 export interface DriftReport {
@@ -70,26 +78,40 @@ export interface DriftReport {
   driftDetected: boolean;
   severity: "LOW" | "MEDIUM" | "HIGH";
   recommendation: "CONTINUE" | "ADJUST" | "HALT";
+  metrics: Record<string, number>;
 }
 
 export interface IElder {
   getHistory(requirementId: string): Promise<{ seeds: string[]; forbiddenZones: string[]; knowledge: string[] }>;
   saveIdeaCandidate(candidate: IdeaCandidate): Promise<void>;
-  saveDatasetInfo(datasetId: string, metadata: any): Promise<void>;
+  saveDatasetInfo(datasetId: string, metadata: any, preprocessingConditions: PITDataset["preprocessingConditions"]): Promise<void>;
+  saveModelConfiguration(config: ModelConfiguration): Promise<void>;
   saveVerificationResult(result: VerificationResult): Promise<void>;
   saveOrderPlan(plan: OrderPlan): Promise<void>;
-  saveExecutionResult(result: ExecutionResult): Promise<void>;
+  saveExecutionResult(result: ExecutionResult, adoptionReason: string): Promise<void>;
+  saveAuditRecord(audit: AuditRecord): Promise<void>;
   saveRejectionReason(strategyId: string, reason: string, metrics?: any): Promise<void>;
   reflectLearning(strategyId: string, reason: string): Promise<void>;
   updateStatus(report: DriftReport): Promise<void>;
 }
 
+export interface IStateMonitor {
+  recordDrift(report: DriftReport): Promise<void>;
+  getCurrentState(): Promise<Record<string, any>>;
+}
+
 export interface IDataEngineer {
+  collectData(sources: string[]): Promise<any[]>;
+  integrateData(raw: any[]): Promise<any>;
+  generateScenario(integratedData: any): Promise<string>;
   preparePITData(requirement: PipelineRequirement, attempt: number): Promise<PITDataset>;
-  generateScenario(dataset: PITDataset): Promise<string>;
 }
 
 export interface IQuantResearcher {
+  selectFoundationModel(candidate: IdeaCandidate, context: string): Promise<ModelConfiguration>;
+  designAdaptationPolicy(modelId: string, candidate: IdeaCandidate): Promise<string>;
+  exploreFactors(candidate: IdeaCandidate, context: string): Promise<IdeaCandidate>;
+  coOptimizeAndVerify(candidate: IdeaCandidate, dataset: PITDataset, modelConfig: ModelConfiguration, retryMode?: "MODEL" | "NONE", forbiddenZones?: string[]): Promise<VerificationResult>;
   research(candidate: IdeaCandidate, dataset: PITDataset, retryMode?: "MODEL" | "NONE", forbiddenZones?: string[]): Promise<VerificationResult>;
 }
 

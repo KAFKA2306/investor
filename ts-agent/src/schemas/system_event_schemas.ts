@@ -21,8 +21,14 @@ export const EventTypeSchema = z.enum([
   "PIPELINE_STARTED",
   "PIPELINE_COMPLETED",
   "DATASET_PREPARED",
+  "DATASET_REJECTED",
   "STRATEGY_EXECUTED",
   "STRATEGY_REJECTED",
+  "ORDER_PLAN_SAVED",
+  "MODEL_CONFIG_SAVED",
+  "AUDIT_RECORD_SAVED",
+  "STATE_UPDATED",
+  "KNOWLEDGE_RETRIEVED"
 ]);
 
 export type EventType = z.infer<typeof EventTypeSchema>;

@@ -1,5 +1,5 @@
 import { PipelineOrchestrator } from "./system/pipeline_orchestrator.ts";
-import { ElderBridge, DataEngineerBridge, QuantResearcherBridge, ExecutionAgentBridge } from "./system/pipeline_roles_bridge.ts";
+import { ElderBridge, DataEngineerBridge, QuantResearcherBridge, ExecutionAgentBridge, StateMonitorBridge } from "./system/pipeline_roles_bridge.ts";
 import { type PipelineRequirement } from "./system/pipeline_types.ts";
 import { core } from "./system/app_runtime_core.ts";
 
@@ -27,7 +27,8 @@ async function main() {
     new ElderBridge(),
     new DataEngineerBridge(),
     new QuantResearcherBridge(),
-    new ExecutionAgentBridge()
+    new ExecutionAgentBridge(),
+    new StateMonitorBridge()
   );
 
   try {

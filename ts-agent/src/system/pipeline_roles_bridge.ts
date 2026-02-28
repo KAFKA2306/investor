@@ -1,8 +1,7 @@
-import { type IElder, type IDataEngineer, type IQuantResearcher, type IExecutionAgent, type PipelineRequirement, type IdeaCandidate, type PITDataset, type VerificationResult, type ExecutionResult, type ModelConfiguration, type OrderPlan, type AuditRecord, type DriftReport } from "./pipeline_types.ts";
+import { type IElder, type IDataEngineer, type IQuantResearcher, type IExecutionAgent, type IStateMonitor, type PipelineRequirement, type IdeaCandidate, type PITDataset, type VerificationResult, type ExecutionResult, type ModelConfiguration, type OrderPlan, type AuditRecord, type DriftReport } from "./pipeline_types.ts";
 import { MemoryCenter, EventStore } from "../context/unified_context_services.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
-import { core } from "./app_runtime_core.ts";
 
 export class ElderBridge implements IElder {
   private memory = new MemoryCenter();
@@ -27,10 +26,17 @@ export class ElderBridge implements IElder {
     });
   }
 
-  async saveDatasetInfo(datasetId: string, metadata: any): Promise<void> {
+  async saveDatasetInfo(datasetId: string, metadata: any, preprocessingConditions: PITDataset["preprocessingConditions"]): Promise<void> {
     this.memory.pushEvent({
       type: "DATASET_PREPARED",
-      payload: { datasetId, ...metadata }
+      payload: { datasetId, metadata, preprocessingConditions }
+    });
+  }
+
+  async saveModelConfiguration(config: ModelConfiguration): Promise<void> {
+    this.memory.pushEvent({
+      type: "MODEL_CONFIG_SAVED",
+      payload: { config }
     });
   }
 
@@ -46,15 +52,22 @@ export class ElderBridge implements IElder {
   
   async saveOrderPlan(plan: OrderPlan): Promise<void> {
     this.memory.pushEvent({
-      type: "SYSTEM_LOG",
+      type: "ORDER_PLAN_SAVED",
       payload: { message: "Order Plan Saved", plan }
     });
   }
 
-  async saveExecutionResult(result: ExecutionResult): Promise<void> {
+  async saveExecutionResult(result: ExecutionResult, adoptionReason: string): Promise<void> {
     this.memory.pushEvent({
       type: "STRATEGY_EXECUTED",
-      payload: result
+      payload: { result, adoptionReason }
+    });
+  }
+
+  async saveAuditRecord(audit: AuditRecord): Promise<void> {
+    this.memory.pushEvent({
+      type: "AUDIT_RECORD_SAVED",
+      payload: { audit }
     });
   }
 
@@ -66,7 +79,7 @@ export class ElderBridge implements IElder {
   }
   
   async reflectLearning(strategyId: string, reason: string): Promise<void> {
-    console.log(`[Elder] Learning reflected from rejection of ${strategyId}: ${reason}`);
+    console.log(`[Elder] Learning reflected from rejection/failure of ${strategyId}: ${reason}`);
     this.memory.pushEvent({
       type: "SYSTEM_LOG",
       payload: { message: "Learning Reflection", strategyId, reason }
@@ -78,26 +91,65 @@ export class ElderBridge implements IElder {
   }
 }
 
+export class StateMonitorBridge implements IStateMonitor {
+  private memory = new MemoryCenter();
+
+  async recordDrift(report: DriftReport): Promise<void> {
+    console.log(`[StateMonitor] Drift recorded: ${report.severity}`);
+    this.memory.pushEvent({
+      type: "STATE_UPDATED",
+      payload: { component: "Drift", report }
+    });
+  }
+
+  async getCurrentState(): Promise<Record<string, any>> {
+    console.log(`[StateMonitor] Retrieving current market state`);
+    return {
+      regime: "BULL_MOMENTUM",
+      volatility: "CONTRACTING",
+      driftAlerts: 0
+    };
+  }
+}
+
 export class DataEngineerBridge implements IDataEngineer {
+  async collectData(sources: string[]): Promise<any[]> {
+    console.log(`[DataEngineer] Collecting data from sources: ${sources.join(", ")}`);
+    return [{ source: "finance", data: [] }, { source: "onchain", data: [] }];
+  }
+
+  async integrateData(raw: any[]): Promise<any> {
+    console.log(`[DataEngineer] Integrating multi-modal data`);
+    return { integrated: true, rawCount: raw.length };
+  }
+
   async preparePITData(requirement: PipelineRequirement, attempt: number): Promise<PITDataset> {
     console.log(`[DataEngineer] Step 6: Preparing PIT data (Attempt: ${attempt})...`);
-    // Integrate multiple hypothetical sources logically (Finance, News, On-chain)
-    const qualityScore = Math.min(0.9, 0.7 + attempt * 0.1);
+    
+    // Explicit phases missing previously
+    const rawData = await this.collectData(["finance", "news", "sns", "chart", "onchain"]);
+    const integrated = await this.integrateData(rawData);
+    
+    const qualityScore = Math.min(0.9, 0.6 + attempt * 0.15);
     
     return {
       id: `ds-${Date.now()}`,
       asOfDate: new Date().toISOString().slice(0, 10),
       symbols: requirement.universe,
       features: ["close", "volume", "news_sentiment", "onchain_flow"],
-      data: [{}],
-      context: "Market is in BULL_MOMENTUM",
-      qualityScore
+      data: [integrated],
+      context: "", // Filled next
+      qualityScore,
+      preprocessingConditions: {
+        imputation: "forward_fill",
+        normalization: "z_score_rolling_30d",
+        outlierHandling: "winsorize_1_99"
+      }
     };
   }
   
-  async generateScenario(dataset: PITDataset): Promise<string> {
-    // 4. Scenario Generation
-    console.log(`[DataEngineer] Step 4(b): Generating context scenario for dataset ${dataset.id}`);
+  async generateScenario(dataset: any): Promise<string> {
+    console.log(`[DataEngineer] Generating context scenario for dataset`);
     return `Scenario: Bullish momentum with high retail participation. Volatility is contracting.`;
   }
 }
@@ -106,21 +158,40 @@ export class QuantResearcherBridge implements IQuantResearcher {
   private les = new LesAgent();
   private reasoner = new StrategicReasonerAgent();
 
-  async research(candidate: IdeaCandidate, dataset: PITDataset, retryMode: "MODEL" | "NONE" = "NONE", forbiddenZones: string[] = []): Promise<VerificationResult> {
-    console.log(`[QuantResearcher] Step 11-16: Researching candidate with retryMode=${retryMode}`);
+  async selectFoundationModel(candidate: IdeaCandidate, context: string): Promise<ModelConfiguration> {
+    console.log(`[QuantResearcher] Selecting Foundation Model based on context`);
+    return {
+      foundationModelId: context.includes("Bullish") ? "les-forecast-v2-momentum" : "les-forecast-v1",
+      adaptationPolicy: "",
+      parameters: { learningRate: 1e-4 },
+      selectedReason: `Context indicates ${context.slice(0,10)}...`
+    };
+  }
+
+  async designAdaptationPolicy(modelId: string, candidate: IdeaCandidate): Promise<string> {
+    console.log(`[QuantResearcher] Designing Adaptation Policy for model: ${modelId}`);
+    return "LoRA + Prompt-Tuned Constraints";
+  }
+
+  async exploreFactors(candidate: IdeaCandidate, context: string): Promise<IdeaCandidate> {
+    console.log(`[QuantResearcher] Exploring factors for candidate: ${candidate.id} in context`);
+    return {
+      ...candidate,
+      noveltyScore: candidate.noveltyScore + 0.05
+    };
+  }
+
+  async coOptimizeAndVerify(candidate: IdeaCandidate, dataset: PITDataset, modelConfig: ModelConfiguration, retryMode: "MODEL" | "NONE" = "NONE", forbiddenZones: string[] = []): Promise<VerificationResult> {
+    console.log(`[QuantResearcher] Co-optimizing Factor and Model`);
     
     if (forbiddenZones.some(fz => candidate.description.includes(fz))) {
        console.log(`[QuantResearcher] Warning: Candidate overlaps with forbidden zone.`);
     }
 
-    // 12. Model Selection & 13. Adaptation Policy Design (Co-optimization mock)
-    const modelConfig: ModelConfiguration = {
-      foundationModelId: retryMode === "MODEL" ? "les-forecast-v2-refined" : "les-forecast-v1",
-      adaptationPolicy: retryMode === "MODEL" ? "Prompt-Tuned & LoRA-adapted" : "LoRA",
-      parameters: { learningRate: retryMode === "MODEL" ? 5e-5 : 1e-4 }
-    };
+    if (retryMode === "MODEL") {
+       modelConfig.parameters.learningRate = 5e-5;
+    }
 
-    // 15. Backtest & Verification Optimization (Co-optimization)
     let failureType: VerificationResult["failureType"] = "NONE";
     if (candidate.id.includes("-1") && retryMode === "NONE") failureType = "MODEL";
     if (candidate.id.includes("-2") && dataset.qualityScore < 0.85) failureType = "DATA";
@@ -152,8 +223,17 @@ export class QuantResearcherBridge implements IQuantResearcher {
       modelConfig,
       failureType,
       strategicReasoning: reasoning,
-      alphaScreening: screening
+      alphaScreening: screening,
+      adoptionReason: `Co-optimization successful with Sharpe ${optimizedSharpe}`
     };
+  }
+
+  async research(candidate: IdeaCandidate, dataset: PITDataset, retryMode: "MODEL" | "NONE" = "NONE", forbiddenZones: string[] = []): Promise<VerificationResult> {
+    // Fallback for older code, if any
+    const modelConfig = await this.selectFoundationModel(candidate, dataset.context);
+    modelConfig.adaptationPolicy = await this.designAdaptationPolicy(modelConfig.foundationModelId, candidate);
+    const refined = await this.exploreFactors(candidate, dataset.context);
+    return this.coOptimizeAndVerify(refined, dataset, modelConfig, retryMode, forbiddenZones);
   }
 }
 
@@ -211,7 +291,8 @@ export class ExecutionAgentBridge implements IExecutionAgent {
           strategyId: audit.executionResult.strategyId,
           driftDetected: false,
           severity: "LOW",
-          recommendation: "CONTINUE"
+          recommendation: "CONTINUE",
+          metrics: { trackingError: 0.02 }
       };
   }
 }
