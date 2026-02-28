@@ -76,7 +76,8 @@ export class SelfCriticizeLoop {
       strategyId: id,
       strategyName: "Iterative Alpha Discovery",
       timestamp: new Date().toISOString(),
-      summary: `Iteration ${iteration} results acting on ${feedback.length} feedback items.`,
+      summary: `Simulation-only iteration ${iteration} acting on ${feedback.length} feedback items. Not backed by market backtest evidence.`,
+      evidenceSource: "LINGUISTIC_ONLY",
       reasoningScore: 0.6 + iteration * 0.1,
       alpha: {
         tStat: baseTStat,
