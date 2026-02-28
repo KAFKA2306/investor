@@ -21,6 +21,10 @@ export interface AlphaFactor {
   ast: Record<string, unknown>; // [NEW] Use dynamic AST DSL instead of TS function
   description: string;
   reasoning: string;
+  // [NEW] DAG Metadata for AlphaPROBE/QuantaAlpha evolution
+  parentId?: string | undefined;
+  generation?: number;
+  mutationType?: "CROSSOVER" | "POINT_MUTATION" | "STRUCTURAL_SHIFT" | "NEW_SEED";
 }
 
 export interface FactorEvaluation {
@@ -39,6 +43,7 @@ export interface FactorGenerationOptions {
 
 export class LesAgent extends BaseAgent {
   public async generateAlphaFactors(
+    playbookBullets: any[] = [],
     _options: FactorGenerationOptions = {},
   ): Promise<AlphaFactor[]> {
     const registry = await loadModelRegistry();
@@ -49,17 +54,13 @@ export class LesAgent extends BaseAgent {
       `🚀 LES: Seed Alpha Factory is requesting DSL generation from LLM${source}...`,
     );
 
-    const { MemoryCenter } = await import(
-      "../context/unified_context_services.ts"
-    );
-    const memory = new MemoryCenter();
-    const pastSuccesses = memory.getRecentSuccesses(3);
-    const pastFailures = memory.getRecentFailures(3);
-
-    if (pastSuccesses.length > 0 || pastFailures.length > 0) {
-      console.log(
-        `🧠 [LEARNING] LES is retrieving ${pastSuccesses.length} successes and ${pastFailures.length} failures to inform generation.`,
-      );
+    // [NOVELTY ENFORCEMENT] Extract existing strategy names/IDs from playbook
+    const existingThemes = new Set<string>();
+    for (const bullet of playbookBullets) {
+      if (bullet.content) {
+        const match = bullet.content.match(/^([^:]+):/);
+        if (match && match[1]) existingThemes.add(match[1].trim().toLowerCase());
+      }
     }
 
     // [ULTRA-DIVERSITY GENERATOR]
@@ -140,6 +141,14 @@ export class LesAgent extends BaseAgent {
         name: "Regime Transition",
         terms: ["breakout", "stability", "entropy", "chaos", "order"],
       },
+      {
+        name: "DAG-based Evolution (AlphaPROBE)",
+        terms: ["graph", "retrieval", "biased", "evolution", "principled"],
+      },
+      {
+        name: "Cross-Asset Retrieval (FactorMiner)",
+        terms: ["memory", "skill", "cross-asset", "experience", "trajectory"],
+      },
     ];
 
     const reasoningTemplates = [
@@ -147,12 +156,28 @@ export class LesAgent extends BaseAgent {
       "By synthesizing {0} and {1}, the {5} persona targets {3} via a {2} approach, optimized for {4} market regimes.",
       "A {2} model that leverages {0} signals to predict {3}. Our {5} engine focuses on {1} during {4} periods.",
       "Strategic {0} extraction using {2} filters. It detects {1} and exploits {3} in {4} markets, verified by {5} protocols.",
+      "Autonomous hypothesis generation using {0} via {2}. This model identifies {1} trajectories to extract {3} edge in {4} regimes, as proposed in 2026 by {5}.",
     ];
 
     const count = _options.count || 2;
-    const candidates: AlphaFactor[] = Array.from({ length: count }, (_, _i) => {
+    const candidates: AlphaFactor[] = [];
+    let attempts = 0;
+
+    // [AlphaPROBE] Retrieval logic: select "seeds" from the playbook to evolve
+    const seeds = playbookBullets.filter((b: any) => b.metadata?.status === "SELECTED");
+
+    while (candidates.length < count && attempts < 50) {
+      attempts++;
+
+      const isEvolution = seeds.length > 0 && Math.random() > 0.4;
+      const seed = isEvolution ? seeds[Math.floor(Math.random() * seeds.length)] : null;
+
       const themeIndex = Math.floor(Math.random() * themes.length);
       const theme = themes[themeIndex]!;
+
+      // If the theme is already in the playbook, skip or attempt evolution
+      if (!isEvolution && existingThemes.has(theme.name.toLowerCase())) continue;
+
       const personaIndex = Math.floor(Math.random() * personas.length);
       const persona = personas[personaIndex]!;
       const templateIndex = Math.floor(
@@ -164,7 +189,7 @@ export class LesAgent extends BaseAgent {
       const id = `ALPHA-${persona.split(" ")[0]!.toUpperCase()}-${uuidPart.toUpperCase()}`;
       const depth = 1 + Math.floor(Math.random() * 3);
 
-      const reasoning = template
+      let reasoning = template
         .replace("{0}", theme.name)
         .replace("{1}", theme.terms[0]!)
         .replace("{2}", theme.terms[1]!)
@@ -172,13 +197,33 @@ export class LesAgent extends BaseAgent {
         .replace("{4}", theme.terms[3]!)
         .replace("{5}", persona);
 
-      return {
+      let description = `${theme.name} Hypothesis (${persona})`;
+      let generation = 1;
+      let mutationType: AlphaFactor["mutationType"] = "NEW_SEED";
+      let parentId: string | undefined = undefined;
+
+      if (isEvolution && seed) {
+        parentId = seed.metadata?.id;
+        generation = (seed.metadata?.generation || 1) + 1;
+        mutationType = Math.random() > 0.5 ? "POINT_MUTATION" : "STRUCTURAL_SHIFT";
+        description = `Evolved ${mutationType}: ${seed.content.split(":")[0]} [v${generation}]`;
+        reasoning = `[EVOLUTIONARY TRACE] Evolved from ${parentId}. ${reasoning}`;
+      }
+
+      // Secondary check: description overlap
+      if (existingThemes.has(description.toLowerCase())) continue;
+
+      candidates.push({
         id,
         ast: generateRandomAST(depth),
-        description: `${theme.name} Hypothesis (${persona})`,
+        description,
         reasoning,
-      };
-    });
+        parentId,
+        generation,
+        mutationType,
+      });
+      existingThemes.add(description.toLowerCase());
+    }
 
     // Record the event for UQTL
     this.emitEvent("ALPHA_GENERATED", {
@@ -189,14 +234,14 @@ export class LesAgent extends BaseAgent {
 
     return candidates;
   }
-  public async generate(_playbookBullets?: unknown[]): Promise<AlphaFactor[]> {
-    return this.generateAlphaFactors();
+  public async generate(playbookBullets: any[] = []): Promise<AlphaFactor[]> {
+    return this.generateAlphaFactors(playbookBullets);
   }
 
   public async generateHypotheses(
-    _playbookBullets?: unknown[],
+    playbookBullets: any[] = [],
   ): Promise<AlphaFactor[]> {
-    return this.generateAlphaFactors();
+    return this.generateAlphaFactors(playbookBullets);
   }
 
   /**

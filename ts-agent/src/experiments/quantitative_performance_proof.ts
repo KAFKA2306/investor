@@ -11,6 +11,7 @@ import {
   QuantitativeVerificationSchema,
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
+import { FactorComputeEngine } from "../pipeline/factor_mining/factor_compute_engine.ts";
 
 async function generateStandardVerificationReport() {
   const args = process.argv.slice(2);
@@ -24,6 +25,10 @@ async function generateStandardVerificationReport() {
   const strategyDescription =
     getArg("--desc") ||
     "Detects price-volume decoupling to identify underreaction in supply-shock regimes. Net-of-cost performance.";
+
+  // [NEW] Load AST from CLI if provided (passed as JSON string)
+  const astRaw = getArg("--ast");
+  const strategyAST = astRaw ? JSON.parse(astRaw) : null;
 
   console.log(
     `🛠️ 標準実証レポート用データの生成開始 [${strategyId}] (Audit-Ready)...`,
@@ -100,15 +105,19 @@ async function generateStandardVerificationReport() {
 
       data.prices.push((b.Close / initialPrice) * 100);
 
-      // Seed logic based on ID hash for pseudo-uniqueness in placeholder mode
-      const seed = strategyId
-        .split("")
-        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-      const factor =
-        ((b.Close - b.Open) / (b.Volume + 1e-9)) * (seed % 2 === 0 ? 1 : -1);
+      // [GEN 4] Real factor computation from AST if available, fallback to seed
+      let factor = 0;
+      if (strategyAST) {
+        factor = FactorComputeEngine.evaluate(strategyAST, b);
+      } else {
+        const seed = strategyId
+          .split("")
+          .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        factor = ((b.Close - b.Open) / (b.Volume + 1e-9)) * (seed % 2 === 0 ? 1 : -1);
+      }
 
       data.factors.push(factor);
-      const pos = factor < 0 ? 1 : -1;
+      const pos = factor > 0 ? 1 : -1;
       data.positions.push(pos);
 
       if (i < n - 1) {

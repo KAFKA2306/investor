@@ -37,6 +37,7 @@ const App: React.FC = () => {
     unifiedByDate,
     qualityGateByDate,
     alphaByDate,
+    verificationData,
     timeline,
     ingestErrors,
     loading,
@@ -349,7 +350,12 @@ const App: React.FC = () => {
             </>
           )}
 
-          {activeTab === "discovery" && <DiscoveryView payload={alpha} />}
+          {activeTab === "discovery" && (
+            <DiscoveryView
+              payload={alpha}
+              verificationData={verificationData || undefined}
+            />
+          )}
           {activeTab === "financial" && (
             <FinancialMetricsView
               report={report || null}
@@ -357,6 +363,7 @@ const App: React.FC = () => {
               outcome={unified || null}
               dailyByDate={dailyByDate}
               timeline={timeline}
+              verificationData={verificationData}
             />
           )}
           {activeTab === "audit" && <AuditView report={report || null} />}

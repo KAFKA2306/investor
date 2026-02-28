@@ -165,6 +165,9 @@ export async function discoverAlphaFactors() {
         ast: astById.get(h.id),
         status: h.status,
         score: h.scores.priority,
+        generation: (candidates as any).find((c: any) => c.id === h.id)?.generation,
+        parentId: (candidates as any).find((c: any) => c.id === h.id)?.parentId,
+        mutationType: (candidates as any).find((c: any) => c.id === h.id)?.mutationType,
       },
     });
   }

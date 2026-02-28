@@ -1,12 +1,23 @@
 import type React from "react";
-import type { AlphaDiscoveryPayload } from "../dashboard_core";
-import { formatNullableNumber, formatPercent } from "../dashboard_core";
+import type {
+  AlphaDiscoveryPayload,
+  StandardVerificationData,
+} from "../dashboard_core";
+import {
+  formatNullableNumber,
+  formatPercent,
+  formatSignedPercentNullable,
+} from "../dashboard_core";
 
 interface DiscoveryViewProps {
   payload?: AlphaDiscoveryPayload;
+  verificationData?: StandardVerificationData;
 }
 
-export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ payload }) => {
+export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
+  payload,
+  verificationData,
+}) => {
   if (!payload?.candidates || payload.candidates.length === 0) {
     return <div className="empty">直行アルファ探索ログは未検出です。</div>;
   }
@@ -99,6 +110,77 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({ payload }) => {
                 {candidate.id}: {candidate.rejectReason ?? "No reason provided"}
               </div>
             ))}
+          </div>
+        </section>
+      )}
+
+      {verificationData && (
+        <section className="panel section" style={{ marginTop: "1rem" }}>
+          <div className="section-head">
+            <h3>Quantitative Verification (Standardized)</h3>
+            <span className="chip ready">{verificationData.strategyId}</span>
+          </div>
+          <div className="thesis-block" style={{ marginBottom: "1rem" }}>
+            <div className="thesis-row">
+              <strong>Strategy:</strong> {verificationData.strategyName}
+            </div>
+            <div className="thesis-row">
+              <strong>Audit Hash:</strong>{" "}
+              {verificationData.audit.commitHash.slice(0, 7)}
+            </div>
+            {verificationData.description && (
+              <div className="thesis-row">
+                <strong>Description:</strong> {verificationData.description}
+              </div>
+            )}
+          </div>
+
+          {verificationData.metrics && (
+            <div className="kpi-grid" style={{ marginBottom: "1rem" }}>
+              <article className="kpi-card">
+                <div className="label">Sharpe</div>
+                <div className="value">
+                  {formatNullableNumber(verificationData.metrics.sharpe, 2)}
+                </div>
+              </article>
+              <article className="kpi-card">
+                <div className="label">IC</div>
+                <div className="value">
+                  {formatNullableNumber(verificationData.metrics.ic, 3)}
+                </div>
+              </article>
+              <article className="kpi-card">
+                <div className="label">Max Drawdown</div>
+                <div className="value risk">
+                  {formatSignedPercentNullable(verificationData.metrics.maxDD ? verificationData.metrics.maxDD / 100 : undefined)}
+                </div>
+              </article>
+              <article className="kpi-card">
+                <div className="label">Total Return</div>
+                <div className="value pos">
+                  {formatSignedPercentNullable(verificationData.metrics.totalReturn ? verificationData.metrics.totalReturn / 100 : undefined)}
+                </div>
+              </article>
+            </div>
+          )}
+
+          {verificationData.costs && (
+            <div className="thesis-block" style={{ marginBottom: "1rem", fontSize: "0.8rem", color: "gray" }}>
+              Est. Costs: {verificationData.costs.totalCostBps}bps (Fee: {verificationData.costs.feeBps}bps, Slippage: {verificationData.costs.slippageBps}bps)
+            </div>
+          )}
+
+          <div className="plot-container" style={{ textAlign: "center" }}>
+            <img
+              src={`${import.meta.env.BASE_URL}verification/${verificationData.fileName}`}
+              alt="Alpha Verification Plot"
+              style={{
+                maxWidth: "100%",
+                borderRadius: "var(--radius)",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+                border: "1px solid var(--border)",
+              }}
+            />
           </div>
         </section>
       )}

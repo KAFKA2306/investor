@@ -140,7 +140,6 @@ class Core {
   public getUvPath(): string {
     return this.config.providers.python?.uvPath || "uv";
   }
-
 }
 
 export abstract class BaseAgent {
@@ -289,12 +288,16 @@ export function writeCanonicalEnvelope(input: {
     asOfDate,
     generatedAt,
     producer: {
-      component: input.producerComponent || "app_runtime_core.writeCanonicalEnvelope",
+      component:
+        input.producerComponent || "app_runtime_core.writeCanonicalEnvelope",
     },
     payload: input.payload,
     derived: input.derived ?? false,
     lineage:
-      input.sourceSchema || input.sourceBucket || input.sourceFile || input.parentIds
+      input.sourceSchema ||
+      input.sourceBucket ||
+      input.sourceFile ||
+      input.parentIds
         ? {
             sourceSchema: input.sourceSchema,
             sourceBucket: input.sourceBucket,

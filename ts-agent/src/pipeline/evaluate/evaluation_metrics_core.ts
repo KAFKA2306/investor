@@ -182,13 +182,16 @@ export function loadPerformanceLedgerRows(
     try {
       const raw = JSON.parse(fs.readFileSync(path.join(logsDir, file), "utf8"));
       const envelope = CanonicalLogEnvelopeSchema.safeParse(raw);
-      if (!envelope.success || envelope.data.kind !== "daily_decision") continue;
+      if (!envelope.success || envelope.data.kind !== "daily_decision")
+        continue;
 
       const payload = UnifiedLogSchema.safeParse(envelope.data.payload);
       if (!payload.success || payload.data.schema !== "investor.daily-log.v1")
         continue;
 
-      const report = payload.data.report as z.infer<typeof DailyScenarioLogSchema>;
+      const report = payload.data.report as z.infer<
+        typeof DailyScenarioLogSchema
+      >;
       if (report.scenarioId && report.results?.backtest) {
         const b = report.results.backtest;
         rows.push({

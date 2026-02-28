@@ -1802,8 +1802,13 @@
       }
     },
     {
+      "id": "ctx-xfy80b1h",
       "content": "Information Asymmetry Hypothesis (Macro Strategist): This Information Asymmetry focused alpha, proposed by a Macro Strategist, identifies insider patterns using leakage logic to capture latency in a skewness environment.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T06:40:42.878Z",
+      "updated_at": "2026-02-28T06:40:42.878Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1849,16 +1854,16 @@
         },
         "status": "REJECTED",
         "score": 0.5701612903225807
-      },
-      "id": "ctx-xfy80b1h",
+      }
+    },
+    {
+      "id": "ctx-uiam0jv7",
+      "content": "Liquidity Shock Hypothesis (Behavioral Economist): Strategic Liquidity Shock extraction using flow filters. It detects illiquidity and exploits impact in imbalance markets, verified by Behavioral Economist protocols.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T06:40:42.878Z",
-      "updated_at": "2026-02-28T06:40:42.878Z"
-    },
-    {
-      "content": "Liquidity Shock Hypothesis (Behavioral Economist): Strategic Liquidity Shock extraction using flow filters. It detects illiquidity and exploits impact in imbalance markets, verified by Behavioral Economist protocols.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T06:40:42.878Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1904,12 +1909,370 @@
         },
         "status": "SELECTED",
         "score": 0.5751612903225807
-      },
-      "id": "ctx-uiam0jv7",
+      }
+    },
+    {
+      "id": "ctx-sq57quhm",
+      "content": "Liquidity Shock Hypothesis (Behavioral Economist): A flow model that leverages Liquidity Shock signals to predict impact. Our Behavioral Economist engine focuses on illiquidity during imbalance periods.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T06:40:42.878Z",
-      "updated_at": "2026-02-28T06:40:42.878Z"
+      "created_at": "2026-02-28T07:01:17.758Z",
+      "updated_at": "2026-02-28T07:01:17.758Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-4CE09DD7",
+        "ast": {
+          "op": "mul",
+          "left": {
+            "op": "col",
+            "name": "volume"
+          },
+          "right": {
+            "op": "col",
+            "name": "net_sales"
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5119298245614035
+      }
+    },
+    {
+      "id": "ctx-eou92cn8",
+      "content": "Cross-Asset Signal Hypothesis (HFT Engineer): Strategic Cross-Asset Signal extraction using spread filters. It detects correlation and exploits basis in parity markets, verified by HFT Engineer protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:01:17.758Z",
+      "updated_at": "2026-02-28T07:01:17.758Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-BFAF9672",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "net_sales"
+            },
+            "right": {
+              "op": "lit",
+              "value": 2.39
+            }
+          },
+          "right": {
+            "op": "col",
+            "name": "volume"
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5219298245614035
+      }
+    },
+    {
+      "id": "ctx-7qljhm36",
+      "content": "Regime Transition Hypothesis (Behavioral Economist): This Regime Transition focused alpha, proposed by a Behavioral Economist, identifies breakout patterns using stability logic to capture entropy in a chaos environment.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:22:56.062Z",
+      "updated_at": "2026-02-28T07:22:56.062Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-F174F807",
+        "ast": {
+          "op": "sub",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "close"
+            },
+            "right": {
+              "op": "col",
+              "name": "open"
+            }
+          },
+          "right": {
+            "op": "mul",
+            "left": {
+              "op": "lit",
+              "value": 0.17
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5559322033898305
+      }
+    },
+    {
+      "id": "ctx-k95trqwv",
+      "content": "Efficiency Divergence Hypothesis (Macro Strategist): Strategic Efficiency Divergence extraction using operating filters. It detects margin and exploits leverage in structural markets, verified by Macro Strategist protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:22:56.062Z",
+      "updated_at": "2026-02-28T07:22:56.062Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-380DB676",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "add",
+            "left": {
+              "op": "lit",
+              "value": 2.84
+            },
+            "right": {
+              "op": "col",
+              "name": "profit_margin"
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "col",
+              "name": "close"
+            },
+            "right": {
+              "op": "col",
+              "name": "open"
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5459322033898305
+      }
+    },
+    {
+      "id": "ctx-19mhn67w",
+      "content": "Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher): Autonomous hypothesis generation using Cross-Asset Retrieval (FactorMiner) via skill. This model identifies memory trajectories to extract cross-asset edge in experience regimes, as proposed in 2026 by Fundamental Researcher.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:32:18.964Z",
+      "updated_at": "2026-02-28T07:32:18.964Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-90284A54",
+        "ast": {
+          "op": "mul",
+          "left": {
+            "op": "add",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "close"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            }
+          },
+          "right": {
+            "op": "sub",
+            "left": {
+              "op": "col",
+              "name": "volume"
+            },
+            "right": {
+              "op": "col",
+              "name": "turnover_value"
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5639830508474577
+      }
+    },
+    {
+      "id": "ctx-yddcbiv6",
+      "content": "Information Asymmetry Hypothesis (Fundamental Researcher): This Information Asymmetry focused alpha, proposed by a Fundamental Researcher, identifies insider patterns using leakage logic to capture latency in a skewness environment.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:32:18.964Z",
+      "updated_at": "2026-02-28T07:32:18.964Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-24AF4B13",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "net_sales"
+            },
+            "right": {
+              "op": "col",
+              "name": "operating_profit"
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "col",
+              "name": "close"
+            },
+            "right": {
+              "op": "lit",
+              "value": 3.33
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5639830508474577
+      }
+    },
+    {
+      "content": "Evolved POINT_MUTATION: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-90284A54. A skill model that leverages Cross-Asset Retrieval (FactorMiner) signals to predict cross-asset. Our Behavioral Economist engine focuses on memory during experience periods.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-86C482E4",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "profit_margin"
+              },
+              "right": {
+                "op": "col",
+                "name": "close"
+              }
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            }
+          },
+          "right": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "operating_profit"
+            },
+            "right": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "profit_margin"
+              },
+              "right": {
+                "op": "lit",
+                "value": 4.95
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.4656666666666667
+      },
+      "id": "ctx-luqzil83",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:38:26.414Z",
+      "updated_at": "2026-02-28T07:38:26.414Z"
+    },
+    {
+      "content": "Evolved STRUCTURAL_SHIFT: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-90284A54. Autonomous hypothesis generation using Behavioral Momentum via overreaction. This model identifies sentiment trajectories to extract drift edge in crowding regimes, as proposed in 2026 by Quant Analyst.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-8D7EA1F9",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "turnover_value"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          },
+          "right": {
+            "op": "mul",
+            "left": {
+              "op": "mul",
+              "left": {
+                "op": "col",
+                "name": "close"
+              },
+              "right": {
+                "op": "col",
+                "name": "net_sales"
+              }
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "volume"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5806666666666668
+      },
+      "id": "ctx-3q89duun",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T07:38:26.414Z",
+      "updated_at": "2026-02-28T07:38:26.414Z"
     }
   ]
 }

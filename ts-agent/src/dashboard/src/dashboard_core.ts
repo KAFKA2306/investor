@@ -175,6 +175,38 @@ export const AlphaDiscoveryPayloadSchema = z.object({
 
 export type AlphaDiscoveryPayload = z.infer<typeof AlphaDiscoveryPayloadSchema>;
 
+export const StandardVerificationDataSchema = z.object({
+  schemaVersion: z.string(),
+  strategyId: z.string(),
+  strategyName: z.string(),
+  description: z.string(),
+  generatedAt: z.string().datetime(),
+  audit: z.object({
+    commitHash: z.string(),
+    environment: z.string(),
+  }),
+  dates: z.array(z.string()),
+  strategyCum: z.array(z.number()),
+  benchmarkCum: z.array(z.number()),
+  fileName: z.string(),
+  metrics: z.object({
+    ic: z.number().optional(),
+    sharpe: z.number().optional(),
+    maxDD: z.number().optional(),
+    totalReturn: z.number().optional(),
+    universe: z.array(z.string()).optional(),
+  }).optional(),
+  costs: z.object({
+    feeBps: z.number().optional(),
+    slippageBps: z.number().optional(),
+    totalCostBps: z.number().optional(),
+  }).optional(),
+});
+
+export type StandardVerificationData = z.infer<
+  typeof StandardVerificationDataSchema
+>;
+
 const ConnectivityStatusSchema = z.enum(["PASS", "FAIL", "SKIP", "MISSING"]);
 
 export const QualityGatePayloadSchema = z.object({

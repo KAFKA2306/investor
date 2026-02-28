@@ -1,0 +1,71 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "e70c257d-1a9f-47b3-a046-cb82233056fc",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260228",
+  "generatedAt": "2026-02-28T07:01:17.758Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260228",
+    "generatedAt": "2026-02-28T07:01:17.758Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-HFT-BFAF9672"
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-BEHAVIORAL-4CE09DD7",
+        "description": "Liquidity Shock Hypothesis (Behavioral Economist)",
+        "reasoning": "A flow model that leverages Liquidity Shock signals to predict impact. Our Behavioral Economist engine focuses on illiquidity during imbalance periods.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-02-28T07:01:17.758Z",
+        "scores": {
+          "priority": 0.5119298245614035,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.3,
+          "novelty": 0.8596491228070176
+        }
+      },
+      {
+        "id": "ALPHA-HFT-BFAF9672",
+        "description": "Cross-Asset Signal Hypothesis (HFT Engineer)",
+        "reasoning": "Strategic Cross-Asset Signal extraction using spread filters. It detects correlation and exploits basis in parity markets, verified by HFT Engineer protocols.",
+        "status": "SELECTED",
+        "recency": "2026-02-28T07:01:17.758Z",
+        "scores": {
+          "priority": 0.5219298245614035,
+          "plausibility": 0.4,
+          "riskAdjusted": 0.5,
+          "novelty": 0.8596491228070176
+        }
+      }
+    ],
+    "universe": [
+      "7203",
+      "9984",
+      "8035",
+      "6758",
+      "4063"
+    ],
+    "startedAt": "2026-02-28T07:01:17.729Z"
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

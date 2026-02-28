@@ -155,7 +155,11 @@ export class Orchestrator {
     }
   }
 
-  private async spawnAgent(id: number, task: () => Promise<void>, runId: string) {
+  private async spawnAgent(
+    id: number,
+    task: () => Promise<void>,
+    runId: string,
+  ) {
     console.log(`[Orchestrator] Agent ${id} is starting mission... ✨`);
     await this.emitSystemEvent("AGENT_STARTED", { runId, agentId: id });
     try {

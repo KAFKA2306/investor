@@ -1,0 +1,71 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "1261e275-f1c6-4074-8041-f21e3259d113",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260228",
+  "generatedAt": "2026-02-28T07:32:18.964Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260228",
+    "generatedAt": "2026-02-28T07:32:18.964Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-FUNDAMENTAL-90284A54"
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-FUNDAMENTAL-90284A54",
+        "description": "Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher)",
+        "reasoning": "Autonomous hypothesis generation using Cross-Asset Retrieval (FactorMiner) via skill. This model identifies memory trajectories to extract cross-asset edge in experience regimes, as proposed in 2026 by Fundamental Researcher.",
+        "status": "SELECTED",
+        "recency": "2026-02-28T07:32:18.964Z",
+        "scores": {
+          "priority": 0.5639830508474577,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.5,
+          "novelty": 0.6949152542372881
+        }
+      },
+      {
+        "id": "ALPHA-FUNDAMENTAL-24AF4B13",
+        "description": "Information Asymmetry Hypothesis (Fundamental Researcher)",
+        "reasoning": "This Information Asymmetry focused alpha, proposed by a Fundamental Researcher, identifies insider patterns using leakage logic to capture latency in a skewness environment.",
+        "status": "REJECTED",
+        "rejectReason": "RPA: High linguistic risk profile detected.",
+        "recency": "2026-02-28T07:32:18.964Z",
+        "scores": {
+          "priority": 0.5639830508474577,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.5,
+          "novelty": 0.6949152542372881
+        }
+      }
+    ],
+    "universe": [
+      "7203",
+      "9984",
+      "8035",
+      "6758",
+      "4063"
+    ],
+    "startedAt": "2026-02-28T07:32:18.928Z"
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

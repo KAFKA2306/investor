@@ -10,10 +10,12 @@ import {
   type QualityGatePayload,
   QualityGatePayloadSchema,
   UnifiedLogPayloadSchema,
+  StandardVerificationDataSchema,
+  type StandardVerificationData,
 } from "../dashboard_core";
 
 const listUnifiedLogFiles = async (): Promise<string[]> => {
-  const res = await fetch("/logs/__index?bucket=unified").catch(
+  const res = await fetch(`${import.meta.env.BASE_URL}logs/__index?bucket=unified`).catch(
     () => undefined,
   );
   if (!res?.ok) return [];
@@ -39,6 +41,8 @@ export const useDashboardData = () => {
   const [alphaByDate, setAlphaByDate] = useState<
     Map<string, AlphaDiscoveryPayload[]>
   >(new Map());
+  const [verificationData, setVerificationData] =
+    useState<StandardVerificationData | null>(null);
   const [timeline, setTimeline] = useState<string[]>([]);
   const [ingestErrors, setIngestErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +61,7 @@ export const useDashboardData = () => {
     const fetchResults = await Promise.allSettled(
       files.map(async (file) => ({
         file,
-        res: await fetch(`/logs/unified/${file}`, { cache: "no-store" }),
+        res: await fetch(`${import.meta.env.BASE_URL}logs/unified/${file}`, { cache: "no-store" }),
       })),
     );
 
@@ -151,6 +155,22 @@ export const useDashboardData = () => {
     setUnifiedByDate(nextUnifiedMap);
     setQualityGateByDate(nextQualityGateMap);
     setAlphaByDate(nextAlphaMap);
+
+    // [NEW] Fetch standard verification data (singleton for now)
+    const verifRes = await fetch(
+      `${import.meta.env.BASE_URL}verification/standard_verification_data.json`,
+      {
+        cache: "no-store",
+      },
+    ).catch(() => undefined);
+    if (verifRes?.ok) {
+      const verifRaw = await verifRes.json().catch(() => undefined);
+      const parsedVerif = StandardVerificationDataSchema.safeParse(verifRaw);
+      if (parsedVerif.success) {
+        setVerificationData(parsedVerif.data);
+      }
+    }
+
     setIngestErrors(errors);
     setLoading(false);
   }, []);
@@ -167,6 +187,7 @@ export const useDashboardData = () => {
     unifiedByDate,
     qualityGateByDate,
     alphaByDate,
+    verificationData,
     timeline,
     ingestErrors,
     loading,

@@ -1,0 +1,71 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "b998c331-07e9-400b-b2d3-fa5ce43bbd54",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260228",
+  "generatedAt": "2026-02-28T07:38:26.414Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260228",
+    "generatedAt": "2026-02-28T07:38:26.414Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-QUANT-8D7EA1F9"
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-BEHAVIORAL-86C482E4",
+        "description": "Evolved POINT_MUTATION: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]",
+        "reasoning": "[EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-90284A54. A skill model that leverages Cross-Asset Retrieval (FactorMiner) signals to predict cross-asset. Our Behavioral Economist engine focuses on memory during experience periods.",
+        "status": "REJECTED",
+        "rejectReason": "RPA: High linguistic risk profile detected.",
+        "recency": "2026-02-28T07:38:26.414Z",
+        "scores": {
+          "priority": 0.4656666666666667,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.2,
+          "novelty": 0.6533333333333333
+        }
+      },
+      {
+        "id": "ALPHA-QUANT-8D7EA1F9",
+        "description": "Evolved STRUCTURAL_SHIFT: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]",
+        "reasoning": "[EVOLUTIONARY TRACE] Evolved from ALPHA-FUNDAMENTAL-90284A54. Autonomous hypothesis generation using Behavioral Momentum via overreaction. This model identifies sentiment trajectories to extract drift edge in crowding regimes, as proposed in 2026 by Quant Analyst.",
+        "status": "SELECTED",
+        "recency": "2026-02-28T07:38:26.414Z",
+        "scores": {
+          "priority": 0.5806666666666668,
+          "plausibility": 0.6000000000000001,
+          "riskAdjusted": 0.5,
+          "novelty": 0.6533333333333333
+        }
+      }
+    ],
+    "universe": [
+      "7203",
+      "9984",
+      "8035",
+      "6758",
+      "4063"
+    ],
+    "startedAt": "2026-02-28T07:38:26.376Z"
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

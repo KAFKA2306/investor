@@ -4,6 +4,7 @@ import type {
   DailyLogEnvelope,
   DailyReport,
   UnifiedLogPayload,
+  StandardVerificationData,
 } from "../dashboard_core";
 import {
   chipClass,
@@ -23,6 +24,7 @@ interface FinancialMetricsViewProps {
   outcome: UnifiedLogPayload | null;
   dailyByDate: Map<string, DailyLogEnvelope>;
   timeline: string[];
+  verificationData?: StandardVerificationData | null;
 }
 
 type TrendPoint = {
@@ -61,6 +63,7 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
   outcome,
   dailyByDate,
   timeline,
+  verificationData,
 }) => {
   const backtest = report?.results?.backtest;
   const stageRows = useMemo(() => {
@@ -82,11 +85,13 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
   const sharpeRatio =
     pickNumber(backtest?.sharpe) ??
     readStageMetric(benchmark, ["sharpe", "sharpeRatio"]) ??
-    readStageMetric(outcome, ["sharpe", "sharpeRatio"]);
+    readStageMetric(outcome, ["sharpe", "sharpeRatio"]) ??
+    verificationData?.metrics?.sharpe;
   const maxDrawdown =
     pickNumber(backtest?.maxDrawdown) ??
     readStageMetric(benchmark, ["mdd", "maxDrawdown", "maxDD", "drawdown"]) ??
-    readStageMetric(outcome, ["mdd", "maxDrawdown", "maxDD", "drawdown"]);
+    readStageMetric(outcome, ["mdd", "maxDrawdown", "maxDD", "drawdown"]) ??
+    (verificationData?.metrics?.maxDD ? verificationData.metrics.maxDD / 100 : undefined);
   const volatility =
     readStageMetric(benchmark, ["volatility", "vol"]) ??
     readStageMetric(outcome, ["volatility", "vol"]);
@@ -103,7 +108,8 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
     readStageMetric(outcome, ["informationRatio"]);
   const informationCoefficient =
     readStageMetric(benchmark, ["informationCoefficient", "ic"]) ??
-    readStageMetric(outcome, ["informationCoefficient", "ic"]);
+    readStageMetric(outcome, ["informationCoefficient", "ic"]) ??
+    verificationData?.metrics?.ic;
 
   const trendPoints = useMemo(() => {
     const chronologicalDates = [...timeline].reverse();
@@ -182,7 +188,7 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
     };
   }, [trendPoints]);
 
-  if (!report && stageRows.length === 0 && !chart) {
+  if (!report && stageRows.length === 0 && !chart && !verificationData) {
     return <div className="empty">金融メトリクスの根拠ログがありません。</div>;
   }
 
@@ -214,7 +220,7 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
           <div className="label">Fee / Slippage</div>
           <div className="value">
             {pickNumber(backtest?.feeBps) === undefined &&
-            pickNumber(backtest?.slippageBps) === undefined
+              pickNumber(backtest?.slippageBps) === undefined
               ? "欠損"
               : `${formatBpsNullable(pickNumber(backtest?.feeBps))} / ${formatBpsNullable(pickNumber(backtest?.slippageBps))}`}
           </div>
