@@ -3,6 +3,8 @@ version: "3"
 vars:
   TS_DIR: ts-agent
   DASHBOARD_DIR: ts-agent/src/dashboard
+  API_PORT: '{{default "8787" .API_PORT}}'
+  UI_PORT: '{{default "5173" .UI_PORT}}'
 
 tasks:
   default:
@@ -53,23 +55,30 @@ tasks:
     desc: UQTL API サーバ起動
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run start:api
+      - UQTL_API_PORT={{.API_PORT}} bun run start:api
 
   ui:
     desc: ダッシュボード起動
     dir: "{{.DASHBOARD_DIR}}"
     cmds:
-      - npm run dev
+      - npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}
 
   view:
     desc: API とダッシュボードを同時起動
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
-          trap "kill 0" EXIT INT TERM;
-          (cd {{.TS_DIR}} && bun run start:api) &
-          (cd {{.DASHBOARD_DIR}} && npm run dev) &
-          wait'
+          cleanup() { if [ -n "${api_pid:-}" ]; then kill "$api_pid" 2>/dev/null || true; fi; if [ -n "${ui_pid:-}" ]; then kill "$ui_pid" 2>/dev/null || true; fi; };
+          trap cleanup EXIT INT TERM;
+          if curl -fsS "http://127.0.0.1:{{.API_PORT}}/api/stats" >/dev/null 2>&1; then
+            echo "[view] API already running on :{{.API_PORT}}";
+          else
+            (cd {{.TS_DIR}} && UQTL_API_PORT={{.API_PORT}} bun run start:api) & api_pid=$!;
+            echo "[view] started API on :{{.API_PORT}}";
+          fi;
+          (cd {{.DASHBOARD_DIR}} && npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}) & ui_pid=$!;
+          echo "[view] started UI on :{{.UI_PORT}}";
+          wait "$ui_pid"'
 
   run:
     desc: アルファ探索と基礎評価
