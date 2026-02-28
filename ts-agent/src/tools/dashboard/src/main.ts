@@ -48,6 +48,7 @@ interface DailyReport {
     maxPositions?: number;
   };
   analysis?: AnalysisSymbol[];
+  evidenceSource?: "QUANT_BACKTEST" | "LINGUISTIC_ONLY"; // [NEW] Added for Veracity Audit
   execution?: {
     status?: string;
     mode?: string;
@@ -914,9 +915,10 @@ class InvestorDashboard {
   }) {
     const host = document.getElementById("integrity-indicator");
     if (!host) return;
-    host.classList.remove("verified");
+    host.classList.remove("verified", "self-reported", "audited");
     host.textContent = "証拠整合性: 計算中...";
 
+    // 1. Hash Integrity (Local File Consistency)
     try {
       const digest = await this.sha256Hex(
         JSON.stringify({
@@ -927,8 +929,45 @@ class InvestorDashboard {
         }),
       );
       if (this.activeDate !== input.date) return;
-      host.textContent = `証拠整合性: VERIFIED / ${shortId(digest, 14)}`;
-      host.classList.add("verified");
+
+      // 2. Veracity Audit (Cross-reference with UQTL Ledger)
+      const strategyId =
+        input.report.decision?.strategy ||
+        input.report.analysis?.[0]?.symbol ||
+        "UNKNOWN";
+      const auditedEvent = this.uqtlEvents.find((e) => {
+        if (e.type !== "BACKTEST_COMPLETED") return false;
+        try {
+          const payload = JSON.parse(e.payload_json);
+          // Check if strategy name or id matches
+          return (
+            payload.strategyId === strategyId ||
+            input.report.decision?.strategy?.includes(payload.strategyId)
+          );
+        } catch {
+          return false;
+        }
+      });
+
+      if (auditedEvent) {
+        const payload = JSON.parse(auditedEvent.payload_json);
+        host.innerHTML = `証拠不変性: <span class="audited-text">AUDITED ✅</span> / Ledger: ${shortId(auditedEvent.id, 8)} / Hash: ${shortId(digest, 8)}`;
+        host.classList.add("verified", "audited");
+
+        // Audit log in console for PM verification
+        console.log(
+          `[AUDIT] Match found: Strategy ${strategyId} verified by UQTL Event ${auditedEvent.id}. NetReturn: ${payload.netReturn}`,
+        );
+      } else if (
+        input.report.evidenceSource === "QUANT_BACKTEST" ||
+        input.report.results?.backtest
+      ) {
+        host.innerHTML = `証拠不変性: <span class="caution-text">SELF-REPORTED ⚠️</span> / Hash: ${shortId(digest, 8)}`;
+        host.classList.add("verified", "self-reported");
+      } else {
+        host.innerHTML = `証拠不変性: <span class="risk-text">UNAUDITED ❌</span> / Hash: ${shortId(digest, 8)}`;
+        host.classList.add("verified");
+      }
     } catch (_error) {
       host.textContent = "証拠整合性: HASH ERROR";
       host.classList.remove("verified");
