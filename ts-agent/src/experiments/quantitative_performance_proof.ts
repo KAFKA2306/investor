@@ -102,10 +102,9 @@ function normalizeLocalBar(row: Record<string, unknown>): LocalBar {
 
 async function loadLocalHistory(
   symbols4: string[],
-  lookbackDays: number,
 ): Promise<{ symbol: string; bars: LocalBar[] }[]> {
   const gateway = await MarketdataLocalGateway.create(symbols4);
-  const rows = await Promise.all(symbols4.map((s) => gateway.getBars(s, lookbackDays)));
+  const rows = await Promise.all(symbols4.map((s) => gateway.getBarsAll(s)));
   const histories = symbols4.map((symbol, idx) => {
     const bars = (rows[idx] ?? [])
       .map((r) => normalizeLocalBar(r))
@@ -199,7 +198,7 @@ async function generateStandardVerificationReport() {
 
   const universePool = new DataPipelineRuntime().resolveUniverse([], 200);
   const selectedSymbols4 = buildDynamicUniverse(strategyId, [...universePool], 8);
-  const localHistory = await loadLocalHistory(selectedSymbols4, 160);
+  const localHistory = await loadLocalHistory(selectedSymbols4);
   if (localHistory.length === 0) {
     throw new Error("No local market history available in /mnt/d/marketdata");
   }
@@ -281,8 +280,8 @@ async function generateStandardVerificationReport() {
     });
 
     if (i < n - 1) {
-      benchmarkDailyReturns[i + 1] = mktReturnSum;
-      strategyDailyReturns[i + 1] = stratReturnSum;
+      benchmarkDailyReturns[i] = mktReturnSum;
+      strategyDailyReturns[i] = stratReturnSum;
     }
   }
 

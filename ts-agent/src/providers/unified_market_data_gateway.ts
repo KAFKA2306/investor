@@ -215,6 +215,10 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
   ): Promise<Record<string, unknown>[]> {
     return this.db.getBars(symbol, limit);
   }
+
+  public async getBarsAll(symbol: string): Promise<Record<string, unknown>[]> {
+    return this.db.getBarsAll(symbol);
+  }
 }
 
 export class ApiVerifyGateway {
