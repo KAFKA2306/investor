@@ -9,7 +9,6 @@ import {
   loadForecastModelReferences,
   type ModelReference,
 } from "../model_registry/registry.ts";
-import type { StandardOutcome } from "../schemas/outcome.ts";
 import { SymbolAnalysisSchema } from "./analysis/daily_alpha.ts";
 
 const Universe = ["7203", "9984", "8035", "6758", "4063"];
@@ -191,6 +190,7 @@ async function reproduceLES() {
     backtest,
     results.map((r) => r.alphaScore),
     results.map((r) => r.targetReturn ?? 0),
+    expId,
   );
 
   // Push UQTL Event for backtest completion
@@ -208,14 +208,7 @@ async function reproduceLES() {
   const endedAt = new Date().toISOString();
   memory.close();
 
-  const isValid = agent.validateStrategy({
-    ...outcome,
-    stability: {
-      trackingError: 0.01,
-      tradingDaysHorizon: 252,
-      isProductionReady: true,
-    },
-  } as StandardOutcome);
+  const isValid = agent.validateStrategy(outcome);
 
   const modelRefs = await loadForecastModelReferences();
   const dailyLog = {
@@ -299,4 +292,7 @@ async function reproduceLES() {
   await agent.saveArXivReport(outcome);
 }
 
-reproduceLES().catch(process.exit);
+reproduceLES().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
