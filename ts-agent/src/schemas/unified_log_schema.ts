@@ -4,8 +4,8 @@ import {
   FinanceSnapshotSchema,
   MetricsSchema,
   Ohlc6Schema,
-} from "./base.ts";
-import { StandardOutcomeSchema } from "./outcome.ts";
+} from "./common_finance_schema.ts";
+import { StandardOutcomeSchema } from "./standard_outcome_schema.ts";
 
 export const ReadinessReportSchema = z.object({
   generatedAt: z.string().datetime(),

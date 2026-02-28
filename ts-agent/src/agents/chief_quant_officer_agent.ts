@@ -1,6 +1,6 @@
 import type { StandardOutcome } from "../schemas/standard_outcome_schema.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
-import { LesAgent } from "./les.ts";
+import { LesAgent } from "./latent_economic_signal_agent.ts";
 
 export interface AuditReport {
   strategyId: string;

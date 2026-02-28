@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { core } from "./core.ts";
-import type { EventType } from "./uqtl.ts";
+import { core } from "./app_runtime_core.ts";
+import type { EventType } from "./uqtl_event_types.ts";
 
 /**
  * Nova Generation 4: Unified Intelligence Fabric (UIF)

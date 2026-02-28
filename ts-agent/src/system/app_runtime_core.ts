@@ -14,7 +14,7 @@ import {
   UnifiedLogSchema,
 } from "../schemas/unified_log_schema.ts";
 import type { StandardOutcomeSchema } from "../schemas/standard_outcome_schema.ts";
-import type { EventType } from "./uqtl.ts";
+import type { EventType } from "./uqtl_event_types.ts";
 
 const ConfigSchema = z.object({
   project: z.object({
@@ -196,7 +196,7 @@ export function readDailyLog(date: string): UnifiedLog {
 }
 
 export async function runParallel(task: () => Promise<void>): Promise<void> {
-  const { Orchestrator } = await import("./orchestrator.ts");
+  const { Orchestrator } = await import("./parallel_task_orchestrator.ts");
   const orchestrator = new Orchestrator();
   await orchestrator.runParallel(task);
 }

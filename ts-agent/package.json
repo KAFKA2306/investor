@@ -11,6 +11,7 @@
     "verify:scenario": "bun src/experiments/01_vegetable.ts",
     "experiments:comparison": "bun src/experiments/compare_model_forecasts.ts",
     "experiments:timeseries": "bun src/experiments/run_timeseries_model_analysis.ts",
+    "experiments:alpha-timeseries": "bun src/experiments/generate_standardized_alpha_timeseries.ts",
     "experiments:benchmark": "bun src/pipeline/evaluate/run_foundation_benchmark_pipeline.ts",
     "experiments:alpha-discovery": "bun src/experiments/discover_alpha_factors.ts",
     "pipeline:evaluate": "bun src/pipeline/evaluate/run_foundation_benchmark_pipeline.ts",

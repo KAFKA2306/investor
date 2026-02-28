@@ -6,7 +6,6 @@ import {
   calculatePerformanceMetrics,
   calculatePerformanceMetricsFromLedger,
   PerformanceMetricsSchema,
-} from "./performance.ts";
 } from "./performance_metrics_evaluator.ts";
 
 const ComparisonReportSchema = z.object({

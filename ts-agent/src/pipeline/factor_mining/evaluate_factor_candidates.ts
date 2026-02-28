@@ -5,7 +5,7 @@ import { UnifiedLogSchema } from "../../schemas/unified_log_schema.ts";
 import {
   calculatePerformanceMetrics,
   PerformanceMetricsSchema,
-} from "../evaluate/performance.ts";
+} from "../evaluate/performance_metrics_evaluator.ts";
 import {
   type FactorExpression,
   FactorExpressionSchema,

@@ -5,7 +5,7 @@ import type { BacktestResult } from "../pipeline/evaluate/backtest_simulator.ts"
 import type { StandardOutcome } from "../schemas/standard_outcome_schema.ts";
 import type { CalendarEntry, FinancialStatement } from "../schemas/pead_domain_schema.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
-import { LesAgent } from "./les.ts";
+import { LesAgent } from "./latent_economic_signal_agent.ts";
 
 function calculateMaxDrawdown(returns: readonly number[]): number {
   if (returns.length === 0) return 0;

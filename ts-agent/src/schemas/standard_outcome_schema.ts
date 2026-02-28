@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MetricsSchema } from "./base.ts";
+import { MetricsSchema } from "./common_finance_schema.ts";
 
 export const AlphaSignificanceSchema = z.object({
   tStat: z.number().optional(),
