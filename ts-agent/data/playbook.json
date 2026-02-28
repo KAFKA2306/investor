@@ -1106,8 +1106,13 @@
       }
     },
     {
+      "id": "ctx-hwxs8u4w",
       "content": "Cross-Asset Signal Hypothesis (Macro Strategist): Strategic Cross-Asset Signal extraction using spread filters. It detects correlation and exploits basis in parity markets, verified by Macro Strategist protocols.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:28:57.341Z",
+      "updated_at": "2026-02-28T05:28:57.341Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1158,16 +1163,16 @@
             }
           }
         }
-      },
-      "id": "ctx-hwxs8u4w",
+      }
+    },
+    {
+      "id": "ctx-z637d813",
+      "content": "Inventory Lead Hypothesis (HFT Engineer): This Inventory Lead focused alpha, proposed by a HFT Engineer, identifies cycle patterns using backlog logic to capture utilization in a bottleneck environment.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T05:28:57.341Z",
-      "updated_at": "2026-02-28T05:28:57.341Z"
-    },
-    {
-      "content": "Inventory Lead Hypothesis (HFT Engineer): This Inventory Lead focused alpha, proposed by a HFT Engineer, identifies cycle patterns using backlog logic to capture utilization in a bottleneck environment.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T05:28:57.341Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1176,12 +1181,149 @@
           "op": "col",
           "name": "volume"
         }
-      },
-      "id": "ctx-z637d813",
+      }
+    },
+    {
+      "id": "ctx-cl729vqw",
+      "content": "Efficiency Divergence Hypothesis (Quant Analyst): This Efficiency Divergence focused alpha, proposed by a Quant Analyst, identifies margin patterns using operating logic to capture leverage in a structural environment.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T05:28:57.341Z",
-      "updated_at": "2026-02-28T05:28:57.341Z"
+      "created_at": "2026-02-28T05:29:52.019Z",
+      "updated_at": "2026-02-28T05:29:52.019Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-96DA1658",
+        "ast": {
+          "op": "sub",
+          "left": {
+            "op": "col",
+            "name": "net_sales"
+          },
+          "right": {
+            "op": "col",
+            "name": "volume"
+          }
+        }
+      }
+    },
+    {
+      "id": "ctx-f3atfbta",
+      "content": "Regime Transition Hypothesis (Fundamental Researcher): This Regime Transition focused alpha, proposed by a Fundamental Researcher, identifies breakout patterns using stability logic to capture entropy in a chaos environment.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:29:52.019Z",
+      "updated_at": "2026-02-28T05:29:52.019Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-5D100676",
+        "ast": {
+          "op": "col",
+          "name": "operating_profit"
+        }
+      }
+    },
+    {
+      "content": "Macro-Socio Divergence (e-Stat) Hypothesis (Behavioral Economist): This Macro-Socio Divergence (e-Stat) focused alpha, proposed by a Behavioral Economist, identifies demographic patterns using labor logic to capture industrial in a household environment.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-DB11B197",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "mul",
+            "left": {
+              "op": "col",
+              "name": "turnover_value"
+            },
+            "right": {
+              "op": "col",
+              "name": "operating_profit"
+            }
+          },
+          "right": {
+            "op": "add",
+            "left": {
+              "op": "col",
+              "name": "open"
+            },
+            "right": {
+              "op": "col",
+              "name": "turnover_value"
+            }
+          }
+        }
+      },
+      "id": "ctx-s3xcg5tk",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:30:53.880Z",
+      "updated_at": "2026-02-28T05:30:53.880Z"
+    },
+    {
+      "content": "Volatility Regime Hypothesis (Quant Analyst): By synthesizing Volatility Regime and dispersion, the Quant Analyst persona targets skew via a uncertainty approach, optimized for tail market regimes.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-2E010F84",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "sub",
+              "left": {
+                "op": "col",
+                "name": "open"
+              },
+              "right": {
+                "op": "col",
+                "name": "volume"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "open"
+            }
+          },
+          "right": {
+            "op": "mul",
+            "left": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "profit_margin"
+              },
+              "right": {
+                "op": "col",
+                "name": "operating_profit"
+              }
+            },
+            "right": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "col",
+                "name": "close"
+              }
+            }
+          }
+        }
+      },
+      "id": "ctx-62hf0pc6",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:30:53.880Z",
+      "updated_at": "2026-02-28T05:30:53.880Z"
     }
   ]
 }
