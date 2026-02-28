@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { MarketdataLocalGateway } from "../providers/marketdata_local_gateway.ts";
 import { getTSModels } from "../model_registry/registry.ts";
+import { MarketdataLocalGateway } from "../providers/market_data_gateway.ts";
 import { average, extractEstatValues } from "./analysis/daily_alpha.ts";
 
 const TimeSeriesReportSchema = z.object({

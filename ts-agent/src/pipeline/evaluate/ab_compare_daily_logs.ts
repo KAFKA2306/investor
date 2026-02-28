@@ -6,7 +6,7 @@ import {
   calculatePerformanceMetrics,
   calculatePerformanceMetricsFromLedger,
   PerformanceMetricsSchema,
-} from "./performance_metrics.ts";
+} from "./performance.ts";
 
 const ComparisonReportSchema = z.object({
   generatedAt: z.string().datetime(),

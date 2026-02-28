@@ -2,6 +2,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import yaml from "js-yaml";
 import { z } from "zod";
+import { EventStore } from "../context/event_store.ts";
+import { MemoryCenter } from "../context/memory_center.ts";
 import { MarketdataDbCache } from "../providers/marketdata_db.ts";
 import { SqliteHttpCache } from "../providers/sqlite_http_cache.ts";
 import type { UnifiedLog } from "../schemas/log.ts";
@@ -12,8 +14,6 @@ import {
   UnifiedLogSchema,
 } from "../schemas/log.ts";
 import type { StandardOutcomeSchema } from "../schemas/outcome.ts";
-import { EventStore } from "../context/event_store.ts";
-import { MemoryCenter } from "../context/memory_center.ts";
 import type { EventType } from "./uqtl.ts";
 
 const ConfigSchema = z.object({

@@ -19,9 +19,9 @@ tasks:
   run:
     deps: [check]
     cmds:
-      - cmd: bun src/experiments/les_reproduction.ts
+      - cmd: bun ./src/experiments/new_alpha_discovery.ts
         dir: "{{.TS_DIR}}"
-      - cmd: bun src/experiments/04_foundation_benchmark.ts
+      - cmd: bun ./src/pipeline/evaluate/foundation_benchmark.ts
         dir: "{{.TS_DIR}}"
 
   view:

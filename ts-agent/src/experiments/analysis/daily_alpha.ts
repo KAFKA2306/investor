@@ -1,0 +1,131 @@
+import { z } from "zod";
+
+export const Numeric = z
+  .union([z.number(), z.string()])
+  .transform((v) => Number(v))
+  .pipe(z.number().finite());
+
+export const SymbolAnalysisSchema = z.object({
+  symbol: z.string().length(4),
+  date: z.string().regex(/^\d{8}$/),
+  ohlc6: z.object({
+    open: z.number(),
+    high: z.number(),
+    low: z.number(),
+    close: z.number(),
+    volume: z.number(),
+    turnoverValue: z.number(),
+  }),
+  finance: z.object({
+    netSales: z.number(),
+    operatingProfit: z.number(),
+    profitMargin: z.number(),
+  }),
+  factors: z.object({
+    prevDailyReturn: z.number(),
+    intradayRange: z.number(),
+    closeStrength: z.number(),
+    liquidityPerShare: z.number(),
+  }),
+  alphaScore: z.number(),
+  signal: z.enum(["LONG", "HOLD"]),
+  targetReturn: z.number().optional(), // Realized return on day T
+});
+
+export type SymbolAnalysis = z.infer<typeof SymbolAnalysisSchema>;
+
+export const getNumberByKeys = (
+  row: Record<string, unknown>,
+  keys: readonly string[],
+): number =>
+  Numeric.parse(keys.map((k) => row[k]).find((v) => v !== undefined));
+
+export const average = (xs: number[]): number =>
+  xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
+export const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
+
+export const extractEstatValues = (root: unknown): number[] => {
+  const walk = (node: unknown): number[] => {
+    if (Array.isArray(node)) return node.flatMap((v) => walk(v));
+    if (typeof node === "object" && node !== null) {
+      const obj = node as Record<string, unknown>;
+      if (obj.$ !== undefined && obj["@unit"] !== undefined) {
+        const val = Number(obj.$);
+        return Number.isFinite(val) ? [val] : [];
+      }
+      return Object.values(obj).flatMap((v) => walk(v));
+    }
+    return [];
+  };
+  return walk(root).filter((n) => Number.isFinite(n) && Math.abs(n) > 0);
+};
+
+export const scoreDailyAlpha = (
+  symbol: string,
+  bar: Record<string, unknown>,
+  fin: Record<string, unknown>,
+  macroMomentum: number,
+  predictedReturn = 0,
+  targetReturn?: number,
+): SymbolAnalysis => {
+  const date = String(bar.Date || bar.date || "19700101")
+    .replaceAll("-", "")
+    .slice(0, 8);
+  const open = getNumberByKeys(bar, ["Open", "open_price", "open", "O"]);
+  const high = getNumberByKeys(bar, ["High", "high_price", "high", "H"]);
+  const low = getNumberByKeys(bar, ["Low", "low_price", "low", "L"]);
+  const close = getNumberByKeys(bar, ["Close", "close_price", "close", "C"]);
+  const volume = getNumberByKeys(bar, ["Volume", "volume", "Vo", "AdjVo"]);
+  const turnoverValue = getNumberByKeys(bar, [
+    "TurnoverValue",
+    "turnover_value",
+    "turnover",
+    "Va",
+  ]);
+  const netSales = getNumberByKeys(fin, [
+    "NetSales",
+    "NetSalesForecast",
+    "net_sales",
+    "NetSales3Months",
+    "Sales",
+  ]);
+  const operatingProfit = getNumberByKeys(fin, [
+    "OperatingProfit",
+    "OperatingProfitForecast",
+    "operating_profit",
+    "OperatingProfit3Months",
+    "OP",
+  ]);
+
+  const eps = 1e-9;
+  const prevDailyReturn = (close - open) / Math.max(Math.abs(open), eps);
+  const intradayRange = (high - low) / Math.max(Math.abs(open), eps);
+  const closeStrength = (close - low) / Math.max(high - low, eps);
+  const liquidityPerShare = turnoverValue / Math.max(volume, eps);
+  const profitMargin = operatingProfit / Math.max(Math.abs(netSales), eps);
+
+  // Weights (Audit Note: prevDailyReturn is now correctly a feature from T-1)
+  const alphaScore =
+    0.3 * macroMomentum +
+    0.15 * prevDailyReturn +
+    0.1 * intradayRange +
+    0.1 * profitMargin +
+    0.05 * clamp01(closeStrength) +
+    0.3 * predictedReturn;
+
+  return SymbolAnalysisSchema.parse({
+    symbol,
+    date,
+    ohlc6: { open, high, low, close, volume, turnoverValue },
+    finance: { netSales, operatingProfit, profitMargin },
+    factors: {
+      prevDailyReturn,
+      intradayRange,
+      closeStrength,
+      liquidityPerShare,
+    },
+    alphaScore,
+    signal: alphaScore > 0 ? "LONG" : "HOLD",
+    targetReturn,
+  });
+};

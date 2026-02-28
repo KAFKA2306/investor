@@ -1,5 +1,5 @@
-import { BaseAgent } from "../system/core.ts";
 import type { StandardOutcome } from "../schemas/outcome.ts";
+import { BaseAgent } from "../system/core.ts";
 import { LesAgent } from "./les.ts";
 
 export interface AuditReport {

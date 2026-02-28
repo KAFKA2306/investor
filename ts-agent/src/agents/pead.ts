@@ -1,10 +1,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { BacktestResult } from "../pipeline/backtest/simulator.ts";
-import { BaseAgent } from "../system/core.ts";
 import { QuantMetrics } from "../pipeline/evaluate/quant_metrics.ts";
+import type { BacktestResult } from "../pipeline/evaluate/simulator.ts";
 import type { StandardOutcome } from "../schemas/outcome.ts";
 import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
+import { BaseAgent } from "../system/core.ts";
 import { LesAgent } from "./les.ts";
 
 function calculateMaxDrawdown(returns: readonly number[]): number {
@@ -107,9 +107,9 @@ export class PeadAgent extends BaseAgent {
     const sharpeRatio = QuantMetrics.calculateSharpeRatio(returnsHistory);
     const annualizedReturn = backtest
       ? QuantMetrics.calculateAnnualizedReturn(
-        backtest.netReturn,
-        backtest.tradingDays || returnsHistory.length || 1,
-      )
+          backtest.netReturn,
+          backtest.tradingDays || returnsHistory.length || 1,
+        )
       : 0;
     const maxDrawdown = calculateMaxDrawdown(returnsHistory);
     const evidenceSource = backtest ? "QUANT_BACKTEST" : "LINGUISTIC_ONLY";
@@ -197,9 +197,7 @@ ${outcome.summary}
 }
 
 if (import.meta.main) {
-  const { PeadJquantsGateway } = await import(
-    "../providers/pead_market_gateway.ts"
-  );
+  const { PeadJquantsGateway } = await import("../providers/jquants.ts");
   const agent = new PeadAgent(new PeadJquantsGateway(), new LesAgent());
   await agent.run();
 }

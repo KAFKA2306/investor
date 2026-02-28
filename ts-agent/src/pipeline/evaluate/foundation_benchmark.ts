@@ -1,13 +1,13 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { core } from "../../system/core.ts";
 import {
   average,
   extractEstatValues,
 } from "../../experiments/analysis/daily_alpha.ts";
-import { MarketdataLocalGateway } from "../../providers/marketdata_local_gateway.ts";
 import { getTSModels } from "../../model_registry/registry.ts";
+import { MarketdataLocalGateway } from "../../providers/market_data_gateway.ts";
 import { BenchmarkReportSchema, UnifiedLogSchema } from "../../schemas/log.ts";
+import { core } from "../../system/core.ts";
 
 function calculateRMSE(actuals: number[], predictions: number[]): number {
   return Math.sqrt(average(actuals.map((a, i) => (a - predictions[i]!) ** 2)));

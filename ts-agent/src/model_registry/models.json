@@ -7,11 +7,7 @@
       "vendor": "Amazon",
       "name": "Chronos",
       "category": "time-series-forecasting",
-      "tags": [
-        "transformer",
-        "zero-shot",
-        "foundation-model"
-      ],
+      "tags": ["transformer", "zero-shot", "foundation-model"],
       "context7LibraryId": "/amazon-science/chronos-forecasting",
       "github": "https://github.com/amazon-science/chronos-forecasting",
       "arxiv": "https://arxiv.org/abs/2403.07815"
@@ -21,11 +17,7 @@
       "vendor": "Google",
       "name": "TimesFM",
       "category": "time-series-forecasting",
-      "tags": [
-        "transformer",
-        "zero-shot",
-        "foundation-model"
-      ],
+      "tags": ["transformer", "zero-shot", "foundation-model"],
       "context7LibraryId": "/google-research/timesfm",
       "github": "https://github.com/google-research/timesfm",
       "arxiv": "https://arxiv.org/abs/2310.10688"
@@ -35,11 +27,7 @@
       "vendor": "Microsoft",
       "name": "TimeRAF",
       "category": "time-series-forecasting",
-      "tags": [
-        "zero-shot",
-        "retrieval-augmented",
-        "foundation-model"
-      ],
+      "tags": ["zero-shot", "retrieval-augmented", "foundation-model"],
       "context7LibraryId": "/microsoft/finnts",
       "github": "https://github.com/microsoft/finnts",
       "arxiv": "https://arxiv.org/abs/2412.20810"
@@ -49,12 +37,7 @@
       "vendor": "Salesforce",
       "name": "MOIRAI",
       "category": "time-series-forecasting",
-      "tags": [
-        "transformer",
-        "zero-shot",
-        "foundation-model",
-        "any-variate"
-      ],
+      "tags": ["transformer", "zero-shot", "foundation-model", "any-variate"],
       "context7LibraryId": "/salesforce/uni2ts",
       "github": "https://github.com/SalesforceAIResearch/uni2ts",
       "arxiv": "https://arxiv.org/abs/2402.02592"

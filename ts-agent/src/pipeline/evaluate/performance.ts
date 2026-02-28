@@ -1,10 +1,41 @@
-import {
-  type DailyLog,
-  type EvaluationResult,
-  EvaluationResultSchema,
-} from "../schemas/performance_schema.ts";
+import type { z } from "zod";
+import { z as zod } from "zod";
+import type { PerformanceLedgerRow } from "./performance_ledger.ts";
 
 const EPS = 1e-12;
+
+export const DailyLogSchema = zod.object({
+  date: zod.string().regex(/^\d{8}$/),
+  strategyReturn: zod.number(),
+  benchmarkReturn: zod.number().optional(),
+});
+
+export type DailyLog = zod.infer<typeof DailyLogSchema>;
+
+export const EvaluationResultSchema = zod.object({
+  sampleSize: zod.number().int().nonnegative(),
+  cumulativeReturn: zod.number(),
+  cagr: zod.number(),
+  sharpe: zod.number(),
+  maxDrawdown: zod.number(),
+  winRate: zod.number(),
+  avgReturn: zod.number(),
+  volatility: zod.number(),
+  profitFactor: zod.number().optional(),
+  informationRatio: zod.number().optional(),
+  informationCoefficient: zod.number().optional(),
+});
+
+export const ExecutionAuditSchema = zod.object({
+  theoreticalCostBps: zod.number(),
+  realizedCostBps: zod.number().optional(),
+  slippageImpact: zod.number(),
+  executionEfficiency: zod.number(),
+});
+
+export type EvaluationResult = zod.infer<typeof EvaluationResultSchema>;
+export const PerformanceMetricsSchema = EvaluationResultSchema;
+export type PerformanceMetrics = z.infer<typeof PerformanceMetricsSchema>;
 
 export const mean = (xs: readonly number[]): number =>
   xs.reduce((a, b) => a + b, 0) / Math.max(1, xs.length);
@@ -111,4 +142,28 @@ export function evaluate(
     informationRatio,
     informationCoefficient,
   });
+}
+
+export function calculatePerformanceMetrics(
+  returns: readonly number[],
+  benchmarks?: readonly number[],
+): PerformanceMetrics {
+  const logs: DailyLog[] = returns.map((r, i) => ({
+    date: "20000101",
+    strategyReturn: r,
+    benchmarkReturn: benchmarks?.[i],
+  }));
+
+  return evaluate(logs);
+}
+
+export function calculatePerformanceMetricsFromLedger(
+  rows: readonly PerformanceLedgerRow[],
+): PerformanceMetrics {
+  const logs: DailyLog[] = rows.map((row) => ({
+    date: row.date,
+    strategyReturn: row.netReturn,
+    benchmarkReturn: row.benchmarkReturn,
+  }));
+  return evaluate(logs);
 }

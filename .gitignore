@@ -4,8 +4,8 @@ cache*
 build/
 dist/
 wheels/
-*.egg-info
-
+*info*
+*lock*
 # Virtual environments
 *env* 
 *module*

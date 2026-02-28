@@ -1,8 +1,8 @@
-import { BaseAgent } from "../system/core.ts";
 import {
   type YahooBar,
   YahooFinanceGateway,
 } from "../providers/yahoo_finance_gateway.ts";
+import { BaseAgent } from "../system/core.ts";
 
 export class CommodityAgent extends BaseAgent {
   private readonly yahoo = new YahooFinanceGateway();

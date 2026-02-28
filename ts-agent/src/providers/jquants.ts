@@ -1,4 +1,10 @@
+import { join } from "node:path";
 import { z } from "zod";
+import type {
+  CalendarEntry,
+  DailyQuote,
+  FinancialStatement,
+} from "../schemas/pead.ts";
 import { core } from "../system/core.ts";
 import { SqliteHttpCache } from "./sqlite_http_cache.ts";
 
@@ -15,7 +21,7 @@ const extractRows = (payload: Record<string, unknown>): unknown[] => {
 export class JQuantsProvider {
   private readonly baseUrl = "https://api.jquants.com/v2";
   private readonly apiKey: string;
-  private readonly cache?: SqliteHttpCache;
+  private readonly cache: SqliteHttpCache | undefined;
   private readonly cacheTtlMs: number;
 
   constructor(options?: { cache?: SqliteHttpCache; cacheTtlMs?: number }) {
@@ -93,6 +99,39 @@ export class JQuantsProvider {
     params: Record<string, string>,
   ): Promise<unknown[]> {
     return this.requestRows("/fins/summary", params);
+  }
+
+  public async getDailyQuotes(
+    params: Record<string, string>,
+  ): Promise<unknown[]> {
+    return this.requestRows("/listed/daily_quotes", params);
+  }
+}
+
+export class PeadJquantsGateway {
+  private readonly provider = new JQuantsProvider({
+    cache: new SqliteHttpCache(
+      join(core.config.paths.logs, "cache", "jquants_pead_cache.sqlite"),
+    ),
+    cacheTtlMs: 12 * 60 * 60 * 1000,
+  });
+
+  public async getEarningsCalendar(
+    params: Record<string, string>,
+  ): Promise<CalendarEntry[]> {
+    return (await this.provider.getEarningsCalendar(params)) as CalendarEntry[];
+  }
+
+  public async getStatements(
+    params: Record<string, string>,
+  ): Promise<FinancialStatement[]> {
+    return (await this.provider.getStatements(params)) as FinancialStatement[];
+  }
+
+  public async getDailyQuotes(
+    params: Record<string, string>,
+  ): Promise<DailyQuote[]> {
+    return (await this.provider.getDailyQuotes(params)) as DailyQuote[];
   }
 }
 

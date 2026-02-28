@@ -1,5 +1,5 @@
 import { QuantMetrics } from "../pipeline/evaluate/quant_metrics.ts";
-import { MarketdataLocalGateway } from "../providers/marketdata_local_gateway.ts";
+import { MarketdataLocalGateway } from "../providers/market_data_gateway.ts";
 import { runGenericAlphaScenario } from "./scenarios/generic_alpha_scenario.ts";
 
 const UNIVERSE = ["7203", "9984", "8035", "6758", "6501"]; // Major liquid stocks
@@ -88,7 +88,7 @@ async function runMetagameVerification() {
       const avg = rets.reduce((a, b) => a + b, 0) / rets.length;
       const std = Math.sqrt(
         rets.map((r) => (r - avg) ** 2).reduce((a, b) => a + b, 0) /
-        rets.length,
+          rets.length,
       );
       return std === 0 ? 0 : (avg / std) * Math.sqrt(252); // Annualized approximation
     };
@@ -116,13 +116,13 @@ async function runMetagameVerification() {
   const informationCoefficient =
     tuesdayReturnsAll.length > 0
       ? Math.max(
-        -1,
-        Math.min(
-          1,
-          tuesdayReturnsAll.reduce((a, b) => a + b, 0) /
-          tuesdayReturnsAll.length,
-        ),
-      )
+          -1,
+          Math.min(
+            1,
+            tuesdayReturnsAll.reduce((a, b) => a + b, 0) /
+              tuesdayReturnsAll.length,
+          ),
+        )
       : 0;
   const maxDrawdown = calculateMaxDrawdown(tuesdayReturnsAll);
   const readinessScore = pValue <= 0.05 && avgTuesdaySharpe > 0.5 ? 70 : 40;
