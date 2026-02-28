@@ -1,8 +1,8 @@
 import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../core/index.ts";
-import { MarketdataDbCache } from "../data_cache/marketdata_db.ts";
-import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
+import { MarketdataDbCache } from "./marketdata_db.ts";
+import { SqliteHttpCache } from "./sqlite_http_cache.ts";
 import type { MarketDataGateway } from "./live_market_data_gateway.ts";
 
 export class MarketdataLocalGateway implements MarketDataGateway {

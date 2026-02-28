@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { BacktestResult } from "../backtest/simulator.ts";
+import type { BacktestResult } from "../pipeline/backtest/simulator.ts";
 import { BaseAgent } from "../core/index.ts";
 import { QuantMetrics } from "../core/metrics.ts";
 import type { StandardOutcome } from "../schemas/outcome.ts";

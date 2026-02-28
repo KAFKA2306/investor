@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../core/index.ts";
-import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
+import { SqliteHttpCache } from "./sqlite_http_cache.ts";
 
 const QuoteResponseSchema = z.object({
   quoteResponse: z.object({

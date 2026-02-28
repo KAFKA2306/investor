@@ -2,8 +2,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import yaml from "js-yaml";
 import { z } from "zod";
-import { MarketdataDbCache } from "../data_cache/marketdata_db.ts";
-import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
+import { MarketdataDbCache } from "../providers/marketdata_db.ts";
+import { SqliteHttpCache } from "../providers/sqlite_http_cache.ts";
 import type { UnifiedLog } from "../schemas/log.ts";
 import {
   type BenchmarkReportSchema,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PerformanceMetrics } from "../pipeline/evaluate/performance_metrics.ts";
+import type { PerformanceMetrics } from "../evaluate/performance_metrics.ts";
 
 export const PromotionGateInputSchema = z.object({
   readiness: z.object({

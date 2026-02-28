@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import {
   evaluatePromotionGate,
   toPromotionInput,
-} from "../../backtest/promotion_gate.ts";
+} from "../backtest/promotion_gate.ts";
 import { core } from "../../core/index.ts";
 import { compareForecastAndOutcome } from "../../experiments/02_comparison.ts";
 import { runTimeSeriesAnalysis } from "../../experiments/03_timeseries_analysis.ts";
