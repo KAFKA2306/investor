@@ -73,7 +73,7 @@ const astExecutable = (ast: unknown): boolean => {
   const v1 = FactorComputeEngine.evaluate(candidate, barA);
   const v2 = FactorComputeEngine.evaluate(candidate, barB);
   if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
-  return Math.abs(v1 - v2) > 1e-10 || Math.abs(v1) > 1e-10 || Math.abs(v2) > 1e-10;
+  return Math.abs(v1 - v2) > 1e-10;
 };
 
 /**

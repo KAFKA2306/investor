@@ -55,7 +55,7 @@ function astExecutable(ast: FactorAST): boolean {
   const v1 = FactorComputeEngine.evaluate(ast, barA);
   const v2 = FactorComputeEngine.evaluate(ast, barB);
   if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
-  return Math.abs(v1 - v2) > 1e-10 || Math.abs(v1) > 1e-10 || Math.abs(v2) > 1e-10;
+  return Math.abs(v1 - v2) > 1e-10;
 }
 
 function hashString(text: string): number {
@@ -234,42 +234,49 @@ async function generateStandardVerificationReport() {
   const previousPositions: Record<string, number> = Object.fromEntries(
     activeSymbols.map((s) => [s, 0]),
   );
+  const previousFactors: Record<string, number | undefined> = Object.fromEntries(
+    activeSymbols.map((s) => [s, undefined]),
+  );
 
   for (let i = 0; i < n; i++) {
     let mktReturnSum = 0;
     let stratReturnSum = 0;
-
-    allHistory.forEach(({ symbol, bars }) => {
+    const day = allHistory.map(({ symbol, bars }) => {
       const b = bars[i];
-      if (!b) return;
-
+      if (!b) {
+        throw new Error(`Missing bar at ${symbol} idx=${i}`);
+      }
       const initialPrice = bars[0]?.Open || 1;
       const data = individualData[symbol];
-      if (!data) return;
-
+      if (!data) {
+        throw new Error(`Missing individualData for ${symbol}`);
+      }
       data.prices.push((b.Close / initialPrice) * 100);
-
       const factor = FactorComputeEngine.evaluate(strategyAST, b);
       if (!Number.isFinite(factor)) {
         throw new Error(`Non-finite factor at ${symbol} ${b.Date}`);
       }
-
       data.factors.push(factor);
-      const threshold = 0.001;
-      const pos = factor > threshold ? 1 : factor < -threshold ? -1 : 0;
+      return { symbol, factor, next: bars[i + 1] };
+    });
+    day.forEach(({ symbol, factor, next }) => {
+      const prevFactor = previousFactors[symbol];
+      const pos =
+        prevFactor === undefined ? 0 : factor > prevFactor ? 1 : 0;
+      previousFactors[symbol] = factor;
+      const data = individualData[symbol];
+      if (!data) {
+        throw new Error(`Missing individualData for ${symbol}`);
+      }
       data.positions.push(pos);
-
-      if (i < n - 1) {
-        const next = bars[i + 1];
-        if (next) {
-          const ret = (next.Close - next.Open) / next.Open;
-          mktReturnSum += ret / activeSymbols.length;
-          const prevPos = previousPositions[symbol] ?? 0;
-          const turnover = Math.abs(pos - prevPos);
-          const netRet = pos * ret - turnover * totalCostRate;
-          previousPositions[symbol] = pos;
-          stratReturnSum += netRet / activeSymbols.length;
-        }
+      if (i < n - 1 && next) {
+        const ret = (next.Close - next.Open) / next.Open;
+        mktReturnSum += ret / activeSymbols.length;
+        const prevPos = previousPositions[symbol] ?? 0;
+        const turnover = Math.abs(pos - prevPos);
+        const netRet = pos * ret - turnover * totalCostRate;
+        previousPositions[symbol] = pos;
+        stratReturnSum += netRet / activeSymbols.length;
       }
     });
 

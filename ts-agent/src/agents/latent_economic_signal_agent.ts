@@ -3,6 +3,7 @@ import * as path from "node:path";
 import { loadModelRegistry } from "../model_registry/model_registry_loader.ts";
 import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
+import type { FactorAST } from "../pipeline/factor_mining/factor_compute_engine.ts";
 import type {
   ComputeMarketData,
   ComputeResponse,
@@ -16,6 +17,14 @@ import { BaseAgent } from "../system/app_runtime_core.ts";
 const clamp01 = (value: number): number => {
   if (value < 0) return 0;
   if (value > 1) return 1;
+  return value;
+};
+
+const pickOne = <T>(items: readonly T[]): T => {
+  const value = items[Math.floor(Math.random() * items.length)];
+  if (value === undefined) {
+    throw new Error("random selection failed");
+  }
   return value;
 };
 
@@ -72,15 +81,13 @@ export class LesAgent extends BaseAgent {
 
     // [ULTRA-DIVERSITY GENERATOR]
     // Fulfilling the mandate for "completely new" hypotheses by using personas and expanded themes.
-    const ops = ["div", "mul", "sub", "add"] as const;
+    const ops = ["DIV", "MUL", "SUB", "ADD"] as const;
     const cols = [
       "close",
       "open",
+      "high",
+      "low",
       "volume",
-      "turnover_value",
-      "profit_margin",
-      "net_sales",
-      "operating_profit",
     ];
     const personas = [
       "Quant Analyst",
@@ -90,18 +97,19 @@ export class LesAgent extends BaseAgent {
       "Fundamental Researcher",
     ];
 
-    const generateRandomAST = (depth: number): Record<string, unknown> => {
+    const generateRandomAST = (depth: number): FactorAST => {
       if (depth <= 0 || (depth === 1 && Math.random() > 0.6)) {
         if (Math.random() > 0.2) {
           return {
-            op: "col",
-            name: cols[Math.floor(Math.random() * cols.length)],
+            type: "variable",
+            name: pickOne(cols),
           };
         }
-        return { op: "lit", value: Number((Math.random() * 5).toFixed(2)) };
+        return { type: "constant", value: Number((Math.random() * 5).toFixed(2)) };
       }
       return {
-        op: ops[Math.floor(Math.random() * ops.length)],
+        type: "operator",
+        name: pickOne(ops),
         left: generateRandomAST(depth - 1),
         right: generateRandomAST(depth - 1),
       };
