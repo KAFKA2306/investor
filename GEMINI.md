@@ -1,24 +1,26 @@
-# GEMINI.md
+# Strategic Mandate: Autonomous Alpha Generation
 
-## Project Overview
-This is an **Autonomous Quantitative Investment System** that leverages Gemini 3.0 Pro and strict TypeScript to automate market data analysis, alpha generation, and investment decision-making.
+This document defines the operational mandate for the **Autonomous Quantitative Investment System**. The system leverages **Gemini 3.0 Pro** for high-reasoning factor discovery and **Strict TypeScript** for high-integrity execution, creating a self-evolving alpha generation pipeline.
 
-### Main Technologies
-- **Runtime**: [Bun](https://bun.sh/) (Primary JavaScript/TypeScript runtime)
-- **Language**: TypeScript (Strict mode enabled via `@tsconfig/strictest`)
-- **AI**: Gemini 3.0 Pro (used for reasoning, sentiment analysis, and factor generation)
-- **Data Gateways**: J-Quants (Earnings/Statements), Yahoo Finance, E-Stat (Economic data)
-- **Foundation Models**: Integration with Chronos (Amazon), TimesFM (Google), and others via a Python sub-environment
-- **Frontend**: Vite & Vanilla CSS for the analysis dashboard
-- **Tooling**: Biome (Linting/Formatting), `uv` (Python package management), Taskfile (Command orchestration)
+## Strategic Objectives
+1. **Alpha Extraction**: Autonomous discovery of non-obvious, orthogonal market signals.
+2. **Risk Mitigation**: Continuous auditing of strategies to ensure statistical significance and regime robustness.
+3. **Execution Reliability**: Zero-fat infrastructure designed for high-fidelity backtesting and live monitoring.
 
-### Architecture
-The system follows an agent-based architecture:
-- **Agents (`ts-agent/src/agents/`)**: Specialized "intelligence" units like `LesAgent` (Factor mining), `PeadAgent` (Post-Earnings Announcement Drift), and `XIntelligenceAgent` (Social sentiment).
-- **Core (`ts-agent/src/core/`)**: Orchestration logic and base agent classes.
-- **Gateways (`ts-agent/src/gateways/`)**: Standardized interfaces for external data providers.
-- **Schemas (`ts-agent/src/schemas/`)**: Strict Zod-based validation for all data structures (Market, Outcome, Log).
-- **Experiments (`ts-agent/src/experiments/`)**: Research scripts and primary execution entry points.
+## Core Technology Stack (Infrastructure for Alpha)
+- **Runtime**: [Bun](https://bun.sh/) - High-performance engine for data-intensive quantitative workflows.
+- **Intelligence**: Gemini 3.0 Pro - Specialized for sentiment synthesis, factor hypothesis, and cross-asset reasoning.
+- **Validation**: Strict TypeScript + Zod - Ensures "Immutable Evidence" and prevents "Dirty Data" from contaminating the Alpha Factory.
+- **Gateways**: Standardized access to J-Quants (Institutional Disclosure), Yahoo Finance, and e-Stat (Economic Fundamentals).
+- **Forecasting**: Integration with state-of-the-art time-series foundation models (Chronos, TimesFM).
+
+## Operational Architecture
+The system operates as a network of specialized **Autonomous Analysts**:
+- **Alpha Factory (`ts-agent/src/agents/`)**: Specialized units like `LesAgent` (Factor mining), `PeadAgent` (Event-driven drift), and `XIntelligenceAgent` (Sentiment extraction).
+- **Audit Engine (`ts-agent/src/core/`)**: Continuous validation and UQTL maintenance.
+- **Data Fabric (`ts-agent/src/gateways/`)**: High-fidelity, PIT (Point-in-Time) data ingestion.
+- **Experimental Sandbox (`ts-agent/src/experiments/`)**: Rapid prototyping and reproduction of quantitative breakthroughs.
+
 
 ---
 

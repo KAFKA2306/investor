@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { LesAgent } from "../agents/les.ts";
 import { runSimpleBacktest } from "../backtest/simulator.ts";
 import { core } from "../core/index.ts";
+import { MemoryCenter } from "../core/memory_center.ts";
 import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
 import {
   loadForecastModelReferences,
@@ -18,10 +19,35 @@ async function reproduceLES() {
   const gateway = await MarketdataLocalGateway.create(Universe);
   const date = await gateway.getMarketDataEndDate();
 
+  // Initialize Memory Center
+  const memory = new MemoryCenter();
+  const expId = `EXP-LES-REPRO-${date}-${Date.now()}`;
+
+  memory.recordExperiment({
+    id: expId,
+    name: "LES Reproduction Experiment",
+    scenario: "SCN-LES-REPRO",
+    context_prompt:
+      "Standard LES factor mining and weight optimization with Polars Compute Engine.",
+    started_at: new Date().toISOString(),
+  });
+
   const factors = await agent.generateAlphaFactors({
     blindPlanning: true,
     targetDiversity: "HIGH",
   });
+
+  // Record AI-generated factors in Memory Center
+  for (const f of factors) {
+    memory.recordAlpha({
+      id: f.id,
+      experiment_id: expId,
+      ast_json: JSON.stringify(f.ast),
+      description: f.description,
+      reasoning: f.reasoning,
+      created_at: new Date().toISOString(),
+    });
+  }
 
   const evaluations = await Promise.all(
     factors.map(async (f) => {
@@ -48,7 +74,8 @@ async function reproduceLES() {
   const executionDate = date;
   const signalDate = (Number.parseInt(date, 10) - 1).toString();
 
-  const results = await Promise.all(
+  // Prepare batch data for the Vectorized Compute Engine
+  const marketDataBatch = await Promise.all(
     Universe.map(async (symbol) => {
       const [sBars, eBars, fins] = await Promise.all([
         gateway.getDailyBars(symbol, [signalDate]),
@@ -59,44 +86,97 @@ async function reproduceLES() {
       const eBar = eBars.at(0) || {};
       const fin = fins.at(0) || {};
 
-      const rawAlphaScore = await agent.runForecasting(
-        sBar,
-        fin,
-        factors,
-        weights,
-      );
-      const eOpen = Number(eBar.Open) || 0;
-      const eClose = Number(eBar.Close) || 0;
-      const targetReturn = (eClose - eOpen) / Math.max(Math.abs(eOpen), 1e-9);
-
-      return SymbolAnalysisSchema.parse({
+      return {
         symbol,
         date: signalDate,
-        ohlc6: {
-          open: Number(sBar.Open) || 0,
-          high: Number(sBar.High) || 0,
-          low: Number(sBar.Low) || 0,
-          close: Number(sBar.Close) || 0,
-          volume: Number(sBar.Volume) || 0,
-          turnoverValue: 0,
-        },
-        finance: {
-          netSales: Number(fin.NetSales) || 0,
-          operatingProfit: Number(fin.OperatingProfit) || 0,
-          profitMargin: Number(fin.OperatingProfit) / Number(fin.NetSales) || 0,
-        },
-        factors: {
-          prevDailyReturn: 0,
-          intradayRange: 0,
-          closeStrength: 0,
-          liquidityPerShare: 0,
-        },
-        alphaScore: rawAlphaScore,
-        signal: rawAlphaScore > 0.4 ? "LONG" : "HOLD",
-        targetReturn,
-      });
+        open: Number(sBar.Open) || 0,
+        high: Number(sBar.High) || 0,
+        low: Number(sBar.Low) || 0,
+        close: Number(sBar.Close) || 0,
+        volume: Number(sBar.Volume) || 0,
+        turnover_value: Number(sBar.TurnoverValue) || 0,
+        net_sales: Number(fin.NetSales) || 0,
+        operating_profit: Number(fin.OperatingProfit) || 0,
+        profit_margin:
+          Number(fin.OperatingProfit) / Math.max(Number(fin.NetSales), 1) || 0,
+        _snapshot: { sBar, eBar, fin },
+      };
     }),
   );
+
+  // Evaluate all factors via Python Compute Engine (Polars)
+  const engineResult = await agent.evaluateFactorsViaEngine(
+    factors,
+    marketDataBatch,
+  );
+
+  // Reconstruct final score per symbol by applying weights
+  const finalScores = new Map<string, number>();
+  // biome-ignore lint/suspicious/noExplicitAny: engine result data narrowing
+  const res = engineResult as any;
+  if (res.status === "success" && res.results) {
+    for (const factorRes of res.results) {
+      const fidx = factors.findIndex((f) => f.id === factorRes.factor_id);
+      const w = fidx >= 0 ? weights[fidx] : 0;
+      if (w && w > 0 && factorRes.scores) {
+        for (const sr of factorRes.scores) {
+          finalScores.set(
+            sr.symbol,
+            (finalScores.get(sr.symbol) || 0) + sr.score * w,
+          );
+        }
+      }
+
+      // Record factor evaluation in Memory Center
+      memory.recordEvaluation({
+        id: `EVAL-${factorRes.factor_id}-${date}-${Date.now()}`,
+        alpha_id: factorRes.factor_id,
+        market_date: date,
+        metrics_json: JSON.stringify({
+          ic_proxy: factorRes.ic_proxy,
+          orthogonality: factorRes.orthogonality,
+          net_return: factorRes.backtest?.net_return,
+          signals_count: factorRes.backtest?.signals_count,
+        }),
+        overall_score: factorRes.ic_proxy || 0,
+      });
+    }
+  }
+
+  const results = marketDataBatch.map((item) => {
+    const rawAlphaScore = finalScores.get(item.symbol) || 0;
+    const { eBar } = item._snapshot;
+    const eOpen = Number(eBar.Open) || 0;
+    const eClose = Number(eBar.Close) || 0;
+    const targetReturn = (eClose - eOpen) / Math.max(Math.abs(eOpen), 1e-9);
+
+    return SymbolAnalysisSchema.parse({
+      symbol: item.symbol,
+      date: signalDate,
+      ohlc6: {
+        open: item.open,
+        high: item.high,
+        low: item.low,
+        close: item.close,
+        volume: item.volume,
+        turnoverValue: item.turnover_value,
+      },
+      finance: {
+        netSales: item.net_sales,
+        operatingProfit: item.operating_profit,
+        profitMargin: item.profit_margin,
+      },
+      factors: {
+        prevDailyReturn: 0,
+        intradayRange: 0,
+        closeStrength: 0,
+        liquidityPerShare: 0,
+      },
+      alphaScore: rawAlphaScore,
+      signal: rawAlphaScore > 0.4 ? "LONG" : "HOLD",
+      targetReturn,
+    });
+  });
 
   const selectedRows = results.filter((r) => r.signal === "LONG");
   const backtest = runSimpleBacktest({
@@ -112,7 +192,21 @@ async function reproduceLES() {
     results.map((r) => r.alphaScore),
     results.map((r) => r.targetReturn ?? 0),
   );
+
+  // Push UQTL Event for backtest completion
+  memory.pushEvent({
+    type: "BACKTEST_COMPLETED",
+    experimentId: expId,
+    payload: {
+      strategyId: "LES-REPRO",
+      netReturn: backtest.netReturn,
+      sharpe: outcome.verification?.metrics?.sharpeRatio ?? 0,
+      tradingDays: backtest.tradingDays,
+    },
+  });
+
   const endedAt = new Date().toISOString();
+  memory.close();
 
   const isValid = agent.validateStrategy({
     ...outcome,

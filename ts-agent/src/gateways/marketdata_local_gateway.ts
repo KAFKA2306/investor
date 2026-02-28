@@ -22,7 +22,7 @@ export class MarketdataLocalGateway implements MarketDataGateway {
     symbols4: readonly string[],
   ): Promise<MarketdataLocalGateway> {
     const db = new MarketdataDbCache(
-      "/mnt/d/marketdata",
+      core.config.paths.data,
       join(core.config.paths.logs, "cache", "marketdata.sqlite"),
     );
     await db.ensureLoaded(symbols4);

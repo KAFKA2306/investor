@@ -1,6 +1,6 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-24T10:16:55.466Z",
+  "generatedAt": "2026-02-28T01:07:50.731Z",
   "models": [
     {
       "id": "amazon-chronos",
@@ -53,7 +53,7 @@
   ],
   "report": {
     "scenarioId": "SCN-LES-REPRO",
-    "analyzedAt": "2026-02-24T10:16:55.466Z",
+    "analyzedAt": "2026-02-28T01:07:50.731Z",
     "date": "20220831",
     "inputs": {
       "estatStatsDataId": "0000010101",
@@ -87,7 +87,7 @@
     },
     "decision": {
       "strategy": "LES Framework (RS-Integrated)",
-      "action": "LONG_BASKET",
+      "action": "NO_TRADE",
       "topSymbol": "7203",
       "reason": "LES integrated reasoning score validation.",
       "experimentValue": "USEFUL"
@@ -99,32 +99,32 @@
       "symbols": [
         {
           "symbol": "7203",
-          "alphaScore": 0.41283112582781456,
-          "signal": "LONG",
+          "alphaScore": 0.07267209533217676,
+          "signal": "HOLD",
           "sueProxy": 0.06814828580836724
         },
         {
           "symbol": "9984",
-          "alphaScore": 0.41283112582781456,
-          "signal": "LONG",
+          "alphaScore": 0.0055835734870317,
+          "signal": "HOLD",
           "sueProxy": 0
         },
         {
           "symbol": "8035",
-          "alphaScore": 0.41283112582781456,
-          "signal": "LONG",
+          "alphaScore": 0.25739196729313024,
+          "signal": "HOLD",
           "sueProxy": 0.2481114906661825
         },
         {
           "symbol": "6758",
-          "alphaScore": 0.41283112582781456,
-          "signal": "LONG",
+          "alphaScore": 0.13855074009483856,
+          "signal": "HOLD",
           "sueProxy": 0.13279852770545802
         },
         {
           "symbol": "4063",
-          "alphaScore": 0.41283112582781456,
-          "signal": "LONG",
+          "alphaScore": 0.38540684666661146,
+          "signal": "HOLD",
           "sueProxy": 0.38010863292153124
         }
       ]
@@ -136,10 +136,10 @@
     },
     "results": {
       "mode": "PROOF",
-      "status": "PASS",
-      "expectedEdge": 0.24,
-      "basketDailyReturn": 0.00879372260057583,
-      "paperPnlPerUnit": 0.00879372260057583,
+      "status": "FAIL",
+      "expectedEdge": -0.0002,
+      "basketDailyReturn": -0.0002,
+      "paperPnlPerUnit": -0.0002,
       "backtest": {
         "from": "20220831",
         "to": "20220831",
@@ -147,19 +147,13 @@
         "feeBps": 1,
         "slippageBps": 1,
         "totalCostBps": 2,
-        "grossReturn": 0.008993722600575831,
-        "netReturn": 0.00879372260057583,
-        "pnlPerUnit": 0.00879372260057583
+        "grossReturn": 0,
+        "netReturn": -0.0002,
+        "pnlPerUnit": -0.0002
       },
-      "proved": true,
-      "selectedSymbols": [
-        "7203",
-        "9984",
-        "8035",
-        "6758",
-        "4063"
-      ],
-      "generatedAt": "2026-02-24T10:16:55.466Z"
+      "proved": false,
+      "selectedSymbols": [],
+      "generatedAt": "2026-02-28T01:07:50.731Z"
     },
     "analysis": [
       {
@@ -171,7 +165,7 @@
           "low": 2094.5,
           "close": 2105,
           "volume": 16897300,
-          "turnoverValue": 0
+          "turnoverValue": 35534476250
         },
         "finance": {
           "netSales": 8491116000000,
@@ -184,8 +178,8 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.41283112582781456,
-        "signal": "LONG",
+        "alphaScore": 0.07267209533217676,
+        "signal": "HOLD",
         "targetReturn": 0.005502392344497608
       },
       {
@@ -197,7 +191,7 @@
           "low": 5532,
           "close": 5588,
           "volume": 13158200,
-          "turnoverValue": 0
+          "turnoverValue": 73279643300
         },
         "finance": {
           "netSales": 1572030000000,
@@ -210,8 +204,8 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.41283112582781456,
-        "signal": "LONG",
+        "alphaScore": 0.0055835734870317,
+        "signal": "HOLD",
         "targetReturn": 0.007608695652173913
       },
       {
@@ -223,7 +217,7 @@
           "low": 43580,
           "close": 44250,
           "volume": 1119600,
-          "turnoverValue": 0
+          "turnoverValue": 49349135000
         },
         "finance": {
           "netSales": 473654000000,
@@ -236,8 +230,8 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.41283112582781456,
-        "signal": "LONG",
+        "alphaScore": 0.25739196729313024,
+        "signal": "HOLD",
         "targetReturn": 0.019390581717451522
       },
       {
@@ -249,7 +243,7 @@
           "low": 11250,
           "close": 11325,
           "volume": 2365100,
-          "turnoverValue": 0
+          "turnoverValue": 26774446500
         },
         "finance": {
           "netSales": 2311494000000,
@@ -262,8 +256,8 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.41283112582781456,
-        "signal": "LONG",
+        "alphaScore": 0.13855074009483856,
+        "signal": "HOLD",
         "targetReturn": 0.0022502250225022503
       },
       {
@@ -275,7 +269,7 @@
           "low": 16355,
           "close": 16490,
           "volume": 1455200,
-          "turnoverValue": 0
+          "turnoverValue": 23942318000
         },
         "finance": {
           "netSales": 656707000000,
@@ -288,24 +282,15 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.41283112582781456,
-        "signal": "LONG",
+        "alphaScore": 0.38540684666661146,
+        "signal": "HOLD",
         "targetReturn": 0.01021671826625387
       }
     ],
     "workflow": {
       "dataReadiness": "PASS",
-      "alphaReadiness": "PASS",
+      "alphaReadiness": "FAIL",
       "verdict": "USEFUL"
-    },
-    "execution": {
-      "mode": "PAPER",
-      "status": "SKIPPED",
-      "orderCount": 0,
-      "orders": [],
-      "summary": {
-        "grossExposure": 0
-      }
     }
   }
 }

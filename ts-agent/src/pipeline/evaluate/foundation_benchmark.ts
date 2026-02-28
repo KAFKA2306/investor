@@ -98,7 +98,7 @@ export async function runFoundationBenchmark() {
         idx,
       );
       const proc = Bun.spawn(
-        ["/root/.local/bin/uv", "run", "python", "run_inference.py"],
+        [core.getUvPath(), "run", "python", "run_inference.py"],
         {
           cwd: join(process.cwd(), "src/experiments/foundation_models"),
           stdin: "pipe",

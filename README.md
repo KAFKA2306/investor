@@ -1,34 +1,33 @@
-# investor
+# Antigravity: Autonomous Alpha Factory
 
-自律型の投資リサーチ/検証パイプラインを、**TypeScript + Bun** で実装したリポジトリです。  
-日次シナリオ実行、API検証、時系列ベンチマーク、LLM運用準備度評価、ダッシュボード可視化までを一気通貫で扱います。
+An institutional-grade **Autonomous Quantitative Investment System** implemented in **TypeScript + Bun**. This engine automates the entire alpha lifecycle: from raw data ingestion and synthetic hypothesis generation to rigorous statistical backtesting and risk-adjusted execution.
 
-### 📊 Live Dashboard
-**[https://kafka2306.github.io/investor/](https://kafka2306.github.io/investor/)**
+### 📈 Strategic Edge & Live Performance
+**[Live Institutional Dashboard](https://kafka2306.github.io/investor/)**
 
-> 本プロジェクトは研究・検証用途です。投資助言を目的としたものではありません。
+> [!IMPORTANT]
+> **Mission Statement**: To extract persistent, orthogonal alpha through the synergy of LLM-driven reasoning (Gemini 3.0 Pro) and strict quantitative validation (DSR/PSR). This system is designed for autonomous resilience and capital efficiency.
 
-## できること
+## Core Capabilities
 
-- 日次シナリオの実行と `logs/daily` への構造化ログ保存
-- e-Stat / J-Quants 連携を含む API ヘルス検証
-- 基盤時系列モデルのベンチマーク（Naive 比較、RMSE/SMAPE/DA）
-- LLM エージェント運用準備度（Readiness）のスコアリング
-- Vite ダッシュボードによる結果の可視化
+- **Autonomous Alpha Mining**: Generates and evolves "Orthogonal Predictive Signals" using deep reasoning agents.
+- **High-Fidelity Validation**: Rigorous auditing using Deflated Sharpe Ratio (DSR) to eliminate backtest overfitting.
+- **Regime-Aware Execution**: Real-time monitoring of alpha decay and IC half-life for optimal rebalancing.
+- **Institutional Transparency**: Unified Quantum Task Ledger (UQTL) provides a full audit trail of every investment decision.
+- **Multi-Source Ingestion**: Standardized gateways for J-Quants, e-Stat, and alternative data streams.
 
-## アーキテクチャ（概要）
+## Investment Architecture
 
 ```mermaid
 flowchart LR
-  A[外部データ API\nJ-Quants / e-Stat / Yahoo] --> B[Gateway 層]
-  B --> C[Use Cases / Experiments]
-  C --> D[Agents\n戦略生成・評価]
-  C --> E[Pipeline\nbenchmark/readiness/validation]
-  D --> F[Zod Schema Validation]
-  E --> F
-  F --> G[logs/daily・benchmarks・readiness・unified]
-  G --> H[Dashboard Vite]
+  A[Raw Data\nAlternative/Market/Macro] --> B[High-Fidelity Gateways]
+  B --> C[Alpha Factory\nSynthetic Hypothesis Gen]
+  C --> D[Autonomous Analysts\nRefining Predictive Signals]
+  D --> E[Audit Pipeline\nStatistical Backtesting & DSR]
+  E --> F[Zod-Validated Evidence]
+  F --> G[Decision Support Interface\nMission Control Dashboard]
 ```
+
 
 ## ディレクトリ構成
 

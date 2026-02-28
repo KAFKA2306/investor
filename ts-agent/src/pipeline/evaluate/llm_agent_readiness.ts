@@ -29,7 +29,7 @@ function toScore(normalized: number, maxPoints: number): number {
 
 function loadDailyPoints(logsDir: string): DailyPoint[] {
   const files = readdirSync(logsDir)
-    .filter((f) => /^\d{8}\.json$/.test(f))
+    .filter((f) => /^\d{8}(?:_[\w-]+)?\.json$/.test(f))
     .sort();
   const points: DailyPoint[] = [];
   for (const file of files) {

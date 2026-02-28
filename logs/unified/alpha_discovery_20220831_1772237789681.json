@@ -1,0 +1,69 @@
+{
+  "schema": "investor.alpha-discovery.v1",
+  "startedAt": "2026-02-28T00:16:18.364Z",
+  "endedAt": "2026-02-28T00:16:29.681Z",
+  "date": "20220831",
+  "universe": [
+    "7203",
+    "9984",
+    "8035"
+  ],
+  "evidence": {
+    "sampleSize": 3,
+    "avgIntradayRange": 0.017684188628425652,
+    "avgTurnoverValue": 56808634866.666664,
+    "avgProfitMargin": 0.10541992549151658,
+    "positiveReturnRatio": 1
+  },
+  "baseline": {
+    "name": "latest-daily-alphaScore",
+    "sourceFile": "20220831.json",
+    "scores": [
+      0.41283112582781456,
+      0.41283112582781456,
+      0.41283112582781456
+    ]
+  },
+  "candidates": [
+    {
+      "id": "ORTHO-SUPPLY-PASS-THROUGH-01",
+      "description": "Supply-shock pass-through alpha using intraday stress and margin resilience",
+      "reasoning": "価格転嫁力がある企業は供給ショック局面でも利益率が維持されやすい。日中レンジ拡大と利益率の同時観測は、景気循環系のメイン因子と低相関のリターン源になりうる。",
+      "score": 0.8300000000000001,
+      "fra": 0.92,
+      "rpa": 0.74,
+      "icProxy": 0.7021459876224729,
+      "orthogonality": 1,
+      "correlationToBaseline": 0,
+      "meanSignal": 0.4914097701770655
+    },
+    {
+      "id": "ORTHO-EARNINGS-UNDERREACTION-01",
+      "description": "Earnings-quality underreaction alpha using margin strength versus weak tape",
+      "reasoning": "短期の株価弱含みと財務利益率の乖離は、行動ファイナンス上のアンダーリアクションとして説明できる。利益の質が高い銘柄に限定した逆張りは既存モメンタムと直行しやすい。",
+      "score": 0.81,
+      "fra": 0.84,
+      "rpa": 0.78,
+      "icProxy": 0.9129699407755859,
+      "orthogonality": 1,
+      "correlationToBaseline": 0,
+      "meanSignal": 0.5881482858083672
+    },
+    {
+      "id": "ORTHO-LIQUIDITY-STRESS-REBOUND-01",
+      "description": "Liquidity stress rebound alpha from close weakness and high turnover regimes",
+      "reasoning": "フロー主導の過剰売りが発生した日に、出来高と終値位置の組み合わせから翌日反発確率を捉える。需給イベント由来のため、景気/決算ドリブン因子と相関が低く分散効果が期待できる。",
+      "score": 0.775,
+      "fra": 0.77,
+      "rpa": 0.78,
+      "icProxy": 0,
+      "orthogonality": 1,
+      "correlationToBaseline": 0,
+      "meanSignal": 0.48
+    }
+  ],
+  "selected": [
+    "ORTHO-SUPPLY-PASS-THROUGH-01",
+    "ORTHO-EARNINGS-UNDERREACTION-01"
+  ]
+}

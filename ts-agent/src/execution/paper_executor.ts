@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { VegetableExperimentReport } from "../experiments/scenarios/vegetable_daily.ts";
+import type { PaperExecutionInput } from "../contracts/trading.ts";
 
 export const PaperOrderSchema = z.object({
   symbol: z.string().length(4),
@@ -25,7 +25,7 @@ export type PaperExecution = z.infer<typeof PaperExecutionSchema>;
 const DEFAULT_LOT = 100;
 
 export function executePaperOrders(
-  report: VegetableExperimentReport,
+  report: PaperExecutionInput,
   nowIso: string,
 ): PaperExecution {
   const action = report.decision.action;

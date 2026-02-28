@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { PerformanceLedgerRow } from "../../contracts/performance_ledger.ts";
 import { evaluate } from "../../domain/performance.ts";
 import {
   type DailyLog,
@@ -18,5 +19,16 @@ export function calculatePerformanceMetrics(
     benchmarkReturn: benchmarks?.[i],
   }));
 
+  return evaluate(logs);
+}
+
+export function calculatePerformanceMetricsFromLedger(
+  rows: readonly PerformanceLedgerRow[],
+): PerformanceMetrics {
+  const logs: DailyLog[] = rows.map((row) => ({
+    date: row.date,
+    strategyReturn: row.netReturn,
+    benchmarkReturn: row.benchmarkReturn,
+  }));
   return evaluate(logs);
 }

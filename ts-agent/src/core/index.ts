@@ -12,6 +12,8 @@ import {
   UnifiedLogSchema,
 } from "../schemas/log.ts";
 import type { StandardOutcomeSchema } from "../schemas/outcome.ts";
+import { EventStore } from "./event_store.ts";
+import type { EventType } from "./uqtl.ts";
 
 const ConfigSchema = z.object({
   project: z.object({
@@ -30,6 +32,12 @@ const ConfigSchema = z.object({
     edinet: z.object({ enabled: z.boolean() }),
     estat: z.object({ enabled: z.boolean() }),
     ai: z.object({ enabled: z.boolean() }),
+    python: z
+      .object({
+        uvPath: z.string().optional(),
+        venvDir: z.string().optional(),
+      })
+      .optional(),
   }),
   benchmark: z.object({
     foundation: z.object({
@@ -45,6 +53,7 @@ class Core {
   public readonly config: Config;
   public readonly cache: SqliteHttpCache;
   public readonly db: MarketdataDbCache;
+  public readonly eventStore: EventStore;
 
   constructor() {
     this.config = this.loadConfig();
@@ -54,6 +63,9 @@ class Core {
     this.db = new MarketdataDbCache(
       this.config.paths.data,
       join(this.config.paths.logs, "cache", "market_cache.sqlite"),
+    );
+    this.eventStore = new EventStore(
+      join(this.config.paths.logs, "cache", "uqtl.sqlite"),
     );
   }
 
@@ -88,6 +100,17 @@ class Core {
     }
     return value;
   }
+
+  public getVenvPythonPath(): string {
+    const venvDir =
+      this.config.providers.python?.venvDir ||
+      join(import.meta.dir, "..", "..", ".venv");
+    return join(venvDir, "bin", "python");
+  }
+
+  public getUvPath(): string {
+    return this.config.providers.python?.uvPath || "uv";
+  }
 }
 
 export abstract class BaseAgent {
@@ -97,6 +120,22 @@ export abstract class BaseAgent {
       process.exit(1);
     }
   }
+
+  public emitEvent(
+    type: EventType,
+    payload: Record<string, unknown>,
+    metadata?: Record<string, unknown>,
+  ) {
+    core.eventStore.appendEvent({
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      type,
+      agentId: this.constructor.name,
+      payload,
+      metadata,
+    });
+  }
+
   public abstract run(): Promise<void>;
 }
 
@@ -150,3 +189,4 @@ export async function runParallel(task: () => Promise<void>): Promise<void> {
 }
 
 export { core as Core };
+export const eventStore = core.eventStore;

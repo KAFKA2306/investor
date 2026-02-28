@@ -1,0 +1,29 @@
+{
+  "schema": "investor.readiness-report.v1",
+  "generatedAt": "2026-02-28T01:18:38.873Z",
+  "report": {
+    "generatedAt": "2026-02-28T01:18:44.216Z",
+    "dateRange": {
+      "from": "20260224",
+      "to": "20260228"
+    },
+    "sampleSize": 3,
+    "score": {
+      "dataHorizon": 0,
+      "costAwareness": 20,
+      "outOfSampleDiscipline": 20,
+      "modelTraceability": 15,
+      "reproducibility": 10,
+      "executionObservability": 10,
+      "total": 75
+    },
+    "thresholds": {
+      "productionReadyMin": 75,
+      "cautionMin": 50
+    },
+    "verdict": "READY",
+    "recommendations": [
+      "Sample window is short. Expand daily logs to at least 252 trading days; target 756 days."
+    ]
+  }
+}

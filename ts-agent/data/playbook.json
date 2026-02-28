@@ -635,32 +635,405 @@
       }
     },
     {
+      "id": "ctx-j1d6isve",
       "content": "[ORTHO-SUPPLY-PASS-THROUGH-01] Supply-shock pass-through alpha using intraday stress and margin resilience | orth=1.000 | ic=0.702 | rationale=価格転嫁力がある企業は供給ショック局面でも利益率が維持されやすい。日中レンジ拡大と利益率の同時観測は、景気循環系のメイン因子と低相関のリターン源になりうる。",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-27T11:35:59.263Z",
+      "updated_at": "2026-02-27T11:35:59.263Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-27T11:35:47.977Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-j1d6isve",
+      }
+    },
+    {
+      "id": "ctx-f3xhouux",
+      "content": "[ORTHO-EARNINGS-UNDERREACTION-01] Earnings-quality underreaction alpha using margin strength versus weak tape | orth=1.000 | ic=0.913 | rationale=短期の株価弱含みと財務利益率の乖離は、行動ファイナンス上のアンダーリアクションとして説明できる。利益の質が高い銘柄に限定した逆張りは既存モメンタムと直行しやすい。",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-27T11:35:59.263Z",
-      "updated_at": "2026-02-27T11:35:59.263Z"
+      "updated_at": "2026-02-27T11:35:59.263Z",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-27T11:35:47.977Z",
+        "baseline": "latest-daily-alphaScore"
+      }
     },
     {
+      "id": "ctx-1reji8o8",
+      "content": "[ORTHO-SUPPLY-PASS-THROUGH-01] Supply-shock pass-through alpha using intraday stress and margin resilience | orth=1.000 | ic=0.702 | rationale=価格転嫁力がある企業は供給ショック局面でも利益率が維持されやすい。日中レンジ拡大と利益率の同時観測は、景気循環系のメイン因子と低相関のリターン源になりうる。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T00:16:29.680Z",
+      "updated_at": "2026-02-28T00:16:29.680Z",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T00:16:18.364Z",
+        "baseline": "latest-daily-alphaScore"
+      }
+    },
+    {
+      "id": "ctx-q02zqjmi",
       "content": "[ORTHO-EARNINGS-UNDERREACTION-01] Earnings-quality underreaction alpha using margin strength versus weak tape | orth=1.000 | ic=0.913 | rationale=短期の株価弱含みと財務利益率の乖離は、行動ファイナンス上のアンダーリアクションとして説明できる。利益の質が高い銘柄に限定した逆張りは既存モメンタムと直行しやすい。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T00:16:29.680Z",
+      "updated_at": "2026-02-28T00:16:29.680Z",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T00:16:18.364Z",
+        "baseline": "latest-daily-alphaScore"
+      }
+    },
+    {
+      "id": "ctx-hf6u78sf",
+      "content": "Low Sharpe ratio (0.00) detected. Strategy might be too volatile or trend-following in ranging market.",
+      "section": "insights",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:18:44.217Z",
+      "updated_at": "2026-02-28T01:18:44.217Z",
+      "metadata": {
+        "source": "AceEvaluator",
+        "timestamp": "2026-02-28T01:18:44.217Z"
+      }
+    },
+    {
+      "id": "ctx-qyzkwe6e",
+      "content": "Cross-Liquidity Arbitrage: 指数寄与度と個別株の流動性ミスマッチを突く平均回帰戦略。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:18:44.219Z",
+      "updated_at": "2026-02-28T01:18:44.219Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-o2bplg4c",
+      "content": "Earnings Surprise Alpha (PEAD): 決算発表後のモメンタムドリフトを基盤モデル（Chronos/TimesFM）で強化した検証系。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:18:44.219Z",
+      "updated_at": "2026-02-28T01:18:44.219Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-rkhk48xw",
+      "content": "Sentiment-Volume Divergence: SNSセンチメントと出来高乖離による反転シグナル。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:18:44.219Z",
+      "updated_at": "2026-02-28T01:18:44.219Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "id": "ctx-sldh0as4",
+      "content": "Inter-Sector Relative Strength: セクター間モーメンタムの直行性を検証する動的配分ロジック。",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:18:44.219Z",
+      "updated_at": "2026-02-28T01:18:44.219Z",
+      "metadata": {
+        "source": "AceAcquirer",
+        "type": "HYPOTHESIS"
+      }
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-000] Volume-Price Divergence variant 0 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
       "metadata": {
         "source": "alpha_discovery",
-        "evaluatedAt": "2026-02-27T11:35:47.977Z",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
       },
-      "id": "ctx-f3xhouux",
+      "id": "ctx-kq85i8yq",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-27T11:35:59.263Z",
-      "updated_at": "2026-02-27T11:35:59.263Z"
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence variant 1 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-shhpdiqa",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-002] Volume-Price Divergence variant 2 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-l9iq5kld",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-003] Volume-Price Divergence variant 3 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-qz5iuxhc",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-004] Volume-Price Divergence variant 4 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-awc4kea6",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-005] Volume-Price Divergence variant 5 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-16wy05im",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-006] Volume-Price Divergence variant 6 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-lysk5fl7",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-007] Volume-Price Divergence variant 7 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-9dpxivkg",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-008] Volume-Price Divergence variant 8 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-0mog9lwi",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-009] Volume-Price Divergence variant 9 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-exyl147b",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-010] Volume-Price Divergence variant 10 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-uwt3vleu",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-011] Volume-Price Divergence variant 11 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-tzw4xdki",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-012] Volume-Price Divergence variant 12 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-8gsq2xhh",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-013] Volume-Price Divergence variant 13 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-d1gk3zia",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-014] Volume-Price Divergence variant 14 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-dctsqq2h",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-015] Volume-Price Divergence variant 15 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-k4efjrcu",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-016] Volume-Price Divergence variant 16 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-ocg513bo",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-017] Volume-Price Divergence variant 17 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-h31efi8w",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-018] Volume-Price Divergence variant 18 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-84qog8aq",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-019] Volume-Price Divergence variant 19 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      },
+      "id": "ctx-70pg8ivf",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z"
     }
   ]
 }

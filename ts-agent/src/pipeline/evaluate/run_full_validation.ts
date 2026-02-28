@@ -1,5 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  evaluatePromotionGate,
+  toPromotionInput,
+} from "../../application/promotion_gate.ts";
 import { core } from "../../core/index.ts";
 import { compareForecastAndOutcome } from "../../experiments/02_comparison.ts";
 import { runTimeSeriesAnalysis } from "../../experiments/03_timeseries_analysis.ts";
@@ -60,6 +64,8 @@ export async function runFullValidation(logsBaseDir: string) {
   const runId = `run_${runDate}_${Date.now()}`;
 
   const stages: UnifiedStageLog[] = [];
+  let abReportRef: ReturnType<typeof runDailyAbComparison> | null = null;
+  let readinessReportRef: ReturnType<typeof runLlmAgentReadiness> | null = null;
   stages.push(
     await runStage(
       "verify_api",
@@ -155,6 +161,7 @@ export async function runFullValidation(logsBaseDir: string) {
       "Daily A/B Comparison",
       async () => {
         const report = runDailyAbComparison(logsBaseDir);
+        abReportRef = report;
         return {
           metrics: {
             sharpeDelta: report.uplift.sharpeDelta,
@@ -174,6 +181,7 @@ export async function runFullValidation(logsBaseDir: string) {
       "LLM Readiness",
       async () => {
         const report = runLlmAgentReadiness(logsBaseDir);
+        readinessReportRef = report;
         return {
           metrics: {
             total: report.score.total,
@@ -181,6 +189,37 @@ export async function runFullValidation(logsBaseDir: string) {
             costAwareness: report.score.costAwareness,
           },
           detail: report,
+        };
+      },
+    ),
+  );
+
+  stages.push(
+    await runStage(
+      "pipeline_promotion",
+      "pipeline",
+      "Promotion Gate",
+      async () => {
+        const abReport = abReportRef ?? runDailyAbComparison(logsBaseDir);
+        const readinessReport =
+          readinessReportRef ?? runLlmAgentReadiness(logsBaseDir);
+        const input = toPromotionInput({
+          readinessReport,
+          candidateMetrics: abReport.candidate.metrics,
+          ledgerQuality: abReport.ledgerQuality,
+        });
+        const decision = evaluatePromotionGate(input);
+        return {
+          metrics: {
+            allocationTier: decision.allocationTier,
+            targetGrossExposureMultiplier:
+              decision.targetGrossExposureMultiplier,
+            riskBudgetBps: decision.riskBudgetBps,
+          },
+          detail: {
+            decision,
+            gateInput: input,
+          },
         };
       },
     ),

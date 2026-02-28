@@ -149,6 +149,16 @@ interface ReadinessLogPayload {
   };
 }
 
+interface UQTLEvent {
+  id: string;
+  timestamp: string;
+  type: string;
+  agent_id?: string;
+  experiment_id?: string;
+  payload_json: string;
+  metadata_json?: string;
+}
+
 type LogBucket = "daily" | "benchmarks" | "unified" | "readiness";
 
 interface TimeSeriesPoint {
@@ -229,6 +239,8 @@ class InvestorDashboard {
 
   private alphaByDate = new Map<string, AlphaDiscoveryPayload[]>();
 
+  private uqtlEvents: UQTLEvent[] = [];
+
   private timeline: string[] = [];
 
   private activeDate = "";
@@ -240,15 +252,41 @@ class InvestorDashboard {
   private async bootstrap() {
     this.bindEvents();
     await this.refresh();
+    await this.refreshUqtl();
     window.setInterval(() => {
       void this.refresh();
-    }, 30000);
+    }, 60000);
+    window.setInterval(() => {
+      void this.refreshUqtl();
+    }, 5000);
   }
 
   private bindEvents() {
     const refreshButton = document.getElementById("refresh-btn");
     refreshButton?.addEventListener("click", () => {
       void this.refresh();
+    });
+
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const target = e.currentTarget as HTMLButtonElement;
+        const tab = target.dataset.tab;
+        if (tab) this.switchTab(tab);
+      });
+    });
+  }
+
+  private switchTab(tabId: string) {
+    // Update buttons
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.classList.toggle(
+        "active",
+        (btn as HTMLButtonElement).dataset.tab === tabId,
+      );
+    });
+    // Update content
+    document.querySelectorAll(".tab-content").forEach((content) => {
+      content.classList.toggle("active", content.id === `tab-${tabId}`);
     });
   }
 
@@ -425,6 +463,14 @@ class InvestorDashboard {
 
     this.unifiedByDate = nextUnifiedMap;
     this.alphaByDate = nextAlphaByDate;
+  }
+
+  private async refreshUqtl() {
+    const events = await fetchJson<UQTLEvent[]>("/api/uqtl?limit=100");
+    if (events) {
+      this.uqtlEvents = events;
+      this.renderUqtlFeed();
+    }
   }
 
   private renderTimeline() {
@@ -656,50 +702,52 @@ class InvestorDashboard {
     return { time, logic, risk, data, entropy };
   }
 
-  private renderUqtlStream(vector: {
+  private renderUqtlFeed() {
+    const host = document.getElementById("uqtl-stream");
+    if (!host) return;
+
+    if (this.uqtlEvents.length === 0) {
+      host.innerHTML = '<div class="empty">UQTL イベント待ち...</div>';
+      return;
+    }
+
+    host.innerHTML = `
+      <div class="uqtl-ledger">
+        ${this.uqtlEvents
+          .map((event) => {
+            const date = new Date(event.timestamp).toLocaleTimeString("ja-JP");
+            const payload = JSON.parse(event.payload_json);
+            let detail = "";
+            if (event.type === "ALPHA_GENERATED")
+              detail = `Count: ${payload.count} / Div: ${payload.diversity}`;
+            if (event.type === "BACKTEST_COMPLETED")
+              detail = `Ret: ${formatSignedPercent(payload.netReturn)} / SR: ${payload.sharpe?.toFixed(2)}`;
+
+            return `
+            <div class="uqtl-event">
+              <div class="uqtl-evt-meta">
+                <span class="uqtl-time">${date}</span>
+                <span class="uqtl-type">${event.type}</span>
+              </div>
+              <div class="uqtl-evt-agent">${event.agent_id || "SYSTEM"}</div>
+              <div class="uqtl-evt-detail">${escapeHtml(detail)}</div>
+            </div>
+          `;
+          })
+          .join("")}
+      </div>
+    `;
+  }
+
+  private renderUqtlStream(_vector: {
     time: number;
     logic: number;
     risk: number;
     data: number;
     entropy: number;
   }) {
-    const rows = [
-      { key: "Time Axis", value: vector.time, hint: "readiness clock sync" },
-      { key: "Logic Axis", value: vector.logic, hint: "validated stage ratio" },
-      { key: "Risk Axis", value: vector.risk, hint: "kelly / stop-loss" },
-      { key: "Data Axis", value: vector.data, hint: "evidence freshness" },
-    ];
-
-    this.updateHTML(
-      "uqtl-stream",
-      `
-      <div class="entropy-head">
-        <div class="entropy-value ${
-          vector.entropy < 0.35 ? "pos" : vector.entropy < 0.6 ? "" : "neg"
-        }">
-          ${(vector.entropy * 100).toFixed(1)}
-        </div>
-        <div class="entropy-sub">Quantum Entropy</div>
-      </div>
-      ${rows
-        .map((row) => {
-          const width = (row.value * 100).toFixed(1);
-          return `
-            <div class="uqtl-row">
-              <div>
-                <div class="uqtl-label">${escapeHtml(row.key)}</div>
-                <div class="uqtl-hint">${escapeHtml(row.hint)}</div>
-              </div>
-              <div class="uqtl-track">
-                <div class="uqtl-bar" style="width:${width}%"></div>
-              </div>
-              <div class="uqtl-value">${width}%</div>
-            </div>
-          `;
-        })
-        .join("")}
-      `,
-    );
+    // Keeping vector logic as a secondary summary if needed, but primary focus is the feed now.
+    this.renderUqtlFeed();
   }
 
   private renderEvidenceBonding(
@@ -919,19 +967,19 @@ class InvestorDashboard {
       },
     ];
 
-    this.updateHTML(
-      "data-health",
-      evidenceItems
-        .map(
-          (item) => `
-            <div class="health-row">
-              <span>${escapeHtml(item.label)}</span>
-              <span class="chip ${this.chipClass(item.status)}">${escapeHtml(item.status)}</span>
-            </div>
-          `,
-        )
-        .join(""),
-    );
+    const healthHtml = evidenceItems
+      .map(
+        (item) => `
+          <div class="health-row">
+            <span>${escapeHtml(item.label)}</span>
+            <span class="chip ${this.chipClass(item.status)}">${escapeHtml(item.status)}</span>
+          </div>
+        `,
+      )
+      .join("");
+
+    this.updateHTML("data-health", healthHtml);
+    this.updateHTML("data-health-signals", healthHtml);
   }
 
   private renderTimeSeriesCharts() {

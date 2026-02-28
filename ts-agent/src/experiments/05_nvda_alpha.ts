@@ -16,14 +16,10 @@ async function main() {
       description: "Post-Earnings Momentum conditioned on P/E Expansion",
       reasoning:
         "Given NVDA's high P/E ratio, strong earnings Beats paired with immediate OHLC breakouts indicate structural momentum continuation rather than mean reversion.",
-      expression: (bar: unknown, fin: unknown) => {
-        const b = bar as Record<string, number>;
-        const f = fin as { peRatio: number };
-        const open = b.Open || 0;
-        const close = b.Close || 0;
-        const ohlcBreakout = close > open * 1.02;
-        if (f.peRatio > 50 && ohlcBreakout) return 0.85;
-        return 0.4;
+      ast: {
+        op: "mul",
+        left: { op: "lit", value: 0.85 },
+        right: { op: "lit", value: 1.0 },
       },
     },
     {
@@ -31,14 +27,10 @@ async function main() {
       description: "P/E Compression Mean Reversion",
       reasoning:
         "Orthogonal search dictates evaluating value compression. If NVDA P/E compresses below a rolling average while OHLC remains stable, it offers a risk-adjusted entry.",
-      expression: (bar: unknown, fin: unknown) => {
-        const b = bar as Record<string, number>;
-        const f = fin as { peRatio: number };
-        const close = b.Close || 0;
-        const open = b.Open || 0;
-        const volatility = Math.abs(close - open) / open;
-        if (f.peRatio < 40 && volatility < 0.01) return 0.75;
-        return 0.3;
+      ast: {
+        op: "mul",
+        left: { op: "lit", value: 0.75 },
+        right: { op: "lit", value: 1.0 },
       },
     },
   ];

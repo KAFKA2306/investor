@@ -1,41 +1,43 @@
-# Repository Guidelines
+# Agent Ecosystem: Autonomous Investment Analysts
 
-## Project Structure & Module Organization
-- `ts-agent/` is the core TypeScript/Bun codebase.
-- `ts-agent/src/agents/`, `core/`, `gateways/`, and `schemas/` contain strategy logic, orchestration, provider interfaces, and Zod contracts.
-- `ts-agent/src/experiments/` contains runnable research and pipeline entrypoints (for example `01_vegetable.ts`, `les_reproduction.ts`).
-- `ts-agent/src/tools/dashboard/` is a Vite dashboard for local and Pages deployment.
-- `logs/` stores generated run artifacts (`daily/`, `unified/`, `benchmarks/`, `readiness/`).
-- `docs/` contains architecture diagrams and reports.
+The Antigravity system operates through a network of specialized **Autonomous Analysts**. Each unit is designed with a specific mandate to discover, refine, or audit predictive signals (Alpha).
 
-## Build, Test, and Development Commands
-- `task check`: format, lint, and typecheck the TypeScript code.
-- `task run`: run reproduction + benchmark pipeline and regenerate dashboard manifests.
-- `task view`: start the dashboard dev server.
-- `cd ts-agent && bun run <script>`: run package scripts directly (example: `bun run pipeline:llm-readiness`).
+## 🕵️ Alpha Factory Analysts
 
-## Coding Style & Naming Conventions
-- Language/runtime: TypeScript on Bun, ESM modules.
-- Formatting/linting: Biome (`indentWidth: 2`, spaces, organized imports). Run `task check` before committing.
-- Typing: strict TypeScript (`@tsconfig/strictest`); avoid `any` (`noExplicitAny` is error).
-- Naming: use descriptive file names aligned to existing patterns (`snake_case` for experiment scripts, domain-oriented module names elsewhere).
+### `LesAgent` (Factor Discovery)
+- **Mandate**: Genetic mining of "Orthogonal Predictive Signals".
+- **Logic**: Combines technical indicators and mathematical transformations to evolve factors with high Information Coefficient (IC).
+- **Output**: Factor candidates for the Audit Pipeline.
 
-## Testing Guidelines
-- Preferred test runner is Bun (`bun test`) when adding automated tests.
-- Existing verification scripts are in `ts-agent/src/tests/` and `ts-agent/src/experiments/*test*.ts`; keep new checks deterministic and data-light.
-- Validate behavior changes with:
-  - `task check`
-  - targeted script run (example: `cd ts-agent && bun src/experiments/test_audit_loop.ts`)
+### `PeadAgent` (Event-Driven Drift)
+- **Mandate**: Capturing "Post-Earnings Announcement Drift".
+- **Logic**: Analyzes institutional disclosure (J-Quants) to identify idiosyncratic price momentum following earnings surprises.
+- **Output**: Event-based trade signals.
 
-## Commit & Pull Request Guidelines
-- Follow Conventional Commit style used in history: `feat: ...`, `fix: ...`, `docs: ...`, `refactor(scope): ...`, `chore: ...`.
-- Keep commits focused; separate refactors from behavior changes.
-- PRs should include:
-  - concise problem/solution summary
-  - affected paths (example: `ts-agent/src/gateways/...`)
-  - verification evidence (commands run + key output)
-  - dashboard/report screenshot when UI or published docs are changed.
+### `XIntelligenceAgent` (Sentiment Extraction)
+- **Mandate**: Synthesizing unstructured market sentiment.
+- **Logic**: Leverages Gemini 3.0 Pro's reasoning to extract signals from alternative data and social streams.
+- **Output**: Sentiment-adjusted factor weights.
 
-## Security & Configuration Tips
-- Never commit secrets. Keep API keys in local env files (Bun auto-loads `.env`).
-- Treat `logs/` outputs as generated artifacts; review before publishing if they may include sensitive data.
+## 🛡️ Risk & Audit Units
+
+### `CqoAuditor` (Quality Control)
+- **Mandate**: Statistical rejection of overfitted strategies.
+- **Logic**: Applies **Deflated Sharpe Ratio (DSR)** and **Probabilistic Sharpe Ratio (PSR)** to account for the "Multiple Testing" bias.
+- **Verdict**: Only "Investment Grade" signals proceed to execution.
+
+### `RegimeAgent` (Macro Context)
+- **Mandate**: Identifying market regime shifts.
+- **Logic**: Monitors volatility, correlation clusters, and macro indicators to adjust the Alpha Factory's pruning thresholds.
+
+---
+
+## 🛠 Developer Quick Reference (Contingency)
+While the analysts are autonomous, the infrastructure follows strict **Zero-Fat** protocols:
+- **Language**: Strict TypeScript/Bun.
+- **Formatting**: Biome (`task check`).
+- **Data Safety**: Zod-validated "Immutable Evidence".
+- **Commits**: Conventional Commits (`feat:`, `fix:`, `docs:`).
+
+For detailed engineering standards, refer to the [Strategic Mandate (GEMINI.md)](file:///home/kafka/finance/investor/GEMINI.md).
+

@@ -19,6 +19,8 @@
   --mono: "IBM Plex Mono", monospace;
   --sans: "IBM Plex Sans JP", sans-serif;
   --display: "Space Grotesk", var(--sans);
+  --pos: #007f8f;
+  --neg: #b91c35;
 }
 
 * {
@@ -129,6 +131,61 @@ body {
   box-shadow: 0 10px 20px -14px rgba(0, 127, 143, 0.8);
 }
 
+.tab-nav {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.04);
+  padding: 0.25rem;
+  border-radius: 999px;
+  margin: 0 0.5rem;
+}
+
+.tab-btn {
+  border: none;
+  background: transparent;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-family: var(--display);
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--ink);
+}
+
+.tab-btn.active {
+  background: #fff;
+  color: var(--brand);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+  animation: tab-fade 0.3s ease both;
+}
+
+.tab-content.active {
+  display: flex;
+}
+
+@keyframes tab-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .layout {
   display: grid;
   grid-template-columns: minmax(250px, 300px) 1fr;
@@ -180,8 +237,17 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.48rem;
-  max-height: 46vh;
+  max-height: 70vh;
   overflow: auto;
+  padding-right: 4px;
+}
+
+.pos {
+  color: var(--pos);
+}
+
+.neg {
+  color: var(--neg);
 }
 
 .timeline-item {
@@ -371,65 +437,82 @@ body {
 .uqtl-stream {
   display: flex;
   flex-direction: column;
-  gap: 0.52rem;
-}
-
-.entropy-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 0.35rem;
-}
-
-.entropy-value {
-  font-family: var(--display);
-  font-size: 1.55rem;
-  line-height: 1;
-}
-
-.entropy-sub {
-  color: var(--ink-soft);
-  font-size: 0.74rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.uqtl-row {
-  display: grid;
-  grid-template-columns: 130px 1fr 58px;
   gap: 0.5rem;
-  align-items: center;
-}
-
-.uqtl-label {
-  font-size: 0.74rem;
-  font-family: var(--mono);
-}
-
-.uqtl-hint {
-  font-size: 0.68rem;
-  color: var(--ink-soft);
-}
-
-.uqtl-track {
-  height: 12px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #d9e7ea, #f0f6f7);
+  height: 100%;
+  max-height: 400px;
   overflow: hidden;
 }
 
-.uqtl-bar {
-  height: 100%;
-  min-width: 2px;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--brand), var(--accent));
-  transition: width 0.4s ease;
+.uqtl-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
-.uqtl-value {
+.uqtl-event {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  animation: fade-in 0.3s ease-out both;
+}
+
+.uqtl-event:first-child {
+  border-color: var(--brand);
+  background: rgba(0, 127, 143, 0.05);
+  box-shadow: 0 0 10px rgba(0, 127, 143, 0.1);
+}
+
+.uqtl-evt-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.uqtl-time {
   font-family: var(--mono);
-  font-size: 0.72rem;
-  text-align: right;
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+}
+
+.uqtl-type {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: var(--ink);
+  color: #fff;
+}
+
+.uqtl-evt-agent {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.uqtl-evt-detail {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+  word-break: break-all;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .bonding-list {
@@ -884,6 +967,7 @@ th {
     transform: scale(0.9);
     opacity: 0.45;
   }
+
   50% {
     transform: scale(1.2);
     opacity: 1;

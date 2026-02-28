@@ -1,6 +1,5 @@
 import { z } from "zod";
-import type { SymbolAnalysis } from "../experiments/analysis/daily_alpha.ts";
-import { average } from "../experiments/analysis/daily_alpha.ts";
+import type { BacktestInputRow } from "../contracts/trading.ts";
 
 export const BacktestConfigSchema = z.object({
   from: z.string().regex(/^\d{8}$/),
@@ -28,9 +27,14 @@ export type BacktestResult = z.infer<typeof BacktestResultSchema>;
 
 type RunBacktestArgs = {
   config: BacktestConfig;
-  selectedRows: readonly SymbolAnalysis[];
+  selectedRows: readonly BacktestInputRow[];
   tradingDays: number;
 };
+
+function average(values: readonly number[]): number {
+  if (values.length === 0) return 0;
+  return values.reduce((acc, value) => acc + value, 0) / values.length;
+}
 
 export function runSimpleBacktest(args: RunBacktestArgs): BacktestResult {
   const config = BacktestConfigSchema.parse(args.config);

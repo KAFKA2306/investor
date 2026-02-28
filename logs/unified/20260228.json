@@ -1,0 +1,368 @@
+{
+  "schema": "investor.unified-log.v1",
+  "generatedAt": "2026-02-28T01:19:19.473Z",
+  "date": "20260228",
+  "runId": "run_20260228_1772241509766",
+  "stages": [
+    {
+      "stageId": "verify_api",
+      "category": "verification",
+      "name": "API Verification",
+      "status": "PASS",
+      "startedAt": "2026-02-28T01:18:29.766Z",
+      "endedAt": "2026-02-28T01:18:38.872Z",
+      "metrics": {
+        "passCount": 2,
+        "totalTargets": 4,
+        "jquantsListedCount": 4429
+      },
+      "detail": {
+        "verifiedAt": "2026-02-28T01:18:38.871Z",
+        "jquants": {
+          "listedCount": 4429,
+          "status": "PASS"
+        },
+        "kabucom": {
+          "status": "SKIP"
+        },
+        "edinet": {
+          "status": "SKIP"
+        },
+        "estat": {
+          "hasStatsData": true,
+          "status": "PASS"
+        }
+      }
+    },
+    {
+      "stageId": "scenario_daily",
+      "category": "scenario",
+      "name": "Vegetable Daily Scenario",
+      "status": "PASS",
+      "startedAt": "2026-02-28T01:18:38.872Z",
+      "endedAt": "2026-02-28T01:18:44.219Z",
+      "metrics": {
+        "expectedEdge": 0,
+        "basketDailyReturn": -0.0015,
+        "selectedCount": 0
+      },
+      "detail": {
+        "scenarioId": "SCN-VEG-001",
+        "analyzedAt": "2026-02-28T01:18:38.873Z",
+        "date": "20260228",
+        "inputs": {
+          "estatStatsDataId": "0000010101",
+          "universe": [
+            "1375",
+            "1332",
+            "2503"
+          ]
+        },
+        "evidence": {
+          "estat": {
+            "hasStatsData": true,
+            "status": "PASS"
+          },
+          "jquants": {
+            "listedCount": 3,
+            "matchedSymbols": [
+              "1375",
+              "1332",
+              "2503"
+            ],
+            "status": "PASS"
+          }
+        },
+        "market": {
+          "vegetablePriceMomentum": -0.7914258966022506
+        },
+        "analysis": [],
+        "decision": {
+          "strategy": "Vegetable Inflation Rotation",
+          "action": "NO_TRADE",
+          "topSymbol": "1375",
+          "reason": "合成αが閾値未達。",
+          "experimentValue": "USELESS"
+        },
+        "signals": {
+          "macro": {
+            "vegetablePriceMomentum": -0.7914258966022506
+          },
+          "symbols": []
+        },
+        "risks": {
+          "kellyFraction": 0,
+          "stopLossPct": 0.03,
+          "maxPositions": 3
+        },
+        "results": {
+          "mode": "PROOF",
+          "status": "FAIL",
+          "expectedEdge": 0,
+          "basketDailyReturn": -0.0015,
+          "paperPnlPerUnit": -0.0015,
+          "backtest": {
+            "from": "20240204",
+            "to": "20260228",
+            "tradingDays": 756,
+            "feeBps": 10,
+            "slippageBps": 5,
+            "totalCostBps": 15,
+            "grossReturn": 0,
+            "netReturn": -0.0015,
+            "pnlPerUnit": -0.0015,
+            "sharpe": 0,
+            "cumulativeReturn": -0.0014988770481796365,
+            "cagr": -0.0007239448930324022,
+            "maxDrawdown": -0.0014988770481796365,
+            "winRate": 0,
+            "profitFactor": 0,
+            "history": [
+              1
+            ]
+          },
+          "proved": false,
+          "selectedSymbols": [],
+          "generatedAt": "2026-02-28T01:18:38.873Z"
+        },
+        "execution": {
+          "mode": "PAPER",
+          "status": "SKIPPED",
+          "orderCount": 0,
+          "orders": [],
+          "summary": {
+            "grossExposure": 0
+          }
+        },
+        "workflow": {
+          "dataReadiness": "FAIL",
+          "alphaReadiness": "FAIL",
+          "verdict": "USELESS"
+        }
+      }
+    },
+    {
+      "stageId": "experiment_comparison",
+      "category": "experiment",
+      "name": "Forecast vs Outcome",
+      "status": "PASS",
+      "startedAt": "2026-02-28T01:18:44.219Z",
+      "endedAt": "2026-02-28T01:18:44.221Z",
+      "metrics": {
+        "rows": 6,
+        "latestAccuracyRatio": 0
+      },
+      "detail": {
+        "generatedAt": "2026-02-28T01:18:44.220Z",
+        "rows": [
+          {
+            "date": "20220831",
+            "forecast": -0.0002,
+            "outcome": -0.0002,
+            "accuracy": 1
+          },
+          {
+            "date": "20260222",
+            "forecast": 0.07461103900975842,
+            "outcome": 0.0036587532448280765,
+            "accuracy": 0.04903769326077266
+          },
+          {
+            "date": "20260223",
+            "forecast": 0.03727936399462276,
+            "outcome": 0.0021587532448280764,
+            "accuracy": 0.05790745907412634
+          },
+          {
+            "date": "20260224",
+            "forecast": -0.23001363484969128,
+            "outcome": -0.0015,
+            "accuracy": 0.006521352531906276
+          },
+          {
+            "date": "20260227",
+            "forecast": 0,
+            "outcome": -0.0015,
+            "accuracy": 0
+          },
+          {
+            "date": "20260228",
+            "forecast": 0,
+            "outcome": -0.0015,
+            "accuracy": 0
+          }
+        ]
+      }
+    },
+    {
+      "stageId": "experiment_timeseries",
+      "category": "experiment",
+      "name": "Time Series Analysis",
+      "status": "FAIL",
+      "startedAt": "2026-02-28T01:18:44.221Z",
+      "endedAt": "2026-02-28T01:19:07.624Z",
+      "metrics": {},
+      "error": "[\n  {\n    \"code\": \"invalid_union\",\n    \"errors\": [\n      [\n        {\n          \"expected\": \"number\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected number, received object\"\n        }\n      ],\n      [\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected string, received object\"\n        }\n      ],\n      [\n        {\n          \"expected\": \"boolean\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected boolean, received object\"\n        }\n      ],\n      [\n        {\n          \"expected\": \"null\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected null, received object\"\n        }\n      ]\n    ],\n    \"path\": [\n      \"GET_STATS_DATA\"\n    ],\n    \"message\": \"Invalid input\"\n  }\n]"
+    },
+    {
+      "stageId": "pipeline_ab",
+      "category": "pipeline",
+      "name": "Daily A/B Comparison",
+      "status": "PASS",
+      "startedAt": "2026-02-28T01:19:07.624Z",
+      "endedAt": "2026-02-28T01:19:07.630Z",
+      "metrics": {
+        "sharpeDelta": 0,
+        "cumulativeReturnDelta": -0.004493253374999839,
+        "winRateDelta": 0
+      },
+      "detail": {
+        "generatedAt": "2026-02-28T01:19:07.629Z",
+        "dateRange": {
+          "from": "20260224",
+          "to": "20260228"
+        },
+        "baseline": {
+          "name": "NO_TRADE",
+          "metrics": {
+            "sampleSize": 3,
+            "cumulativeReturn": 0,
+            "cagr": 0,
+            "sharpe": 0,
+            "maxDrawdown": 0,
+            "winRate": 0,
+            "avgReturn": 0,
+            "volatility": 0,
+            "profitFactor": 0
+          }
+        },
+        "candidate": {
+          "name": "VEGETABLE_STRATEGY",
+          "metrics": {
+            "sampleSize": 3,
+            "cumulativeReturn": -0.004493253374999839,
+            "cagr": -0.4218437025710816,
+            "sharpe": 0,
+            "maxDrawdown": -0.004493253374999839,
+            "winRate": 0,
+            "avgReturn": -0.0015000000000000002,
+            "volatility": 2.168404344971009e-19,
+            "profitFactor": 0
+          }
+        },
+        "uplift": {
+          "cumulativeReturnDelta": -0.004493253374999839,
+          "sharpeDelta": 0,
+          "maxDrawdownDelta": -0.004493253374999839,
+          "winRateDelta": 0
+        },
+        "ledgerQuality": {
+          "rowCount": 3,
+          "missingCostRows": 0,
+          "missingExposureRows": 3
+        }
+      }
+    },
+    {
+      "stageId": "pipeline_readiness",
+      "category": "pipeline",
+      "name": "LLM Readiness",
+      "status": "PASS",
+      "startedAt": "2026-02-28T01:19:07.630Z",
+      "endedAt": "2026-02-28T01:19:07.634Z",
+      "metrics": {
+        "total": 75,
+        "dataHorizon": 0,
+        "costAwareness": 20
+      },
+      "detail": {
+        "generatedAt": "2026-02-28T01:19:07.634Z",
+        "dateRange": {
+          "from": "20260224",
+          "to": "20260228"
+        },
+        "sampleSize": 3,
+        "score": {
+          "dataHorizon": 0,
+          "costAwareness": 20,
+          "outOfSampleDiscipline": 20,
+          "modelTraceability": 15,
+          "reproducibility": 10,
+          "executionObservability": 10,
+          "total": 75
+        },
+        "thresholds": {
+          "productionReadyMin": 75,
+          "cautionMin": 50
+        },
+        "verdict": "READY",
+        "recommendations": [
+          "Sample window is short. Expand daily logs to at least 252 trading days; target 756 days."
+        ]
+      }
+    },
+    {
+      "stageId": "pipeline_promotion",
+      "category": "pipeline",
+      "name": "Promotion Gate",
+      "status": "PASS",
+      "startedAt": "2026-02-28T01:19:07.634Z",
+      "endedAt": "2026-02-28T01:19:07.635Z",
+      "metrics": {
+        "allocationTier": 0,
+        "targetGrossExposureMultiplier": 0,
+        "riskBudgetBps": 0
+      },
+      "detail": {
+        "decision": {
+          "decision": "REJECT",
+          "allocationTier": 0,
+          "targetGrossExposureMultiplier": 0,
+          "riskBudgetBps": 0,
+          "reasons": [
+            "sampleSize < 252; only research/shadow operation is allowed."
+          ]
+        },
+        "gateInput": {
+          "readiness": {
+            "sampleSize": 3,
+            "totalScore": 75,
+            "verdict": "READY"
+          },
+          "performance": {
+            "sharpe": 0,
+            "maxDrawdown": -0.004493253374999839,
+            "sampleSize": 3,
+            "cumulativeReturn": -0.004493253374999839,
+            "winRate": 0
+          },
+          "ledgerQuality": {
+            "rowCount": 3,
+            "missingCostRows": 0,
+            "missingExposureRows": 3
+          }
+        }
+      }
+    },
+    {
+      "stageId": "pipeline_mining",
+      "category": "pipeline",
+      "name": "Factor Mining",
+      "status": "FAIL",
+      "startedAt": "2026-02-28T01:19:07.635Z",
+      "endedAt": "2026-02-28T01:19:07.641Z",
+      "metrics": {},
+      "error": "[\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0,\n    \"inclusive\": false,\n    \"path\": [\n      \"config\",\n      \"generations\"\n    ],\n    \"message\": \"Too small: expected number to be >0\"\n  },\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0,\n    \"inclusive\": false,\n    \"path\": [\n      \"config\",\n      \"candidatesPerGeneration\"\n    ],\n    \"message\": \"Too small: expected number to be >0\"\n  },\n  {\n    \"origin\": \"number\",\n    \"code\": \"too_small\",\n    \"minimum\": 0,\n    \"inclusive\": false,\n    \"path\": [\n      \"config\",\n      \"eliteCount\"\n    ],\n    \"message\": \"Too small: expected number to be >0\"\n  }\n]"
+    },
+    {
+      "stageId": "pipeline_foundation",
+      "category": "pipeline",
+      "name": "Foundation Benchmark",
+      "status": "FAIL",
+      "startedAt": "2026-02-28T01:19:07.641Z",
+      "endedAt": "2026-02-28T01:19:19.473Z",
+      "metrics": {},
+      "error": "[\n  {\n    \"code\": \"invalid_union\",\n    \"errors\": [\n      [\n        {\n          \"expected\": \"number\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected number, received object\"\n        }\n      ],\n      [\n        {\n          \"expected\": \"string\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected string, received object\"\n        }\n      ],\n      [\n        {\n          \"expected\": \"boolean\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected boolean, received object\"\n        }\n      ],\n      [\n        {\n          \"expected\": \"null\",\n          \"code\": \"invalid_type\",\n          \"path\": [],\n          \"message\": \"Invalid input: expected null, received object\"\n        }\n      ]\n    ],\n    \"path\": [\n      \"GET_STATS_DATA\"\n    ],\n    \"message\": \"Invalid input\"\n  }\n]"
+    }
+  ]
+}

@@ -159,12 +159,52 @@ async function loadBaselineSeries(
   };
 }
 
+function evaluateAST(
+  ast: unknown,
+  bar: Record<string, number>,
+  fin: Record<string, number>,
+): number {
+  if (typeof ast === "number") return ast;
+  if (!ast || typeof ast !== "object") return 0;
+  const node = ast as Record<string, unknown>; // [FIX] narrow to object for field access
+
+  switch (node.op) {
+    case "col": {
+      const name = String(node.name).toLowerCase();
+      const val =
+        pickNumber(bar, [name, String(node.name)]) ||
+        pickNumber(fin, [name, String(node.name)]);
+      return val;
+    }
+    case "lit":
+      return Number(node.value);
+    case "add":
+      return (
+        evaluateAST(node.left, bar, fin) + evaluateAST(node.right, bar, fin)
+      );
+    case "sub":
+      return (
+        evaluateAST(node.left, bar, fin) - evaluateAST(node.right, bar, fin)
+      );
+    case "mul":
+      return (
+        evaluateAST(node.left, bar, fin) * evaluateAST(node.right, bar, fin)
+      );
+    case "div": {
+      const denom = evaluateAST(node.right, bar, fin);
+      return denom !== 0 ? evaluateAST(node.left, bar, fin) / denom : 0;
+    }
+    default:
+      return 0;
+  }
+}
+
 function computeFactorScores(
   factor: AlphaFactor,
   snapshots: readonly Snapshot[],
 ): number[] {
   return snapshots.map((snapshot) =>
-    factor.expression(snapshot.bar, snapshot.fin),
+    evaluateAST(factor.ast, snapshot.bar, snapshot.fin),
   );
 }
 
@@ -237,10 +277,7 @@ async function discoverNewAlpha() {
   });
 
   const highQualityAlpha = evaluations.filter(
-    (result) =>
-      result.score >= 0.75 &&
-      Math.abs(result.orthCorrelation) <= 0.35 &&
-      result.icProxy > 0,
+    (result) => result.score >= 0.7 && Math.abs(result.orthCorrelation) <= 0.5,
   );
 
   if (highQualityAlpha.length > 0) {

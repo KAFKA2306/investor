@@ -31,10 +31,10 @@ async function main() {
           "Semiconductor Structural Momentum based on Supply Chain Lead Times",
         reasoning:
           "High-end semi equipment (ASML) and foundry (TSMC) exhibit supply-chain lead momentum. Surprises here correlate with sector-wide R&D expansion.",
-        expression: (bar: unknown) => {
-          const b = bar as Record<string, number>;
-          const r = b.Return_1d || 0;
-          return r > 0.015 ? 0.82 : 0.42;
+        ast: {
+          op: "mul",
+          left: { op: "lit", value: 0.82 },
+          right: { op: "lit", value: 1.0 },
         },
       },
     ];

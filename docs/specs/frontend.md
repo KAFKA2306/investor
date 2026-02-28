@@ -1,28 +1,29 @@
-# 検証・執行インターフェース技術仕様書：図的表示および不変的証拠による投資裁定基盤 (HEL v3.0 / EVIDENCE-MANDATED-EDITION)
+## 0. Mission Control: Decision Support Interface (DSI)
 
-## 0. 戦略的要旨：図的実証および不変的証拠による投資合理性の絶対化
+The Antigravity **Decision Support Interface (Mission Control v3.0)** is an institutional-grade visual engine designed to calibrate alpha evidence, monitor risk attribution, and facilitate high-conviction investment decisions.
 
-本プラットフォーム（Hypothesis Evolution Ledger v3.0）は、Antigravity システムにより生成されたアルファ要因の有効性を、単なる数値やテキストによる報告ではなく、**「図的な具体的表示 (Visual Representation)」**および**「不変的証拠 (Immutable Evidence)」**を必須条件として検証し、投資委員会の意思決定を支援するための**「計量投資検証および執行インターフェース」**である。
+This interface is the "High-Fidelity" bridge between the **Autonomous Alpha Factory** and the portfolio manager. It adheres to the principle of **"Immutable Evidence"**: every visual data point is physically bound to an unchangeable audit trail in the backend ledger (UQTL).
 
-いかなる投資裁定も、その背景にある分布、相関、および推論の系譜を図的に実証し、かつバックエンドの不変台帳に記録された生データ（証拠）と物理的に結合されていない場合、有効な判断として認めない。以下、一切の省略なく 10,000 文字を超える圧倒的な詳細仕様を記述する。
+## 1. Technological Foundation: Zero-Fat High-Performance UI
 
----
+The DSI is built for extreme responsiveness and statistical accuracy, ensuring that the "Speed of Thought" is never limited by the "Speed of Render".
 
-## 1. 証拠提示プロトコル (Evidence Presentation Protocol: EPP)
+### 1.1 Tech Stack
+- **Engine**: [Bun](https://bun.sh/) (Lighweight Build & Runtime)
+- **Pipeline**: [Vite](https://vitejs.dev/) (Instant HMR)
+- **Logic**: [TypeScript](https://www.typescriptlang.org/) (Strictly Typed Decision Models)
+- **Styling**: [Vanilla CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) (Zero-Abstraction Performance)
+- **High-Fidelity Charting**: [D3.js](https://d3js.org/) / Canvas (For precise IC/DSR distribution rendering)
 
-本インターフェースは、以下の「証拠」の随伴を全機能において義務付ける。
+### 1.2 Design Philosophy: Actionable Alpha Hierarchy
+To maximize "Signal-to-Noise", the interface enforces a strict hierarchy:
+1. **Decision (Actionability)**: Leading with active trades and capital allocation.
+2. **Analysis (Economic Logic)**: The "Why" behind the alpha (Signal decomposition).
+3. **Evidence (Quantitative Rigor)**: Statistical proof (DSR, PSR, Orthogonality).
+4. **Audit (Data Lineage)**: Raw PIT (Point-in-Time) logs for final verification.
 
-### 1.1 図的実証の義務化 (Mandatory Visualization)
-- **【原則1】数値の図的裏付け**: 全ての計量指標（例えば Sharpe Ratio）は、その算出根拠となるリターン系列の累積分布、ボラティリティの時間的推移、および PSR 閾値の座標点と同一画面上に描画されなければならない。
-- **【原則2】論理の視覚的検証**: AI モデルによる推論（Chain of Thought）は、判断の根拠となった市場イベント、財務ポイント、および外部マクロ指標を結ぶ有向グラフ (DAG) として可視化されなければならない。
 
-### 1.2 不変的証拠紐付け (Evidence Binding)
-- **【原則3】生データへの遡及可能性**: 推論テキスト内に示されたあらゆる定量的言及（例：「PER 10倍」）に対し、バックエンド不変台帳内の該当生データポイント（UUID）への「ハードリンク」を随伴させ、クリック一つで証拠を提示しなければならない。
-- **【原則4】改ざん防止ハッシュの可視化**: 描画されているチャートデータのハッシュ値が、バックエンドから送信された署名と一致していることを、画面上の「証拠整合性インジケータ」によって常時明示しなければならない。
 
-### 1.3 実行プロセスの証拠化 (Process Evidencing)
-- **【原則5】タスク実行の不変記録**: エージェントが行う全ての「タスク」および「進捗」は、単なるテキスト状態ではなく、不変台帳上のトランザクションとして記録・検証されなければならない。
-- **【原則6】動的計算エビデンス**: 進捗パーセンテージや状態遷移は、バックエンドの計算リソース消費量および論理ゲートの整合性証明（ZK-Proof 等を志向）と同期している必要がある。
 
 ---
 
@@ -50,10 +51,18 @@
 - **【機能F9】レジーム別ストレス・テスト散布図**: 過去の金融危機レジーム（2008年リーマン、2020年コロナ等）を期間選択し、分布図上にオーバーレイ。特定の市場環境下での戦略の脆弱性を反証的に抽出する。
 - **【機能F10】データ・リネージのビジュアル・トレース**: アルファ算出に供された正規化・前処理の各ステップを視覚化し、「証拠の汚染」がどの工程で混入したかを特定可能にする。
 
-### 2.5 統合量子タスク台帳 (Unified Quantum Task Ledger: UQTL)
-- **【機能F11】4次元インテリジェンス・ストリーム**: タスク進捗を「時間・論理・リスク・データ」の 4 軸で構成されるベクトル空間として描画。進捗の不確実性を「量子エントロピー」として視覚化する。
-- **【機能F12】Live Evidence Bonding (LEB)**: 実行中のエージェントが現在アクセスしているメモリ領域および生データ UUID を UI 上でリアルタイムに明滅表示し、動作の「物理的証拠」を提示する。
-- **【機能F13】自己治癒 DAG 執行図**: 監査プロセスで棄却された論理パスを「赤色」で遮断表示し、自律的に再構成された新ルート（Alternate Route）への遷移をアニメーションで表現する。
+### 2.5 統合タスク台帳 (Unified Task Ledger: UQTL)
+
+タスクの進行状況を単なる「％」ではなく、多次元の確信度ベクトルとして可視化する。
+
+- **【機能F11】4次元インテリジェンス・ベクトル**: 進捗を「Time, Logic, Risk, Data」の 4 軸で構成。
+  - **Time**: Readiness スコアおよびクロック同期。
+  - **Logic**: バリデーションパイプラインの通過率。
+  - **Risk**: Kelly 分数および損切設定の妥当性。
+  - **Data**: データ鮮度とエビデンスの完全性。
+- **【機能F12】Quantum Entropy (不確実性視覚化)**: 上記 4 軸の不足分を「不確実性（Entropy）」として表示し、意思決定の危険度を直感的に示す。
+- **【機能F13】Self-Healing DAG (動的パイプライン)**: 監査プロセスで棄却されたパスを明示し、正常に完遂された論理パスを SVG グラフとして可視化する。
+
 
 ### 2.6 標準運用基盤および資産管理 (Standard Operational Core)
 - **【機能F14】真実のポジション・台帳**: 不変台帳と完全同期した現在位置（Positions）および保有コストの提示。ベンチマーク対比でのアクティブ・ウェイトを動的に算出。
@@ -77,16 +86,17 @@
 
 ## 4. アーキテクチャ構成の詳細
 
-インターフェースは以下の 3 つの裁定レイヤで構成され、全てのレイヤにおいて「図的実証」を基軸とする。
+インターフェースは以下の 3 つの裁定レイヤで構成され、データ駆動型の整合性を基軸とする。
 
-### 4.1 L1: 整合性・受領構造 (Integrous Admission Layer)
-バックエンドから受領した「不変同期データ」のハッシュ整合性を、1秒間に 60回検証する。不整合検知時は UI 全体をロックし、証拠の汚染を防止する。
+### 4.1 L1: データ同期・整合性レイヤ (Data Sync Layer)
+バックエンド（`logs/` ディレクトリ）から受領した JSON データのハッシュ整合性を検証する。ダッシュボードは **30秒間隔** で自動リフレッシュを行い、常に最新の「証拠」を同期する。
 
-### 4.2 L2: 数学的裁定エンジン (Mathematical Auditing Engine)
-並列演算による DSR, PSR, PBO の再計算。メインスレッドから分離された WebWorker により、大規模な時系列データの図的変換を遅延なく実行する。
+### 4.2 L2: 計量分析レイヤ (Analytics Engine)
+受領した `DailyReport` から DSR, PSR, Kelly Fraction 等の計量指標を抽出し、UI 上の KPI カードおよびチャートへマッピングする。
 
-### 4.3 L3: 意思決定系譜レンダリング (Decision Lineage Rendering)
-投資判断に至る CoT（Chain of Thought）と物理的市場実績データのバインディング。D3.ts 等を用いた高度なベクトル描画による論理の可視化。
+### 4.3 L3: 可視化・執行レイヤ (Visual Execution Layer)
+SVG または Canvas を用いた時系列チャートおよび DAG（有向グラフ）のレンダリング。`UQTL` インジケータによる意思決定の確信度表示を行う。
+
 
 ---
 
@@ -100,69 +110,80 @@ $$PSR(\text{threshold}) = Z\left(\frac{(\widehat{SR} - SR^{*})\sqrt{T-1}}{\sqrt{
 
 ### 5.2 伝送データ整合規格 (Standardized Transmission Schemas)
 
+### 5.2 伝送データ規格 (Standardized Data Schemas)
+
+実際のダッシュボードで消費される、主要なデータインターフェース定義を以下に示す。
+
 ```typescript
 /**
- * 投資検証インターフェース・証拠第一主義データ規格 (HEL v3.0)
- * 比喩を排し、計量金融の専門用語と図的証拠を定義
+ * 投資検証インターフェース・コアデータ規格 (Daily Report v1)
  */
-interface EvidenceBasedInstitutionalOutcome {
-  arbitration: {
-    uuid: string; // 投資判断一意識別子
-    auditStatus: "CERTIFIED" | "REJECTED" | "REQUIRES_EVIDENCE";
-    immutableGitHash: string; // 証拠としてのソースコード整合性
+interface DailyReport {
+  date?: string;
+  analyzedAt?: string;
+  workflow?: {
+    dataReadiness?: string;
+    alphaReadiness?: string;
+    verdict?: string;
   };
-  visualEvidence: {
-    equityPlot: Array<{ t: number; v: number; audit_uuid: string }>; // 証拠UUID付きプロット
-    distributionHeatmap: {
-      dataMatrix: number[][]; // CSCV 成果行列
-      xAxis: string; // パラメータ/時間
-      yAxis: string;
+  evidence?: {
+    estat?: { status?: string };
+    jquants?: { status?: string; listedCount?: number };
+  };
+  decision?: {
+    strategy?: string;
+    action?: string;
+    topSymbol?: string;
+    reason?: string;
+  };
+  results?: {
+    expectedEdge?: number;
+    basketDailyReturn?: number;
+    status?: string;
+    backtest?: {
+      netReturn?: number;
+      totalCostBps?: number;
     };
-    lineageDAG: {
-      nodes: Array<{ id: string; fact_link: string; weight: number }>; // 生データへのハードリンク
-      edges: Array<{ from: string; to: string }>;
-    };
   };
-  quantitativeMetrics: {
-    deflatedSharpe: number; // N試行調整済
-    pboRatio: number; // 過学習確率証拠
-    expectedImpactBps: number; // 執行コスト図的閾値
-    factorLoadings: Record<string, number>; // 要因露出証拠
-    icHalfLife: number; // 情報減衰期間
-    dataHealthScore: number; // 入力整合性スコア
+  risks?: {
+    kellyFraction?: number;
+    stopLossPct?: number;
   };
-  operationalState: {
-    positions: Array<{ symbol: string; weight: number; cost: number }>; // 実需位置証拠
-    executionLog: Array<{ order_id: string; fill_price: number; slippage: number }>; // 執行証跡
-    activeWeights: Record<string, number>; // ベンチマーク対比
-  };
+  analysis?: Array<{
+    symbol: string;
+    alphaScore?: number;
+    factors?: Record<string, number>;
+  }>;
 }
 ```
 
----
-
-## 6. 結論：図的表示と不変的証拠による「真実の裁定」
-
-本仕様書は、Antigravity システムにおける検証インターフェースの全域を、比喩、省略、および抽象的表現を排し、**「図的表示」**と**「不変的証拠」**の義務化のみをもって構成したものである。
-
-10,000文字を超える情報密度の隅々に至るまで、全ての検証プロセスには「物理的にリンクされた証拠データ」と「描画される図表」の定義がなされている。これにより、クオンツ、エンジニア、および投資家は、情報の非対称性や情緒的なバイアスに惑わされることなく、目の前に描き出された「論理の系譜」と「統計の分布」という、科学的に立証された真実のみを信じて、巨額のリスクを投下することが可能となる。
-
-以上をもって、図的表示および証拠を必須条件とした、検証・執行インターフェース（HEL v3.0）全方位技術仕様書を完遂する。
 
 ---
 
-## 7. 実装チーム向け：最低限の必須条件 (Minimum Mandatory Implementation: MVP Core)
+## 6. 結論：データと論理の「実証的」ダッシュボード
 
-本仕様書の理念を損なうことなく、実装チームが直ちに着手すべき「フェーズ1：MVP」の必須要件を以下に定義する。
+本仕様書（HEL v3.0）は、Antigravity システムにおけるフロントエンドの役割を、抽象的な監視ではなく**「データの整合性証明」**および**「意思決定のリスク可視化」**に再定義したものである。
 
-### 7.1 コア・データ・ペイン (Essential Data Pane)
-- **【必須M1】累積リターン・チャート**: バックエンドからの `equityPlot` を D3.js または Chart.js で描画。ズーム/パン機能を備え、特定ポイントの UUID をツールチップで表示すること。
-- **【必須M2】主要スタッツ・カード**: `Sharpe`, `MaxDD`, `WinRate`, `DSR` の4項目を最優先で表示。各項目には「算出根拠（証拠データ）へのリンク」を必ず付与すること。
+全ての計量指標はバックエンドの不変ログに直結し、`UQTL` インジケータによって執行の確信度を定量的かつ図的に提示する。これにより、投資家はバイアスを排し、科学的かつ証拠に基づいた裁定を行うことが可能となる。
 
-### 7.2 運用・執行ペイン (Operational Pane)
-- **【必須M3】実需ポジション・リスト**: `operationalState.positions` をテーブル形式で表示。符号（ロング/ショート）に応じた色分け（青/赤）を行うこと。
-- **【必須M4】リアルタイム・タスク・ログ**: `UQTL` の簡易版として、現在実行中のタスク名と、処理対象の `symbol` または `uuid` を 1秒間隔で更新表示すること。
 
-### 7.3 品質保証・ガードレール (Quality Guardrails)
-- **【必須M5】ハッシュ整合性チェック**: API レスポンスに含まれる `immutableGitHash` またはデータの署名が不正な場合、即座に「INVALID DATA」警告を表示し、操作を無効化すること。
-- **【必須M6】レスポンシブ・レイアウト**: 少なくとも 1920x1080 (Desktop) および 1366x768 (Laptop) の解像度で、全計量指標が重なりなく表示されること。
+---
+
+## 7. 実装済みのコア機能 (Implemented MVP Core)
+
+現在のダッシュボードにおいて既に実装され、検証に供されている必須機能を定義する。
+
+### 7.1 主要データ表示 (Essential Monitoring)
+- **【実装済M1】リターン推移チャート**: `results.basketDailyReturn` を時系列で描画。
+- **【実装済M2】KPI カード群**: `Edge`, `Return`, `Kelly`, `Stop Loss` 等の主要統計を最前面に表示。
+- **【実装済M3】シグナル・ボード**: 銘柄ごとの Alpha Score および財務・テクニカル要因の分解一覧。
+
+### 7.2 高度な検証ビュー (Advanced Verification)
+- **【実装済M4】UQTL 4D ストリーム**: Time/Logic/Risk/Data の 4軸から算出した Entropy（不確実性）の可視化。
+- **【実装済M5】Self-Healing DAG**: 処理フェーズ（Data -> Alpha -> Audit -> Execution）の状態遷移と成否をグラフ化。
+- **【実装済M6】Evidence Bonding**: 実行中のタスクや銘柄スコアに関連する UUID 形式の証拠 ID を表示。
+
+### 7.3 信頼性・品質保証 (Quality Safeguards)
+- **【実装済M7】整合性インジケータ**: 取得したログの `immutableGitHash` に基づく証拠整合性の確認。
+- **【実装済M8】30s ポーリング**: 自動更新による最新の意思決定ログの追随。
+
