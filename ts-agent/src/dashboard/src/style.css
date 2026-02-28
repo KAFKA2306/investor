@@ -131,6 +131,13 @@ body {
   box-shadow: 0 10px 20px -14px rgba(0, 127, 143, 0.8);
 }
 
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .tab-nav {
   display: flex;
   gap: 0.5rem;
@@ -832,6 +839,127 @@ body {
   font-family: var(--mono);
 }
 
+.workflow-controls {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.input-select {
+  min-width: 260px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  padding: 0.46rem 0.55rem;
+}
+
+.workflow-status {
+  margin-top: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.workflow-status.ready {
+  border-color: rgba(0, 127, 143, 0.35);
+}
+
+.workflow-status.risk {
+  border-color: rgba(190, 18, 60, 0.35);
+}
+
+.workflow-output {
+  margin: 0.55rem 0 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0f1a2a;
+  color: #cdd9f2;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 260px;
+  overflow: auto;
+  padding: 0.65rem 0.72rem;
+}
+
+.ts-view-grid {
+  margin-top: 0.55rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ts-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.58rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.52rem;
+}
+
+.ts-card.required {
+  border-color: rgba(0, 127, 143, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(0, 127, 143, 0.14);
+}
+
+.ts-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.ts-card-head strong {
+  font-family: var(--display);
+  font-size: 0.88rem;
+}
+
+.ts-card-body {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(243, 247, 250, 0.72);
+  min-height: 230px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ts-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ts-card-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.69rem;
+  color: var(--ink-soft);
+  font-family: var(--mono);
+}
+
+.ts-card-links a {
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.ts-card-links a:hover {
+  text-decoration: underline;
+}
+
 .table-wrap {
   overflow: auto;
   border: 1px solid var(--line);
@@ -1017,6 +1145,10 @@ th {
   .uqtl-span-2 {
     grid-column: auto;
   }
+
+  .ts-view-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1057,5 +1189,10 @@ th {
   .bond-value {
     grid-column: span 2;
     padding-left: 0.2rem;
+  }
+
+  .input-select {
+    min-width: 180px;
+    width: 100%;
   }
 }

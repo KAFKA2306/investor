@@ -167,6 +167,40 @@ interface TimeSeriesPoint {
   value: number;
 }
 
+interface WorkflowMeta {
+  id: string;
+  name: string;
+  file: string;
+  commandCount: number;
+  commands: string[];
+}
+
+interface WorkflowStepResult {
+  command: string;
+  ok: boolean;
+  exitCode: number;
+  durationMs: number;
+  stdout: string;
+  stderr: string;
+}
+
+interface WorkflowRunResult {
+  workflowId: string;
+  workflowName: string;
+  startedAt: string;
+  endedAt: string;
+  ok: boolean;
+  steps: WorkflowStepResult[];
+}
+
+interface TimeSeriesView {
+  id: string;
+  csvFile: string;
+  plotFile: string;
+  hasPlot: boolean;
+  required: boolean;
+}
+
 const pickNumber = (value: unknown, fallback = 0): number => {
   if (typeof value === "number" && Number.isFinite(value)) {
     return value;
@@ -219,9 +253,12 @@ const escapeHtml = (value: unknown): string =>
 const shortId = (value: string, width = 8): string =>
   value.length <= width ? value : `${value.slice(0, width)}…`;
 
-const fetchJson = async <T>(path: string): Promise<T | null> => {
+const fetchJson = async <T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T | null> => {
   try {
-    const res = await fetch(path, { cache: "no-store" });
+    const res = await fetch(path, { cache: "no-store", ...(init ?? {}) });
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch (_error) {
@@ -246,6 +283,12 @@ class InvestorDashboard {
 
   private activeDate = "";
 
+  private workflows: WorkflowMeta[] = [];
+
+  private timeSeriesViews: TimeSeriesView[] = [];
+
+  private workflowRunning = false;
+
   constructor() {
     void this.bootstrap();
   }
@@ -254,18 +297,28 @@ class InvestorDashboard {
     this.bindEvents();
     await this.refresh();
     await this.refreshUqtl();
+    await this.refreshWorkflowAndViews();
     window.setInterval(() => {
       void this.refresh();
     }, 60000);
     window.setInterval(() => {
       void this.refreshUqtl();
     }, 5000);
+    window.setInterval(() => {
+      void this.refreshWorkflowAndViews();
+    }, 20000);
   }
 
   private bindEvents() {
     const refreshButton = document.getElementById("refresh-btn");
     refreshButton?.addEventListener("click", () => {
       void this.refresh();
+      void this.refreshWorkflowAndViews();
+    });
+
+    const workflowRunButton = document.getElementById("workflow-run-btn");
+    workflowRunButton?.addEventListener("click", () => {
+      void this.runSelectedWorkflow();
     });
 
     document.querySelectorAll(".tab-btn").forEach((btn) => {
@@ -472,6 +525,194 @@ class InvestorDashboard {
       this.uqtlEvents = events;
       this.renderUqtlFeed();
     }
+  }
+
+  private async refreshWorkflowAndViews() {
+    await Promise.all([this.loadWorkflows(), this.loadTimeSeriesViews()]);
+    this.renderWorkflowControls();
+    this.renderTimeSeriesViews();
+  }
+
+  private async loadWorkflows() {
+    const workflows = await fetchJson<WorkflowMeta[]>("/api/workflows");
+    if (!workflows) return;
+    this.workflows = workflows
+      .filter((workflow) => workflow.commandCount > 0)
+      .sort((a, b) => a.id.localeCompare(b.id));
+  }
+
+  private async loadTimeSeriesViews() {
+    const views = await fetchJson<TimeSeriesView[]>("/api/timeseries/views");
+    if (!views) return;
+    this.timeSeriesViews = views;
+  }
+
+  private renderWorkflowControls() {
+    const select = document.getElementById("workflow-select");
+    if (!(select instanceof HTMLSelectElement)) return;
+
+    const statusEl = document.getElementById("workflow-status");
+    const outputEl = document.getElementById("workflow-output");
+    const previous = select.value;
+
+    if (this.workflows.length === 0) {
+      select.innerHTML = '<option value="">実行可能なワークフローなし</option>';
+      select.disabled = true;
+      if (statusEl) statusEl.textContent = "ワークフロー未検出";
+      if (outputEl)
+        outputEl.textContent =
+          "`.agent/workflows` から実行可能コマンドを検出できません。";
+      this.updateWorkflowButtonState();
+      return;
+    }
+
+    select.innerHTML = this.workflows
+      .map((workflow) => {
+        const label = `${workflow.id} / ${workflow.commandCount} step`;
+        return `<option value="${escapeHtml(workflow.id)}">${escapeHtml(label)}</option>`;
+      })
+      .join("");
+
+    const exists = this.workflows.some((workflow) => workflow.id === previous);
+    select.value = exists ? previous : (this.workflows[0]?.id ?? "");
+    select.disabled = this.workflowRunning;
+
+    if (statusEl && !this.workflowRunning && !statusEl.textContent) {
+      statusEl.textContent = "待機中";
+    }
+
+    if (outputEl && !outputEl.textContent) {
+      outputEl.textContent = "実行ログ未取得";
+    }
+
+    this.updateWorkflowButtonState();
+  }
+
+  private updateWorkflowButtonState() {
+    const button = document.getElementById("workflow-run-btn");
+    const select = document.getElementById("workflow-select");
+    if (!(button instanceof HTMLButtonElement)) return;
+    if (!(select instanceof HTMLSelectElement)) return;
+    const enabled = !this.workflowRunning && this.workflows.length > 0;
+    button.disabled = !enabled;
+    button.textContent = this.workflowRunning ? "実行中" : "実行";
+    select.disabled = !enabled;
+  }
+
+  private async runSelectedWorkflow() {
+    if (this.workflowRunning) return;
+
+    const select = document.getElementById("workflow-select");
+    if (!(select instanceof HTMLSelectElement)) return;
+
+    const workflowId = select.value.trim();
+    if (!workflowId) return;
+
+    const statusEl = document.getElementById("workflow-status");
+    const outputEl = document.getElementById("workflow-output");
+
+    this.workflowRunning = true;
+    this.updateWorkflowButtonState();
+    if (statusEl) statusEl.textContent = `実行中: ${workflowId}`;
+    if (outputEl) outputEl.textContent = "処理開始...";
+
+    const result = await fetchJson<WorkflowRunResult>("/api/workflows/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ workflowId }),
+    });
+
+    if (!result) {
+      if (statusEl) statusEl.textContent = `失敗: ${workflowId}`;
+      if (outputEl)
+        outputEl.textContent =
+          "実行結果の取得に失敗しました。API サーバを確認してください。";
+      this.workflowRunning = false;
+      this.updateWorkflowButtonState();
+      return;
+    }
+
+    const lines = [
+      `workflow: ${result.workflowName} (${result.workflowId})`,
+      `started: ${result.startedAt}`,
+      `ended: ${result.endedAt}`,
+      `ok: ${result.ok}`,
+      "",
+      ...result.steps.flatMap((step, index) => [
+        `step ${index + 1}: ${step.command}`,
+        `  ok: ${step.ok} / exitCode: ${step.exitCode} / durationMs: ${step.durationMs}`,
+        step.stdout ? `  stdout:\n${step.stdout}` : "  stdout: <empty>",
+        step.stderr ? `  stderr:\n${step.stderr}` : "  stderr: <empty>",
+        "",
+      ]),
+    ];
+
+    if (statusEl) {
+      statusEl.textContent = result.ok
+        ? `完了: ${workflowId}`
+        : `失敗: ${workflowId}`;
+    }
+    if (outputEl) outputEl.textContent = lines.join("\n");
+
+    await this.refresh();
+    await this.refreshUqtl();
+    await this.refreshWorkflowAndViews();
+
+    this.workflowRunning = false;
+    this.updateWorkflowButtonState();
+  }
+
+  private renderTimeSeriesViews() {
+    const host = document.getElementById("ts-view-grid");
+    const requiredHost = document.getElementById("ts-view-required");
+    if (!host) return;
+
+    if (this.timeSeriesViews.length === 0) {
+      host.innerHTML =
+        '<div class="empty">時系列ビューが見つかりません。</div>';
+      if (requiredHost) {
+        requiredHost.classList.remove("ready", "risk");
+        requiredHost.textContent = "必須ビュー欠落: sbg_ts.csv";
+        requiredHost.classList.add("risk");
+      }
+      return;
+    }
+
+    const requiredView = this.timeSeriesViews.find((view) => view.required);
+    const hasRequiredView = Boolean(requiredView?.hasPlot);
+    if (requiredHost) {
+      requiredHost.classList.remove("ready", "risk");
+      if (hasRequiredView) {
+        requiredHost.textContent = `必須ビュー確認済: ${requiredView?.id}`;
+        requiredHost.classList.add("ready");
+      } else {
+        requiredHost.textContent =
+          "必須ビュー欠落: sbg_ts.csv の画像が必要です";
+        requiredHost.classList.add("risk");
+      }
+    }
+
+    host.innerHTML = this.timeSeriesViews
+      .map((view) => {
+        const requirementLabel = view.required ? "必須" : "任意";
+        const body = view.hasPlot
+          ? `<img class="ts-image" src="/api/timeseries/plot/${encodeURIComponent(view.plotFile)}?t=${Date.now()}" alt="${escapeHtml(view.id)}" />`
+          : '<div class="empty">画像未生成</div>';
+        return `
+          <article class="ts-card ${view.required ? "required" : ""}">
+            <div class="ts-card-head">
+              <strong>${escapeHtml(view.id)}</strong>
+              <span class="chip ${view.required ? "ready" : "neutral"}">${escapeHtml(requirementLabel)}</span>
+            </div>
+            <div class="ts-card-body">${body}</div>
+            <div class="ts-card-links">
+              <a href="/api/timeseries/csv/${encodeURIComponent(view.csvFile)}" target="_blank" rel="noreferrer">${escapeHtml(view.csvFile)}</a>
+              <span>${escapeHtml(view.plotFile)}</span>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
   }
 
   private renderTimeline() {

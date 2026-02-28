@@ -118,6 +118,28 @@
 
         <!-- Signals Tab -->
         <div id="tab-signals" class="tab-content">
+          <section class="panel section">
+            <div class="section-head">
+              <h3>ワークフロー実行</h3>
+              <span>自律探索呼び出し</span>
+            </div>
+            <div class="workflow-controls">
+              <select id="workflow-select" class="input-select"></select>
+              <button id="workflow-run-btn" class="button" type="button">実行</button>
+            </div>
+            <div id="workflow-status" class="workflow-status">待機中</div>
+            <pre id="workflow-output" class="workflow-output">ログ未取得</pre>
+          </section>
+
+          <section class="panel section">
+            <div class="section-head">
+              <h3>標準化パフォーマンス図</h3>
+              <span>sbg_ts.csv は必須</span>
+            </div>
+            <div id="ts-view-required" class="workflow-status">必須ビュー確認中</div>
+            <div id="ts-view-grid" class="ts-view-grid"></div>
+          </section>
+
           <section class="chart-grid">
             <article class="panel section chart-card">
               <div class="section-head">
