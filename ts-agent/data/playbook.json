@@ -1036,18 +1036,46 @@
       }
     },
     {
+      "id": "ctx-ej5bciko",
       "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T04:00:50.962Z",
+      "updated_at": "2026-02-28T04:00:50.962Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T04:00:33.496Z",
         "baseline": "same-day-return-fallback"
-      },
-      "id": "ctx-ej5bciko",
+      }
+    },
+    {
+      "id": "ctx-349nbc5q",
+      "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T04:00:50.962Z",
-      "updated_at": "2026-02-28T04:00:50.962Z"
+      "created_at": "2026-02-28T04:34:45.888Z",
+      "updated_at": "2026-02-28T04:34:45.888Z",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T04:34:33.012Z",
+        "baseline": "same-day-return-fallback"
+      }
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T04:36:10.687Z",
+        "baseline": "foundation-benchmark-fallback (20260228.json)"
+      },
+      "id": "ctx-8dka60nj",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T04:36:24.107Z",
+      "updated_at": "2026-02-28T04:36:24.107Z"
     }
   ]
 }

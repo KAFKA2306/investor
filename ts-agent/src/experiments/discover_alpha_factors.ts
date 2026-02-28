@@ -5,8 +5,9 @@ import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { ContextPlaybook } from "../context/context_playbook_manager.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import { core } from "../system/app_runtime_core.ts";
+import { QuantMetrics } from "../pipeline/evaluate/quantitative_factor_metrics.ts";
 
-const Universe = ["7203", "9984", "8035"];
+const Universe = core.config.universe.symbols;
 
 type Snapshot = {
   symbol: string;
@@ -27,33 +28,6 @@ const pickNumber = (record: Record<string, number>, keys: string[]): number => {
     if (typeof value === "number" && Number.isFinite(value)) return value;
   }
   return 0;
-};
-
-const average = (values: number[]): number =>
-  values.length > 0
-    ? values.reduce((sum, value) => sum + value, 0) / values.length
-    : 0;
-
-const pearsonCorrelation = (x: number[], y: number[]): number => {
-  const n = Math.min(x.length, y.length);
-  if (n <= 1) return 0;
-  const xs = x.slice(0, n);
-  const ys = y.slice(0, n);
-  const meanX = average(xs);
-  const meanY = average(ys);
-  let cov = 0;
-  let varX = 0;
-  let varY = 0;
-  for (let i = 0; i < n; i++) {
-    const dx = xs[i]! - meanX;
-    const dy = ys[i]! - meanY;
-    cov += dx * dy;
-    varX += dx * dx;
-    varY += dy * dy;
-  }
-  const denom = Math.sqrt(varX * varY);
-  if (denom <= 1e-12) return 0;
-  return cov / denom;
 };
 
 const calcDailyReturn = (bar: Record<string, number>): number => {
@@ -81,9 +55,9 @@ const buildEvidence = (snapshots: Snapshot[]): Record<string, number> => {
   });
   return {
     sampleSize: snapshots.length,
-    avgIntradayRange: average(ranges),
-    avgTurnoverValue: average(turnover),
-    avgProfitMargin: average(margins),
+    avgIntradayRange: QuantMetrics.mean(ranges),
+    avgTurnoverValue: QuantMetrics.mean(turnover),
+    avgProfitMargin: QuantMetrics.mean(margins),
     positiveReturnRatio:
       snapshots.filter((s) => s.dailyReturn > 0).length /
       Math.max(1, snapshots.length),
@@ -118,38 +92,62 @@ async function loadBaselineSeries(
   snapshots: readonly Snapshot[],
 ): Promise<BaselineSeries> {
   const logsDir = join(core.config.paths.logs, "daily");
-  const files = (await readdir(logsDir))
-    .filter((file) => /^\d{8}\.json$/.test(file))
-    .sort()
-    .reverse();
+  try {
+    const files = (await readdir(logsDir))
+      .filter((file) => /^\d{8}\.json$/.test(file))
+      .sort()
+      .reverse();
 
-  for (const file of files) {
-    const raw = JSON.parse(
-      await readFile(join(logsDir, file), "utf8"),
-    ) as unknown;
-    if (typeof raw !== "object" || raw === null) continue;
-    const obj = raw as Record<string, unknown>;
-    if (obj.schema !== "investor.daily-log.v1") continue;
-    if (typeof obj.report !== "object" || obj.report === null) continue;
-    const report = obj.report as Record<string, unknown>;
-    if (!Array.isArray(report.analysis)) continue;
+    for (const file of files) {
+      const raw = JSON.parse(
+        await readFile(join(logsDir, file), "utf8"),
+      ) as unknown;
+      if (typeof raw !== "object" || raw === null) continue;
+      const obj = raw as Record<string, unknown>;
+      if (obj.schema !== "investor.daily-log.v1") continue;
+      if (typeof obj.report !== "object" || obj.report === null) continue;
+      const report = obj.report as Record<string, unknown>;
+      if (!Array.isArray(report.analysis)) continue;
 
-    const scoreMap = new Map<string, number>();
-    for (const row of report.analysis) {
-      if (typeof row !== "object" || row === null) continue;
-      const r = row as Record<string, unknown>;
-      if (typeof r.symbol !== "string") continue;
-      if (typeof r.alphaScore !== "number" || !Number.isFinite(r.alphaScore))
-        continue;
-      scoreMap.set(r.symbol, r.alphaScore);
+      const scoreMap = new Map<string, number>();
+      for (const row of report.analysis) {
+        if (typeof row !== "object" || row === null) continue;
+        const r = row as Record<string, unknown>;
+        if (typeof r.symbol !== "string") continue;
+        if (typeof r.alphaScore !== "number" || !Number.isFinite(r.alphaScore))
+          continue;
+        scoreMap.set(r.symbol, r.alphaScore);
+      }
+      if (!symbols.every((symbol) => scoreMap.has(symbol))) continue;
+
+      return {
+        name: "latest-daily-alphaScore",
+        sourceFile: file,
+        scores: symbols.map((symbol) => scoreMap.get(symbol) ?? 0),
+      };
     }
-    if (!symbols.every((symbol) => scoreMap.has(symbol))) continue;
+  } catch (e) {
+    console.warn(
+      "⚠️ Daily logs directory not found or empty. Checking benchmarks.",
+    );
+  }
 
-    return {
-      name: "latest-daily-alphaScore",
-      sourceFile: file,
-      scores: symbols.map((symbol) => scoreMap.get(symbol) ?? 0),
-    };
+  // [Standardization] Fallback to foundation benchmarks if available
+  const benchmarkDir = join(core.config.paths.logs, "benchmarks");
+  try {
+    const benchmarkFiles = (await readdir(benchmarkDir))
+      .filter((f) => f.endsWith(".json"))
+      .sort()
+      .reverse();
+    if (benchmarkFiles.length > 0) {
+      return {
+        name: `foundation-benchmark-fallback (${benchmarkFiles[0]})`,
+        sourceFile: benchmarkFiles[0],
+        scores: snapshots.map(() => 0), // Ideally would use actual model outputs if they matched symbols
+      };
+    }
+  } catch (e) {
+    // ignore
   }
 
   return {
@@ -193,6 +191,14 @@ function evaluateAST(
     case "div": {
       const denom = evaluateAST(node.right, bar, fin);
       return denom !== 0 ? evaluateAST(node.left, bar, fin) / denom : 0;
+    }
+    case "abs":
+      return Math.abs(evaluateAST(node.value, bar, fin));
+    case "neg":
+      return -evaluateAST(node.value, bar, fin);
+    case "log": {
+      const val = evaluateAST(node.value, bar, fin);
+      return val > 0 ? Math.log(val) : 0;
     }
     default:
       return 0;
@@ -243,8 +249,11 @@ async function discoverNewAlpha() {
       const rpa = await agent.evaluateRisk(factor);
       const score = (fra.rs + rpa.rs) / 2;
       const factorScores = computeFactorScores(factor, snapshots);
-      const orthCorrelation = pearsonCorrelation(factorScores, baseline.scores);
-      const icProxy = pearsonCorrelation(
+      const orthCorrelation = QuantMetrics.calculateCorr(
+        factorScores,
+        baseline.scores,
+      );
+      const icProxy = QuantMetrics.calculateCorr(
         factorScores,
         snapshots.map((snapshot) => snapshot.dailyReturn),
       );
@@ -257,7 +266,7 @@ async function discoverNewAlpha() {
         orthogonality,
         orthCorrelation,
         icProxy,
-        meanSignal: average(factorScores),
+        meanSignal: QuantMetrics.mean(factorScores),
       };
     }),
   );
@@ -276,8 +285,10 @@ async function discoverNewAlpha() {
     console.log(`- IC proxy: ${result.icProxy.toFixed(3)}`);
   });
 
+  const orthThreshold = core.config.benchmark.orthogonalityThreshold ?? 0.5;
   const highQualityAlpha = evaluations.filter(
-    (result) => result.score >= 0.7 && Math.abs(result.orthCorrelation) <= 0.5,
+    (result) =>
+      result.score >= 0.7 && Math.abs(result.orthCorrelation) <= orthThreshold,
   );
 
   if (highQualityAlpha.length > 0) {

@@ -53,4 +53,6 @@ export const QuantitativeVerificationSchema = z.object({
   layout: VerificationLayoutSchema,
 });
 
-export type QuantitativeVerification = z.infer<typeof QuantitativeVerificationSchema>;
+export type QuantitativeVerification = z.infer<
+  typeof QuantitativeVerificationSchema
+>;

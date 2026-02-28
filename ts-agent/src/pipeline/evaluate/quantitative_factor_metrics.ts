@@ -126,7 +126,54 @@ export namespace QuantMetrics {
     return Math.sqrt(variance(x));
   }
 
-  function mean(x: number[]): number {
+  export function calculateRMSE(
+    actuals: number[],
+    predictions: number[],
+  ): number {
+    if (actuals.length === 0) return 0;
+    const n = Math.min(actuals.length, predictions.length);
+    let mse = 0;
+    for (let i = 0; i < n; i++) {
+      mse += (actuals[i]! - predictions[i]!) ** 2;
+    }
+    return Math.sqrt(mse / n);
+  }
+
+  export function calculateSMAPE(
+    actuals: number[],
+    predictions: number[],
+  ): number {
+    if (actuals.length === 0) return 0;
+    const n = Math.min(actuals.length, predictions.length);
+    let sum = 0;
+    for (let i = 0; i < n; i++) {
+      const a = actuals[i]!;
+      const p = predictions[i]!;
+      const denom = (Math.abs(a) + Math.abs(p)) / 2;
+      if (denom !== 0) {
+        sum += Math.abs(p - a) / denom;
+      }
+    }
+    return (sum / n) * 100;
+  }
+
+  export function calculateDA(
+    actuals: number[],
+    predictions: number[],
+    previous: number[],
+  ): number {
+    if (actuals.length === 0) return 0;
+    const n = Math.min(actuals.length, predictions.length, previous.length);
+    let correct = 0;
+    for (let i = 0; i < n; i++) {
+      const actDir = Math.sign(actuals[i]! - previous[i]!);
+      const predDir = Math.sign(predictions[i]! - previous[i]!);
+      if (actDir === predDir) correct++;
+    }
+    return (correct / n) * 100;
+  }
+
+  export function mean(x: number[]): number {
     return x.reduce((a, b) => a + b, 0) / (x.length || 1);
   }
 

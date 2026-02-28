@@ -45,6 +45,16 @@ const ConfigSchema = z.object({
       noiseThresholdMultiplier: z.number().positive(),
       overconfidenceThreshold: z.number().min(0).max(1),
     }),
+    orthogonalityThreshold: z.number().min(0).max(1).optional(),
+  }),
+  universe: z.object({
+    symbols: z.array(z.string()),
+  }),
+  execution: z.object({
+    costs: z.object({
+      feeBps: z.number().min(0),
+      slippageBps: z.number().min(0),
+    }),
   }),
 });
 

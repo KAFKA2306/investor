@@ -3,11 +3,14 @@ import { QuantMetrics } from "../pipeline/evaluate/quantitative_factor_metrics.t
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
-import { QuantitativeVerificationSchema, type QuantitativeVerification } from "../schemas/verification_report_schema.ts";
+import {
+  QuantitativeVerificationSchema,
+  type QuantitativeVerification,
+} from "../schemas/verification_report_schema.ts";
 
 async function generateStandardVerificationReport() {
   console.log("🛠️ 標準実証レポート用データの生成開始 (Audit-Ready)...");
-  
+
   // [監査証跡] Git Commit Hashの取得
   let commitHash = "unknown";
   try {
@@ -19,12 +22,13 @@ async function generateStandardVerificationReport() {
   const strategyMetadata = {
     id: "GEN3-FACTORY-VP-001",
     name: "Volume-Price Divergence",
-    description: "Detects price-volume decoupling to identify underreaction in supply-shock regimes. Net-of-cost performance."
+    description:
+      "Detects price-volume decoupling to identify underreaction in supply-shock regimes. Net-of-cost performance.",
   };
 
   const symbols = ["7203.T", "9984.T", "8035.T", "6758.T", "4063.T"];
   const gateway = new YahooFinanceGateway();
-  
+
   const allHistoryResults = await Promise.all(
     symbols.map(async (s) => {
       try {
@@ -34,25 +38,27 @@ async function generateStandardVerificationReport() {
         console.warn(`⚠️ ${s} のデータ取得に失敗しました:`, e);
         return null;
       }
-    })
+    }),
   );
 
-  const allHistory = allHistoryResults.filter((h): h is { symbol: string; bars: any[] } => h !== null);
-  const activeSymbols = allHistory.map(h => h.symbol);
+  const allHistory = allHistoryResults.filter(
+    (h): h is { symbol: string; bars: any[] } => h !== null,
+  );
+  const activeSymbols = allHistory.map((h) => h.symbol);
 
   if (activeSymbols.length === 0) return;
 
-  const commonDates = allHistory[0].bars.map(b => b.Date);
+  const commonDates = allHistory[0].bars.map((b) => b.Date);
   const endDate = commonDates[commonDates.length - 1];
   const n = commonDates.length;
-  
-  // [課題9] コスト控除 (各銘柄リターンから1.5bpsのコストを差し引くシミュレーション)
-  const feeBps = 1.0; 
-  const slippageBps = 0.5;
+
+  // [Standardization] Use core config for costs
+  const feeBps = core.config.execution.costs.feeBps;
+  const slippageBps = core.config.execution.costs.slippageBps;
   const totalCostRate = (feeBps + slippageBps) / 10000;
 
   const individualData: QuantitativeVerification["individualData"] = {};
-  activeSymbols.forEach(s => {
+  activeSymbols.forEach((s) => {
     individualData[s] = { prices: [], factors: [], positions: [] };
   });
 
@@ -75,71 +81,94 @@ async function generateStandardVerificationReport() {
       individualData[symbol].positions.push(pos);
 
       if (i < n - 1) {
-        const next = bars[i+1];
+        const next = bars[i + 1];
         if (next) {
           const ret = (next.Close - next.Open) / next.Open;
           mktReturnSum += ret / activeSymbols.length;
           // [コスト控除] 収益からコストを減算
-          const netRet = (pos * ret) - totalCostRate;
+          const netRet = pos * ret - totalCostRate;
           stratReturnSum += netRet / activeSymbols.length;
         }
       }
     });
 
     if (i < n - 1) {
-      benchmarkDailyReturns[i+1] = mktReturnSum;
-      strategyDailyReturns[i+1] = stratReturnSum;
+      benchmarkDailyReturns[i + 1] = mktReturnSum;
+      strategyDailyReturns[i + 1] = stratReturnSum;
     }
   }
 
-  let cumS = 1.0, cumB = 1.0;
-  const strategyCum = strategyDailyReturns.map(r => { cumS *= (1 + r); return (cumS - 1) * 100; });
-  const benchmarkCum = benchmarkDailyReturns.map(r => { cumB *= (1 + r); return (cumB - 1) * 100; });
-
-  const report: QuantitativeVerification = QuantitativeVerificationSchema.parse({
-    schemaVersion: "1.1.0",
-    strategyId: strategyMetadata.id,
-    strategyName: strategyMetadata.name,
-    description: strategyMetadata.description,
-    generatedAt: new Date().toISOString(),
-    audit: {
-      commitHash,
-      environment: `Node ${process.version} / ${process.platform}`
-    },
-    fileName: `VERIF_${strategyMetadata.id}_${activeSymbols.length}S_${endDate.replaceAll("-", "")}.png`,
-    dates: commonDates,
-    strategyCum,
-    benchmarkCum,
-    individualData,
-    metrics: {
-      ic: -0.0459,
-      sharpe: Number(QuantMetrics.calculateSharpeRatio(strategyDailyReturns).toFixed(2)),
-      maxDD: Number(Math.min(...strategyCum.map((v, i) => v - Math.max(...strategyCum.slice(0, i+1)))).toFixed(2)),
-      totalReturn: Number(strategyCum[n-1].toFixed(2)),
-      universe: activeSymbols
-    },
-    costs: {
-      feeBps,
-      slippageBps,
-      totalCostBps: feeBps + slippageBps
-    },
-    layout: {
-      mainTitle: `Alpha Verification [Audit Ready]: ${strategyMetadata.name}`,
-      subTitle: `Strategy: ${strategyMetadata.id} | Commit: ${commitHash.substring(0, 7)} | Costs: ${feeBps + slippageBps}bps`,
-      panel1Title: "Universe Asset Performance",
-      panel2Title: `Alpha Intensity: ${strategyMetadata.id}`,
-      panel3Title: "Execution Timings (Positions Heatmap)",
-      panel4Title: "Cumulative Performance (Net of Costs)",
-      yAxisReturn: "Net Return (%)",
-      yAxisSignal: "Signal Intensity",
-      legendStrategy: "Strategy (Net)",
-      legendBenchmark: "Benchmark (Gross)"
-    }
+  let cumS = 1.0,
+    cumB = 1.0;
+  const strategyCum = strategyDailyReturns.map((r) => {
+    cumS *= 1 + r;
+    return (cumS - 1) * 100;
   });
-  
-  const jsonPath = join(process.cwd(), "data", "standard_verification_data.json");
+  const benchmarkCum = benchmarkDailyReturns.map((r) => {
+    cumB *= 1 + r;
+    return (cumB - 1) * 100;
+  });
+
+  const report: QuantitativeVerification = QuantitativeVerificationSchema.parse(
+    {
+      schemaVersion: "1.1.0",
+      strategyId: strategyMetadata.id,
+      strategyName: strategyMetadata.name,
+      description: strategyMetadata.description,
+      generatedAt: new Date().toISOString(),
+      audit: {
+        commitHash,
+        environment: `Node ${process.version} / ${process.platform}`,
+      },
+      fileName: `VERIF_${strategyMetadata.id}_${activeSymbols.length}S_${endDate.replaceAll("-", "")}.png`,
+      dates: commonDates,
+      strategyCum,
+      benchmarkCum,
+      individualData,
+      metrics: {
+        ic: -0.0459,
+        sharpe: Number(
+          QuantMetrics.calculateSharpeRatio(strategyDailyReturns).toFixed(2),
+        ),
+        maxDD: Number(
+          Math.min(
+            ...strategyCum.map(
+              (v, i) => v - Math.max(...strategyCum.slice(0, i + 1)),
+            ),
+          ).toFixed(2),
+        ),
+        totalReturn: Number(strategyCum[n - 1].toFixed(2)),
+        universe: activeSymbols,
+      },
+      costs: {
+        feeBps,
+        slippageBps,
+        totalCostBps: feeBps + slippageBps,
+      },
+      layout: {
+        mainTitle: `Alpha Verification [Audit Ready]: ${strategyMetadata.name}`,
+        subTitle: `Strategy: ${strategyMetadata.id} | Commit: ${commitHash.substring(0, 7)} | Costs: ${feeBps + slippageBps}bps`,
+        panel1Title: "Universe Asset Performance",
+        panel2Title: `Alpha Intensity: ${strategyMetadata.id}`,
+        panel3Title: "Execution Timings (Positions Heatmap)",
+        panel4Title: "Cumulative Performance (Net of Costs)",
+        yAxisReturn: "Net Return (%)",
+        yAxisSignal: "Signal Intensity",
+        legendStrategy: "Strategy (Net)",
+        legendBenchmark: "Benchmark (Gross)",
+      },
+    },
+  );
+
+  const jsonPath = join(
+    process.cwd(),
+    "data",
+    "standard_verification_data.json",
+  );
   writeFileSync(jsonPath, JSON.stringify(report, null, 2));
-  console.log(`✅ 監査準備完了（CommitHash: ${commitHash.substring(0, 7)}）: ${jsonPath}`);
+  console.log(
+    `✅ 監査準備完了（CommitHash: ${commitHash.substring(0, 7)}）: ${jsonPath}`,
+  );
 }
 
 generateStandardVerificationReport().catch(console.error);

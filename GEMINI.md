@@ -30,15 +30,16 @@ The system operates as a network of specialized **Autonomous Analysts**:
 | Command | Description |
 | :--- | :--- |
 | `task check` | Run Biome lint/format and TypeScript typecheck. |
-| `task run` | Execute the full LES reproduction and benchmark pipeline. |
+| `task discovery` | Execute Orthogonal Alpha Search + Foundation Benchmarking. |
+| `task benchmark:foundation` | Run e-Stat benchmarking for Chronos/TimesFM models. |
+| `task run` | Execute the full pipeline (Discovery + LLM Readiness). |
 | `task view` | Launch the Vite-based dashboard to view results. |
 
-### Direct Execution
-Individual experiments can be run directly using Bun:
-```bash
-cd ts-agent
-bun src/experiments/les_reproduction.ts
-```
+### Model Registry & Forecasting
+The system includes a **Standardized Model Registry** (`ts-agent/src/model_registry/`) for time-series foundation models:
+- **Models**: Integration with Amazon Chronos (t5-tiny/mini/small) and Google TimesFM.
+- **Inference**: High-performance batch inference via Python/PyTorch bridge.
+- **Benchmarking**: Continuous performance tracking (RMSE, SMAPE, DA) on economic indicators (e-Stat).
 
 ---
 

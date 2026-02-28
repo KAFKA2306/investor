@@ -74,7 +74,8 @@ export class LesAgent extends BaseAgent {
             right: { op: "lit", value: 1.0 },
           },
         },
-        description: "Volume-Price Divergence: Normalized return by volume stress",
+        description:
+          "Volume-Price Divergence: Normalized return by volume stress",
         reasoning:
           "High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
       },

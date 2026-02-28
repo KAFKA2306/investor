@@ -23,3 +23,12 @@ benchmark:
   foundation:
     noiseThresholdMultiplier: 0.5
     overconfidenceThreshold: 0.8
+  orthogonalityThreshold: 0.5
+
+universe:
+  symbols: ["7203", "9984", "8035", "6758", "4063"]
+
+execution:
+  costs:
+    feeBps: 1.0
+    slippageBps: 0.5

@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { extname, resolve } from "node:path";
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 const repoLogsDir = resolve(__dirname, "../../../../logs");
 
@@ -101,6 +102,7 @@ export default defineConfig({
   // GitHub Pages project site: https://<user>.github.io/investor/
   base: "/investor/",
   plugins: [
+    react(),
     {
       name: "serve-repo-logs",
       configureServer(server) {

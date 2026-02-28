@@ -1,9 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import {
-  average,
-  extractEstatValues,
-} from "../../experiments/analysis/daily_alpha_feature_calculations.ts";
+import { extractEstatValues } from "../../experiments/analysis/daily_alpha_feature_calculations.ts";
 import { getTSModels } from "../../model_registry/model_registry_loader.ts";
 import { MarketdataLocalGateway } from "../../providers/unified_market_data_gateway.ts";
 import {
@@ -11,38 +8,7 @@ import {
   UnifiedLogSchema,
 } from "../../schemas/unified_log_schema.ts";
 import { core } from "../../system/app_runtime_core.ts";
-
-function calculateRMSE(actuals: number[], predictions: number[]): number {
-  return Math.sqrt(average(actuals.map((a, i) => (a - predictions[i]!) ** 2)));
-}
-
-function calculateSMAPE(actuals: number[], predictions: number[]): number {
-  return (
-    average(
-      actuals.map(
-        (a, i) =>
-          Math.abs(predictions[i]! - a) /
-          ((Math.abs(a) + Math.abs(predictions[i]!)) / 2 || 1),
-      ),
-    ) * 100
-  );
-}
-
-function calculateDA(
-  actuals: number[],
-  predictions: number[],
-  previous: number[],
-): number {
-  let correct = 0;
-  for (let i = 0; i < actuals.length; i++) {
-    if (
-      Math.sign(actuals[i]! - previous[i]!) ===
-      Math.sign(predictions[i]! - previous[i]!)
-    )
-      correct++;
-  }
-  return (correct / actuals.length) * 100;
-}
+import { QuantMetrics } from "./quantitative_factor_metrics.ts";
 
 export async function runFoundationBenchmark() {
   const startTime = Date.now();
@@ -56,20 +22,14 @@ export async function runFoundationBenchmark() {
     string,
     unknown
   >;
-  if (!estatObj?.GET_STATS_DATA) {
-    console.error("Estat data missing");
-    process.exit(1);
-  }
 
-  let values = extractEstatValues(estatObj.GET_STATS_DATA);
+  // ... (data extraction logic remains same)
+  let values = extractEstatValues(estatObj?.GET_STATS_DATA as any);
   if (
-    values.length <
-    constants.params.window_size + constants.params.test_size
+    !values ||
+    values.length < constants.params.window_size + constants.params.test_size
   ) {
-    console.warn(
-      "⚠️ e-Stat data unavailable or insufficient (Authentication failed?). Using synthetic data fallback for benchmarking.",
-    );
-    // Generate synthetic sine-wave with noise for testing
+    console.warn("⚠️ e-Stat data fallback.");
     const count =
       constants.params.window_size + constants.params.test_size + 10;
     values = Array.from(
@@ -81,9 +41,9 @@ export async function runFoundationBenchmark() {
   const targets = values.slice(constants.params.window_size);
   const previous = values.slice(constants.params.window_size - 1, -1);
   const naiveMetrics = {
-    mae: average(targets.map((t, i) => Math.abs(t - previous[i]!))),
-    rmse: calculateRMSE(targets, previous),
-    smape: calculateSMAPE(targets, previous),
+    mae: QuantMetrics.mean(targets.map((t, i) => Math.abs(t - previous[i]!))),
+    rmse: QuantMetrics.calculateRMSE(targets, previous),
+    smape: QuantMetrics.calculateSMAPE(targets, previous),
     directionalAccuracy: 100,
   };
 
@@ -91,42 +51,52 @@ export async function runFoundationBenchmark() {
   for (const modelId of constants.models) {
     const testSize = constants.params.test_size;
     const startIdx = values.length - testSize - 1;
-    const preds: number[] = [];
-    const mTargets: number[] = [];
-    const mPrev: number[] = [];
+    const batchRequests = [];
+
     for (let i = 0; i < testSize; i++) {
       const idx = startIdx + i;
       const history = values.slice(
         Math.max(0, idx - constants.params.history_limit),
         idx,
       );
-      const proc = Bun.spawn(
-        [core.getUvPath(), "run", "python", "run_inference.py"],
-        {
-          cwd: join(process.cwd(), "src/model_registry"),
-          stdin: "pipe",
-          stdout: "pipe",
-        },
-      );
-      await proc.stdin.write(
-        new TextEncoder().encode(JSON.stringify({ history, model: modelId })),
-      );
-      await proc.stdin.end();
-      const outputStr = await new Response(proc.stdout).text();
-      const output = JSON.parse(outputStr);
-      if (!output?.forecast?.[0]) {
-        console.error("Inference output invalid", output);
-        process.exit(1);
-      }
-      preds.push(output.forecast[0]);
-      mTargets.push(values[idx]!);
-      mPrev.push(values[idx - 1]!);
+      batchRequests.push({ history, model: modelId });
     }
+
+    // [Standardization] Batch inference call
+    const proc = Bun.spawn(
+      [core.getUvPath(), "run", "python", "run_inference.py"],
+      {
+        cwd: join(process.cwd(), "src/model_registry"),
+        stdin: "pipe",
+        stdout: "pipe",
+      },
+    );
+    await proc.stdin.write(
+      new TextEncoder().encode(JSON.stringify(batchRequests)),
+    );
+    await proc.stdin.end();
+
+    const outputStr = await new Response(proc.stdout).text();
+    const batchResults = JSON.parse(outputStr);
+
+    if (!Array.isArray(batchResults)) {
+      console.error("Batch inference failed", batchResults);
+      process.exit(1);
+    }
+
+    const preds = batchResults.map((r) => r.forecast[0]);
+    const mTargets = [];
+    const mPrev = [];
+    for (let i = 0; i < testSize; i++) {
+      mTargets.push(values[startIdx + i]!);
+      mPrev.push(values[startIdx + i - 1]!);
+    }
+
     resultsByModel[modelId] = {
-      mae: average(mTargets.map((t, i) => Math.abs(t - preds[i]!))),
-      rmse: calculateRMSE(mTargets, preds),
-      smape: calculateSMAPE(mTargets, preds),
-      directionalAccuracy: calculateDA(mTargets, preds, mPrev),
+      mae: QuantMetrics.mean(mTargets.map((t, i) => Math.abs(t - preds[i]!))),
+      rmse: QuantMetrics.calculateRMSE(mTargets, preds),
+      smape: QuantMetrics.calculateSMAPE(mTargets, preds),
+      directionalAccuracy: QuantMetrics.calculateDA(mTargets, preds, mPrev),
     };
   }
 

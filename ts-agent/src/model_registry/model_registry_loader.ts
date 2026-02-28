@@ -1,6 +1,9 @@
 import { z } from "zod";
+import { core } from "../system/app_runtime_core.ts";
+import { join } from "node:path";
+import { readFileSync } from "node:fs";
 
-const ModelEntrySchema = z.object({
+export const ModelEntrySchema = z.object({
   id: z.string().min(1),
   vendor: z.string().min(1),
   name: z.string().min(1),
@@ -11,13 +14,13 @@ const ModelEntrySchema = z.object({
   arxiv: z.string(),
 });
 
-const ModelRegistrySchema = z.object({
+export const ModelRegistrySchema = z.object({
   version: z.string().min(1),
   updatedAt: z.string().min(1),
   models: z.array(ModelEntrySchema),
 });
 
-const ModelReferenceSchema = z.object({
+export const ModelReferenceSchema = z.object({
   id: z.string().min(1),
   vendor: z.string().min(1),
   name: z.string().min(1),
@@ -30,8 +33,8 @@ export type ModelRegistry = z.infer<typeof ModelRegistrySchema>;
 export type ModelReference = z.infer<typeof ModelReferenceSchema>;
 
 export async function loadModelRegistry(): Promise<ModelRegistry> {
-  const path = new URL("./models.json", import.meta.url);
-  const raw = await Bun.file(path).json();
+  const path = join(import.meta.dir, "models.json");
+  const raw = JSON.parse(readFileSync(path, "utf8"));
   return ModelRegistrySchema.parse(raw);
 }
 

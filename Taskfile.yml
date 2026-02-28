@@ -87,17 +87,23 @@ tasks:
           echo "[view] started UI on :{{.UI_PORT}} (pid: $ui_pid)";
           wait "$ui_pid"'
 
-  run:
-    desc: アルファ探索と基礎評価
+  benchmark:foundation:
+    desc: 基礎モデル（Chronos/TimesFM）による e-Stat ベンチマーク実行
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run experiments:alpha-discovery
-      - bun run experiments:benchmark
-      - bun run pipeline:ab
+      - bun run pipeline:foundation-benchmark
 
-  run:newalphasearch:
-    desc: newalphasearch 相当の探索実行
+  discovery:
+    desc: 直行アルファ探索と基礎モデルによる相関チェック (Full Workflow)
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run experiments:alpha-discovery
-      - bun run pipeline:ab
+      - task: benchmark:foundation
+
+  run:
+    desc: 全パイプラインの実行
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - task: discovery
+      - bun run experiments:benchmark
+      - bun run pipeline:llm-readiness
