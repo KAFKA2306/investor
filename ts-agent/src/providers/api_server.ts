@@ -1,5 +1,5 @@
 import { serve } from "bun";
-import { MemoryCenter } from "../core/memory_center";
+import { MemoryCenter } from "../storage/memory_center.ts";
 
 const memory = new MemoryCenter();
 

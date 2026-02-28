@@ -6,9 +6,9 @@ import type {
   IEvaluator,
   IEvolver,
   IProcessor,
-} from "../system/opence/interfaces";
-import type { ContextPlaybook } from "../context/playbook";
-import type { DailyScenarioLogSchema, UnifiedLog } from "../schemas/log";
+} from "../system/opence/interfaces.ts";
+import type { ContextPlaybook } from "../context/playbook.ts";
+import type { DailyScenarioLogSchema, UnifiedLog } from "../schemas/log.ts";
 
 /**
  * OpenCE: Evaluation Pillar

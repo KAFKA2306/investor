@@ -1,5 +1,9 @@
 import { Database } from "bun:sqlite";
-import { BaseEventSchema, type EventType, type UQTLEvent } from "./uqtl.ts";
+import {
+  BaseEventSchema,
+  type EventType,
+  type UQTLEvent,
+} from "../system/uqtl.ts";
 
 /**
  * SQLite-based Event Store for the Infinity Architecture.
