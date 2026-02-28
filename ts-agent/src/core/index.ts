@@ -13,6 +13,7 @@ import {
 } from "../schemas/log.ts";
 import type { StandardOutcomeSchema } from "../schemas/outcome.ts";
 import { EventStore } from "./event_store.ts";
+import { MemoryCenter } from "./memory_center.ts";
 import type { EventType } from "./uqtl.ts";
 
 const ConfigSchema = z.object({
@@ -126,14 +127,26 @@ export abstract class BaseAgent {
     payload: Record<string, unknown>,
     metadata?: Record<string, unknown>,
   ) {
-    core.eventStore.appendEvent({
-      id: crypto.randomUUID(),
-      timestamp: new Date().toISOString(),
+    const id = crypto.randomUUID();
+    const timestamp = new Date().toISOString();
+    const event = {
+      id,
+      timestamp,
       type,
       agentId: this.constructor.name,
       payload,
       metadata,
-    });
+    };
+
+    core.eventStore.appendEvent(event);
+
+    // Mirror events to MemoryCenter so dashboard/API lineage checks can bind to the same run.
+    const memory = new MemoryCenter();
+    try {
+      memory.pushEvent(event);
+    } finally {
+      memory.close();
+    }
   }
 
   public abstract run(): Promise<void>;
