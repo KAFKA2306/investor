@@ -1,6 +1,9 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { YahooFinanceGateway, type YahooBar } from "../providers/yahoo_finance_market_provider.ts";
+import {
+  type YahooBar,
+  YahooFinanceGateway,
+} from "../providers/yahoo_finance_market_provider.ts";
 
 type CliArgs = {
   symbols: string[];
@@ -25,7 +28,10 @@ const clamp = (value: number, min: number, max: number): number =>
   Math.max(min, Math.min(max, value));
 
 const toCsvSafeName = (symbol: string): string =>
-  symbol.toLowerCase().replaceAll(/[^a-z0-9]+/g, "_").replaceAll(/^_+|_+$/g, "");
+  symbol
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, "_")
+    .replaceAll(/^_+|_+$/g, "");
 
 const mean = (values: readonly number[]): number =>
   values.length > 0
@@ -90,7 +96,9 @@ function computeRows(bars: readonly YahooBar[]): OutputRow[] {
     const volatility = std(volWindow) * Math.sqrt(252);
 
     const regime =
-      longMean === 0 ? 0 : (shortMean - longMean) / Math.max(Math.abs(longMean), 1e-9);
+      longMean === 0
+        ? 0
+        : (shortMean - longMean) / Math.max(Math.abs(longMean), 1e-9);
     const normalized = regime / Math.max(volatility, 1e-6);
 
     // Keep the signal range close to the historic data artifacts.

@@ -29,7 +29,8 @@
     "includes": [
       "src/**",
       "!src/tools/dashboard/dist/**",
-      "!src/experiments/foundation_models/.venv/**"
+      "!src/experiments/foundation_models/.venv/**",
+      "!src/model_registry/.venv/**"
     ]
   }
 }

@@ -1,5 +1,5 @@
-import { UnifiedLogSchema } from "../../schemas/unified_log_schema.ts";
 import type { StandardOutcome } from "../../schemas/standard_outcome_schema.ts";
+import { UnifiedLogSchema } from "../../schemas/unified_log_schema.ts";
 
 /**
  * GenericAlphaScenario

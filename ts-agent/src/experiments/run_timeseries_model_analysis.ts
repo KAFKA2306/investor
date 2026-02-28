@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { getTSModels } from "../model_registry/model_registry_loader.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
-import { average, extractEstatValues } from "./analysis/daily_alpha_feature_calculations.ts";
+import {
+  average,
+  extractEstatValues,
+} from "./analysis/daily_alpha_feature_calculations.ts";
 
 const TimeSeriesReportSchema = z.object({
   generatedAt: z.string().datetime(),
