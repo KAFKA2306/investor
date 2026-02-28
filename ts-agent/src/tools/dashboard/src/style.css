@@ -424,6 +424,21 @@ body {
   background: rgba(0, 127, 143, 0.1);
 }
 
+.audited-text {
+  color: #007f8f;
+  font-weight: 700;
+}
+
+.caution-text {
+  color: #d86024;
+  font-weight: 700;
+}
+
+.risk-text {
+  color: #b91c35;
+  font-weight: 700;
+}
+
 .uqtl-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
