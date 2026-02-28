@@ -1,13 +1,13 @@
 import { core } from "./system/app_runtime_core.ts";
-import { PipelineOrchestrator } from "./system/pipeline_orchestrator.ts";
+import type { PipelineRequirement } from "./system/pipeline_orchestrator.ts";
 import {
   DataEngineerBridge,
   ElderBridge,
   ExecutionAgentBridge,
+  PipelineOrchestrator,
   QuantResearcherBridge,
   StateMonitorBridge,
 } from "./system/pipeline_orchestrator.ts";
-import type { PipelineRequirement } from "./system/pipeline_orchestrator.ts";
 
 async function main() {
   console.log("Starting Autonomous Quant Alpha Pipeline");

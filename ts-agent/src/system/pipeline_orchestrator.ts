@@ -1,14 +1,14 @@
-import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
+import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
+import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { MemoryCenter } from "../context/unified_context_services.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
-import { BaseAgent } from "./app_runtime_core.ts";
-import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
 import type {
   Metrics,
   StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
+import { BaseAgent } from "./app_runtime_core.ts";
 
 type VerificationVerdict =
   | "ADOPTED"
