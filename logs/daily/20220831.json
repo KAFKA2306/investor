@@ -1,6 +1,6 @@
 {
   "schema": "investor.daily-log.v1",
-  "generatedAt": "2026-02-28T01:07:50.731Z",
+  "generatedAt": "2026-02-28T01:39:47.968Z",
   "models": [
     {
       "id": "amazon-chronos",
@@ -53,7 +53,7 @@
   ],
   "report": {
     "scenarioId": "SCN-LES-REPRO",
-    "analyzedAt": "2026-02-28T01:07:50.731Z",
+    "analyzedAt": "2026-02-28T01:39:47.968Z",
     "date": "20220831",
     "inputs": {
       "estatStatsDataId": "0000010101",
@@ -99,31 +99,31 @@
       "symbols": [
         {
           "symbol": "7203",
-          "alphaScore": 0.07267209533217676,
+          "alphaScore": 0,
           "signal": "HOLD",
           "sueProxy": 0.06814828580836724
         },
         {
           "symbol": "9984",
-          "alphaScore": 0.0055835734870317,
+          "alphaScore": 0,
           "signal": "HOLD",
           "sueProxy": 0
         },
         {
           "symbol": "8035",
-          "alphaScore": 0.25739196729313024,
+          "alphaScore": 0,
           "signal": "HOLD",
           "sueProxy": 0.2481114906661825
         },
         {
           "symbol": "6758",
-          "alphaScore": 0.13855074009483856,
+          "alphaScore": 0,
           "signal": "HOLD",
           "sueProxy": 0.13279852770545802
         },
         {
           "symbol": "4063",
-          "alphaScore": 0.38540684666661146,
+          "alphaScore": 0,
           "signal": "HOLD",
           "sueProxy": 0.38010863292153124
         }
@@ -137,7 +137,7 @@
     "results": {
       "mode": "PROOF",
       "status": "FAIL",
-      "expectedEdge": -0.0002,
+      "expectedEdge": 0,
       "basketDailyReturn": -0.0002,
       "paperPnlPerUnit": -0.0002,
       "backtest": {
@@ -153,7 +153,7 @@
       },
       "proved": false,
       "selectedSymbols": [],
-      "generatedAt": "2026-02-28T01:07:50.731Z"
+      "generatedAt": "2026-02-28T01:39:47.968Z"
     },
     "analysis": [
       {
@@ -178,7 +178,7 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.07267209533217676,
+        "alphaScore": 0,
         "signal": "HOLD",
         "targetReturn": 0.005502392344497608
       },
@@ -204,7 +204,7 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.0055835734870317,
+        "alphaScore": 0,
         "signal": "HOLD",
         "targetReturn": 0.007608695652173913
       },
@@ -230,7 +230,7 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.25739196729313024,
+        "alphaScore": 0,
         "signal": "HOLD",
         "targetReturn": 0.019390581717451522
       },
@@ -256,7 +256,7 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.13855074009483856,
+        "alphaScore": 0,
         "signal": "HOLD",
         "targetReturn": 0.0022502250225022503
       },
@@ -282,7 +282,7 @@
           "closeStrength": 0,
           "liquidityPerShare": 0
         },
-        "alphaScore": 0.38540684666661146,
+        "alphaScore": 0,
         "signal": "HOLD",
         "targetReturn": 0.01021671826625387
       }
