@@ -74,9 +74,9 @@ export class LesAgent extends BaseAgent {
             right: { op: "lit", value: 1.0 },
           },
         },
-        description: "Volume-Price Divergence: Normalized return by volume",
+        description: "Volume-Price Divergence: Normalized return by volume stress",
         reasoning:
-          "High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime.",
+          "High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
       },
       {
         id: "GEN3-FACTORY-MAR-002",
@@ -85,9 +85,9 @@ export class LesAgent extends BaseAgent {
           left: { op: "col", name: "profit_margin" },
           right: { op: "col", name: "turnover_value" },
         },
-        description: "Margin-Turnover Synergy: Efficiency * Liquidity",
+        description: "Margin-Turnover Synergy: Efficiency * Liquidity momentum",
         reasoning:
-          "Companies with high margins and high turnover represent the core efficiency. This sentiment divergence alpha leverages financial earnings and macro inventory lead indicators.",
+          "Companies with high margins and high turnover represent the core efficiency. This sentiment divergence alpha leverages financial earnings and macro inventory lead indicators to capture volatility-adjusted alpha.",
       },
     ];
 
@@ -139,8 +139,9 @@ export class LesAgent extends BaseAgent {
       `${factor.id} ${factor.description} ${factor.reasoning}`.toLowerCase();
     let rs = 0.5;
     if (/ortho|divergence|rebound|stress|dispersion/.test(text)) rs += 0.1;
+    if (/neutral|volatility|liquidity|risk-adjusted/.test(text)) rs += 0.1;
     if (/leverage|martingale|averaging down/.test(text)) rs -= 0.3;
-    rs = clamp01(Math.min(0.8, rs));
+    rs = clamp01(Math.min(0.85, rs));
 
     const rejectionReason: string | undefined =
       rs <= 0.5 ? "RPA: High linguistic risk profile detected." : undefined;

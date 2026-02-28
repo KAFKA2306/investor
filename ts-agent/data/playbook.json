@@ -756,284 +756,298 @@
       }
     },
     {
+      "id": "ctx-kq85i8yq",
       "content": "[GEN3-FACTORY-VP-000] Volume-Price Divergence variant 0 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-kq85i8yq",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-shhpdiqa",
       "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence variant 1 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-shhpdiqa",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-l9iq5kld",
       "content": "[GEN3-FACTORY-VP-002] Volume-Price Divergence variant 2 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-l9iq5kld",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-qz5iuxhc",
       "content": "[GEN3-FACTORY-VP-003] Volume-Price Divergence variant 3 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-qz5iuxhc",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-awc4kea6",
       "content": "[GEN3-FACTORY-VP-004] Volume-Price Divergence variant 4 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-awc4kea6",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-16wy05im",
       "content": "[GEN3-FACTORY-VP-005] Volume-Price Divergence variant 5 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-16wy05im",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-lysk5fl7",
       "content": "[GEN3-FACTORY-VP-006] Volume-Price Divergence variant 6 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-lysk5fl7",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-9dpxivkg",
       "content": "[GEN3-FACTORY-VP-007] Volume-Price Divergence variant 7 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-9dpxivkg",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-0mog9lwi",
       "content": "[GEN3-FACTORY-VP-008] Volume-Price Divergence variant 8 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-0mog9lwi",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-exyl147b",
       "content": "[GEN3-FACTORY-VP-009] Volume-Price Divergence variant 9 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-exyl147b",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-uwt3vleu",
       "content": "[GEN3-FACTORY-VP-010] Volume-Price Divergence variant 10 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-uwt3vleu",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-tzw4xdki",
       "content": "[GEN3-FACTORY-VP-011] Volume-Price Divergence variant 11 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-tzw4xdki",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-8gsq2xhh",
       "content": "[GEN3-FACTORY-VP-012] Volume-Price Divergence variant 12 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-8gsq2xhh",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-d1gk3zia",
       "content": "[GEN3-FACTORY-VP-013] Volume-Price Divergence variant 13 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-d1gk3zia",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-dctsqq2h",
       "content": "[GEN3-FACTORY-VP-014] Volume-Price Divergence variant 14 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-dctsqq2h",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-k4efjrcu",
       "content": "[GEN3-FACTORY-VP-015] Volume-Price Divergence variant 15 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-k4efjrcu",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-ocg513bo",
       "content": "[GEN3-FACTORY-VP-016] Volume-Price Divergence variant 16 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-ocg513bo",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-h31efi8w",
       "content": "[GEN3-FACTORY-VP-017] Volume-Price Divergence variant 17 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-h31efi8w",
-      "helpful_count": 0,
-      "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      }
     },
     {
+      "id": "ctx-84qog8aq",
       "content": "[GEN3-FACTORY-VP-018] Volume-Price Divergence variant 18 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T01:27:32.980Z",
+      "updated_at": "2026-02-28T01:27:32.980Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T01:27:22.425Z",
         "baseline": "latest-daily-alphaScore"
-      },
-      "id": "ctx-84qog8aq",
+      }
+    },
+    {
+      "id": "ctx-70pg8ivf",
+      "content": "[GEN3-FACTORY-VP-019] Volume-Price Divergence variant 19 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      "updated_at": "2026-02-28T01:27:32.980Z",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T01:27:22.425Z",
+        "baseline": "latest-daily-alphaScore"
+      }
     },
     {
-      "content": "[GEN3-FACTORY-VP-019] Volume-Price Divergence variant 19 | orth=1.000 | ic=0.000 | rationale=Exploration of price/volume divergence signals at scale.",
+      "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
       "section": "strategies_and_hard_rules",
       "metadata": {
         "source": "alpha_discovery",
-        "evaluatedAt": "2026-02-28T01:27:22.425Z",
-        "baseline": "latest-daily-alphaScore"
+        "evaluatedAt": "2026-02-28T04:00:33.496Z",
+        "baseline": "same-day-return-fallback"
       },
-      "id": "ctx-70pg8ivf",
+      "id": "ctx-ej5bciko",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T01:27:32.980Z",
-      "updated_at": "2026-02-28T01:27:32.980Z"
+      "created_at": "2026-02-28T04:00:50.962Z",
+      "updated_at": "2026-02-28T04:00:50.962Z"
     }
   ]
 }
