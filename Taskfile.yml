@@ -6,23 +6,82 @@ vars:
 
 tasks:
   default:
+    desc: タスク一覧を表示
     cmds:
-      - task: check
+      - task: help
+
+  help:
+    desc: 利用可能なタスクを表示
+    cmds:
+      - task --list-all
+
+  setup:
+    desc: 依存関係をインストール
+    cmds:
+      - cmd: bun install
+        dir: "{{.TS_DIR}}"
+      - cmd: npm install
+        dir: "{{.DASHBOARD_DIR}}"
+
+  format:
+    desc: Biome format
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run format
+
+  lint:
+    desc: Biome lint
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run lint
+
+  typecheck:
+    desc: TypeScript 型検査
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run typecheck
 
   check:
+    desc: format + lint + typecheck
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run format
       - bun run lint
       - bun run typecheck
 
-  run:
+  api:
+    desc: UQTL API サーバ起動
     dir: "{{.TS_DIR}}"
     cmds:
-      - cmd: bun ./src/experiments/discover_alpha_factors.ts
-      - cmd: bun ./src/pipeline/evaluate/run_foundation_benchmark_pipeline.ts
+      - bun run start:api
 
-  view:
+  ui:
+    desc: ダッシュボード起動
     dir: "{{.DASHBOARD_DIR}}"
     cmds:
       - npm run dev
+
+  view:
+    desc: API とダッシュボードを同時起動
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          trap "kill 0" EXIT INT TERM;
+          (cd {{.TS_DIR}} && bun run start:api) &
+          (cd {{.DASHBOARD_DIR}} && npm run dev) &
+          wait'
+
+  run:
+    desc: アルファ探索と基礎評価
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run experiments:alpha-discovery
+      - bun run experiments:benchmark
+      - bun run pipeline:ab
+
+  run:newalphasearch:
+    desc: newalphasearch 相当の探索実行
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run experiments:alpha-discovery
+      - bun run pipeline:ab
