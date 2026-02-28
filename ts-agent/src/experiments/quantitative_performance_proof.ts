@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
+import { FactorComputeEngine } from "../pipeline/factor_mining/factor_compute_engine.ts";
 import {
   type YahooBar,
   YahooFinanceGateway,
@@ -11,7 +12,6 @@ import {
   QuantitativeVerificationSchema,
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
-import { FactorComputeEngine } from "../pipeline/factor_mining/factor_compute_engine.ts";
 
 async function generateStandardVerificationReport() {
   const args = process.argv.slice(2);
@@ -113,7 +113,8 @@ async function generateStandardVerificationReport() {
         const seed = strategyId
           .split("")
           .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        factor = ((b.Close - b.Open) / (b.Volume + 1e-9)) * (seed % 2 === 0 ? 1 : -1);
+        factor =
+          ((b.Close - b.Open) / (b.Volume + 1e-9)) * (seed % 2 === 0 ? 1 : -1);
       }
 
       data.factors.push(factor);

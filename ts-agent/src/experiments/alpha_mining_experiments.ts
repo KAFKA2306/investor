@@ -110,6 +110,9 @@ export async function discoverAlphaFactors() {
       id: h.id,
       description: h.description,
       reasoning: h.reasoning,
+      generation: h.generation,
+      parentId: h.parentId,
+      mutationType: h.mutationType,
       recency: generatedAt,
       rejectionFromReasoning,
       scores: {
@@ -148,6 +151,9 @@ export async function discoverAlphaFactors() {
         "Priority score was below top-ranked candidate."),
     recency: candidate.recency,
     scores: candidate.scores,
+    generation: candidate.generation,
+    parentId: candidate.parentId,
+    mutationType: candidate.mutationType,
   }));
 
   for (const h of candidates) {
@@ -165,9 +171,9 @@ export async function discoverAlphaFactors() {
         ast: astById.get(h.id),
         status: h.status,
         score: h.scores.priority,
-        generation: (candidates as any).find((c: any) => c.id === h.id)?.generation,
-        parentId: (candidates as any).find((c: any) => c.id === h.id)?.parentId,
-        mutationType: (candidates as any).find((c: any) => c.id === h.id)?.mutationType,
+        generation: h.generation,
+        parentId: h.parentId,
+        mutationType: h.mutationType,
       },
     });
   }

@@ -189,18 +189,22 @@ export const StandardVerificationDataSchema = z.object({
   strategyCum: z.array(z.number()),
   benchmarkCum: z.array(z.number()),
   fileName: z.string(),
-  metrics: z.object({
-    ic: z.number().optional(),
-    sharpe: z.number().optional(),
-    maxDD: z.number().optional(),
-    totalReturn: z.number().optional(),
-    universe: z.array(z.string()).optional(),
-  }).optional(),
-  costs: z.object({
-    feeBps: z.number().optional(),
-    slippageBps: z.number().optional(),
-    totalCostBps: z.number().optional(),
-  }).optional(),
+  metrics: z
+    .object({
+      ic: z.number().optional(),
+      sharpe: z.number().optional(),
+      maxDD: z.number().optional(),
+      totalReturn: z.number().optional(),
+      universe: z.array(z.string()).optional(),
+    })
+    .optional(),
+  costs: z
+    .object({
+      feeBps: z.number().optional(),
+      slippageBps: z.number().optional(),
+      totalCostBps: z.number().optional(),
+    })
+    .optional(),
 });
 
 export type StandardVerificationData = z.infer<

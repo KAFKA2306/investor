@@ -2,7 +2,10 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { getTSModels } from "../model_registry/model_registry_loader.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
-import { UnifiedLogSchema } from "../schemas/financial_domain_schemas.ts";
+import {
+  DailyScenarioLog,
+  UnifiedLogSchema,
+} from "../schemas/financial_domain_schemas.ts";
 import { CanonicalLogEnvelopeSchema } from "../schemas/system_event_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { extractEstatValues } from "./analysis/daily_alpha_feature_calculations.ts";
@@ -27,7 +30,7 @@ export async function compareForecastAndOutcome() {
     if (!payload.success || payload.data.schema !== "investor.daily-log.v1")
       continue;
 
-    const report = payload.data.report as any;
+    const report = payload.data.report as DailyScenarioLog;
     const date = envelope.data.asOfDate || report?.date;
     const forecast = Number(report?.results?.expectedEdge ?? 0);
     const outcome = Number(report?.results?.basketDailyReturn ?? 0);

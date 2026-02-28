@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { type EventType } from "../schemas/system_event_schemas.ts";
+import type { EventType } from "../schemas/system_event_schemas.ts";
 
 /**
  * ACE (Agentic Context Engineering) Playbook Schema

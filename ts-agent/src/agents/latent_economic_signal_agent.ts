@@ -7,7 +7,10 @@ import type {
   ComputeMarketData,
   ComputeResponse,
 } from "../providers/factor_compute_engine_client.ts";
-import type { StandardOutcome } from "../schemas/financial_domain_schemas.ts";
+import type {
+  AceBullet,
+  StandardOutcome,
+} from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
 
 const clamp01 = (value: number): number => {
@@ -24,7 +27,11 @@ export interface AlphaFactor {
   // [NEW] DAG Metadata for AlphaPROBE/QuantaAlpha evolution
   parentId?: string | undefined;
   generation?: number;
-  mutationType?: "CROSSOVER" | "POINT_MUTATION" | "STRUCTURAL_SHIFT" | "NEW_SEED";
+  mutationType?:
+    | "CROSSOVER"
+    | "POINT_MUTATION"
+    | "STRUCTURAL_SHIFT"
+    | "NEW_SEED";
 }
 
 export interface FactorEvaluation {
@@ -43,7 +50,7 @@ export interface FactorGenerationOptions {
 
 export class LesAgent extends BaseAgent {
   public async generateAlphaFactors(
-    playbookBullets: any[] = [],
+    playbookBullets: AceBullet[] = [],
     _options: FactorGenerationOptions = {},
   ): Promise<AlphaFactor[]> {
     const registry = await loadModelRegistry();
@@ -59,7 +66,7 @@ export class LesAgent extends BaseAgent {
     for (const bullet of playbookBullets) {
       if (bullet.content) {
         const match = bullet.content.match(/^([^:]+):/);
-        if (match && match[1]) existingThemes.add(match[1].trim().toLowerCase());
+        if (match?.[1]) existingThemes.add(match[1].trim().toLowerCase());
       }
     }
 
@@ -164,19 +171,24 @@ export class LesAgent extends BaseAgent {
     let attempts = 0;
 
     // [AlphaPROBE] Retrieval logic: select "seeds" from the playbook to evolve
-    const seeds = playbookBullets.filter((b: any) => b.metadata?.status === "SELECTED");
+    const seeds = playbookBullets.filter(
+      (b: AceBullet) => b.metadata?.status === "SELECTED",
+    );
 
     while (candidates.length < count && attempts < 50) {
       attempts++;
 
       const isEvolution = seeds.length > 0 && Math.random() > 0.4;
-      const seed = isEvolution ? seeds[Math.floor(Math.random() * seeds.length)] : null;
+      const seed = isEvolution
+        ? seeds[Math.floor(Math.random() * seeds.length)]
+        : null;
 
       const themeIndex = Math.floor(Math.random() * themes.length);
       const theme = themes[themeIndex]!;
 
       // If the theme is already in the playbook, skip or attempt evolution
-      if (!isEvolution && existingThemes.has(theme.name.toLowerCase())) continue;
+      if (!isEvolution && existingThemes.has(theme.name.toLowerCase()))
+        continue;
 
       const personaIndex = Math.floor(Math.random() * personas.length);
       const persona = personas[personaIndex]!;
@@ -200,12 +212,14 @@ export class LesAgent extends BaseAgent {
       let description = `${theme.name} Hypothesis (${persona})`;
       let generation = 1;
       let mutationType: AlphaFactor["mutationType"] = "NEW_SEED";
-      let parentId: string | undefined = undefined;
+      let parentId: string | undefined;
 
       if (isEvolution && seed) {
-        parentId = seed.metadata?.id;
-        generation = (seed.metadata?.generation || 1) + 1;
-        mutationType = Math.random() > 0.5 ? "POINT_MUTATION" : "STRUCTURAL_SHIFT";
+        parentId = seed.metadata?.id as string | undefined;
+        generation =
+          ((seed.metadata?.generation as number | undefined) || 1) + 1;
+        mutationType =
+          Math.random() > 0.5 ? "POINT_MUTATION" : "STRUCTURAL_SHIFT";
         description = `Evolved ${mutationType}: ${seed.content.split(":")[0]} [v${generation}]`;
         reasoning = `[EVOLUTIONARY TRACE] Evolved from ${parentId}. ${reasoning}`;
       }
@@ -234,12 +248,14 @@ export class LesAgent extends BaseAgent {
 
     return candidates;
   }
-  public async generate(playbookBullets: any[] = []): Promise<AlphaFactor[]> {
+  public async generate(
+    playbookBullets: AceBullet[] = [],
+  ): Promise<AlphaFactor[]> {
     return this.generateAlphaFactors(playbookBullets);
   }
 
   public async generateHypotheses(
-    playbookBullets: any[] = [],
+    playbookBullets: AceBullet[] = [],
   ): Promise<AlphaFactor[]> {
     return this.generateAlphaFactors(playbookBullets);
   }

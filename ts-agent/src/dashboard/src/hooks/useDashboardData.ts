@@ -6,18 +6,18 @@ import {
   canonicalDate,
   type DailyLogEnvelope,
   DailyLogEnvelopeSchema,
-  type UnifiedLogPayload,
   type QualityGatePayload,
   QualityGatePayloadSchema,
-  UnifiedLogPayloadSchema,
-  StandardVerificationDataSchema,
   type StandardVerificationData,
+  StandardVerificationDataSchema,
+  type UnifiedLogPayload,
+  UnifiedLogPayloadSchema,
 } from "../dashboard_core";
 
 const listUnifiedLogFiles = async (): Promise<string[]> => {
-  const res = await fetch(`${import.meta.env.BASE_URL}logs/__index?bucket=unified`).catch(
-    () => undefined,
-  );
+  const res = await fetch(
+    `${import.meta.env.BASE_URL}logs/__index?bucket=unified`,
+  ).catch(() => undefined);
   if (!res?.ok) return [];
   const payload = await res.json().catch(() => []);
   return Array.isArray(payload)
@@ -61,7 +61,9 @@ export const useDashboardData = () => {
     const fetchResults = await Promise.allSettled(
       files.map(async (file) => ({
         file,
-        res: await fetch(`${import.meta.env.BASE_URL}logs/unified/${file}`, { cache: "no-store" }),
+        res: await fetch(`${import.meta.env.BASE_URL}logs/unified/${file}`, {
+          cache: "no-store",
+        }),
       })),
     );
 

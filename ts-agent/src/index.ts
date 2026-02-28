@@ -1,16 +1,22 @@
-import { PipelineOrchestrator } from "./system/pipeline_orchestrator.ts";
-import { ElderBridge, DataEngineerBridge, QuantResearcherBridge, ExecutionAgentBridge, StateMonitorBridge } from "./system/pipeline_roles_bridge.ts";
-import { type PipelineRequirement } from "./system/pipeline_types.ts";
 import { core } from "./system/app_runtime_core.ts";
+import {
+  DataEngineerBridge,
+  ElderBridge,
+  ExecutionAgentBridge,
+  QuantResearcherBridge,
+  StateMonitorBridge,
+} from "./system/pipeline_roles_bridge.ts";
+import { PipelineOrchestrator } from "./system/pipeline_orchestrator.ts";
+import type { PipelineRequirement } from "./system/pipeline_types.ts";
 
 async function main() {
-  console.log("🌟 Starting Autonomous Quant Alpha Pipeline 🌟");
-  
-  // 19. Human Input: Accept from CLI arguments
+  console.log("Starting Autonomous Quant Alpha Pipeline");
+
   const args = process.argv.slice(2);
-  const userRequirement = args.length > 0 ? args.join(" ") : "Discover high-Sharpe alpha factors in the current market regime with low drawdown.";
-  
-  console.log(`[Human Input] Requirement: ${userRequirement}`);
+  const userRequirement =
+    args.length > 0
+      ? args.join(" ")
+      : "Discover high-Sharpe alpha factors in the current market regime with low drawdown.";
 
   const requirement: PipelineRequirement = {
     id: `REQ-${Date.now()}`,
@@ -19,8 +25,8 @@ async function main() {
     targetMetrics: {
       minSharpe: 1.5,
       minIC: 0.03,
-      maxDrawdown: 0.1
-    }
+      maxDrawdown: 0.1,
+    },
   };
 
   const orchestrator = new PipelineOrchestrator(
@@ -28,18 +34,11 @@ async function main() {
     new DataEngineerBridge(),
     new QuantResearcherBridge(),
     new ExecutionAgentBridge(),
-    new StateMonitorBridge()
+    new StateMonitorBridge(),
   );
 
-  try {
-    await orchestrator.runPipeline(requirement);
-    console.log("✨ Pipeline execution completed successfully. ✨");
-  } catch (error) {
-    console.error("❌ Pipeline failed:", error);
-    process.exit(1);
-  }
+  await orchestrator.runPipeline(requirement);
+  console.log("Pipeline execution completed");
 }
 
-if (import.meta.main) {
-  main();
-}
+import.meta.main && void main();

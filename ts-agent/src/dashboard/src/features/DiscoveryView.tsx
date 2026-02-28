@@ -152,21 +152,38 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
               <article className="kpi-card">
                 <div className="label">Max Drawdown</div>
                 <div className="value risk">
-                  {formatSignedPercentNullable(verificationData.metrics.maxDD ? verificationData.metrics.maxDD / 100 : undefined)}
+                  {formatSignedPercentNullable(
+                    verificationData.metrics.maxDD
+                      ? verificationData.metrics.maxDD / 100
+                      : undefined,
+                  )}
                 </div>
               </article>
               <article className="kpi-card">
                 <div className="label">Total Return</div>
                 <div className="value pos">
-                  {formatSignedPercentNullable(verificationData.metrics.totalReturn ? verificationData.metrics.totalReturn / 100 : undefined)}
+                  {formatSignedPercentNullable(
+                    verificationData.metrics.totalReturn
+                      ? verificationData.metrics.totalReturn / 100
+                      : undefined,
+                  )}
                 </div>
               </article>
             </div>
           )}
 
           {verificationData.costs && (
-            <div className="thesis-block" style={{ marginBottom: "1rem", fontSize: "0.8rem", color: "gray" }}>
-              Est. Costs: {verificationData.costs.totalCostBps}bps (Fee: {verificationData.costs.feeBps}bps, Slippage: {verificationData.costs.slippageBps}bps)
+            <div
+              className="thesis-block"
+              style={{
+                marginBottom: "1rem",
+                fontSize: "0.8rem",
+                color: "gray",
+              }}
+            >
+              Est. Costs: {verificationData.costs.totalCostBps}bps (Fee:{" "}
+              {verificationData.costs.feeBps}bps, Slippage:{" "}
+              {verificationData.costs.slippageBps}bps)
             </div>
           )}
 

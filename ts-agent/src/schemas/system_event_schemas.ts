@@ -1,17 +1,9 @@
 import { z } from "zod";
 
-/**
- * UQTL (Unified Quantum Task Ledger) Event Schemas
- */
 export const EventTypeSchema = z.enum([
-  "MARKET_DATA_FETCHED",
   "ALPHA_GENERATED",
-  "ALPHA_EVALUATED",
-  "BACKTEST_COMPLETED",
   "STRATEGY_DECIDED",
-  "OPERATOR_MUTATED",
   "SYSTEM_LOG",
-  "ERROR_OCCURRED",
   "RUN_STARTED",
   "RUN_FINISHED",
   "RUN_FAILED",
@@ -21,14 +13,12 @@ export const EventTypeSchema = z.enum([
   "PIPELINE_STARTED",
   "PIPELINE_COMPLETED",
   "DATASET_PREPARED",
-  "DATASET_REJECTED",
   "STRATEGY_EXECUTED",
   "STRATEGY_REJECTED",
   "ORDER_PLAN_SAVED",
   "MODEL_CONFIG_SAVED",
   "AUDIT_RECORD_SAVED",
   "STATE_UPDATED",
-  "KNOWLEDGE_RETRIEVED"
 ]);
 
 export type EventType = z.infer<typeof EventTypeSchema>;
@@ -47,12 +37,6 @@ export const BaseEventSchema = z.object({
 
 export type UQTLEvent = z.infer<typeof BaseEventSchema>;
 
-/**
- * Canonical Log Envelope (v2)
- *
- * The source of truth is immutable evidence logs.
- * "Readiness" is treated as a derived quality gate, not a first-class raw log.
- */
 export const CanonicalLogKindSchema = z.enum([
   "daily_decision",
   "benchmark",

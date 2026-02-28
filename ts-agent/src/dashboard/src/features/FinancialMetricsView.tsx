@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import type {
   DailyLogEnvelope,
   DailyReport,
-  UnifiedLogPayload,
   StandardVerificationData,
+  UnifiedLogPayload,
 } from "../dashboard_core";
 import {
   chipClass,
@@ -91,7 +91,9 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
     pickNumber(backtest?.maxDrawdown) ??
     readStageMetric(benchmark, ["mdd", "maxDrawdown", "maxDD", "drawdown"]) ??
     readStageMetric(outcome, ["mdd", "maxDrawdown", "maxDD", "drawdown"]) ??
-    (verificationData?.metrics?.maxDD ? verificationData.metrics.maxDD / 100 : undefined);
+    (verificationData?.metrics?.maxDD
+      ? verificationData.metrics.maxDD / 100
+      : undefined);
   const volatility =
     readStageMetric(benchmark, ["volatility", "vol"]) ??
     readStageMetric(outcome, ["volatility", "vol"]);
@@ -220,7 +222,7 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
           <div className="label">Fee / Slippage</div>
           <div className="value">
             {pickNumber(backtest?.feeBps) === undefined &&
-              pickNumber(backtest?.slippageBps) === undefined
+            pickNumber(backtest?.slippageBps) === undefined
               ? "欠損"
               : `${formatBpsNullable(pickNumber(backtest?.feeBps))} / ${formatBpsNullable(pickNumber(backtest?.slippageBps))}`}
           </div>

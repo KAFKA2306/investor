@@ -43,6 +43,8 @@ export const MetricsSchema = z.object({
   premiseCoverage: z.number().optional(),
 });
 
+export type Metrics = z.infer<typeof MetricsSchema>;
+
 /**
  * PEAD (Post-Earnings Announcement Drift) Domain Schemas
  */
@@ -88,7 +90,7 @@ export const AceBulletSchema = z.object({
   harmful_count: z.number().default(0),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
-  metadata: z.record(z.string(), z.any()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const AcePlaybookSchema = z.object({
@@ -104,11 +106,13 @@ export type AcePlaybook = z.infer<typeof AcePlaybookSchema>;
  */
 export const StrategicReasoningSchema = z.object({
   rationale: z.string(),
-  logicChecks: z.array(z.object({
-    claim: z.string(),
-    verdict: z.enum(["VALID", "INVALID", "UNCERTAIN"]),
-    evidence: z.string().optional(),
-  })),
+  logicChecks: z.array(
+    z.object({
+      claim: z.string(),
+      verdict: z.enum(["VALID", "INVALID", "UNCERTAIN"]),
+      evidence: z.string().optional(),
+    }),
+  ),
   contextAlignment: z.number().min(0).max(1),
   marketRegime: z.string(),
 });
@@ -269,6 +273,8 @@ export const DailyScenarioLogSchema = z.object({
     verdict: z.enum(["USEFUL", "USELESS"]),
   }),
 });
+
+export type DailyScenarioLog = z.infer<typeof DailyScenarioLogSchema>;
 
 export const ModelReferenceLogSchema = z.object({
   id: z.string(),

@@ -84,26 +84,39 @@ export class CqoAgent extends BaseAgent {
     }
 
     if (r1) {
-      const invalidChecks = r1.logicChecks.filter(c => c.verdict === "INVALID");
+      const invalidChecks = r1.logicChecks.filter(
+        (c) => c.verdict === "INVALID",
+      );
       if (invalidChecks.length > 0) {
-        critique.push(`[Alpha-R1] Strategic logic violation: ${invalidChecks.map(c => c.claim).join(", ")}`);
+        critique.push(
+          `[Alpha-R1] Strategic logic violation: ${invalidChecks.map((c) => c.claim).join(", ")}`,
+        );
       }
       if (r1.contextAlignment < 0.6) {
-        critique.push(`[Alpha-R1] Low context alignment (${(r1.contextAlignment * 100).toFixed(1)}%). Strategy may be misaligned with ${r1.marketRegime}.`);
+        critique.push(
+          `[Alpha-R1] Low context alignment (${(r1.contextAlignment * 100).toFixed(1)}%). Strategy may be misaligned with ${r1.marketRegime}.`,
+        );
       }
     }
 
     if (screening && screening.status !== "ACTIVE") {
-      critique.push(`[Alpha-R1] Screening status is ${screening.status}: ${screening.reason}`);
+      critique.push(
+        `[Alpha-R1] Screening status is ${screening.status}: ${screening.reason}`,
+      );
     }
 
     const isProductionReady =
-      critique.length === 0 && 
-      (outcome.stability?.isProductionReady ?? false) && 
-      (screening?.status === "ACTIVE");
+      critique.length === 0 &&
+      (outcome.stability?.isProductionReady ?? false) &&
+      screening?.status === "ACTIVE";
 
     let verdict: AuditReport["verdict"] = "APPROVED";
-    if (critique.some(c => c.includes("[Alpha-R1] Strategic logic violation")) || critique.length > 3) {
+    if (
+      critique.some((c) =>
+        c.includes("[Alpha-R1] Strategic logic violation"),
+      ) ||
+      critique.length > 3
+    ) {
       verdict = "REJECTED";
     } else if (critique.length > 0) {
       verdict = "REQUIRES_FIX";
@@ -116,7 +129,9 @@ export class CqoAgent extends BaseAgent {
       scores: {
         alphaStability: tStat / crit.ALPHA.minTStat,
         riskAdjustedReturn: sharpe / crit.PERFORMANCE.minSharpe,
-        reasoningScore: r1 ? (reasoningScore * 0.4 + r1.contextAlignment * 0.6) : reasoningScore,
+        reasoningScore: r1
+          ? reasoningScore * 0.4 + r1.contextAlignment * 0.6
+          : reasoningScore,
       },
       critique,
       isProductionReady,

@@ -1,5 +1,8 @@
-import type { StandardOutcome } from "../schemas/financial_domain_schemas.ts";
 import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
+import type {
+  Metrics,
+  StandardOutcome,
+} from "../schemas/financial_domain_schemas.ts";
 
 export interface PipelineRequirement {
   id: string;
@@ -23,9 +26,9 @@ export interface PITDataset {
   asOfDate: string;
   symbols: string[];
   features: string[];
-  data: any[];
+  data: unknown[];
   context: string;
-  qualityScore: number; // For Data Acceptance Judgment
+  qualityScore: number;
   preprocessingConditions: {
     imputation: string;
     normalization: string;
@@ -36,7 +39,7 @@ export interface PITDataset {
 export interface ModelConfiguration {
   foundationModelId: string;
   adaptationPolicy: string;
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   selectedReason?: string;
 }
 
@@ -82,42 +85,78 @@ export interface DriftReport {
 }
 
 export interface IElder {
-  getHistory(requirementId: string): Promise<{ seeds: string[]; forbiddenZones: string[]; knowledge: string[] }>;
+  getHistory(requirementId: string): Promise<{
+    seeds: string[];
+    forbiddenZones: string[];
+    knowledge: string[];
+  }>;
   saveIdeaCandidate(candidate: IdeaCandidate): Promise<void>;
-  saveDatasetInfo(datasetId: string, metadata: any, preprocessingConditions: PITDataset["preprocessingConditions"]): Promise<void>;
+  saveDatasetInfo(
+    datasetId: string,
+    metadata: unknown,
+    preprocessingConditions: PITDataset["preprocessingConditions"],
+  ): Promise<void>;
   saveModelConfiguration(config: ModelConfiguration): Promise<void>;
   saveVerificationResult(result: VerificationResult): Promise<void>;
   saveOrderPlan(plan: OrderPlan): Promise<void>;
-  saveExecutionResult(result: ExecutionResult, adoptionReason: string): Promise<void>;
+  saveExecutionResult(
+    result: ExecutionResult,
+    adoptionReason: string,
+  ): Promise<void>;
   saveAuditRecord(audit: AuditRecord): Promise<void>;
-  saveRejectionReason(strategyId: string, reason: string, metrics?: any): Promise<void>;
+  saveRejectionReason(
+    strategyId: string,
+    reason: string,
+    metrics?: Metrics,
+  ): Promise<void>;
   reflectLearning(strategyId: string, reason: string): Promise<void>;
   updateStatus(report: DriftReport): Promise<void>;
 }
 
 export interface IStateMonitor {
   recordDrift(report: DriftReport): Promise<void>;
-  getCurrentState(): Promise<Record<string, any>>;
+  getCurrentState(): Promise<Record<string, unknown>>;
 }
 
 export interface IDataEngineer {
-  collectData(sources: string[]): Promise<any[]>;
-  integrateData(raw: any[]): Promise<any>;
-  generateScenario(integratedData: any): Promise<string>;
-  preparePITData(requirement: PipelineRequirement, attempt: number): Promise<PITDataset>;
+  collectData(sources: string[]): Promise<unknown[]>;
+  integrateData(raw: unknown[]): Promise<unknown>;
+  generateScenario(dataset: PITDataset): Promise<string>;
+  preparePITData(
+    requirement: PipelineRequirement,
+    attempt: number,
+  ): Promise<PITDataset>;
 }
 
 export interface IQuantResearcher {
-  selectFoundationModel(candidate: IdeaCandidate, context: string): Promise<ModelConfiguration>;
-  designAdaptationPolicy(modelId: string, candidate: IdeaCandidate): Promise<string>;
-  exploreFactors(candidate: IdeaCandidate, context: string): Promise<IdeaCandidate>;
-  coOptimizeAndVerify(candidate: IdeaCandidate, dataset: PITDataset, modelConfig: ModelConfiguration, retryMode?: "MODEL" | "NONE", forbiddenZones?: string[]): Promise<VerificationResult>;
-  research(candidate: IdeaCandidate, dataset: PITDataset, retryMode?: "MODEL" | "NONE", forbiddenZones?: string[]): Promise<VerificationResult>;
+  selectFoundationModel(
+    candidate: IdeaCandidate,
+    context: string,
+  ): Promise<ModelConfiguration>;
+  designAdaptationPolicy(
+    modelId: string,
+    candidate: IdeaCandidate,
+  ): Promise<string>;
+  exploreFactors(
+    candidate: IdeaCandidate,
+    context: string,
+  ): Promise<IdeaCandidate>;
+  coOptimizeAndVerify(
+    candidate: IdeaCandidate,
+    dataset: PITDataset,
+    modelConfig: ModelConfiguration,
+    retryMode?: "MODEL" | "NONE",
+    forbiddenZones?: string[],
+  ): Promise<VerificationResult>;
 }
 
 export interface IExecutionAgent {
-  optimizeAllocation(verification: VerificationResult): Promise<Record<string, number>>;
-  applyRiskControl(allocations: Record<string, number>): Promise<Record<string, number>>;
+  optimizeAllocation(
+    verification: VerificationResult,
+  ): Promise<Record<string, number>>;
+  applyRiskControl(
+    allocations: Record<string, number>,
+  ): Promise<Record<string, number>>;
   optimizeHedge(allocations: Record<string, number>): Promise<OrderPlan>;
   execute(plan: OrderPlan): Promise<ExecutionResult>;
   audit(result: ExecutionResult): Promise<AuditRecord>;
