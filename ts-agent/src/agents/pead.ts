@@ -7,6 +7,20 @@ import type { StandardOutcome } from "../schemas/outcome.ts";
 import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
 import { LesAgent } from "./les.ts";
 
+function calculateMaxDrawdown(returns: readonly number[]): number {
+  if (returns.length === 0) return 0;
+  let equity = 1;
+  let peak = 1;
+  let maxDrawdown = 0;
+  for (const r of returns) {
+    equity *= 1 + r;
+    if (equity > peak) peak = equity;
+    const drawdown = peak > 0 ? (peak - equity) / peak : 0;
+    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+  }
+  return maxDrawdown;
+}
+
 export interface PeadDataProvider {
   getEarningsCalendar(params: Record<string, string>): Promise<CalendarEntry[]>;
   getStatements(params: Record<string, string>): Promise<FinancialStatement[]>;
@@ -82,22 +96,34 @@ export class PeadAgent extends BaseAgent {
     backtest?: BacktestResult,
   ): StandardOutcome {
     const ts = new Date().toISOString();
+    const returnsHistory =
+      backtest?.history && backtest.history.length > 0
+        ? backtest.history
+        : backtest
+          ? [backtest.netReturn]
+          : [];
+    const tStat = QuantMetrics.calculateTStat(returnsHistory);
+    const pValue = QuantMetrics.calculatePValue(tStat, returnsHistory.length);
+    const sharpeRatio = QuantMetrics.calculateSharpeRatio(returnsHistory);
+    const annualizedReturn = backtest
+      ? QuantMetrics.calculateAnnualizedReturn(
+          backtest.netReturn,
+          backtest.tradingDays || returnsHistory.length || 1,
+        )
+      : 0;
+    const maxDrawdown = calculateMaxDrawdown(returnsHistory);
+    const evidenceSource = backtest ? "QUANT_BACKTEST" : "LINGUISTIC_ONLY";
+
     return {
       strategyId,
       strategyName: "PEAD-Post-Earnings-Drift",
       timestamp: ts,
-      summary: `PEAD strategy reflecting sector-wide diversification. Verified against ${backtest?.tradingDays || 0} trading days.`,
+      summary: `PEAD strategy reflecting sector-wide diversification. Verified against ${backtest?.tradingDays || 0} trading days. [Evidence=${evidenceSource}]`,
+      evidenceSource,
       reasoningScore: integratedRS,
       alpha: {
-        tStat: backtest
-          ? QuantMetrics.calculateTStat(backtest.history || [])
-          : 0,
-        pValue: backtest
-          ? QuantMetrics.calculatePValue(
-              QuantMetrics.calculateTStat(backtest.history || []),
-              backtest.history?.length || 0,
-            )
-          : 1,
+        tStat,
+        pValue,
         informationCoefficient: backtest
           ? Math.abs(backtest.netReturn) * 0.4
           : 0,
@@ -108,16 +134,14 @@ export class PeadAgent extends BaseAgent {
           rmse: 0,
           smape: 0,
           directionalAccuracy: backtest ? 0.5 + backtest.netReturn : 0.5,
-          sharpeRatio: backtest
-            ? (backtest.netReturn * 252) / (0.18 * Math.sqrt(252))
-            : 0,
-          annualizedReturn: backtest?.netReturn ?? 0,
-          maxDrawdown: 0,
+          sharpeRatio,
+          annualizedReturn,
+          maxDrawdown,
         },
       },
       stability: {
-        trackingError: 0.015,
-        tradingDaysHorizon: backtest?.tradingDays ?? 252,
+        trackingError: Math.min(0.05, Math.abs(sharpeRatio) * 0.005),
+        tradingDaysHorizon: backtest?.tradingDays ?? returnsHistory.length,
         isProductionReady: (backtest?.netReturn ?? 0) > 0.08,
       },
     };
