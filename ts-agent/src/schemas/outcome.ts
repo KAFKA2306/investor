@@ -50,6 +50,8 @@ export const StandardOutcomeSchema = z.object({
   reasoning: z.string().optional(),
   reasoningScore: z.number().min(0).max(1).optional(), // RS (0.0-1.0)
   modelRegistryStatus: z.string().optional(),
+  experimentId: z.string().optional(), // [NEW] UQTL Lineage Bond
+  evidenceSource: z.enum(["QUANT_BACKTEST", "LINGUISTIC_ONLY"]).optional(), // [NEW] Audit Source
   alpha: AlphaSignificanceSchema.optional(),
   verification: VerificationPerformanceSchema.optional(),
   stability: OperationalStabilitySchema.optional(),
