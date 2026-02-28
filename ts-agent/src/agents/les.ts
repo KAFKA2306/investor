@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { BacktestResult } from "../pipeline/backtest/simulator.ts";
 import { BaseAgent } from "../system/core.ts";
-import { QuantMetrics } from "../analysis/metrics.ts";
+import { QuantMetrics } from "../pipeline/evaluate/quant_metrics.ts";
 import { loadModelRegistry } from "../model_registry/registry.ts";
 import type { StandardOutcome } from "../schemas/outcome.ts";
 
@@ -45,7 +45,7 @@ export class LesAgent extends BaseAgent {
       `🚀 LES: Seed Alpha Factory is requesting DSL generation from LLM${source}...`,
     );
 
-    const { MemoryCenter } = await import("../storage/memory_center.ts");
+    const { MemoryCenter } = await import("../context/memory_center.ts");
     const memory = new MemoryCenter();
     const pastSuccesses = memory.getRecentSuccesses(3);
     const pastFailures = memory.getRecentFailures(3);
@@ -143,7 +143,9 @@ export class LesAgent extends BaseAgent {
     marketData: unknown[],
     baselineScores?: number[],
   ): Promise<unknown> {
-    const { ComputeEngineClient } = await import("../compute/compute_client.ts");
+    const { ComputeEngineClient } = await import(
+      "../providers/compute_engine_gateway.ts"
+    );
     const client = new ComputeEngineClient();
 
     return client.evaluateFactors({

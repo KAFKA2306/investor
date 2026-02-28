@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import type { BacktestResult } from "../pipeline/backtest/simulator.ts";
 import { BaseAgent } from "../system/core.ts";
-import { QuantMetrics } from "../analysis/metrics.ts";
+import { QuantMetrics } from "../pipeline/evaluate/quant_metrics.ts";
 import type { StandardOutcome } from "../schemas/outcome.ts";
 import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
 import { LesAgent } from "./les.ts";

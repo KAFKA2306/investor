@@ -1,13 +1,5 @@
-import { join } from "node:path";
 import { z } from "zod";
-import { core } from "../system/core.ts";
-import { SqliteHttpCache } from "./sqlite_http_cache.ts";
-
-const QuoteResponseSchema = z.object({
-  quoteResponse: z.object({
-    result: z.array(z.record(z.string(), z.unknown())).default([]),
-  }),
-});
+import { YahooFinanceGateway } from "./yahoo_finance_gateway.ts";
 
 export const YFinanceQuoteSnapshotSchema = z.object({
   symbol: z.string().min(1),
@@ -31,19 +23,12 @@ const toNumber = (v: unknown): number =>
     .parse(v);
 
 export class YFinanceProvider {
-  private readonly cache = new SqliteHttpCache(
-    join(core.config.paths.logs, "cache", "market_cache.sqlite"),
-  );
+  private readonly yahoo = new YahooFinanceGateway();
 
   public async getStockInfo(
     ticker: string,
   ): Promise<Record<string, unknown> | undefined> {
-    const url = new URL("https://query1.finance.yahoo.com/v7/finance/quote");
-    url.searchParams.set("symbols", ticker);
-    const data = QuoteResponseSchema.catch({
-      quoteResponse: { result: [] },
-    }).parse(await this.cache.fetchJson(url.toString(), {}, 5 * 60 * 1000));
-    return data.quoteResponse.result[0];
+    return this.yahoo.getStockInfo(ticker);
   }
 
   public async getQuoteSnapshot(

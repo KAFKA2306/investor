@@ -118,4 +118,22 @@ export class YahooFinanceGateway {
       )
       .parse(raw);
   }
+
+  public async getStockInfo(
+    symbol: string,
+  ): Promise<Record<string, unknown> | undefined> {
+    const url = new URL("https://query1.finance.yahoo.com/v7/finance/quote");
+    url.searchParams.set("symbols", symbol);
+    const payload = await this.cache.fetchJson(
+      url.toString(),
+      {},
+      5 * 60 * 1000,
+    );
+    const rows = (
+      payload as {
+        quoteResponse?: { result?: Array<Record<string, unknown>> };
+      }
+    ).quoteResponse?.result;
+    return rows?.[0];
+  }
 }

@@ -1,17 +1,12 @@
 import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../system/core.ts";
+import { EstatProvider } from "./estat.ts";
 import { MarketdataDbCache } from "./marketdata_db.ts";
-import { SqliteHttpCache } from "./sqlite_http_cache.ts";
 import type { MarketDataGateway } from "./live_market_data_gateway.ts";
 
 export class MarketdataLocalGateway implements MarketDataGateway {
-  private readonly estatAppId = z
-    .object({ ESTAT_APP_ID: z.string().min(1) })
-    .parse(process.env).ESTAT_APP_ID;
-  private readonly httpCache = new SqliteHttpCache(
-    join(core.config.paths.logs, "cache", "market_cache.sqlite"),
-  );
+  private readonly estat = new EstatProvider();
   private readonly db: MarketdataDbCache;
 
   private constructor(db: MarketdataDbCache) {
@@ -32,17 +27,7 @@ export class MarketdataLocalGateway implements MarketDataGateway {
   public async getEstatStats(
     dataId: string,
   ): Promise<Record<string, number | string | boolean | null>> {
-    const url = new URL(
-      "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData",
-    );
-    url.searchParams.set("appId", this.estatAppId);
-    url.searchParams.set("statsDataId", dataId);
-    url.searchParams.set("lang", "J");
-    const payload = await this.httpCache.fetchJson(
-      url.toString(),
-      {},
-      24 * 60 * 60 * 1000,
-    );
+    const payload = await this.estat.getStats(dataId);
     return z
       .record(
         z.string(),

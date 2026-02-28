@@ -12,8 +12,8 @@ import {
   UnifiedLogSchema,
 } from "../schemas/log.ts";
 import type { StandardOutcomeSchema } from "../schemas/outcome.ts";
-import { EventStore } from "../storage/event_store.ts";
-import { MemoryCenter } from "../storage/memory_center.ts";
+import { EventStore } from "../context/event_store.ts";
+import { MemoryCenter } from "../context/memory_center.ts";
 import type { EventType } from "./uqtl.ts";
 
 const ConfigSchema = z.object({
