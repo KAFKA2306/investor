@@ -1,7 +1,22 @@
+import { QuantMetrics } from "../core/metrics.ts";
 import { MarketdataLocalGateway } from "../gateways/marketdata_local_gateway.ts";
 import { runGenericAlphaScenario } from "./scenarios/generic_alpha_scenario.ts";
 
 const UNIVERSE = ["7203", "9984", "8035", "6758", "6501"]; // Major liquid stocks
+
+function calculateMaxDrawdown(returns: readonly number[]): number {
+  if (returns.length === 0) return 0;
+  let equity = 1;
+  let peak = 1;
+  let maxDrawdown = 0;
+  for (const r of returns) {
+    equity *= 1 + r;
+    if (equity > peak) peak = equity;
+    const drawdown = peak > 0 ? (peak - equity) / peak : 0;
+    if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+  }
+  return maxDrawdown;
+}
 
 async function runMetagameVerification() {
   console.log("📈 Starting Metagame Anomaly Verification...");
@@ -16,6 +31,7 @@ async function runMetagameVerification() {
       tuesdaySharpe: number;
     }
   > = {};
+  const tuesdayReturnsAll: number[] = [];
 
   for (const symbol4 of UNIVERSE) {
     console.log(`\nProcessing ${symbol4}...`);
@@ -85,6 +101,7 @@ async function runMetagameVerification() {
     };
 
     results[symbol4] = audit;
+    tuesdayReturnsAll.push(...anomalies.tuesdayReversal.returns);
     console.table(audit);
   }
 
@@ -92,23 +109,43 @@ async function runMetagameVerification() {
   const avgTuesdaySharpe =
     Object.values(results).reduce((a, b) => a + b.tuesdaySharpe, 0) /
     UNIVERSE.length;
+  const tStat = QuantMetrics.calculateTStat(tuesdayReturnsAll);
+  const pValue = QuantMetrics.calculatePValue(tStat, tuesdayReturnsAll.length);
+  const cumulativeReturn =
+    tuesdayReturnsAll.reduce((acc, value) => acc * (1 + value), 1) - 1;
+  const informationCoefficient =
+    tuesdayReturnsAll.length > 0
+      ? Math.max(
+          -1,
+          Math.min(
+            1,
+            tuesdayReturnsAll.reduce((a, b) => a + b, 0) /
+              tuesdayReturnsAll.length,
+          ),
+        )
+      : 0;
+  const maxDrawdown = calculateMaxDrawdown(tuesdayReturnsAll);
+  const readinessScore = pValue <= 0.05 && avgTuesdaySharpe > 0.5 ? 70 : 40;
+  const isProductionReady =
+    pValue <= 0.05 && avgTuesdaySharpe > 1.0 && tuesdayReturnsAll.length >= 252;
 
   await runGenericAlphaScenario({
     strategyId: "METAGAME-001",
     strategyName: "Metagame Anomaly Audit",
-    summary: `Verified day-of-week anomalies. Identified Tuesday Reversal persistence (Avg Sharpe: ${avgTuesdaySharpe.toFixed(2)}) while Friday/Monday effect shows signs of decay.`,
+    evidenceSource: "QUANT_BACKTEST",
+    summary: `Verified day-of-week anomalies. Identified Tuesday Reversal persistence (Avg Sharpe: ${avgTuesdaySharpe.toFixed(2)}, pValue: ${pValue.toFixed(4)}, sampleSize: ${tuesdayReturnsAll.length}) while Friday/Monday effect shows signs of decay.`,
     alpha: {
-      tStat: avgTuesdaySharpe * Math.sqrt(10), // Rough estimate
-      pValue: 0.05,
-      informationCoefficient: 0.02,
+      tStat,
+      pValue,
+      informationCoefficient,
     },
     verification: {
       sharpe: avgTuesdaySharpe,
-      totalReturn: 0.04,
-      maxDrawdown: 0.05,
+      totalReturn: cumulativeReturn,
+      maxDrawdown,
     },
-    readinessScore: avgTuesdaySharpe > 0.5 ? 70 : 40,
-    isProductionReady: avgTuesdaySharpe > 1.0,
+    readinessScore,
+    isProductionReady,
   });
 }
 
