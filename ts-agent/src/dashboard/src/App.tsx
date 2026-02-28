@@ -1,17 +1,19 @@
 import type React from "react";
+// Core dashboard component
 import { useMemo, useState } from "react";
-import { AuditView } from "./features/AuditView";
-import { DiscoveryView } from "./features/DiscoveryView";
-import { StatusBar } from "./features/StatusBar";
-import { useDashboardData } from "./hooks/useDashboardData";
-import { computeConfidence, computeUqtlVector } from "./utils/calculators";
 import {
   chipClass,
+  computeConfidence,
+  computeUqtlVector,
   formatDate,
   formatPercent,
   formatSignedPercent,
   pickNumber,
-} from "./utils/formatters";
+} from "./dashboard_core";
+import { AuditView } from "./features/AuditView";
+import { DiscoveryView } from "./features/DiscoveryView";
+import { StatusBar } from "./features/StatusBar";
+import { useDashboardData } from "./hooks/useDashboardData";
 
 const App: React.FC = () => {
   const {

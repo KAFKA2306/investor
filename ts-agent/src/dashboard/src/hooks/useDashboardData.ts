@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
+import type { z } from "zod";
 import {
   canonicalDate,
   type DailyLogEnvelope,
   DailyLogEnvelopeSchema,
-} from "../dashboard_core.ts";
+} from "../dashboard_core";
 
 const fetchJson = async <T>(
   path: string,

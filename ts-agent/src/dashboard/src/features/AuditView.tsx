@@ -1,11 +1,11 @@
 import type React from "react";
-import type { DailyReport } from "../types/schemas";
+import type { DailyReport } from "../dashboard_core";
 import {
   formatBps,
   formatCompact,
   formatPercent,
   pickNumber,
-} from "../utils/formatters";
+} from "../dashboard_core";
 
 interface AuditViewProps {
   report: DailyReport | null;

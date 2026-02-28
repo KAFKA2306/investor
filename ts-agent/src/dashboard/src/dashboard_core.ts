@@ -39,6 +39,22 @@ export const DailyReportSchema = z.object({
       experimentValue: z.string().optional(),
     })
     .optional(),
+  execution: z
+    .object({
+      orders: z
+        .array(
+          z.object({
+            symbol: z.string(),
+            side: z.string(),
+            quantity: z.number(),
+            fillPrice: z.number(),
+            notional: z.number(),
+            executedAt: z.string(),
+          }),
+        )
+        .optional(),
+    })
+    .optional(),
   results: z
     .object({
       expectedEdge: z.number().optional(),
@@ -125,8 +141,18 @@ export const AlphaDiscoveryPayloadSchema = z.object({
       positiveReturnRatio: z.number().optional(),
     })
     .optional(),
+  selected: z.array(z.string()).optional(),
   candidates: z
-    .array(z.object({ id: z.string(), score: z.number().optional() }))
+    .array(
+      z.object({
+        id: z.string(),
+        score: z.number().optional(),
+        reasoning: z.string().optional(),
+        icProxy: z.number().optional(),
+        orthogonality: z.number().optional(),
+        correlationToBaseline: z.number().optional(),
+      }),
+    )
     .optional(),
 });
 
@@ -165,6 +191,21 @@ export const formatDate = (v: string): string =>
   v.length === 8 ? `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}` : v;
 export const formatPercent = (v: number, d = 2): string =>
   `${(v * 100).toFixed(d)}%`;
+export const formatBps = (v: number): string => `${v.toFixed(1)} bps`;
+export const formatCompact = (v: number): string =>
+  v >= 10000 ? `${(v / 10000).toFixed(1)}万` : v.toLocaleString();
+export const formatSignedPercent = (v: number, d = 2): string =>
+  `${v >= 0 ? "+" : ""}${(v * 100).toFixed(d)}%`;
+export const chipClass = (verdict: string): string => {
+  const v = verdict.toUpperCase();
+  if (v.includes("PASS") || v.includes("ACTIVE") || v.includes("READY"))
+    return "ready";
+  if (v.includes("CAUTION") || v.includes("REJECT") || v.includes("WARNING"))
+    return "caution";
+  if (v.includes("RISK") || v.includes("FAIL") || v.includes("ERROR"))
+    return "risk";
+  return "neutral";
+};
 
 /**
  * Calculators
@@ -181,4 +222,14 @@ export const computeConfidence = (
   return clamp01(
     edgeScore * 0.35 + returnScore * 0.25 + (readinessScore || 0) * 0.15,
   );
+};
+
+export const computeUqtlVector = (
+  report: DailyReport,
+  _unified: UnifiedLogPayload | null,
+  readiness: ReadinessLogPayload | null,
+) => {
+  const confidence = computeConfidence(report, readiness);
+  const entropy = 1.0 - confidence;
+  return { confidence, entropy, date: report.date };
 };

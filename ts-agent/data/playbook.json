@@ -1227,8 +1227,13 @@
       }
     },
     {
+      "id": "ctx-s3xcg5tk",
       "content": "Macro-Socio Divergence (e-Stat) Hypothesis (Behavioral Economist): This Macro-Socio Divergence (e-Stat) focused alpha, proposed by a Behavioral Economist, identifies demographic patterns using labor logic to capture industrial in a household environment.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:30:53.880Z",
+      "updated_at": "2026-02-28T05:30:53.880Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1258,16 +1263,16 @@
             }
           }
         }
-      },
-      "id": "ctx-s3xcg5tk",
+      }
+    },
+    {
+      "id": "ctx-62hf0pc6",
+      "content": "Volatility Regime Hypothesis (Quant Analyst): By synthesizing Volatility Regime and dispersion, the Quant Analyst persona targets skew via a uncertainty approach, optimized for tail market regimes.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T05:30:53.880Z",
-      "updated_at": "2026-02-28T05:30:53.880Z"
-    },
-    {
-      "content": "Volatility Regime Hypothesis (Quant Analyst): By synthesizing Volatility Regime and dispersion, the Quant Analyst persona targets skew via a uncertainty approach, optimized for tail market regimes.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T05:30:53.880Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -1318,12 +1323,57 @@
             }
           }
         }
+      }
+    },
+    {
+      "content": "Inventory Lead Hypothesis (Quant Analyst): By synthesizing Inventory Lead and cycle, the Quant Analyst persona targets utilization via a backlog approach, optimized for bottleneck market regimes.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-2B5E3321",
+        "ast": {
+          "op": "add",
+          "left": {
+            "op": "col",
+            "name": "net_sales"
+          },
+          "right": {
+            "op": "col",
+            "name": "turnover_value"
+          }
+        }
       },
-      "id": "ctx-62hf0pc6",
+      "id": "ctx-4eiza478",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T05:30:53.880Z",
-      "updated_at": "2026-02-28T05:30:53.880Z"
+      "created_at": "2026-02-28T05:41:59.898Z",
+      "updated_at": "2026-02-28T05:41:59.898Z"
+    },
+    {
+      "content": "Liquidity Shock Hypothesis (HFT Engineer): Strategic Liquidity Shock extraction using flow filters. It detects illiquidity and exploits impact in imbalance markets, verified by HFT Engineer protocols.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-435ACD1D",
+        "ast": {
+          "op": "sub",
+          "left": {
+            "op": "lit",
+            "value": 2.59
+          },
+          "right": {
+            "op": "col",
+            "name": "profit_margin"
+          }
+        }
+      },
+      "id": "ctx-3ndjgzax",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T05:41:59.898Z",
+      "updated_at": "2026-02-28T05:41:59.898Z"
     }
   ]
 }
