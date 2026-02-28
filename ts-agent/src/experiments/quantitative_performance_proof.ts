@@ -1,12 +1,16 @@
-import { YahooFinanceGateway } from "../providers/yahoo_finance_market_provider.ts";
-import { QuantMetrics } from "../pipeline/evaluate/quantitative_factor_metrics.ts";
+import { execSync } from "node:child_process";
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { execSync } from "node:child_process";
+import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
-  QuantitativeVerificationSchema,
+  type YahooBar,
+  YahooFinanceGateway,
+} from "../providers/external_market_providers.ts";
+import {
   type QuantitativeVerification,
-} from "../schemas/verification_report_schema.ts";
+  QuantitativeVerificationSchema,
+} from "../schemas/financial_domain_schemas.ts";
+import { core } from "../system/app_runtime_core.ts";
 
 async function generateStandardVerificationReport() {
   console.log("🛠️ 標準実証レポート用データの生成開始 (Audit-Ready)...");
@@ -15,7 +19,7 @@ async function generateStandardVerificationReport() {
   let commitHash = "unknown";
   try {
     commitHash = execSync("git rev-parse HEAD").toString().trim();
-  } catch (e) {
+  } catch (_e) {
     console.warn("⚠️ Gitハッシュの取得に失敗しました。");
   }
 
@@ -42,14 +46,18 @@ async function generateStandardVerificationReport() {
   );
 
   const allHistory = allHistoryResults.filter(
-    (h): h is { symbol: string; bars: any[] } => h !== null,
+    (h): h is { symbol: string; bars: YahooBar[] } => h !== null,
   );
   const activeSymbols = allHistory.map((h) => h.symbol);
 
   if (activeSymbols.length === 0) return;
 
-  const commonDates = allHistory[0].bars.map((b) => b.Date);
+  const firstHistory = allHistory[0];
+  if (!firstHistory) return;
+
+  const commonDates = firstHistory.bars.map((b) => b.Date);
   const endDate = commonDates[commonDates.length - 1];
+  if (!endDate) return;
   const n = commonDates.length;
 
   // [Standardization] Use core config for costs
@@ -74,11 +82,14 @@ async function generateStandardVerificationReport() {
       if (!b) return;
 
       const initialPrice = bars[0]?.Open || 1;
-      individualData[symbol].prices.push((b.Close / initialPrice) * 100);
+      const data = individualData[symbol];
+      if (!data) return;
+
+      data.prices.push((b.Close / initialPrice) * 100);
       const factor = (b.Close - b.Open) / (b.Volume + 1e-9);
-      individualData[symbol].factors.push(factor);
+      data.factors.push(factor);
       const pos = factor < 0 ? 1 : -1;
-      individualData[symbol].positions.push(pos);
+      data.positions.push(pos);
 
       if (i < n - 1) {
         const next = bars[i + 1];
@@ -137,7 +148,7 @@ async function generateStandardVerificationReport() {
             ),
           ).toFixed(2),
         ),
-        totalReturn: Number(strategyCum[n - 1].toFixed(2)),
+        totalReturn: Number((strategyCum[n - 1] ?? 0).toFixed(2)),
         universe: activeSymbols,
       },
       costs: {

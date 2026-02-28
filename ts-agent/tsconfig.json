@@ -22,5 +22,8 @@
     "types": [
       "bun"
     ]
-  }
+  },
+  "exclude": [
+    "src/dashboard/**"
+  ]
 }

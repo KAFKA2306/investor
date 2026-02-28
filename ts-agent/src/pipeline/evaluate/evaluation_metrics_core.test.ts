@@ -1,5 +1,5 @@
-import { expect, test, describe } from "bun:test";
-import { QuantMetrics } from "./quantitative_factor_metrics.ts";
+import { describe, expect, test } from "bun:test";
+import { QuantMetrics } from "./evaluation_metrics_core.ts";
 
 describe("QuantMetrics Standardization Test", () => {
   test("calculateRMSE should return correct value", () => {

@@ -107,3 +107,10 @@ tasks:
       - task: discovery
       - bun run experiments:benchmark
       - bun run pipeline:llm-readiness
+
+  run:newalphasearch:
+    desc: .agent/workflows/newalphasearch.md と同等の探索を実行
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run experiments:alpha-discovery
+      - bun run pipeline:ab

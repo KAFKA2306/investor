@@ -1,12 +1,12 @@
 import { resolve } from "node:path";
 import { z } from "zod";
 import { core } from "../../system/app_runtime_core.ts";
-import { loadPerformanceLedgerRows } from "./performance_ledger_loader.ts";
 import {
-  calculatePerformanceMetrics,
+  evaluate as calculatePerformanceMetrics,
   calculatePerformanceMetricsFromLedger,
+  loadPerformanceLedgerRows,
   PerformanceMetricsSchema,
-} from "./performance_metrics_evaluator.ts";
+} from "./evaluation_metrics_core.ts";
 
 const ComparisonReportSchema = z.object({
   generatedAt: z.string().datetime(),

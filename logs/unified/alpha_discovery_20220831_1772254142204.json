@@ -1,0 +1,58 @@
+{
+  "schema": "investor.alpha-discovery.v1",
+  "startedAt": "2026-02-28T04:48:50.675Z",
+  "endedAt": "2026-02-28T04:49:02.202Z",
+  "date": "20220831",
+  "universe": [
+    "7203",
+    "9984",
+    "8035",
+    "6758",
+    "4063"
+  ],
+  "evidence": {
+    "sampleSize": 5,
+    "avgIntradayRange": 0.015399437889960118,
+    "avgTurnoverValue": 54904530120,
+    "avgProfitMargin": 0.1658333874203078,
+    "positiveReturnRatio": 1
+  },
+  "baseline": {
+    "name": "foundation-benchmark-fallback (20260228.json)",
+    "sourceFile": "20260228.json",
+    "scores": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "candidates": [
+    {
+      "id": "ALPHA-2D31FFF5-001",
+      "description": "Behavioral Momentum Factor: Autonomous hypothesis 1",
+      "reasoning": "This sentiment focused alpha identifies overreaction patterns using drift logic to capture crowding in a reversal environment.",
+      "score": 0.525,
+      "fra": 0.55,
+      "rpa": 0.5,
+      "icProxy": 0,
+      "orthogonality": 1,
+      "correlationToBaseline": 0,
+      "meanSignal": 0
+    },
+    {
+      "id": "ALPHA-B6FD572A-002",
+      "description": "Efficiency Divergence Factor: Autonomous hypothesis 2",
+      "reasoning": "This margin focused alpha identifies operating patterns using leverage logic to capture structural in a fundamental environment.",
+      "score": 0.5,
+      "fra": 0.7000000000000001,
+      "rpa": 0.3,
+      "icProxy": 0,
+      "orthogonality": 1,
+      "correlationToBaseline": 0,
+      "meanSignal": 0
+    }
+  ],
+  "selected": []
+}

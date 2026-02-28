@@ -1,4 +1,4 @@
-import type { StandardOutcome } from "../schemas/standard_outcome_schema.ts";
+import type { StandardOutcome } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
 import { LesAgent } from "./latent_economic_signal_agent.ts";
 

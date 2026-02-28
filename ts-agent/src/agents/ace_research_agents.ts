@@ -1,9 +1,5 @@
-import type { z } from "zod";
-import type { ContextPlaybook } from "../context/context_playbook_manager.ts";
-import type {
-  DailyScenarioLogSchema,
-  UnifiedLog,
-} from "../schemas/unified_log_schema.ts";
+import type { ContextPlaybook } from "../context/unified_context_services.ts";
+import type { UnifiedLog } from "../schemas/financial_domain_schemas.ts";
 import type {
   EvaluationResult,
   IAcquirer,
@@ -11,7 +7,7 @@ import type {
   IEvaluator,
   IEvolver,
   IProcessor,
-} from "../system/opence/opence_contract_interfaces.ts";
+} from "../system/runtime_engine.ts";
 
 /**
  * OpenCE: Evaluation Pillar
@@ -31,24 +27,27 @@ export class AceEvaluator implements IEvaluator {
       return { score: 0, feedback: [], metadata: { helpfulIds, harmfulIds } };
     }
 
-    const report = runLog.report as z.infer<typeof DailyScenarioLogSchema>;
-    const results = report.results?.backtest;
+    const report = runLog.report as Record<string, unknown>;
+    const results = (report.results as { backtest?: { sharpe?: number } })
+      ?.backtest;
 
-    if (!results || results.sharpe === undefined)
+    if (!results || typeof results.sharpe !== "number")
       return { score: 0, feedback: [], metadata: { helpfulIds, harmfulIds } };
 
-    if (results.sharpe < 0.5) {
+    const sharpe = results.sharpe as number;
+
+    if (sharpe < 0.5) {
       insights.push(
-        `Low Sharpe ratio (${results.sharpe.toFixed(2)}) detected. Strategy might be too volatile or trend-following in ranging market.`,
+        `Low Sharpe ratio (${sharpe.toFixed(2)}) detected. Strategy might be too volatile or trend-following in ranging market.`,
       );
-    } else if (results.sharpe > 1.5) {
+    } else if (sharpe > 1.5) {
       insights.push(
-        `Excellent Sharpe ratio (${results.sharpe.toFixed(2)}). Core alpha remains strong.`,
+        `Excellent Sharpe ratio (${sharpe.toFixed(2)}). Core alpha remains strong.`,
       );
     }
 
     return {
-      score: results.sharpe,
+      score: sharpe,
       feedback: insights,
       metadata: { helpfulIds, harmfulIds },
     };

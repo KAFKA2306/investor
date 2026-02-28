@@ -1,8 +1,8 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { extname, resolve } from "node:path";
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
 
 const repoLogsDir = resolve(__dirname, "../../../../logs");
 

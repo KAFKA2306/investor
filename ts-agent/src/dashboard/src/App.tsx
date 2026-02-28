@@ -1,17 +1,17 @@
-import React, { useState, useMemo } from "react";
-import { useDashboardData } from "./hooks/useDashboardData";
-import { StatusBar } from "./features/StatusBar";
-import { DiscoveryView } from "./features/DiscoveryView";
+import type React from "react";
+import { useMemo, useState } from "react";
 import { AuditView } from "./features/AuditView";
+import { DiscoveryView } from "./features/DiscoveryView";
+import { StatusBar } from "./features/StatusBar";
+import { useDashboardData } from "./hooks/useDashboardData";
+import { computeConfidence, computeUqtlVector } from "./utils/calculators";
 import {
+  chipClass,
   formatDate,
+  formatPercent,
   formatSignedPercent,
   pickNumber,
-  chipClass,
-  formatPercent,
-  formatCompact,
 } from "./utils/formatters";
-import { computeConfidence, computeUqtlVector } from "./utils/calculators";
 
 const App: React.FC = () => {
   const {
@@ -20,7 +20,6 @@ const App: React.FC = () => {
     unifiedByDate,
     readinessByDate,
     alphaByDate,
-    uqtlEvents,
     timeline,
     loading,
     refresh,
@@ -107,9 +106,12 @@ const App: React.FC = () => {
                 return (
                   <button
                     key={date}
+                    type="button"
                     className={`timeline-item ${selectedDate === date ? "active" : ""}`}
                     onClick={() => setActiveDate(date)}
-                    style={{ "--delay": `${idx * 20}ms` } as any}
+                    style={
+                      { "--delay": `${idx * 20}ms` } as React.CSSProperties
+                    }
                   >
                     <div className="timeline-top">
                       <span className="timeline-date">{formatDate(date)}</span>
@@ -175,7 +177,7 @@ const App: React.FC = () => {
                     </span>
                   </div>
                   <h2 className="hero-title">
-                    {report?.decision?.action || "判定中"} // MISSION
+                    {report?.decision?.action || "判定中"} {/* MISSION */}
                   </h2>
                   <p className="hero-subtitle">
                     {report?.decision?.strategy || "戦略未設定"}

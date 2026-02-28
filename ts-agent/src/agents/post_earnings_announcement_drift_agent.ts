@@ -1,12 +1,12 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { BacktestResult } from "../pipeline/evaluate/backtest_simulator.ts";
-import { QuantMetrics } from "../pipeline/evaluate/quantitative_factor_metrics.ts";
+import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
+import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import type {
   CalendarEntry,
   FinancialStatement,
-} from "../schemas/pead_domain_schema.ts";
-import type { StandardOutcome } from "../schemas/standard_outcome_schema.ts";
+  StandardOutcome,
+} from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
 import { LesAgent } from "./latent_economic_signal_agent.ts";
 
@@ -25,8 +25,9 @@ function calculateMaxDrawdown(returns: readonly number[]): number {
 }
 
 export interface PeadDataProvider {
-  getEarningsCalendar(params: Record<string, string>): Promise<CalendarEntry[]>;
-  getStatements(params: Record<string, string>): Promise<FinancialStatement[]>;
+  getEarningsCalendar(params: Record<string, string>): Promise<unknown[]>;
+  getStatements(params: Record<string, string>): Promise<unknown[]>;
+  getDailyQuotes(params: Record<string, string>): Promise<unknown[]>;
 }
 
 export interface SentimentAnalyzer {
@@ -45,16 +46,15 @@ export class PeadAgent extends BaseAgent {
     const today = new Date().toISOString().split("T")[0];
     if (!today) return;
 
-    const calendar: CalendarEntry[] = await this.jquants.getEarningsCalendar({
+    const calendar = (await this.jquants.getEarningsCalendar({
       date: today,
-    });
+    })) as CalendarEntry[];
 
     for (const entry of calendar) {
-      const statements: FinancialStatement[] = await this.jquants.getStatements(
-        {
-          code: entry.code,
-        },
-      );
+      const statements = (await this.jquants.getStatements({
+        code: entry.code,
+      })) as FinancialStatement[];
+
       await this.analyze(statements);
     }
   }
@@ -201,7 +201,7 @@ ${outcome.summary}
 
 if (import.meta.main) {
   const { PeadJquantsGateway } = await import(
-    "../providers/jquants_market_provider.ts"
+    "../providers/external_market_providers.ts"
   );
   const agent = new PeadAgent(new PeadJquantsGateway(), new LesAgent());
   await agent.run();

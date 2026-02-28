@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+/**
+ * Dashboard Schemas
+ */
 export const DailyReportSchema = z.object({
   date: z.string().optional(),
   analyzedAt: z.string().optional(),
@@ -66,11 +69,7 @@ export const DailyReportSchema = z.object({
         symbol: z.string(),
         signal: z.string().optional(),
         alphaScore: z.number().optional(),
-        finance: z
-          .object({
-            profitMargin: z.number().optional(),
-          })
-          .optional(),
+        finance: z.object({ profitMargin: z.number().optional() }).optional(),
         factors: z
           .object({
             dailyReturn: z.number().optional(),
@@ -82,26 +81,6 @@ export const DailyReportSchema = z.object({
           .optional(),
       }),
     )
-    .optional(),
-  evidenceSource: z.enum(["QUANT_BACKTEST", "LINGUISTIC_ONLY"]).optional(),
-  execution: z
-    .object({
-      status: z.string().optional(),
-      mode: z.string().optional(),
-      orderCount: z.number().optional(),
-      orders: z
-        .array(
-          z.object({
-            symbol: z.string(),
-            side: z.string(),
-            quantity: z.number(),
-            fillPrice: z.number(),
-            notional: z.number(),
-            executedAt: z.string(),
-          }),
-        )
-        .optional(),
-    })
     .optional(),
 });
 
@@ -115,38 +94,6 @@ export const DailyLogEnvelopeSchema = z.object({
 });
 
 export type DailyLogEnvelope = z.infer<typeof DailyLogEnvelopeSchema>;
-
-export const BenchmarkLogPayloadSchema = z.object({
-  schema: z.string().optional(),
-  generatedAt: z.string().optional(),
-  report: z
-    .object({
-      type: z.string().optional(),
-      benchmarkId: z.string().optional(),
-      date: z.string().optional(),
-      analyst: z
-        .object({
-          insights: z.string().optional(),
-          baselines: z
-            .array(
-              z.object({
-                name: z.string(),
-                metrics: z.object({
-                  mae: z.number().optional(),
-                  rmse: z.number().optional(),
-                  smape: z.number().optional(),
-                  directionalAccuracy: z.number().optional(),
-                }),
-              }),
-            )
-            .optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
-
-export type BenchmarkLogPayload = z.infer<typeof BenchmarkLogPayloadSchema>;
 
 export const UnifiedLogPayloadSchema = z.object({
   schema: z.string().optional(),
@@ -170,9 +117,6 @@ export type UnifiedLogPayload = z.infer<typeof UnifiedLogPayloadSchema>;
 export const AlphaDiscoveryPayloadSchema = z.object({
   schema: z.string().optional(),
   date: z.string().optional(),
-  startedAt: z.string().optional(),
-  endedAt: z.string().optional(),
-  selected: z.array(z.string()).optional(),
   evidence: z
     .object({
       sampleSize: z.number().optional(),
@@ -182,17 +126,7 @@ export const AlphaDiscoveryPayloadSchema = z.object({
     })
     .optional(),
   candidates: z
-    .array(
-      z.object({
-        id: z.string(),
-        description: z.string().optional(),
-        reasoning: z.string().optional(),
-        score: z.number().optional(),
-        icProxy: z.number().optional(),
-        orthogonality: z.number().optional(),
-        correlationToBaseline: z.number().optional(),
-      }),
-    )
+    .array(z.object({ id: z.string(), score: z.number().optional() }))
     .optional(),
 });
 
@@ -203,13 +137,8 @@ export const ReadinessLogPayloadSchema = z.object({
   report: z
     .object({
       verdict: z.string().optional(),
-      score: z
-        .object({
-          total: z.number().optional(),
-        })
-        .optional(),
+      score: z.object({ total: z.number().optional() }).optional(),
       recommendations: z.array(z.string()).optional(),
-      sampleSize: z.number().optional(),
     })
     .optional(),
 });
@@ -220,10 +149,36 @@ export const UQTLEventSchema = z.object({
   id: z.string(),
   timestamp: z.string(),
   type: z.string(),
-  agent_id: z.string().optional(),
-  experiment_id: z.string().optional(),
   payload_json: z.string(),
-  metadata_json: z.string().optional(),
 });
-
 export type UQTLEvent = z.infer<typeof UQTLEventSchema>;
+
+/**
+ * Formatters and Utilities
+ */
+export const pickNumber = (v: unknown, fallback = 0): number =>
+  typeof v === "number" && Number.isFinite(v) ? v : fallback;
+export const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
+export const canonicalDate = (v: string | undefined): string =>
+  v ? v.replace(/[^\d]/g, "").slice(0, 8) : "";
+export const formatDate = (v: string): string =>
+  v.length === 8 ? `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}` : v;
+export const formatPercent = (v: number, d = 2): string =>
+  `${(v * 100).toFixed(d)}%`;
+
+/**
+ * Calculators
+ */
+export const computeConfidence = (
+  report: DailyReport,
+  readiness: ReadinessLogPayload | null,
+): number => {
+  const readinessScore = pickNumber(readiness?.report?.score?.total) / 100;
+  const edgeScore = clamp01(pickNumber(report.results?.expectedEdge) / 0.25);
+  const returnScore = clamp01(
+    (pickNumber(report.results?.basketDailyReturn) + 0.03) / 0.06,
+  );
+  return clamp01(
+    edgeScore * 0.35 + returnScore * 0.25 + (readinessScore || 0) * 0.15,
+  );
+};

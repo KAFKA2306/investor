@@ -1,0 +1,58 @@
+{
+  "schema": "investor.alpha-discovery.v1",
+  "startedAt": "2026-02-28T04:49:41.045Z",
+  "endedAt": "2026-02-28T04:49:54.159Z",
+  "date": "20220831",
+  "universe": [
+    "7203",
+    "9984",
+    "8035",
+    "6758",
+    "4063"
+  ],
+  "evidence": {
+    "sampleSize": 5,
+    "avgIntradayRange": 0.015399437889960118,
+    "avgTurnoverValue": 54904530120,
+    "avgProfitMargin": 0.1658333874203078,
+    "positiveReturnRatio": 1
+  },
+  "baseline": {
+    "name": "foundation-benchmark-fallback (20260228.json)",
+    "sourceFile": "20260228.json",
+    "scores": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "candidates": [
+    {
+      "id": "ALPHA-HFT-725BBA8C",
+      "description": "Regime Transition Hypothesis (HFT Engineer)",
+      "reasoning": "Strategic Regime Transition extraction using stability filters. It detects breakout and exploits entropy in chaos markets, verified by HFT Engineer protocols.",
+      "score": 0.525,
+      "fra": 0.55,
+      "rpa": 0.5,
+      "icProxy": 0,
+      "orthogonality": 1,
+      "correlationToBaseline": 0,
+      "meanSignal": 0
+    },
+    {
+      "id": "ALPHA-MACRO-9760B784",
+      "description": "Inventory Lead Hypothesis (Macro Strategist)",
+      "reasoning": "By synthesizing Inventory Lead and cycle, the Macro Strategist persona targets utilization via a backlog approach, optimized for bottleneck market regimes.",
+      "score": 0.575,
+      "fra": 0.65,
+      "rpa": 0.5,
+      "icProxy": 0,
+      "orthogonality": 1,
+      "correlationToBaseline": 0,
+      "meanSignal": 0
+    }
+  ],
+  "selected": []
+}

@@ -1064,18 +1064,46 @@
       }
     },
     {
+      "id": "ctx-8dka60nj",
       "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T04:36:24.107Z",
+      "updated_at": "2026-02-28T04:36:24.107Z",
       "metadata": {
         "source": "alpha_discovery",
         "evaluatedAt": "2026-02-28T04:36:10.687Z",
         "baseline": "foundation-benchmark-fallback (20260228.json)"
-      },
-      "id": "ctx-8dka60nj",
+      }
+    },
+    {
+      "id": "ctx-yex6qc78",
+      "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T04:36:24.107Z",
-      "updated_at": "2026-02-28T04:36:24.107Z"
+      "created_at": "2026-02-28T04:38:00.079Z",
+      "updated_at": "2026-02-28T04:38:00.079Z",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T04:37:47.090Z",
+        "baseline": "foundation-benchmark-fallback (20260228.json)"
+      }
+    },
+    {
+      "content": "[GEN3-FACTORY-VP-001] Volume-Price Divergence: Normalized return by volume stress | orth=1.000 | ic=0.000 | rationale=High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime, ensuring market-neutral robustness.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "alpha_discovery",
+        "evaluatedAt": "2026-02-28T04:46:18.719Z",
+        "baseline": "foundation-benchmark-fallback (20260228.json)"
+      },
+      "id": "ctx-3gx4c9eo",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T04:46:31.326Z",
+      "updated_at": "2026-02-28T04:46:31.326Z"
     }
   ]
 }

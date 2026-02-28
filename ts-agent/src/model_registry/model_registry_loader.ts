@@ -1,7 +1,6 @@
-import { z } from "zod";
-import { core } from "../system/app_runtime_core.ts";
-import { join } from "node:path";
 import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { z } from "zod";
 
 export const ModelEntrySchema = z.object({
   id: z.string().min(1),

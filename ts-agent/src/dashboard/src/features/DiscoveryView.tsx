@@ -1,6 +1,6 @@
-import React from "react";
+import type React from "react";
 import type { AlphaDiscoveryPayload } from "../types/schemas";
-import { pickNumber, formatPercent } from "../utils/formatters";
+import { formatPercent, pickNumber } from "../utils/formatters";
 
 interface DiscoveryViewProps {
   payload: AlphaDiscoveryPayload | null;

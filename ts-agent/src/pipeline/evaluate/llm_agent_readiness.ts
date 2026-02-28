@@ -1,13 +1,12 @@
-import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { core } from "../system/app_runtime_core.ts";
-import { UnifiedLogSchema } from "../schemas/unified_log_schema.ts";
+import { core } from "../../system/app_runtime_core.ts";
 
 export async function runLlmReadinessPipeline() {
   const today = new Date().toISOString().split("T")[0]!.replaceAll("-", "");
 
   // 1. 各種ログの読み込みと整合性チェック
-  let dataHorizonScore = 25; // デフォルト（実績ベースで減点）
+  const dataHorizonScore = 25; // デフォルト（実績ベースで減点）
   let costAwarenessScore = 0;
   let modelTraceabilityScore = 0;
   let executionObservabilityScore = 0;
@@ -23,7 +22,8 @@ export async function runLlmReadinessPipeline() {
     // Model Traceability (15点満点): github/arxiv/context7LibraryId の記録
     if (
       benchmarkLog.models?.every(
-        (m: any) => m.github && m.arxiv && m.context7LibraryId,
+        (m: { github?: string; arxiv?: string; context7LibraryId?: string }) =>
+          m.github && m.arxiv && m.context7LibraryId,
       )
     ) {
       modelTraceabilityScore = 15;

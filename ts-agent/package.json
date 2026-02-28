@@ -18,7 +18,7 @@
     "pipeline:foundation-benchmark": "bun src/pipeline/evaluate/run_foundation_benchmark_pipeline.ts",
     "pipeline:ab": "bun src/pipeline/evaluate/compare_daily_log_performance.ts",
     "pipeline:llm-readiness": "bun src/pipeline/evaluate/llm_agent_readiness.ts",
-    "pipeline:mine": "bun src/pipeline/factor_mining/evolve_factor_candidates_pipeline.ts",
+    "pipeline:mine": "bun src/pipeline/factor_mining/mining_core.ts",
     "pipeline:full-validation": "bun src/pipeline/evaluate/run_full_validation.ts",
     "start:outcome": "bun src/experiments/les_reproduction.ts"
   },

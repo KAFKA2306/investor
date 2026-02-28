@@ -1,6 +1,4 @@
-# Python-generated files
 cache*
-*.py*
 build/
 dist/
 wheels/

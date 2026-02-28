@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import {
   type YahooBar,
   YahooFinanceGateway,
-} from "../providers/yahoo_finance_market_provider.ts";
+} from "../providers/external_market_providers.ts";
 
 type CliArgs = {
   symbols: string[];

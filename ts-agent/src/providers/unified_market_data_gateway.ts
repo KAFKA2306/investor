@@ -1,12 +1,12 @@
 import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../system/app_runtime_core.ts";
-import { EstatProvider } from "./estat_stats_provider.ts";
+import { MarketdataDbCache } from "./cache_providers.ts";
 import {
+  EstatProvider,
   JQuantsProvider,
   PeadJquantsGateway,
-} from "./jquants_market_provider.ts";
-import { MarketdataDbCache } from "./market_data_sqlite_cache.ts";
+} from "./external_market_providers.ts";
 
 export interface MarketDataGateway {
   getDailyBars(
@@ -96,12 +96,12 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
       dates.map(async (date) => {
         const bars = await this.jquants.getEarningsCalendar({ date });
         const filtered = symbol
-          ? bars.filter((b) => {
-              const code = b.code as string | undefined;
+          ? (bars as { code: string }[]).filter((b) => {
+              const code = b.code;
               if (!code) return false;
               return code.startsWith(symbol) || symbol.startsWith(code);
             })
-          : bars;
+          : (bars as Record<string, unknown>[]);
 
         if (symbol && filtered.length === 0) return null;
 
@@ -118,7 +118,9 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
     symbol: string,
   ): Promise<Record<string, number>[]> {
     const raw = await this.jquants.getStatements({ code: symbol });
-    return raw.map((s) => s as unknown as Record<string, number>);
+    return (raw as Record<string, unknown>[]).map(
+      (s) => s as unknown as Record<string, number>,
+    );
   }
 
   public async getHistory(symbol: string, limit: number): Promise<number[]> {
@@ -188,7 +190,9 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
     symbol: string,
   ): Promise<Record<string, number>[]> {
     const fins = await this.db.getLatestFin(symbol);
-    return fins.map((f) => f as Record<string, number>);
+    return fins.map(
+      (f: Record<string, unknown>) => f as Record<string, number>,
+    );
   }
 
   public async getMarketDataEndDate(): Promise<string> {
@@ -198,7 +202,7 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
 
   public async getHistory(symbol: string, limit: number): Promise<number[]> {
     const bars = this.db.getBars(symbol, limit);
-    return bars.map((b) => Number(b.Close ?? 0));
+    return bars.map((b: Record<string, unknown>) => Number(b.Close ?? 0));
   }
 
   public async getUpcomingEarnings(

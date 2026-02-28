@@ -1,9 +1,9 @@
-import React from "react";
+import type React from "react";
 import type { DailyReport } from "../types/schemas";
 import {
-  formatPercent,
-  formatCompact,
   formatBps,
+  formatCompact,
+  formatPercent,
   pickNumber,
 } from "../utils/formatters";
 
