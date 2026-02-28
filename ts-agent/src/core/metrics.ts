@@ -158,4 +158,26 @@ export namespace QuantMetrics {
       cma: pearson(returns, investment),
     };
   }
+
+  export function calculateSharpeRatio(
+    returns: number[],
+    rfrTrailing: number = 0,
+  ): number {
+    const n = returns.length;
+    if (n < 2) return 0;
+    const m = mean(returns);
+    const s = std(returns);
+    if (s === 0) return 0;
+    // Annualized Sharpe: (Mean / Std) * sqrt(252)
+    return ((m - rfrTrailing) / s) * Math.sqrt(252);
+  }
+
+  export function calculateAnnualizedReturn(
+    netReturn: number,
+    tradingDays: number,
+  ): number {
+    if (tradingDays <= 0) return 0;
+    // (1 + r)^(252 / days) - 1
+    return (1 + netReturn) ** (252 / tradingDays) - 1;
+  }
 }
