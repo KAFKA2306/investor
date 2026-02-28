@@ -99,6 +99,31 @@ export type AceBullet = z.infer<typeof AceBulletSchema>;
 export type AcePlaybook = z.infer<typeof AcePlaybookSchema>;
 
 /**
+ * Alpha-R1: Strategic Reasoning and Screening
+ * Based on arXiv:2512.23515
+ */
+export const StrategicReasoningSchema = z.object({
+  rationale: z.string(),
+  logicChecks: z.array(z.object({
+    claim: z.string(),
+    verdict: z.enum(["VALID", "INVALID", "UNCERTAIN"]),
+    evidence: z.string().optional(),
+  })),
+  contextAlignment: z.number().min(0).max(1),
+  marketRegime: z.string(),
+});
+
+export const AlphaScreeningSchema = z.object({
+  status: z.enum(["ACTIVE", "INACTIVE", "DECAYED"]),
+  reason: z.string(),
+  lastUpdated: z.string().datetime(),
+  score: z.number().min(0).max(1),
+});
+
+export type StrategicReasoning = z.infer<typeof StrategicReasoningSchema>;
+export type AlphaScreening = z.infer<typeof AlphaScreeningSchema>;
+
+/**
  * Standard Outcome and Alpha Significance
  */
 export const AlphaSignificanceSchema = z.object({
@@ -149,6 +174,8 @@ export const StandardOutcomeSchema = z.object({
   summary: z.string(),
   reasoning: z.string().optional(),
   reasoningScore: z.number().min(0).max(1).optional(),
+  strategicReasoning: StrategicReasoningSchema.optional(),
+  alphaScreening: AlphaScreeningSchema.optional(),
   modelRegistryStatus: z.string().optional(),
   experimentId: z.string().optional(),
   evidenceSource: z.enum(["QUANT_BACKTEST", "LINGUISTIC_ONLY"]).optional(),
