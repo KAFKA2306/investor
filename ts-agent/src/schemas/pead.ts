@@ -10,5 +10,17 @@ export const FinancialStatementSchema = z.object({
   NetSales: z.number(),
 });
 
+export const DailyQuoteSchema = z.object({
+  Date: z.string(),
+  Code: z.string(),
+  Open: z.number().nullable(),
+  High: z.number().nullable(),
+  Low: z.number().nullable(),
+  Close: z.number().nullable(),
+  Volume: z.number().nullable(),
+  AdjustmentClose: z.number().nullable(),
+});
+
 export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;
 export type FinancialStatement = z.infer<typeof FinancialStatementSchema>;
+export type DailyQuote = z.infer<typeof DailyQuoteSchema>;

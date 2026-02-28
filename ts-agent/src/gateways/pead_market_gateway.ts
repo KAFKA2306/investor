@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { PeadDataProvider } from "../agents/pead.ts";
 import { core } from "../core/index.ts";
 import { SqliteHttpCache } from "../data_cache/sqlite_http_cache.ts";
-import type { CalendarEntry, FinancialStatement } from "../schemas/pead.ts";
+import type { CalendarEntry, DailyQuote, FinancialStatement } from "../schemas/pead.ts";
 
 const safeRecordArray = (
   value: unknown,
@@ -23,12 +23,14 @@ const findFirstArray = (value: unknown): unknown[] | undefined =>
     ? value
     : typeof value === "object" && value !== null
       ? Object.values(value as Record<string, unknown>)
-          .map((v) => findFirstArray(v))
-          .find((v) => v !== undefined)
+        .map((v) => findFirstArray(v))
+        .find((v) => v !== undefined)
       : undefined;
 
-const extractRows = (payload: Record<string, unknown>): unknown[] =>
-  findFirstArray(payload) ?? [];
+const extractRows = (payload: Record<string, unknown>): unknown[] => {
+  if (Array.isArray(payload.data)) return payload.data;
+  return findFirstArray(payload) ?? [];
+};
 
 export class PeadJquantsGateway implements PeadDataProvider {
   private readonly apiKey = z
@@ -53,6 +55,8 @@ export class PeadJquantsGateway implements PeadDataProvider {
       { "x-api-key": this.apiKey },
       43200000, // 12 hours
     );
+
+    console.log(`[DEBUG] J-Quants Fetch: ${url.toString()} -> Payload: ${JSON.stringify(payload).slice(0, 200)}...`);
 
     if (
       payload &&
@@ -82,5 +86,14 @@ export class PeadJquantsGateway implements PeadDataProvider {
       "/fins/summary",
       params,
     )) as FinancialStatement[];
+  }
+
+  public async getDailyQuotes(
+    params: Record<string, string>,
+  ): Promise<DailyQuote[]> {
+    return (await this.fetchRows(
+      "/listed/daily_quotes",
+      params,
+    )) as DailyQuote[];
   }
 }

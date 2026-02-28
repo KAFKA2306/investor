@@ -6,6 +6,10 @@ export interface MarketDataGateway {
     symbol: string,
     dates: string[],
   ): Promise<Record<string, number>[]>;
+  getUpcomingEarnings(
+    symbol: string,
+    dates: string[],
+  ): Promise<Record<string, number>[]>;
   getStatements(symbol: string): Promise<Record<string, number>[]>;
   getHistory(symbol: string, limit: number): Promise<number[]>;
   getEstatStats(dataId: string): Promise<Record<string, unknown>>;
@@ -30,7 +34,24 @@ export class LiveMarketDataGateway implements MarketDataGateway {
   private readonly cache = core.cache;
 
   public async getDailyBars(
-    _symbol: string,
+    symbol: string,
+    dates: string[],
+  ): Promise<Record<string, number>[]> {
+    const results = await Promise.all(
+      dates.map(async (date) => {
+        const quotes = await this.jquants.getDailyQuotes({
+          code: symbol,
+          from: date,
+          to: date,
+        });
+        return (quotes[0] as unknown as Record<string, number>) ?? null;
+      }),
+    );
+    return results.filter((r): r is Record<string, number> => r !== null);
+  }
+
+  public async getUpcomingEarnings(
+    symbol: string,
     dates: string[],
   ): Promise<Record<string, number>[]> {
     const results = await Promise.all(
@@ -38,7 +59,18 @@ export class LiveMarketDataGateway implements MarketDataGateway {
         const bars = await this.jquants.getEarningsCalendar({
           date,
         });
-        return (bars[0] as unknown as Record<string, number>) ?? null;
+        const filtered = symbol
+          ? bars.filter((b: any) => {
+            const code = (b.Code || b.code) as string | undefined;
+            if (!code) return false;
+            return code.startsWith(symbol) || symbol.startsWith(code);
+          })
+          : bars;
+
+        // If symbol filter provided but no match, we skip this date for that symbol
+        if (symbol && filtered.length === 0) return null;
+
+        return (filtered[0] as unknown as Record<string, number>) ?? (symbol ? null : (bars[0] as any));
       }),
     );
     return results.filter((r): r is Record<string, number> => r !== null);
