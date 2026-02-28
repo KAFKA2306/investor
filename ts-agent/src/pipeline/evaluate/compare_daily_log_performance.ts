@@ -40,9 +40,11 @@ export function runDailyAbComparison(logsBaseDir: string) {
   const ledgerRows = loadPerformanceLedgerRows(logsDir);
   if (ledgerRows.length < 1) {
     const emptyMetrics = calculatePerformanceMetrics([]);
+    const today =
+      new Date().toISOString().split("T")[0]?.replaceAll("-", "") || "20260228";
     return ComparisonReportSchema.parse({
       generatedAt: new Date().toISOString(),
-      dateRange: { from: "19700101", to: "19700101" },
+      dateRange: { from: today, to: today },
       baseline: { name: "NO_TRADE", metrics: emptyMetrics },
       candidate: { name: "VEGETABLE_STRATEGY", metrics: emptyMetrics },
       uplift: {

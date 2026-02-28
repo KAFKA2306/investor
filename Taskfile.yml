@@ -68,16 +68,23 @@ tasks:
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
-          cleanup() { if [ -n "${api_pid:-}" ]; then kill "$api_pid" 2>/dev/null || true; fi; if [ -n "${ui_pid:-}" ]; then kill "$ui_pid" 2>/dev/null || true; fi; };
+          cleanup() {
+            echo "[view] cleaning up processes...";
+            [ -n "${api_pid:-}" ] && kill "$api_pid" 2>/dev/null || true;
+            [ -n "${ui_pid:-}" ] && kill "$ui_pid" 2>/dev/null || true;
+            # 念のためポートを占有しているプロセスを掃除
+            fuser -k {{.API_PORT}}/tcp 2>/dev/null || true;
+            fuser -k {{.UI_PORT}}/tcp 2>/dev/null || true;
+          };
           trap cleanup EXIT INT TERM;
           if curl -fsS "http://127.0.0.1:{{.API_PORT}}/api/stats" >/dev/null 2>&1; then
             echo "[view] API already running on :{{.API_PORT}}";
           else
             (cd {{.TS_DIR}} && UQTL_API_PORT={{.API_PORT}} bun run start:api) & api_pid=$!;
-            echo "[view] started API on :{{.API_PORT}}";
+            echo "[view] started API on :{{.API_PORT}} (pid: $api_pid)";
           fi;
           (cd {{.DASHBOARD_DIR}} && npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}) & ui_pid=$!;
-          echo "[view] started UI on :{{.UI_PORT}}";
+          echo "[view] started UI on :{{.UI_PORT}} (pid: $ui_pid)";
           wait "$ui_pid"'
 
   run:

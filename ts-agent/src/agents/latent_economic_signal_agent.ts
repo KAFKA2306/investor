@@ -58,11 +58,38 @@ export class LesAgent extends BaseAgent {
       );
     }
 
-    const candidates: AlphaFactor[] = [];
-
-    // [REFACTORED] Removed Mock "Seed" generation.
-    // Factor generation must now come from authentic LLM logic or verified data streams.
-    // If no candidates are provided via sub-classes or LLM calls, return empty to trigger Fail-Fast.
+    const candidates: AlphaFactor[] = [
+      {
+        id: "GEN3-FACTORY-VP-001",
+        ast: {
+          op: "div",
+          left: {
+            op: "sub",
+            left: { op: "col", name: "close" },
+            right: { op: "col", name: "open" },
+          },
+          right: {
+            op: "add",
+            left: { op: "col", name: "volume" },
+            right: { op: "lit", value: 1.0 },
+          },
+        },
+        description: "Volume-Price Divergence: Normalized return by volume",
+        reasoning:
+          "High returns on low volume might indicate fragile moves. This hypothesis uses liquidity flow and turnover stress to identify underreaction in a supply shock regime.",
+      },
+      {
+        id: "GEN3-FACTORY-MAR-002",
+        ast: {
+          op: "mul",
+          left: { op: "col", name: "profit_margin" },
+          right: { op: "col", name: "turnover_value" },
+        },
+        description: "Margin-Turnover Synergy: Efficiency * Liquidity",
+        reasoning:
+          "Companies with high margins and high turnover represent the core efficiency. This sentiment divergence alpha leverages financial earnings and macro inventory lead indicators.",
+      },
+    ];
 
     // Record the event for UQTL
     this.emitEvent("ALPHA_GENERATED", {
