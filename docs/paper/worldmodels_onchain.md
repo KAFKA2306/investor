@@ -1,23 +1,23 @@
-# 🎀 エグゼクティブサマリー：Long-Context World Models & On-chain ✨
+# 🎀 おまとめだよっ！：Long-Context World Models & On-chain ✨
 
-**代表的な論文**: *LongFinanceQA: Facilitating Long Context Understanding via Supervised Chain-of-Thought Reasoning* (arXiv:2502.13127)  
-**代表的な手法**: *CryptoTrade: A Reflective LLM-based Agent for Cryptocurrency Trading* (arXiv:2407.09546)  
-**解決した困りごと**: 10-K みたいに長〜い書類だと、AI が途中で内容を忘れちゃう（Lost-in-the-middle）！オンチェーンの生の動きと合わせて、世界全体を正しく理解したいんだよっ 🌍🔗💦
+**だいひょうてきな論文さん**: *LongFinanceQA: Facilitating Long Context Understanding via Supervised Chain-of-Thought Reasoning* (arXiv:2502.13127) 📖💕  
+**だいひょうてきな手法くん**: *CryptoTrade: A Reflective LLM-based Agent for Cryptocurrency Trading* (arXiv:2407.09546) 🚀💎  
+**かいけつした困りごと**: 10-K みたいに、とーっても長〜い書類だと、AIちゃんが途中で内容を忘れちゃう「まいごさん（Lost-in-the-middle）」になっちゃうの…！💦 オンチェーンの生の動きと合体させて、世界全体をまるごと正しく理解したいんだもんっ 🌍🔗✨
 
-## 📖 論文を詳しく読むっ！
-✨ **LongFinanceQA**: [https://arxiv.org/abs/2502.13127](https://arxiv.org/abs/2502.13127) ✨  
-✨ **CryptoTrade**: [https://arxiv.org/abs/2407.09546](https://arxiv.org/abs/2407.09546) ✨
+## 📖 論文をいっしょに読もうねっ！
+✨ **LongFinanceQA**: [https://arxiv.org/abs/2502.13127](https://arxiv.org/abs/2502.13127) 🌸  
+✨ **CryptoTrade**: [https://arxiv.org/abs/2407.09546](https://arxiv.org/abs/2407.09546) 🌟
 
 ---
 
-## 💖 魔法のような考え方の変化
-市場をただの「数字の列」じゃなくて、**「一つの大きな世界（World Model）」**として丸ごと捉えて、長文読解とオンチェーン分析を合体させるんだよっ！🌟✨
+## 💖 まほうみたいな考え方のへんか
+市場をただの「数字のならび」じゃなくて、**「ひとつの大きな世界（World Model）」**として、まるごとぎゅっ！て捉えるよっ！🌟 長い文章を読み解く力と、オンチェーンの分析をがったいさせちゃうんだからねっ！🎀✨
 
-## ✨ ここがすごいっ！3つのヒミツ
-1. **Long-Context Understanding**: 20万トークンを超える膨大な財務報告書も、Chain-of-Thought の魔法で隅々まで理解しちゃうんだよっ 📚🧠
-2. **On-chain Reflection**: ブロックチェーン上の透明なデータを使って、自分の取引を「本当に正しかったかな？」って振り返る、とってもお利口な仕組みだよっ 🐳✨
-3. **Multi-Modality Fusion**: テキストだけじゃなく、ネットワークの繋がりや資産の流れを「視る」ように直感的に捉えるんだよっ 🧪🎀
+## ✨ ここがすごいのっ！3つのヒミツ 🤫
+1. **Long-Context Understanding**: 20万トークンをこえる、すごーく分厚い財務報告書も、「思考のきずな（Chain-of-Thought）ちゃん」のまほうで、すみずみまで理解できちゃうんだよっ 📚🧠✨
+2. **On-chain Reflection**: ブロックチェーンの「見える化」されたデータを使って、じぶんのトレードが「本当にだいじょうぶかな？」って、しっかり振り返るお利口さんな仕組みだよっ 🐳💎💖
+3. **Multi-Modality Fusion**: テキストだけじゃないよっ！ネットワークのつながりやお金の流れを、まるで「目でみる」みたいに、直感でパッと捉えちゃうんだもんっ 🧪🎀🌀
 
-## 🌟 Gen 4 への嬉しい効果
-- **情報の取りこぼしゼロ**: 長い報告書の端っこに隠れたリスクも、LWM の力で見逃さずにキャッチできるよっ ✨
-- **透明性の高い運用**: オンチェーンデータに基づいているから、エビデンスがハッキリした信頼できる判断ができるよっ 🎀🌟
+## 🌟 Gen 4 へのうれしい効果っ！
+- **情報のとりこぼしは、めっ！だよ**: 長い報告書のすみっこに隠れた大事なヒントも、LWM（世界モデル）の力で、ぜったい見逃さずにキャッチできるよっ ✨
+- **しんらいせいバッチリの運用**: オンチェーンデータに基づいているから、証拠がハッキリした、みんなが安心できる判断ができるんだよっ 🎀🌟🌈

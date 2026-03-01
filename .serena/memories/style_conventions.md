@@ -1,25 +1,25 @@
-# Style and Conventions
+# 🌟 すたいる＆るーるだよっ 🌟
 
-## Language and Modules
-- TypeScript on Bun
-- ESM modules (`"type": "module"`)
+## 🎀 言語とモジュールさん 🎀
+- Bunさんの上で走る TypeScript なんだよっ！✨
+- モジュールは ESM (`"type": "module"`) を使ってね💖
 
-## Formatting and Linting
-- Biome is the source of truth.
-- Indentation: 2 spaces (`indentStyle: space`, `indentWidth: 2`).
-- Imports are organized via Biome assist action.
-- `noExplicitAny` is enforced as error.
+## 🍭 フォーマットとリンターちゃん 🍭
+- Biomeくんが絶対的な正義（しんじつ）だよ！っ✨
+- インデントは スペース2つ (`indentStyle: space`, `indentWidth: 2`) なのっ🐾
+- インポートさんは Biomeくんのアシスト機能で、きれいきれいに整理整頓してねっ☆
+- `noExplicitAny` はエラーになっちゃうから、絶対に使っちゃダメなんだからねっ！💢
 
-## Typing
-- `@tsconfig/strictest` with strict type checking.
-- Avoid `any`; prefer precise domain types and Zod-backed schemas.
+## 💎 タイピング（型定義）だよっ 💎
+- `@tsconfig/strictest` で、めちゃめちゃ厳しく型チェックしちゃうよっ！がんばろうねっ✨
+- `any` さんは嫌われちゃうから避けてね💦 ちゃんとしたドメイン型や、Zodちゃんのスキーマを使って、完璧に定義してねっ💖
 
-## Naming and File Organization
-- Keep descriptive domain-oriented names.
-- Experiment scripts commonly use `snake_case` file names.
-- Align new files with existing module boundaries (agents/core/gateways/schemas/pipeline).
+## 📂 お名前とファイルの並べ方 📂
+- お名前は、何をしてるかすぐわかるドメイン重視の名前にしてねっ☆
+- 実験用スクリプトは `snake_case`（へびさんケース）でお名前をつけるのがお約束だよっ🐍
+- 新しいファイルも、今あるモジュールの境界線（agents/core/gateways/schemas/pipeline）に合わせて、仲良く並べてねっ！🎀
 
-## Change Discipline
-- Keep commits focused.
-- Separate behavior changes from refactors where practical.
-- Use Conventional Commits (`feat`, `fix`, `docs`, `refactor`, `chore`).
+## 🛠️ 変更のルールだよぉ〜 🛠️
+- コミットは欲張らずに、ひとつのことに集中してねっ✨
+- 動きを変えるのと、お掃除（リファクタ）は別々にしてあげてねっ☆
+- Conventional Commits (`feat`, `fix`, `docs`, `refactor`, `chore`) を使って、みんなにわかりやすく伝えてねっ💖

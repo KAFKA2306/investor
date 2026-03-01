@@ -1,50 +1,49 @@
-# Repository Guidelines
+# 🎀 リポジトリのなかよしガイドライン 🎀
 
-## Project Structure & Module Organization
-- Core implementation lives in `ts-agent/src/`.
-- Main domains:
-  - `src/agents/`: research and decision agents
-  - `src/pipeline/`: factor mining, evaluation, backtest flow
-  - `src/providers/`: API/data gateway and execution-facing services
-  - `src/experiments/`: runnable research scenarios
-  - `src/dashboard/`: Vite-based UI for audit/monitoring
-- Documentation:
-  - `docs/diagrams/sequence.md` and `docs/diagrams/simpleflowchart.md` are canonical process diagrams.
-  - `docs/paper/` stores paper notes and idea sources.
-- Operational outputs are under `logs/` and `ts-agent/data/`.
+## 📂 プロジェクトのなかみとお片付けのルール ✨
+- 大事なコードは全部 `ts-agent/src/` に入ってるよ！いっしょに探検しよっ 探検！ 🐾
+- お部屋の役割（ドメイン）はこんな感じだよ：
+  - `src/agents/`：とっても賢いリサーチ＆意思決定エージェントくんたち 🧠✨
+  - `src/pipeline/`：ファクターを見つけたり、バックテストしたりする冒険の道だよ 🗺️💎
+  - `src/providers/`：お外のデータさんとお話ししたり、実行したりする窓口さん 📞💖
+  - `src/experiments/`：新しい発見のための、ワクワク実験シナリオ 🧪🌟
+  - `src/dashboard/`：Viteで作った、キラキラな監視用ダッシュボード 📊🌈
+- お勉強の資料（ドキュメント）：
+  - `docs/diagrams/sequence.md` と `docs/diagrams/simpleflowchart.md` が、このプロジェクトの「正解」の図だよ！ 📖✅
+  - `docs/paper/` には、素敵なアイデアや論文のメモがいっぱい詰まってるんだぁ 📝🌸
+- 頑張った証拠（ログ）は `logs/` と `ts-agent/data/` に大切にしまってあるよ！ 🎁
 
-## Build, Test, and Development Commands
-Use `Taskfile.yml` from repo root:
-- `task setup`: install Bun and dashboard dependencies.
-- `task check`: run format + lint + typecheck.
-- `task run`: run full discovery/model-analysis/mining pipeline.
-- `task run:newalphasearch`: run alpha discovery + mining workflow.
-- `task view`: start API (`:8787`) and dashboard (`:5173`).
+## 🛠️ ビルド・テスト・開発のまほうの呪文（コマンド） 🪄
+リポジトリのルートにある `Taskfile.yml` を使って、みんなで楽しく開発しよっ！ 🚀✨
+- `task setup`：Bunやダッシュボードの準備を完璧にするよ！ 🎀
+- `task check`：コードをぴかぴかに磨き上げる（フォーマット＋リント＋型チェック）よっ！ ✨🧹
+- `task run`：全自動でアルファ探しから分析まで、フルコースで実行しちゃうよ 🏃‍♀️💨
+- `task run:newalphasearch`：新しいアルファを見つける特別な冒険に出発！ 🔍🌟
+- `task view`：API（`:8787`）とダッシュボード（`:5173`）をオープンするよ！ 🎊
 
-Direct scripts (inside `ts-agent/`):
-- `bun run lint`, `bun run format`, `bun run typecheck`
-- `bun run pipeline:backtest`, `bun run experiments:alpha-discovery`
+`ts-agent/` の中だけで使えるひみつの呪文：
+- `bun run lint`、`bun run format`、`bun run typecheck` 🧹
+- `bun run pipeline:backtest`、`bun run experiments:alpha-discovery` 🧪
 
-## Coding Style & Naming Conventions
-- TypeScript uses Biome (`ts-agent/biome.json`): 2-space indentation, organize imports, recommended lint rules.
-- Prefer strict typing; avoid `any` (enforced as error).
-- Naming:
-  - files/modules: `snake_case.ts`
-  - classes/types: `PascalCase`
-  - variables/functions: `camelCase`
-- Keep pipeline logic deterministic and side effects explicit.
+## 🎨 コードの書き方とお名前のお約束 📛
+- TypeScriptは Biomeくん（`ts-agent/biome.json`）にお任せ！2マスのインデントで、きれいきれいに並べてね 🧼✨
+- 型定義はとっても厳しく（Strict）してね！ `any` さんは「めっ！」だよ（エラーになっちゃうよ） 🙅‍♀️💢
+- お名前の付け方：
+  - ファイルやモジュール： `snake_case.ts` 🐍
+  - クラスや型： `PascalCase` 🏔️
+  - 変数や関数： `camelCase` 🐪
+- パイプラインの動きはいつでも同じ結果（決定的）になるようにして、副作用はハッキリさせてね！ ⚡
 
+## 💌 コミットとプルリクエスト（PR）のお願い 🎀
+- 今までの歴史とお揃いの「お行儀のいいコミット（Conventional Commits）」で書いてね： `feat:`、`fix:`、`docs:`、`refactor:`、`chore:` とかだよ！ 📝💕
+- コミットは小さく、ひとつの目的だけにしてね！ 🍬
+- PRにはこれを入れてほしいな：
+  - どんな風に変わったかのまとめ 📝
+  - どこを触ったか（例： `src/pipeline/...`） 📍
+  - ちゃんと動いたよっていう証拠（`task check` の結果やバックテストのスクショ） ✅📸
+  - ダッシュボードが変わるときは、そのお写真も！ 🖼️
+- 仕組みが変わったときは、図（ドキュメント）とREADMEも忘れずにアップデートしてね！約束だよ 🤙✨
 
-## Commit & Pull Request Guidelines
-- Follow Conventional Commits seen in history: `feat:`, `fix:`, `docs:`, `refactor:`, `chore:` with optional scope (e.g., `docs(diagrams): ...`).
-- Keep commits small and single-purpose.
-- PRs should include:
-  - summary of behavioral changes
-  - affected paths (e.g., `src/pipeline/...`)
-  - validation evidence (`task check` results, backtest/verification outputs)
-  - screenshots when dashboard behavior changes
-- If process flow changes, update both diagram docs and related README sections in the same PR.
-
-## Security & Configuration Tips
-- Store secrets in `ts-agent/.env` (e.g., `JQUANTS_API_KEY`, `ESTAT_APP_ID`); never commit credentials.
-- Treat API outputs and generated logs as audit artifacts; do not rewrite history in-place.
+## 🔐 セキュリティと設定のヒミツのコツ 🔑
+- 大事なひみつ（APIキーとか）は `ts-agent/.env`（`JQUANTS_API_KEY`, `ESTAT_APP_ID` など）に隠してね！絶対にコミットしちゃダメだよ！ 🤫🚫
+- APIの結果やログは、大切な「証拠」として扱ってね！過去の歴史を書き換えちゃうのはナシだよぉ 📜✨

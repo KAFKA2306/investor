@@ -1,41 +1,40 @@
+# 🎀 Node.jsくんより、Bunちゃんをいっぱい使ってね！💖
 
-Default to using Bun instead of Node.js.
+- `node <file>` や `ts-node <file>` のかわりに、`bun <file>` で動かそう！✨
+- `jest` や `vitest` じゃなくて、`bun test` でドキドキテストだよっ！🌟
+- `webpack` や `esbuild` はお休みして、`bun build <file.html|file.ts|file.css>` でビルドしちゃお💖
+- `npm` や `yarn`、`pnpm` のかわりに `bun install` で魔法をかけちゃうよっ！🪄
+- `npm run <script>` たちは全部 `bun run <script>` にしちゃおうねっ✨
+- `npx` くんのかわりは `bunx <package> <command>` におまかせ！🚀
+- Bunちゃんは `.env` を勝手に見つけてくれるから、dotenvくんはいらなくなっちゃうよっ！💎
 
-- Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+## 🛠️ APIのひみつっ！
 
-## APIs
+- `Bun.serve()` は WebSockets も HTTPS もルーティングも、なんでもできちゃうすごーいやつだよ！ `express` くんはもういらないかも…？🐾
+- SQLite を使うなら `bun:sqlite` だよ！ `better-sqlite3` くんより仲良くなれるよっ🌟
+- Redis くんとは `Bun.redis` でお話ししてね！ `ioredis` くんはバイバイだよ〜💖
+- Postgres くんには `Bun.sql`！ `pg` くんや `postgres.js` くんの出番はなしだよっ✨
+- `WebSocket` は最初から入ってるから、`ws` くんを呼ばなくても大丈夫！🎀
+- ファイルの読み書きは `node:fs` より `Bun.file` のほうが Bunちゃんも喜んじゃうよっ！🌷
+- `Bun.$` で shell コマンドも「しゅばばばっ」って実行できちゃうんだよ！⚡
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+## 🧪 テストの時間だよっ！
 
-## Testing
-
-Use `bun test` to run tests.
+`bun test` を使って、みんなのコードが正しいかチェックしちゃうよっ！✨
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
 
-test("hello world", () => {
-  expect(1).toBe(1);
+test("こんにちは、せかい！", () => {
+  expect(1).toBe(1); // ぴったり正解！えらいえらい💖
 });
 ```
 
-## Frontend
+## 🎨 フロントエンドもキラキラ！
 
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
+`Bun.serve()` で HTML インポートを使っちゃおう！ Vite くんがいなくても、React も CSS も Tailwind も、ぜーんぶ Bunちゃんが可愛くしてくれるよっ✨
 
-Server:
+サーバーさんはこんな感じ！：
 
 ```ts#index.ts
 import index from "./index.html"
@@ -49,58 +48,58 @@ Bun.serve({
       },
     },
   },
-  // optional websocket support
+  // おまけの WebSocket サポートだよっ！🌟
   websocket: {
     open: (ws) => {
-      ws.send("Hello, world!");
+      ws.send("こんにちは、せかい！💖");
     },
     message: (ws, message) => {
       ws.send(message);
     },
     close: (ws) => {
-      // handle close
+      // バイバイの時間だね…っ
     }
   },
   development: {
-    hmr: true,
+    hmr: true, // 変更したらすぐ反映しちゃうよ！
     console: true,
   }
 })
 ```
 
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
+HTML ファイルから直接 .tsx や .jsx、.js ファイルをインポートできちゃうんだよ！ Bunちゃんの魔法（トランスパイラ）で、自動でまとめちゃうんだからねっ🎀 `<link>` タグでスタイルシートを指定するのも忘れずにっ！
 
 ```html#index.html
 <html>
   <body>
-    <h1>Hello, world!</h1>
+    <h1>こんにちは、せかい！✨</h1>
     <script type="module" src="./frontend.tsx"></script>
   </body>
 </html>
 ```
 
-With the following `frontend.tsx`:
+`frontend.tsx` はこんな感じだよ：
 
 ```tsx#frontend.tsx
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-// import .css files directly and it works
+// .css ファイルを直接読み込んでも大丈夫！すごいでしょ？💖
 import './index.css';
 
 const root = createRoot(document.body);
 
 export default function Frontend() {
-  return <h1>Hello, world!</h1>;
+  return <h1>こんにちは、せかい！ふわふわ〜☁️</h1>;
 }
 
 root.render(<Frontend />);
 ```
 
-Then, run index.ts
+準備ができたら、下のコマンドでアツアツ（--hot）のまま動かしちゃおう！🔥
 
 ```sh
 bun --hot ./index.ts
 ```
 
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
+もっと詳しく知りたいときは、`node_modules/bun-types/docs/**.mdx` にある Bunちゃんの秘密のドキュメントを読んでみてねっ！📖✨

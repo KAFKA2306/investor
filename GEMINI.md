@@ -1,56 +1,54 @@
-# Strategic Mandate: Autonomous Alpha Generation
+# ✨ 戦略的マンデート：自律型アルファ生成のひみつ ✨
 
-This document defines the operational mandate for the **Autonomous Quantitative Investment System**. The system leverages **Gemini 3.0 Pro** for high-reasoning factor discovery and **Strict TypeScript** for high-integrity execution, creating a self-evolving alpha generation pipeline.
+このドキュメントは、**自律型クオンツ投資システム**さんの進むべき道をきめた、とっても大事なガイドラインだよっ！💖 このシステムは、**Gemini 3.0 Pro**ちゃんのすごーい思考力で「アルファ」を見つけ出して、**Strict TypeScript**くんで完璧に実行しちゃう、自己進化型のアルファ生成パイプラインなんだよ〜✨
 
-## Strategic Objectives
-1. **Alpha Extraction**: Autonomous discovery of non-obvious, orthogonal market signals.
-2. **Risk Mitigation**: Continuous auditing of strategies to ensure statistical significance and regime robustness.
-3. **Execution Reliability**: Zero-fat infrastructure designed for high-fidelity backtesting and live monitoring.
+## 🌟 戦略的な目標（ゴール！）
+1. **アルファをい〜っぱい抽出！**: 普通じゃ気づけないような、市場の隠れたサインを自律的に見つけちゃうよっ。
+2. **リスクをぴたっと抑制！**: ストラテジーが本当に正しいか、常に厳しくチェックして、どんな相場でも負けないように守るよ🛡️✨
+3. **実行のしんらいせい（信頼性）バッチリ！**: 無駄をぜーんぶ省いた最強のインフラで、バックテストも本番も、完璧にこなしちゃうんだもん！
 
-## Core Technology Stack (Infrastructure for Alpha)
-- **Runtime**: [Bun](https://bun.sh/) - High-performance engine for data-intensive quantitative workflows.
-- **Intelligence**: Gemini 3.0 Pro - Specialized for sentiment synthesis, factor hypothesis, and cross-asset reasoning.
-- **Validation**: Strict TypeScript + Zod - Ensures "Immutable Evidence" and prevents "Dirty Data" from contaminating the Alpha Factory.
-- **Gateways**: Standardized access to J-Quants (Institutional Disclosure), Yahoo Finance, and e-Stat (Economic Fundamentals).
-- **Forecasting**: Integration with state-of-the-art time-series foundation models (Chronos, TimesFM).
+## 🚀 さいきょうのテクノロジースタック（アルファのための基盤だよ！）
+- **実行エンジン**: [Bun](https://bun.sh/) - データを大量に扱うクオンツのお仕事も、爆速でこなしちゃうすごいやつだよ！⚡
+- **かしこい知能**: Gemini 3.0 Pro - センチメントの分析や、新しい因子の仮説、資産をまたいだ推論までできちゃう天才ちゃん！🧠💎
+- **ぜったい安心な検証**: Strict TypeScript + Zod - 「汚いデータ」は絶対に入れないよ！証拠をしっかり固めて、アルファの工場を守るんだからねっ💢✨
+- **データの入り口**: J-Quants（制度開示）、Yahoo Finance、e-Stat（政府統計）にいつでもアクセスできちゃうよ！🌐
+- **みらい予測**: Amazon ChronosやGoogle TimesFMみたいな、最先端の時系列モデルと合体してるよ！📈
 
-## Operational Architecture
-The system operates as a network of specialized **Autonomous Analysts**:
-- **Alpha Factory (`ts-agent/src/agents/`)**: Specialized units like `LesAgent` (Factor mining), `PeadAgent` (Event-driven drift), and `XIntelligenceAgent` (Sentiment extraction).
-- **Audit Engine (`ts-agent/src/core/`)**: Continuous validation and UQTL maintenance.
-- **Data Fabric (`ts-agent/src/gateways/`)**: High-fidelity, PIT (Point-in-Time) data ingestion.
-- **Experimental Sandbox (`ts-agent/src/experiments/`)**: Rapid prototyping and reproduction of quantitative breakthroughs.
-
+## 🛠️ うんようアーキテクチャ（なかまたち！）
+このシステムは、特別なスキルを持った**自律型アナリスト**たちのチームで動いてるよっ！🐾
+- **アルファ・ファクトリー (`ts-agent/src/agents/`)**: 因子を探す `LesAgent`、イベントを追う `PeadAgent`、感情を読み取る `XIntelligenceAgent` みたいな、個性豊かなエージェントたちが大活躍！🏭✨
+- **オーディット・エンジン (`ts-agent/src/core/`)**: みんなの仕事が正しいか、ずっと見守って検証し続けるしっかり者だよ！🔍
+- **データ・ファブリック (`ts-agent/src/gateways/`)**: 高品質なデータを、正しいタイミング（PIT）でばっちり取り込むよ！🌐
+- **じっけん用サンドボックス (`ts-agent/src/experiments/`)**: 新しいアイデアや研究を、しゅばばばっと試作して再現しちゃう場所だよ！🏖️
 
 ---
 
-## Building and Running
+## 🏃‍♂️ 作る！動かす！
 
-### Development Cycle
-| Command | Description |
+### 開発のサイクルだよっ ⚙️
+| コマンド | なにするの？ |
 | :--- | :--- |
-| `task check` | Run Biome lint/format and TypeScript typecheck. |
-| `task discovery` | Execute Orthogonal Alpha Search + Foundation Benchmarking. |
-| `task benchmark:foundation` | Run e-Stat benchmarking for Chronos/TimesFM models. |
-| `task run` | Execute the full pipeline (Discovery + LLM Readiness). |
-| `task view` | Launch the Vite-based dashboard to view results. |
+| `task check` | Biomeくんでコードを綺麗にして、TypeScriptくんの型チェックを受けるよ！✨ |
+| `task discovery` | 新しいアルファ探しと、モデルのベンチマークを一気にやっちゃうよ！🔍🚀 |
+| `task benchmark:foundation` | e-Statのデータを使って、予測モデルたちの実力をはかるよ！📊 |
+| `task run` | 探索から準備まで、フルコースで実行しちゃうよ！わくわく！🔥 |
+| `task view` | Viteベースのダッシュボードを開いて、結果をにこにこ眺めるよっ！💻💖 |
 
-### Model Registry & Forecasting
-The system includes a **Standardized Model Registry** (`ts-agent/src/model_registry/`) for time-series foundation models:
-- **Models**: Integration with Amazon Chronos (t5-tiny/mini/small) and Google TimesFM.
-- **Inference**: High-performance batch inference via Python/PyTorch bridge.
-- **Benchmarking**: Continuous performance tracking (RMSE, SMAPE, DA) on economic indicators (e-Stat).
+### 予測モデルの登録所 📝
+時系列のすごーいモデルたちのための**標準モデルレジストリ** (`ts-agent/src/model_registry/`) があるよ！
+- **モデルたち**: Amazon Chronos (t5-tiny/mini/small) や Google TimesFM と仲良しだよっ。
+- **推論**: Python/PyTorchへの橋渡しをして、い〜っぱいまとめて推論できちゃう！⚡
+- **ベンチマーク**: 経済指標を使って、モデルがどれくらい優秀か（RMSEとかね！）をいつも追いかけてるよっ。
 
 ---
 
-## Development Conventions
+## 🎀 開発のお約束
 
-### Coding Standards
-- **Strict Typing**: All new code must adhere to strict TypeScript rules. Avoid `any`.
-- **Formatting**: Use `task check` to ensure code matches the Biome configuration.
-- **Agent Pattern**: New strategies should extend `BaseAgent` and implement a `run()` method.
-- **Data Safety**: Use schemas in `ts-agent/src/schemas/` to validate any incoming data from gateways.
+### コーディングのルール 📝
+- **型はきっちりと！**: 新しいコードは絶対に Strict TypeScript のルールを守ってね！ `any` なんて使ったらめっ！だよ？💢
+- **見た目も美しく**: `task check` を使って、みんなでコードの綺麗さを揃えようねっ✨
+- **エージェントの形**: 新しい戦略を作るときは、`BaseAgent` を継承して `run()` メソッドを実装してね！
+- **データの安全**: ゲートウェイから入ってくるデータは、`ts-agent/src/schemas/` のスキーマでしっかりチェックするよ！🛡️
 
-
-### Documentation
-- **Diagrams**: Mermaid diagrams in `docs/diagrams/` describe the system flow.
+### ドキュメンテーション 📖
+- **図解**: `docs/diagrams/` にある Mermaid の図を見れば、システムの動きが一目でわかって、とってもハッピーになれるよ！🌈

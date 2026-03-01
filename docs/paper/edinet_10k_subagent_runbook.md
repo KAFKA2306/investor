@@ -1,30 +1,30 @@
-# 🎀 EDINET 10-K Subagent Runbook (Coverage First, Quality Second) ✨
+# 🎀 EDINET 10-K サブエージェントくんの最強しゅぎょう日誌 (カバレッジ優先、質もあとから追いかけちゃうぞ編) ✨
 
-## 🌟 ごーる！ (Goal)
-「EDINET Risk-Delta x PEAD hybrid」の `signals/day` をもっともっと増やすよぉ！🚀💖
-1. イベントのカバレッジを光の速さで広げるっ (`metadata-only`) 🏃‍♀️💨
-2. 主要な銘柄のデータの質をぴかぴかに上げるっ (XBRLテキストを優先してねっ！) ✨💎
+## 🌟 いっしょに目指すごーるっ！ (Goal)
+「EDINET Risk-Delta x PEAD hybrid」の `signals/day` をもーっともっと、たっくさん増やしちゃうよぉ！🚀💖
+1. イベントのカバレッジを光の速さで、しゅばばばーって広げちゃうっ (`metadata-only`) 🏃‍♀️💨
+2. 大事な銘柄さんのデータの質を、キラキラのぴかぴかに磨き上げるよっ！ (XBRLテキストを優先してねっ、約束だょ！) ✨💎
 
-## 🛠️ おしごとの範囲 (Scope)
+## 🛠️ おてつだいの範囲 (Scope)
 - **とくちょうりょうマップ**: `ts-agent/data/edinet_10k_intelligence_map.json` 🗺️
-- **ジェネレーター**: `ts-agent/src/experiments/generate_10k_features.ts` ⚙️
+- **じぇねれーたー**: `ts-agent/src/experiments/generate_10k_features.ts` ⚙️
 - **ナレッジベース構築**: `ts-agent/src/experiments/build_alpha_knowledgebase.ts` 📚
 - **ばっくてすと**: `ts-agent/src/experiments/run_kb_signal_backtest.ts` 📈
 - **グラフ作成**: `ts-agent/src/experiments/plot_kb_signal_backtest.py` 🎨
 
-## 📊 いまのじょうたいっ！ (Current Baseline: 2026-03-01)
-- 銘柄数: `646` 🏢
-- イベント数: `2440` 🎈
-- 期間: `2021-05-20` から `2025-12-24` までっ！
-- 年ごとの内訳だよぉ：
+## 📊 今のじょうたいをチェックだょっ！ (Current Baseline: 2026-03-01)
+- 銘柄さんの数: `646` 🏢 (もっと増やしたいねっ！)
+- イベントの数: `2440` 🎈 (わくわくっ！)
+- 期間: `2021-05-20` から `2025-12-24` まで頑張ってるよぉ！
+- 年ごとのなかみ：
   - 2021年: 247
   - 2022年: 622
   - 2023年: 179
   - 2024年: 707
   - 2025年: 685 ✨
 
-## 🎀 Step 1: まずはカバレッジを広げちゃおうっ！ (Fast Coverage Expansion)
-メタデータだけで、全銘柄をばーっと集めるよぉ！🏃‍♀️✨
+## 🎀 Step 1: まずはカバレッジを爆速で広げちゃおうっ！ (Fast Coverage Expansion)
+メタデータさんだけで、全銘柄をいっきにあつめるよぉ！えいえいおーっ！🏃‍♀️✨
 
 ```bash
 cd ts-agent
@@ -38,12 +38,12 @@ bun run experiments:10k-features -- \
 ```
 
 **めもっ！📝**
-- これでイベントの数を一気に増やせるよぉ！✨
-- XBRLのダウンロードがちょっと不安定なときでも、これなら安心だねっ！💖
+- これでイベントの数を一気に増やせるよぉ！すごいでしょっ✨
+- XBRLのダウンロードがちょっとご機嫌ななめなときでも、これなら安心なんだもんっ！💖
 
-## 💎 Step 2: 主要な銘柄をぴかぴかにするよっ！ (Major Symbol Quality Upgrade)
-主要な銘柄については、メタデータだけじゃなくて中身もしっかり読み込むよぉ！✨
-`--indexed-only` を使って、すでにインデックスされてるセクションテキストを優先しようねっ！⏳💕
+## 💎 Step 2: 大事な銘柄さんをキラキラのぴかぴかにするよっ！ (Major Symbol Quality Upgrade)
+主要な銘柄さんについては、メタデータだけじゃなくて中身もしっかり読み込んじゃうよぉ！気合十分だょっ！✨
+`--indexed-only` を使って、すでにインデックスされてるセクションテキストを優先しちゃおうねっ！⏳💕
 
 ```bash
 cd ts-agent
@@ -57,12 +57,12 @@ bun run experiments:10k-features -- \
   --flush-every=100
 ```
 
-**読み解きかたっ！🔍**
-- `insertedFromIndexed` > 0 なら、質の高いデータにアップグレードできたってことだよぉ！✨
-- このステップでは `insertedFromMetadata` は少なめがいい感じっ！💕
+**見極めポイントっ！🔍**
+- `insertedFromIndexed` > 0 なら、質の高いデータにパワーアップできた証拠だよぉ！やったねっ！✨
+- このステップでは `insertedFromMetadata` は少なめなのが理想的だねっ！💕
 
-## 🛠️ 再構築とバリデーションっ！ (Rebuild and Validate)
-仕上げに、ナレッジベースを作ってテストするよぉ！📈✨
+## 🛠️ 再構築とバリデーション、いっくよぉーっ！ (Rebuild and Validate)
+仕上げに、ナレッジベースを作ってテストするよぉ！最高のアルファを見つけようねっ！📈✨
 
 ```bash
 cd ts-agent
@@ -71,22 +71,22 @@ bun run experiments:kb-backtest -- --top-k=5 --min-signals-per-day=4
 python3 src/experiments/plot_kb_signal_backtest.py --top-k=5 --min-signals-per-day=4
 ```
 
-## ✅ 合格基準だよぉっ！ (Acceptance Criteria)
+## ✅ 合格のための「はなまる」基準っ！ (Acceptance Criteria)
 - **カバレッジ (Coverage)**:
-  - Step 1 のあとで `events` がちゃんと増えてることっ！📈✨
-  - 期間の `max` がターゲットまで届いてることっ！🎯
+  - Step 1 のあとで `events` がちゃんと増えてることっ！右肩上がりでハッピーだねっ📈✨
+  - 期間の `max` がターゲットまでちゃんと届いてることっ！目標達成だょっ🎯
 - **クオリティ (Quality)**:
-  - Step 2 で `insertedFromIndexed` が増えてるか、中身のインサートが成功してることっ！💎
+  - Step 2 で `insertedFromIndexed` が増えてるか、中身のインサートが成功してることっ！中身も大事だもんね💎
 - **ばっくてすと (Backtest)**:
-  - 前より `tradableDays` や `totalSignalEvents` が増えてることっ！🚀
-  - リスク指標がちゃんと守られてることっ！🛡️💕
+  - 前より `tradableDays` や `totalSignalEvents` が増えてて、もっともっとトレードできちゃうことっ！🚀
+  - リスクの指標がちゃんと守られてて、みんなをしっかり守れてることっ！🛡️💕
 
-## ⚠️ おしごとの守りごとっ！ (Operational Guardrails)
-- 関係ないワークスペースの変更は上書きしちゃダメだよぉ！🙅‍♀️✨
-- EDINETのネットワークが不安定なときは：
-  - Step 1 の `metadata-only` を優先してねっ！⏳
-  - Step 2 は `indexed-only` から始めて、安定したらフルダウンロードに再挑戦だよぉ！🌈
-- 終わったら出力をちゃんと保存してねっ！：
+## ⚠️ 守ってほしい「お約束」だょっ！ (Operational Guardrails)
+- 関係ないワークスペースの変更を勝手に上書きしちゃうのは、ぜったいめっ！だよぉ？🙅‍♀️✨
+- EDINETさんがちょっと疲れちゃって、ネットワークが不安定なときは：
+  - Step 1 の `metadata-only` を優先してねっ！ゆっくりいこうねっ⏳
+  - Step 2 は `indexed-only` から始めて、落ち着いたらフルダウンロードに再挑戦だよぉ！虹が見えるまで頑張ろうっ🌈
+- 終わったら出力をちゃんと宝箱（ディレクトリ）にしまってねっ！：
   - `edinet_10k_intelligence_map.json` 🗺️
   - ばっくてすとのメトリクス JSON 📊
   - グラフの PNG 画像 🎨✨

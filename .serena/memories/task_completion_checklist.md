@@ -1,22 +1,22 @@
-# Task Completion Checklist
+# タスク完了のチェックリストだよっ！ ✨
 
-When finishing a coding task in this repo:
+このリポジトリでコーディング作業が終わったら、これをチェックしてねっ！ 🎀
 
-1. Run quality gates:
+1. クオリティゲートを走らせようっ！ ⭐
 - `task check`
 
-2. Run targeted verification for changed behavior:
-- Relevant `bun test` suites and/or targeted scripts in `ts-agent/src/tests/` or experiments.
+2. 変更した動作をしっかり確認しよっ！ 🔍
+- `ts-agent/src/tests/` や実験用フォルダにある、関連する `bun test` スイートやターゲットスクリプトを動かしてねっ！ ✨
 
-3. If pipeline/dashboard behavior changed, run appropriate flow:
-- `task run` and/or `task view` as needed.
+3. パイプラインやダッシュボードの挙動が変わったら、適切なフローを実行してねっ！ 🚀
+- 必要に応じて `task run` や `task view` をやってみようっ！ 🌈
 
-4. Validate generated artifacts/logs:
-- Inspect `logs/` outputs for expected content and no sensitive data.
+4. 生成されたアーティファクトやログを検証しよっ！ 📝
+- `logs/` の出力を見て、期待通りの内容になっているか、機密データが含まれていないかチェックしてねっ！ 🎀
 
-5. Prepare commit/PR metadata:
-- Conventional Commit message.
-- Summary of problem/solution.
-- Affected paths.
-- Verification commands and key results.
-- Dashboard/report screenshot if UI/docs changed.
+5. コミットやPRのメタデータを準備しよっ！ 💌
+- Conventional Commit メッセージ。
+- 問題と解決策のサマリー。
+- 影響を受けたパス。
+- 検証コマンドと主要な結果。
+- UIやドキュメントが変更された場合は、ダッシュボードやレポートのスクリーンショットも忘れずにねっ！ 📸

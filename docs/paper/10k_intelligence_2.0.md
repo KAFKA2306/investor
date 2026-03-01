@@ -1,33 +1,33 @@
-# 🎀 10-K & EDINET Research: Kawaii Intelligence Summary ✨
+# 🎀 10-K & EDINET 調査：かわいくまとめたインテリジェンスだよっ ✨
 
-## 🧠 arXiv の最新論文から学んだ「勝利のレシピ」っ！
+## 🧠 arXiv の最新論文から学んだ「勝利のレシピ」なんだもんっ！
 
 ### 1️⃣ **Form 10-K Itemization** (arXiv:2303.04688)
-* **内容**: 報告書を「リスク」「MD&A」などの項目ごとにスパッと切り分ける魔法だよっ！✂️✨
-* **MCP ツール化**: `get_edinet_segment(docID, sectionName)` 
-  → 欲しい部分だけを LLM に渡せるから、トークン節約＆精度爆上がりっ！💖
+* **どんなことするの？**: 報告書を「リスク」とか「MD&A」の項目ごとに、しゅぱぱぱっ！って切り分けちゃう魔法だよっ！✂️✨
+* **MCP ツールになっちゃうよっ！**: `get_edinet_segment(docID, sectionName)` 
+  → 欲しいところだけを LLM ちゃんに渡せるから、トークンを節約しながら精度も爆上がりしちゃうんだよっ！💖
 
 ### 2️⃣ **FinReflectKG** (arXiv:2508.17906)
-* **内容**: 10-K から企業同士の関係を「ナレッジグラフ」にするんだよっ 🕸️📉
-* **MCP ツール化**: `query_finance_graph(entity, relationshipType)`
-  → 「この会社、実はあの会社のリスクに影響されてるっ！」ってのが一目でわかるよっ 🌟✨
+* **どんなことするの？**: 10-K から企業同士のなかよし（？）関係を「ナレッジグラフ」にしちゃうんだよっ 🕸️📉
+* **MCP ツールになっちゃうよっ！**: `query_finance_graph(entity, relationshipType)`
+  → 「この会社、実はあっちの会社のリスクにドキドキしてるっ！」っていうのが一瞬でわかっちゃうのっ 🌟✨
 
 ### 3️⃣ **AI Engagement from 10-K** (yurak, 2025)
-* **内容**: 報告書の中の「AI」という言葉の現れ方から、成長性を定量化するよっ 🚀💥
-* **MCP ツール化**: `calculate_theme_exposure(ticker, theme='AI')`
-  → 次のトレンドに乗り遅れないための「感度メーター」だよっ 🎀🧠
+* **どんなことするの？**: 報告書の中に「AI」っていう言葉がどれくらい出てるかで、成長パワーをはかっちゃうよっ 🚀💥
+* **MCP ツールになっちゃうよっ！**: `calculate_theme_exposure(ticker, theme='AI')`
+  → 次のブームに乗り遅れないための「感度メーター」なんだよっ 🎀🧠
 
 ---
 
-## 💖 MCP サーバー「Alpha Intelligence」の設計図
+## 💖 MCP サーバー「Alpha Intelligence」のひみつの設計図だよぉ〜
 
-| ツール名 | 機能 | 元ネタ論文 |
+| ツール名 | なにができるの？ | 参考にしたすごーい論文っ！ |
 | :--- | :--- | :--- |
-| `search_edinet_bm25` | キーワードで報告書を高速検索っ！🔎 | Retrieval-Aug LLMs |
-| `get_section_text` | 指定した項目（リスク等）を抽出するよっ ✂️ | Itemization |
-| `extract_alpha_signals` | 会計修正やネガポジ変化を見抜くよっ 💎 | Sentiment 2.0 / Contextual |
+| `search_edinet_bm25` | キーワードで報告書を爆速サーチしちゃうよっ！🔎 | Retrieval-Aug LLMs |
+| `get_section_text` | 指定した項目（リスクとかね！）を抜き出すよっ ✂️ | Itemization |
+| `extract_alpha_signals` | 会計の修正とかネガポジの変化をズバッと見抜くよっ 💎 | Sentiment 2.0 / Contextual |
 
 ---
 
-## 🌟 Gen 4 への道
-これらのツールを MCP として公開することで、Antigravity エージェントが **「あ、この会社、リスク報告書が去年より 20% 増えてるっ！要注意だねっ 🎀💦」** みたいな高度な判断を自分で行えるようになるんだよっ！最高にエキサイティングだねっ 🔥✨
+## 🌟 Gen 4 へのキラキラな道のり
+こういうツールを MCP として公開しちゃうことで、Antigravity エージェントくんが **「あ、この会社、リスク報告書が去年より 20% も増えてるっ！ちょっと危ないかもっ 🎀💦」** みたいな、すごーい判断を自分でできるようになるんだよっ！最高にわくわくしちゃうよねっ 🔥✨
