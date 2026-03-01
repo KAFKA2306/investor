@@ -2,7 +2,9 @@ import { randomUUID } from "node:crypto";
 import { resolve } from "node:path";
 import {
   AlphaKnowledgebase,
+  type GateDecisionInput,
   type SignalBacktestEvent,
+  type TradableSignalEvent,
 } from "../context/alpha_knowledgebase.ts";
 import {
   calculatePerformanceMetrics,
@@ -15,6 +17,10 @@ type CliArgs = {
   topK: number;
   minSignalsPerDay: number;
   tradeLagDays: number;
+  withGates: boolean;
+  minLiquidityJpy: number;
+  maxCorrection90d: number;
+  allowRegimes: Set<string>;
   fromDate?: string;
   toDate?: string;
   dbPath?: string;
@@ -27,6 +33,13 @@ type DailyBasket = {
   shortCount: number;
   grossReturn: number;
   netReturn: number;
+};
+
+type BacktestRow = {
+  signalId: string;
+  date: string;
+  combinedAlpha: number;
+  nextReturn: number;
 };
 
 const mean = (values: readonly number[]): number =>
@@ -43,15 +56,46 @@ const pickArg = (args: readonly string[], key: string): string | undefined => {
   return matched ? matched.slice(prefix.length) : undefined;
 };
 
-const parseArgs = (): CliArgs => {
-  const args = process.argv.slice(2);
+const parseArgs = (args: readonly string[]): CliArgs => {
+  const edinetGates = core.config.alpha?.edinet?.gates;
   const parsed: CliArgs = {
     topK: Math.max(1, Number(pickArg(args, "--top-k") ?? 3)),
     minSignalsPerDay: Math.max(
       2,
-      Number(pickArg(args, "--min-signals-per-day") ?? 4),
+      Number(
+        pickArg(args, "--min-signals-per-day") ??
+          edinetGates?.minSignalsPerDay ??
+          4,
+      ),
     ),
     tradeLagDays: Math.max(1, Number(pickArg(args, "--trade-lag-days") ?? 2)),
+    withGates: args.includes("--with-gates"),
+    minLiquidityJpy: Math.max(
+      0,
+      Number(
+        pickArg(args, "--min-liquidity-jpy") ??
+          edinetGates?.minLiquidityJpy ??
+          100_000_000,
+      ),
+    ),
+    maxCorrection90d: Math.max(
+      0,
+      Number(
+        pickArg(args, "--max-correction-90d") ??
+          edinetGates?.maxCorrection90d ??
+          2,
+      ),
+    ),
+    allowRegimes: new Set(
+      (
+        pickArg(args, "--allow-regimes") ??
+        edinetGates?.regimeAllowlist?.join(",") ??
+        "RISK_ON,NEUTRAL"
+      )
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+    ),
   };
 
   const fromDate = pickArg(args, "--from");
@@ -65,9 +109,9 @@ const parseArgs = (): CliArgs => {
 };
 
 const groupByDate = (
-  events: readonly SignalBacktestEvent[],
-): Map<string, SignalBacktestEvent[]> => {
-  const grouped = new Map<string, SignalBacktestEvent[]>();
+  events: readonly BacktestRow[],
+): Map<string, BacktestRow[]> => {
+  const grouped = new Map<string, BacktestRow[]>();
   for (const event of events) {
     const bucket = grouped.get(event.date) ?? [];
     bucket.push(event);
@@ -76,19 +120,109 @@ const groupByDate = (
   return grouped;
 };
 
-async function run(): Promise<void> {
-  const args = parseArgs();
+const normalizeBacktestRows = (
+  events: readonly SignalBacktestEvent[],
+): BacktestRow[] =>
+  events.map((row) => ({
+    signalId: row.signalId,
+    date: row.date,
+    combinedAlpha: row.combinedAlpha,
+    nextReturn: row.nextReturn,
+  }));
+
+const buildGateDecisions = (
+  row: TradableSignalEvent,
+  args: CliArgs,
+): { passed: boolean; decisions: GateDecisionInput[] } => {
+  const liquidity = Math.max(0, row.entryClose) * Math.max(0, row.entryVolume);
+  const liquidityPass = liquidity >= args.minLiquidityJpy;
+  const correctionPass = row.correctionCount90d <= args.maxCorrection90d;
+  const regimePass =
+    row.regimeId !== null && args.allowRegimes.has(row.regimeId);
+
+  const decisions: GateDecisionInput[] = [
+    {
+      signalId: row.signalId,
+      date: row.date,
+      gateName: "liquidity_min_jpy",
+      passed: liquidityPass,
+      threshold: `>= ${args.minLiquidityJpy}`,
+      actualValue: liquidity,
+      reason: liquidityPass ? "ok" : "insufficient_liquidity",
+    },
+    {
+      signalId: row.signalId,
+      date: row.date,
+      gateName: "correction_count_90d",
+      passed: correctionPass,
+      threshold: `<= ${args.maxCorrection90d}`,
+      actualValue: row.correctionCount90d,
+      reason: correctionPass ? "ok" : "too_many_corrections",
+    },
+    {
+      signalId: row.signalId,
+      date: row.date,
+      gateName: "macro_regime_allowlist",
+      passed: regimePass,
+      threshold: [...args.allowRegimes].join(","),
+      actualValue: null,
+      reason: regimePass
+        ? "ok"
+        : `regime_not_allowed:${row.regimeId ?? "NONE"}`,
+    },
+  ];
+
+  return {
+    passed: liquidityPass && correctionPass && regimePass,
+    decisions,
+  };
+};
+
+export async function runKbSignalBacktest(
+  cliArgs: readonly string[] = process.argv.slice(2),
+): Promise<void> {
+  const args = parseArgs(cliArgs);
   const kb = new AlphaKnowledgebase(args.dbPath);
 
-  const events = kb.fetchSignalBacktestEvents(
-    args.fromDate,
-    args.toDate,
-    args.tradeLagDays,
-  );
+  let gateDecisionsSaved = 0;
+  const events = args.withGates
+    ? (() => {
+        const tradable = kb.fetchTradableSignals(
+          args.fromDate,
+          args.toDate,
+          args.tradeLagDays,
+        );
+        const gateDecisions: GateDecisionInput[] = [];
+        const passedRows: BacktestRow[] = [];
+        for (const row of tradable) {
+          const gate = buildGateDecisions(row, args);
+          gateDecisions.push(...gate.decisions);
+          if (gate.passed) {
+            passedRows.push({
+              signalId: row.signalId,
+              date: row.date,
+              combinedAlpha: row.combinedAlpha,
+              nextReturn: row.nextReturn,
+            });
+          }
+        }
+        kb.upsertGateDecisions(gateDecisions);
+        gateDecisionsSaved = gateDecisions.length;
+        return passedRows;
+      })()
+    : normalizeBacktestRows(
+        kb.fetchSignalBacktestEvents(
+          args.fromDate,
+          args.toDate,
+          args.tradeLagDays,
+        ),
+      );
   if (events.length === 0) {
     kb.close();
     throw new Error(
-      "No signal events found in selected period. Build KB first or widen date range.",
+      args.withGates
+        ? "No signal events passed gates in selected period. Lower thresholds or widen date range."
+        : "No signal events found in selected period. Build KB first or widen date range.",
     );
   }
 
@@ -157,7 +291,9 @@ async function run(): Promise<void> {
 
   kb.recordBacktestRun({
     runId,
-    strategyId: "EDINET_RISK_DELTA_PEAD_HYBRID",
+    strategyId: args.withGates
+      ? "EDINET_RISK_DELTA_PEAD_GOVERNANCE_REGIME_V2"
+      : "EDINET_RISK_DELTA_PEAD_HYBRID",
     fromDate: firstDate,
     toDate: lastDate,
     sharpe: perf.sharpe,
@@ -175,10 +311,15 @@ async function run(): Promise<void> {
   );
 
   await runGenericAlphaScenario({
-    strategyId: "EDINET_RISK_DELTA_PEAD_HYBRID",
-    strategyName: "EDINET Risk-Delta x PEAD Hybrid (KB)",
-    summary:
-      "Long top combined_alpha and short bottom combined_alpha on filing-event days sourced from AlphaKnowledgebase signals.",
+    strategyId: args.withGates
+      ? "EDINET_RISK_DELTA_PEAD_GOVERNANCE_REGIME_V2"
+      : "EDINET_RISK_DELTA_PEAD_HYBRID",
+    strategyName: args.withGates
+      ? "EDINET Risk-Delta x PEAD x Governance x Regime (KB)"
+      : "EDINET Risk-Delta x PEAD Hybrid (KB)",
+    summary: args.withGates
+      ? "Long top combined_alpha and short bottom combined_alpha on filing-event days after liquidity/correction/regime gates."
+      : "Long top combined_alpha and short bottom combined_alpha on filing-event days sourced from AlphaKnowledgebase signals.",
     experimentId: runId,
     evidenceSource: "QUANT_BACKTEST",
     alpha: {
@@ -207,6 +348,10 @@ async function run(): Promise<void> {
         topK: args.topK,
         minSignalsPerDay: args.minSignalsPerDay,
         tradeLagDays: args.tradeLagDays,
+        withGates: args.withGates,
+        minLiquidityJpy: args.minLiquidityJpy,
+        maxCorrection90d: args.maxCorrection90d,
+        allowRegimes: [...args.allowRegimes],
         totalCostRate,
       },
       sample: {
@@ -224,6 +369,7 @@ async function run(): Promise<void> {
         pValue,
         informationCoefficient,
       },
+      gateDecisionsSaved,
       productionReady,
     },
   };
@@ -233,7 +379,7 @@ async function run(): Promise<void> {
 }
 
 if (import.meta.main) {
-  run().catch((error) => {
+  runKbSignalBacktest().catch((error) => {
     console.error(error);
     process.exit(1);
   });
