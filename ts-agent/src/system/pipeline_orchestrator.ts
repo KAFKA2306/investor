@@ -4,7 +4,10 @@ import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
 import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { MissionAgent } from "../agents/mission_agent.ts";
-import { MemoryCenter } from "../context/unified_context_services.ts";
+import {
+  ContextPlaybook,
+  MemoryCenter,
+} from "../context/unified_context_services.ts";
 import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import type {
@@ -15,9 +18,11 @@ import type {
 } from "../schemas/financial_domain_schemas.ts";
 import { QuantitativeVerificationSchema } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent, core } from "./app_runtime_core.ts";
-import { DataPipelineRuntime } from "./data_pipeline_runtime.ts";
+import {
+  DataPipelineRuntime,
+  QuantResearchRuntime,
+} from "./data_pipeline_runtime.ts";
 import { paths } from "./path_registry.ts";
-import { QuantResearchRuntime } from "./quant_research_runtime.ts";
 import { logIO, logMetric } from "./telemetry_logger.ts";
 
 type VerificationVerdict =
@@ -65,13 +70,7 @@ export interface PITDataset {
   data: IntegratedData[];
   context: string;
   qualityScore: number;
-  deliveryMetrics: {
-    coverageRate: number;
-    missingRate: number;
-    latencyScore: number;
-    leakFreeScore: number;
-    sourceConsistency: number;
-  };
+  deliveryMetrics: DataDeliveryMetrics;
   preprocessingConditions: {
     imputation: string;
     normalization: string;
@@ -107,6 +106,9 @@ export interface ExecutionResult {
   status: "FILLED" | "PARTIAL" | "REJECTED";
   averagePrice: number;
   quantity: number;
+  fillRate: number;
+  slippageBps: number;
+  executionLatencyMs: number;
   executionReason?: string;
   plan: OrderPlan;
 }
@@ -141,6 +143,7 @@ export interface DataDeliveryMetrics {
   coverageRate: number;
   missingRate: number;
   latencyScore: number;
+  latencyMinutes: number;
   leakFreeScore: number;
   sourceConsistency: number;
 }
@@ -167,6 +170,9 @@ export interface SystemStateSnapshot {
   regime: string;
   volatility: string;
   driftAlerts: number;
+  updatedAt: string;
+  regimeScore?: number;
+  volatilityScore?: number;
 }
 
 export interface IElder {
@@ -262,6 +268,61 @@ export class PipelineOrchestrator extends BaseAgent {
     super();
   }
 
+  private blueprint() {
+    return core.config.pipelineBlueprint;
+  }
+
+  private logPhase(phase: string, detail: string): void {
+    console.log(`📌 [${phase}] ${detail}`);
+  }
+
+  private evaluateExecutionQuality(execution: ExecutionResult): {
+    accepted: boolean;
+    failedChecks: string[];
+  } {
+    const defaults = {
+      minFillRate: 0.95,
+      maxSlippageBps: 2,
+      maxExecutionLatencyMs: 3000,
+    };
+    const criteria = {
+      ...defaults,
+      ...(this.blueprint()?.executionQuality ?? {}),
+    };
+    const failedChecks = [
+      execution.fillRate >= criteria.minFillRate ? "" : "fill_rate",
+      execution.slippageBps <= criteria.maxSlippageBps ? "" : "slippage",
+      execution.executionLatencyMs <= criteria.maxExecutionLatencyMs
+        ? ""
+        : "latency",
+    ].filter((x) => x.length > 0);
+    return { accepted: failedChecks.length === 0, failedChecks };
+  }
+
+  private evaluateExecutionConstraints(plan: OrderPlan): {
+    accepted: boolean;
+    failedChecks: string[];
+  } {
+    const defaults = {
+      maxPositionWeight: 0.12,
+      maxTurnover: 0.9,
+    };
+    const constraints = {
+      ...defaults,
+      ...(this.blueprint()?.executionConstraints ?? {}),
+    };
+    const maxWeight = Math.max(...Object.values(plan.allocations), 0);
+    const turnover = Object.values(plan.allocations).reduce(
+      (sum, w) => sum + Math.abs(w),
+      0,
+    );
+    const failedChecks = [
+      maxWeight <= constraints.maxPositionWeight ? "" : "max_position_weight",
+      turnover <= constraints.maxTurnover ? "" : "max_turnover",
+    ].filter((x) => x.length > 0);
+    return { accepted: failedChecks.length === 0, failedChecks };
+  }
+
   public async runPipeline(requirement: PipelineRequirement): Promise<void> {
     this.emitEvent("PIPELINE_STARTED", { requirementId: requirement.id });
 
@@ -289,6 +350,7 @@ export class PipelineOrchestrator extends BaseAgent {
     candidate: IdeaCandidate,
     forbiddenZones: string[],
   ): Promise<void> {
+    this.logPhase("入力と探索", `候補 ${candidate.id} を記憶保存し評価開始`);
     await this.elder.saveIdeaCandidate(candidate);
 
     let dataAttempt = 1;
@@ -317,6 +379,7 @@ export class PipelineOrchestrator extends BaseAgent {
       console.log(
         `🔄 [Orchestrator] Attempt ${attempt}: Processing ${candidate.id}`,
       );
+      this.logPhase("評価と判定", `候補 ${candidate.id} のモデル・検証ループ`);
 
       const modelConfig = await this.quantResearcher.selectFoundationModel(
         candidate,
@@ -411,6 +474,10 @@ export class PipelineOrchestrator extends BaseAgent {
     verification: VerificationResult,
     context: string,
   ): Promise<void> {
+    this.logPhase(
+      "執行監査フェーズ",
+      `採用候補 ${candidateId} の発注ゲート判定`,
+    );
     const gate = this.cqo.auditStrategy(verification);
     if (gate.verdict !== "APPROVED" || !gate.isProductionReady) {
       const reason = gate.critique.join(", ") || "ORDER_GATE_REJECTED";
@@ -430,9 +497,35 @@ export class PipelineOrchestrator extends BaseAgent {
     const controlled = await this.executionAgent.applyRiskControl(raw);
     const plan = await this.executionAgent.optimizeHedge(controlled);
     plan.strategyId = candidateId;
+    const executionConstraint = this.evaluateExecutionConstraints(plan);
+    if (!executionConstraint.accepted) {
+      await this.elder.saveRejectionReason(
+        candidateId,
+        `EXECUTION_CONSTRAINT_REJECTED:${executionConstraint.failedChecks.join("|")}`,
+        verification.verification?.metrics,
+      );
+      await this.elder.reflectLearning(
+        candidateId,
+        `Execution constraint rejected: ${executionConstraint.failedChecks.join(",")}`,
+      );
+      return;
+    }
     await this.elder.saveOrderPlan(plan);
 
     const execution = await this.executionAgent.execute(plan);
+    const executionQuality = this.evaluateExecutionQuality(execution);
+    if (!executionQuality.accepted) {
+      await this.elder.saveRejectionReason(
+        candidateId,
+        `EXECUTION_QUALITY_REJECTED:${executionQuality.failedChecks.join("|")}`,
+        verification.verification?.metrics,
+      );
+      await this.elder.reflectLearning(
+        candidateId,
+        `Execution quality gate rejected: ${executionQuality.failedChecks.join(",")}`,
+      );
+      return;
+    }
     const adoptionReason =
       verification.adoptionReason || `Adopted in context=${context}`;
     await this.elder.saveExecutionResult(execution, adoptionReason);
@@ -441,6 +534,21 @@ export class PipelineOrchestrator extends BaseAgent {
     await this.elder.saveAuditRecord(audit);
 
     const drift = await this.executionAgent.analyzeDrift(audit);
+    const driftThreshold = this.blueprint()?.driftRetraining;
+    if (driftThreshold) {
+      const te = Number(drift.metrics.trackingError ?? 0);
+      const mdd = Math.abs(Number(drift.metrics.maxDrawdown ?? 0));
+      const winRate = Number(drift.metrics.winRate ?? 1);
+      if (
+        te > driftThreshold.maxTrackingError ||
+        mdd > driftThreshold.maxRollingDrawdown ||
+        winRate < driftThreshold.minWinRate
+      ) {
+        drift.driftDetected = true;
+        drift.severity = "HIGH";
+        drift.recommendation = "ADJUST";
+      }
+    }
     await this.updateStatus(drift);
     await this.stateMonitor.recordDrift(drift);
   }
@@ -516,15 +624,22 @@ export class PipelineOrchestrator extends BaseAgent {
     );
     const annualizedReturn =
       result.verification?.metrics?.annualizedReturn ?? 0;
-    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.5;
-    const minIC = requirement.targetMetrics?.minIC ?? 0.03;
-    const maxDrawdown = requirement.targetMetrics?.maxDrawdown ?? 0.1;
+    const verifyDefaults = this.blueprint()?.verificationAcceptance;
+    const minSharpe =
+      requirement.targetMetrics?.minSharpe ?? verifyDefaults?.minSharpe ?? 1.5;
+    const minIC =
+      requirement.targetMetrics?.minIC ?? verifyDefaults?.minIC ?? 0.03;
+    const maxDrawdown =
+      requirement.targetMetrics?.maxDrawdown ??
+      verifyDefaults?.maxDrawdown ??
+      0.1;
+    const minAnnualizedReturn = verifyDefaults?.minAnnualizedReturn ?? 0;
 
     if (
       sharpe >= minSharpe &&
       ic >= minIC &&
       maxDrawdownAbs <= maxDrawdown &&
-      annualizedReturn > 0
+      annualizedReturn >= minAnnualizedReturn
     ) {
       return "ADOPTED";
     }
@@ -535,24 +650,40 @@ export class PipelineOrchestrator extends BaseAgent {
     dataset: PITDataset,
     requirement: PipelineRequirement,
   ): DataDeliveryGate {
-    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.5;
+    const minSharpe =
+      requirement.targetMetrics?.minSharpe ??
+      this.blueprint()?.verificationAcceptance?.minSharpe ??
+      1.5;
     const derivedQuality = Math.max(
       0.75,
       Math.min(0.9, 0.7 + minSharpe * 0.05),
     );
     const criteria = requirement.targetMetrics?.dataDelivery;
-    const threshold = criteria?.minQualityScore ?? derivedQuality;
-    const minCoverageRate = criteria?.minCoverageRate ?? 0.8;
-    const maxMissingRate = criteria?.maxMissingRate ?? 0.08;
+    const blueprintData = this.blueprint()?.dataAcceptance;
+    const threshold =
+      criteria?.minQualityScore ??
+      blueprintData?.minQualityScore ??
+      derivedQuality;
+    const minCoverageRate =
+      criteria?.minCoverageRate ?? blueprintData?.minCoverageRate ?? 0.8;
+    const maxMissingRate =
+      criteria?.maxMissingRate ?? blueprintData?.maxMissingRate ?? 0.08;
     const minLatencyScore = criteria?.minLatencyScore ?? 0.75;
-    const minLeakFreeScore = criteria?.minLeakFreeScore ?? 1;
-    const minSourceConsistency = criteria?.minSourceConsistency ?? 0.9;
+    const minLeakFreeScore =
+      criteria?.minLeakFreeScore ??
+      (blueprintData?.requireLeakFree === false ? 0 : 1);
+    const minSourceConsistency =
+      criteria?.minSourceConsistency ??
+      blueprintData?.minSourceConsistency ??
+      0.9;
+    const maxLatencyMinutes = blueprintData?.maxLatencyMinutes ?? 40;
     const m = dataset.deliveryMetrics;
     const failedChecks = [
       dataset.qualityScore >= threshold ? "" : "quality",
       m.coverageRate >= minCoverageRate ? "" : "coverage",
       m.missingRate <= maxMissingRate ? "" : "missing",
       m.latencyScore >= minLatencyScore ? "" : "latency",
+      m.latencyMinutes <= maxLatencyMinutes ? "" : "latency_minutes",
       m.leakFreeScore >= minLeakFreeScore ? "" : "leak",
       m.sourceConsistency >= minSourceConsistency ? "" : "consistency",
     ].filter((x) => x.length > 0);
@@ -573,7 +704,7 @@ export class PipelineOrchestrator extends BaseAgent {
     currentState: SystemStateSnapshot,
   ): Promise<IdeaCandidate[]> {
     const les = new LesAgent();
-    // Incorporate current state into the generation context
+
     const contextBullets: AceBullet[] = [
       ...history.knowledge.map((k) => ({
         id: `know-${crypto.randomUUID().slice(0, 8)}`,
@@ -622,13 +753,15 @@ export class PipelineOrchestrator extends BaseAgent {
   ): Promise<PipelineRequirement> {
     const missionPrompt = `Market Regime: ${state.regime}, Volatility: ${state.volatility}. Existing Seeds: ${history.seeds.join(", ")}. Forbidden: ${history.forbiddenZones.join(", ")}.`;
 
-    // Use MissionAgent to generate the mission doc
     const missionMd = await this.missionAgent.generateNextMission({
       currentRequirement: missionPrompt,
       historySeeds: history.seeds,
       forbiddenZones: history.forbiddenZones,
       constraints: ["6501.T", "9501.T", "6701.T"],
-      evaluationCriteria: { minSharpe: 1.8, minIC: 0.04 },
+      evaluationCriteria: {
+        minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe ?? 1.8,
+        minIC: this.blueprint()?.verificationAcceptance?.minIC ?? 0.04,
+      },
     });
 
     let universe = ["6501.T", "9501.T", "6701.T"];
@@ -652,9 +785,10 @@ export class PipelineOrchestrator extends BaseAgent {
       id: `req-agentic-${crypto.randomUUID().slice(0, 8)}`,
       description: missionMd.slice(0, 1000),
       targetMetrics: {
-        minSharpe: 1.8,
-        minIC: 0.04,
-        maxDrawdown: 0.1,
+        minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe ?? 1.8,
+        minIC: this.blueprint()?.verificationAcceptance?.minIC ?? 0.04,
+        maxDrawdown:
+          this.blueprint()?.verificationAcceptance?.maxDrawdown ?? 0.1,
       },
       universe,
     };
@@ -673,6 +807,7 @@ export class PipelineOrchestrator extends BaseAgent {
       console.log(
         `🔍 [Loop] Pulse Iteration ${discoveryAttempts}/${maxDiscoveryAttempts}`,
       );
+      this.logPhase("メタレイヤー", "状態監視・記憶参照・要件入力を更新");
 
       const state = await this.stateMonitor.getCurrentState();
       console.log(
@@ -685,7 +820,7 @@ export class PipelineOrchestrator extends BaseAgent {
       const requirement = await this.generateDynamicRequirement(state, history);
       console.log(`🎯 [Phase 5] Dynamic Mission: ${requirement.id}`);
 
-      console.log("🔍 [Phase 1] Generating Alpha Hypotheses...");
+      this.logPhase("研究検証フェーズ", "候補生成と適応戦略設計を開始");
       const candidates = await this.generateHighLevelIdeas(
         requirement,
         history,
@@ -698,16 +833,12 @@ export class PipelineOrchestrator extends BaseAgent {
       }
 
       for (const candidate of candidates) {
-        try {
-          console.log(`🧪 [Phase 2] Evaluating Candidate: ${candidate.id}`);
-          await this.processCandidate(
-            requirement,
-            candidate,
-            history.forbiddenZones,
-          );
-        } catch (error) {
-          console.error(`💥 Error in loop for ${candidate.id}:`, error);
-        }
+        console.log(`🧪 [Phase 2] Evaluating Candidate: ${candidate.id}`);
+        await this.processCandidate(
+          requirement,
+          candidate,
+          history.forbiddenZones,
+        );
       }
 
       console.log(`🏁 [Loop] Iteration ${discoveryAttempts} finished.`);
@@ -719,6 +850,52 @@ export class PipelineOrchestrator extends BaseAgent {
 
 export class ElderBridge implements IElder {
   private memory = new MemoryCenter();
+  private playbook = new ContextPlaybook();
+  private playbookLoaded = false;
+  private readonly runtimeRunId =
+    process.env.UQTL_RUN_ID ||
+    `run_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  private readonly runtimeLoopIteration = Number.parseInt(
+    process.env.UQTL_LOOP_ITERATION || "0",
+    10,
+  );
+
+  private async ensurePlaybookLoaded(): Promise<void> {
+    if (this.playbookLoaded) return;
+    await this.playbook.load();
+    this.playbookLoaded = true;
+  }
+
+  private async applyAceFeedback(
+    strategyId: string,
+    feedback: "HELPFUL" | "HARMFUL",
+    reason: string,
+  ): Promise<void> {
+    await this.ensurePlaybookLoaded();
+    const updated = await this.playbook.applyFeedbackByMetadataId({
+      metadataId: strategyId,
+      feedback,
+      reason,
+      runId: this.runtimeRunId,
+      loopIteration: this.runtimeLoopIteration,
+    });
+    if (updated > 0) {
+      console.log(
+        `[Elder] ACE feedback applied: strategy=${strategyId}, feedback=${feedback}, updatedBullets=${updated}`,
+      );
+    }
+  }
+
+  private pushMemoryEvent(type: string, payload: Record<string, unknown>) {
+    this.memory.pushEvent({
+      type,
+      payload,
+      metadata: {
+        runId: this.runtimeRunId,
+        loopIteration: this.runtimeLoopIteration,
+      },
+    });
+  }
 
   async getHistory(_requirementId: string): Promise<{
     seeds: string[];
@@ -743,13 +920,13 @@ export class ElderBridge implements IElder {
     const knowledge = events
       .filter((e) => e.type === "SYSTEM_LOG")
       .map((e) => {
-        try {
-          const payload = JSON.parse(e.payload_json);
-          if (payload.message === "Learning Reflection") {
-            return `[Reasoning] ${payload.strategyId}: ${payload.reason}`;
-          }
-        } catch {
-          /* ignore */
+        const payload = JSON.parse(e.payload_json) as {
+          message?: string;
+          strategyId?: string;
+          reason?: string;
+        };
+        if (payload.message === "Learning Reflection") {
+          return `[Reasoning] ${payload.strategyId}: ${payload.reason}`;
         }
         return "";
       })
@@ -777,6 +954,12 @@ export class ElderBridge implements IElder {
       reasoning: candidate.reasoning,
       created_at: new Date().toISOString(),
     });
+    this.pushMemoryEvent("ALPHA_IDEA_SAVED", {
+      strategyId: candidate.id,
+      requirementId: candidate.requirementId,
+      noveltyScore: candidate.noveltyScore,
+      priority: candidate.priority,
+    });
   }
 
   async saveDatasetInfo(
@@ -784,17 +967,15 @@ export class ElderBridge implements IElder {
     metadata: DatasetMetadata,
     preprocessingConditions: PITDataset["preprocessingConditions"],
   ): Promise<void> {
-    this.memory.pushEvent({
-      type: "DATASET_PREPARED",
-      payload: { datasetId, metadata, preprocessingConditions },
+    this.pushMemoryEvent("DATASET_PREPARED", {
+      datasetId,
+      metadata,
+      preprocessingConditions,
     });
   }
 
   async saveModelConfiguration(config: ModelConfiguration): Promise<void> {
-    this.memory.pushEvent({
-      type: "MODEL_CONFIG_SAVED",
-      payload: { config },
-    });
+    this.pushMemoryEvent("MODEL_CONFIG_SAVED", { config });
   }
 
   async saveVerificationResult(result: VerificationResult): Promise<void> {
@@ -805,12 +986,24 @@ export class ElderBridge implements IElder {
       metrics_json: JSON.stringify(result.verification?.metrics),
       overall_score: result.reasoningScore || 0,
     });
+    const reasoningScore = result.reasoningScore ?? 0;
+    const feedback = reasoningScore >= 0.65 ? "HELPFUL" : "HARMFUL";
+    await this.applyAceFeedback(
+      result.strategyId,
+      feedback,
+      `Verification reasoningScore=${reasoningScore.toFixed(4)}`,
+    );
+    this.pushMemoryEvent("VERIFICATION_RECORDED", {
+      strategyId: result.strategyId,
+      reasoningScore,
+      feedback,
+    });
   }
 
   async saveOrderPlan(plan: OrderPlan): Promise<void> {
-    this.memory.pushEvent({
-      type: "ORDER_PLAN_SAVED",
-      payload: { message: "Order Plan Saved", plan },
+    this.pushMemoryEvent("ORDER_PLAN_SAVED", {
+      message: "Order Plan Saved",
+      plan,
     });
   }
 
@@ -818,17 +1011,16 @@ export class ElderBridge implements IElder {
     result: ExecutionResult,
     adoptionReason: string,
   ): Promise<void> {
-    this.memory.pushEvent({
-      type: "STRATEGY_EXECUTED",
-      payload: { result, adoptionReason },
-    });
+    await this.applyAceFeedback(
+      result.strategyId,
+      "HELPFUL",
+      `Strategy executed: ${adoptionReason}`,
+    );
+    this.pushMemoryEvent("STRATEGY_EXECUTED", { result, adoptionReason });
   }
 
   async saveAuditRecord(audit: AuditRecord): Promise<void> {
-    this.memory.pushEvent({
-      type: "AUDIT_RECORD_SAVED",
-      payload: { audit },
-    });
+    this.pushMemoryEvent("AUDIT_RECORD_SAVED", { audit });
   }
 
   async saveRejectionReason(
@@ -836,19 +1028,18 @@ export class ElderBridge implements IElder {
     reason: string,
     metrics?: Metrics,
   ): Promise<void> {
-    this.memory.pushEvent({
-      type: "STRATEGY_REJECTED",
-      payload: { strategyId, reason, metrics },
-    });
+    await this.applyAceFeedback(strategyId, "HARMFUL", reason);
+    this.pushMemoryEvent("STRATEGY_REJECTED", { strategyId, reason, metrics });
   }
 
   async reflectLearning(strategyId: string, reason: string): Promise<void> {
     console.log(
       `[Elder] Learning reflected from rejection/failure of ${strategyId}: ${reason}`,
     );
-    this.memory.pushEvent({
-      type: "SYSTEM_LOG",
-      payload: { message: "Learning Reflection", strategyId, reason },
+    this.pushMemoryEvent("SYSTEM_LOG", {
+      message: "Learning Reflection",
+      strategyId,
+      reason,
     });
   }
 
@@ -856,6 +1047,7 @@ export class ElderBridge implements IElder {
     console.log(
       `[Elder] Status updated from Drift Report for ${report.strategyId}. Severity: ${report.severity}`,
     );
+    this.pushMemoryEvent("STATE_UPDATED", { component: "Elder", report });
   }
 }
 
@@ -872,10 +1064,16 @@ export class StateMonitorBridge implements IStateMonitor {
 
   async getCurrentState(): Promise<SystemStateSnapshot> {
     console.log(`[StateMonitor] Retrieving current market state`);
+    const threshold = core.config.pipelineBlueprint?.stateMonitor;
+    const regimeScore = threshold?.regimeThreshold ?? 0.55;
+    const volatilityScore = threshold?.volatilityThreshold ?? 0.5;
     return {
-      regime: "BULL_MOMENTUM",
-      volatility: "CONTRACTING",
+      regime: regimeScore >= 0.5 ? "BULL_MOMENTUM" : "RISK_OFF",
+      volatility: volatilityScore <= 0.5 ? "CONTRACTING" : "EXPANDING",
       driftAlerts: 0,
+      updatedAt: new Date().toISOString(),
+      regimeScore,
+      volatilityScore,
     };
   }
 }
@@ -1105,6 +1303,7 @@ export class DataEngineerBridge implements IDataEngineer {
         coverageRate,
         missingRate,
         latencyScore,
+        latencyMinutes: latencyAverage,
         leakFreeScore,
         sourceConsistency,
       },
@@ -1116,6 +1315,7 @@ export class DataEngineerBridge implements IDataEngineer {
         coverage_rate: Number(coverageRate.toFixed(6)),
         missing_rate: Number(missingRate.toFixed(6)),
         latency_score: Number(latencyScore.toFixed(6)),
+        latency_minutes: Number(latencyAverage.toFixed(3)),
         leak_free_score: Number(leakFreeScore.toFixed(6)),
         source_consistency: Number(sourceConsistency.toFixed(6)),
       },
@@ -1331,6 +1531,12 @@ export class QuantResearcherBridge implements IQuantResearcher {
       dataset.asOfDate,
       dataset.qualityScore,
     );
+    const researchDesign = core.config.pipelineBlueprint?.researchDesign;
+    if (researchDesign) {
+      modelConfig.parameters.trainDays = researchDesign.trainDays;
+      modelConfig.parameters.validationDays = researchDesign.validationDays;
+      modelConfig.parameters.forwardDays = researchDesign.forwardDays;
+    }
 
     forbiddenZones.some((fz) => candidate.description.includes(fz)) &&
       console.log(`[QuantResearcher] Candidate overlaps with forbidden zone`);
@@ -1362,7 +1568,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
       failureType: "NONE",
       strategicReasoning: reasoning,
       alphaScreening: screening,
-      adoptionReason: `Co-optimization finished with measured OOS Sharpe=${report.metrics.sharpe}; period=${report.evaluationWindow.from}..${report.evaluationWindow.to}; data=${manifest.dataRoot}; asof=${manifest.asOfDate}`,
+      adoptionReason: `Co-optimization finished with measured OOS Sharpe=${report.metrics.sharpe}; period=${report.evaluationWindow.from}..${report.evaluationWindow.to}; split=${researchDesign?.trainDays ?? "n/a"}/${researchDesign?.validationDays ?? "n/a"}/${researchDesign?.forwardDays ?? "n/a"}; data=${manifest.dataRoot}; asof=${manifest.asOfDate}`,
     };
   }
 }
@@ -1409,6 +1615,7 @@ export class ExecutionAgentBridge implements IExecutionAgent {
     console.log(
       `[ExecutionAgent] Step 24: Executing order for strategy: ${plan.strategyId}`,
     );
+    const slippageBps = core.config.execution.costs.slippageBps;
     return {
       orderId: `ord-${crypto.randomUUID().slice(0, 8)}`,
       strategyId: plan.strategyId,
@@ -1416,6 +1623,9 @@ export class ExecutionAgentBridge implements IExecutionAgent {
       status: "FILLED",
       averagePrice: 150.25,
       quantity: 100,
+      fillRate: 0.97,
+      slippageBps,
+      executionLatencyMs: 1200,
       executionReason: "Capacity and risk limits passed",
       plan,
     };
@@ -1442,7 +1652,11 @@ export class ExecutionAgentBridge implements IExecutionAgent {
       driftDetected: false,
       severity: "LOW",
       recommendation: "CONTINUE",
-      metrics: { trackingError: 0.02 },
+      metrics: {
+        trackingError: 0.02,
+        maxDrawdown: 0.04,
+        winRate: 0.52,
+      },
     };
   }
 }

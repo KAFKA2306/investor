@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
 import {
@@ -12,9 +13,6 @@ import {
   type UQTLEvent,
 } from "../schemas/system_event_schemas.ts";
 
-/**
- * ContextPlaybook handles the persistence and management of ACE context bullets.
- */
 export class ContextPlaybook {
   private playbook: AcePlaybook = { bullets: [] };
   private filePath: string;
@@ -25,18 +23,14 @@ export class ContextPlaybook {
   }
 
   async load(): Promise<void> {
-    try {
-      const data = await fs.readFile(this.filePath, "utf-8");
-      const json = JSON.parse(data);
-      this.playbook = AcePlaybookSchema.parse(json);
-    } catch (error) {
-      if ((error as { code?: string }).code === "ENOENT") {
-        this.playbook = { bullets: [] };
-        await this.save();
-      } else {
-        throw error;
-      }
+    if (!existsSync(this.filePath)) {
+      this.playbook = { bullets: [] };
+      await this.save();
+      return;
     }
+    const data = await fs.readFile(this.filePath, "utf-8");
+    const json = JSON.parse(data);
+    this.playbook = AcePlaybookSchema.parse(json);
   }
 
   async save(): Promise<void> {
@@ -96,6 +90,40 @@ export class ContextPlaybook {
     });
     return originalCount - this.playbook.bullets.length;
   }
+
+  async applyFeedbackByMetadataId(args: {
+    metadataId: string;
+    feedback: "HELPFUL" | "HARMFUL";
+    reason?: string;
+    runId?: string;
+    loopIteration?: number;
+  }): Promise<number> {
+    const { metadataId, feedback, reason, runId, loopIteration } = args;
+    let updated = 0;
+    for (const bullet of this.playbook.bullets) {
+      const metaId = String(bullet.metadata?.id ?? "");
+      if (metaId !== metadataId) continue;
+      if (feedback === "HELPFUL") {
+        bullet.helpful_count += 1;
+      } else {
+        bullet.harmful_count += 1;
+      }
+      bullet.updated_at = new Date().toISOString();
+      bullet.metadata = {
+        ...(bullet.metadata ?? {}),
+        lastFeedback: feedback,
+        lastFeedbackReason: reason ?? "",
+        lastFeedbackAt: bullet.updated_at,
+        lastRunId: runId ?? "",
+        lastLoopIteration: loopIteration ?? 0,
+      };
+      updated += 1;
+    }
+    if (updated > 0) {
+      await this.save();
+    }
+    return updated;
+  }
 }
 
 export interface ExperimentRecord {
@@ -123,9 +151,6 @@ export interface EvaluationRecord {
   overall_score: number;
 }
 
-/**
- * MemoryCenter: Stores experiments, generated DSLs, and their performance metrics.
- */
 export class MemoryCenter {
   private db: Database;
 
@@ -231,6 +256,25 @@ export class MemoryCenter {
   }
 
   public pushEvent(event: Record<string, unknown>) {
+    const runId =
+      (event.runId as string | undefined) ||
+      process.env.UQTL_RUN_ID ||
+      undefined;
+    const loopIterationRaw =
+      (event.loopIteration as number | string | undefined) ||
+      process.env.UQTL_LOOP_ITERATION;
+    const parsedLoopIteration = Number(loopIterationRaw);
+    const baseMetadata =
+      event.metadata && typeof event.metadata === "object"
+        ? (event.metadata as Record<string, unknown>)
+        : {};
+    const metadata = {
+      ...baseMetadata,
+      ...(runId ? { runId } : {}),
+      ...(Number.isFinite(parsedLoopIteration)
+        ? { loopIteration: parsedLoopIteration }
+        : {}),
+    };
     const stmt = this.db.prepare(`
       INSERT INTO uqtl_events (id, timestamp, type, agent_id, experiment_id, payload_json, metadata_json)
       VALUES ($id, $ts, $type, $agent, $exp, $payload, $meta)
@@ -244,7 +288,7 @@ export class MemoryCenter {
       $agent: (event.agentId as string | undefined) || null,
       $exp: (event.experimentId as string | undefined) || null,
       $payload: JSON.stringify(event.payload),
-      $meta: event.metadata ? JSON.stringify(event.metadata) : null,
+      $meta: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
     } as Record<string, string | number | boolean | null>);
   }
 
@@ -286,14 +330,11 @@ export class MemoryCenter {
   }
 }
 
-/**
- * EventStore: Storage layer for UQTL (Unified Quantum Task Ledger).
- */
 export class EventStore {
   private readonly db: Database;
 
   constructor(dbPath?: string) {
-    const defaultPath = "uqtl.sqlite"; // Default for tests
+    const defaultPath = "uqtl.sqlite";
     this.db = new Database(dbPath || defaultPath, { create: true });
     this.initialize();
   }

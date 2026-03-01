@@ -82,12 +82,9 @@ const astExecutable = (ast: unknown): boolean => {
   const v1 = FactorComputeEngine.evaluate(candidate, bars, 0);
   const v2 = FactorComputeEngine.evaluate(candidate, bars, 1);
   if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
-  return true; // Windowed indicators may be zero at first index
+  return true;
 };
 
-/**
- * Playbook Curation Logic
- */
 export async function curateAlphaPlaybook() {
   const playbook = new ContextPlaybook();
   await playbook.load();
@@ -125,13 +122,17 @@ export async function curateAlphaPlaybook() {
   console.log("✅ Playbook updated.");
 }
 
-/**
- * Alpha Factor Discovery Logic
- */
 export async function discoverAlphaFactors() {
   const agent = new LesAgent();
   const playbook = new ContextPlaybook();
   const startedAt = new Date().toISOString();
+  const runId =
+    process.env.UQTL_RUN_ID ??
+    `run_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const loopIteration = Number.parseInt(
+    process.env.UQTL_LOOP_ITERATION ?? "0",
+    10,
+  );
   await playbook.load();
   console.log(`🚀 Starting Discovery over Universe: ${Universe.join(", ")}`);
   const hypotheses = await agent.generateHypotheses(playbook.getBullets());
@@ -226,6 +227,8 @@ export async function discoverAlphaFactors() {
         source: "AlphaDiscovery",
         type: "HYPOTHESIS",
         id: h.id,
+        runId,
+        loopIteration: Number.isFinite(loopIteration) ? loopIteration : 0,
         ast: astById.get(h.id),
         status: h.status,
         score: h.scores.priority,
