@@ -21,6 +21,23 @@
   --display: "Space Grotesk", var(--sans);
   --pos: #007f8f;
   --neg: #b91c35;
+
+  /* Chart Colors */
+  --chart-strategy: #007f8f;
+  --chart-benchmark: #d86024;
+  --chart-ic-pos: rgba(0, 127, 143, 0.8);
+  --chart-ic-neg: rgba(185, 28, 53, 0.8);
+  --chart-dd: rgba(185, 28, 53, 0.3);
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-7: 1.75rem;
+  --space-8: 2rem;
 }
 
 * {
@@ -1121,6 +1138,177 @@ th {
   color: var(--ink-soft);
   background: rgba(96, 111, 133, 0.12);
   border-color: rgba(96, 111, 133, 0.2);
+}
+
+/* Redesign UI Classes */
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  background: var(--line);
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0;
+}
+
+.passport-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: var(--space-4);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.score-bar-grid {
+  display: grid;
+  grid-template-columns: 100px 1fr 50px;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.score-bar-bg {
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.score-bar-label {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}
+
+.score-bar-value {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.ast-viewer {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  background: var(--bg-soft);
+  padding: var(--space-3);
+  border-radius: 8px;
+  border: 1px dashed var(--line);
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--brand);
+}
+
+.metric-card {
+  position: relative;
+}
+
+.metric-source {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--ink-soft);
+  word-break: break-all;
+}
+
+.metric-diff-ok {
+  background: var(--brand-soft);
+  color: var(--brand);
+  border: 1px solid rgba(0, 127, 143, 0.2);
+}
+
+.metric-diff-warn {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid rgba(185, 28, 53, 0.2);
+}
+
+.inspector-cross-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+}
+
+.reject-reason-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: 0.75rem;
+  padding: 0.4rem;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.02);
+  margin-top: 2px;
+}
+
+.proxy-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  font-size: 4rem;
+  font-family: var(--display);
+  color: rgba(185, 28, 53, 0.05);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
+
+.drilldown-link {
+  color: var(--brand);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.drilldown-link:hover {
+  opacity: 0.8;
+  text-decoration-style: solid;
+}
+
+.inspector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--space-4);
+}
+
+.component-score-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.raw-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.raw-toggle-btn:hover {
+  background: var(--bg-soft);
+  border-color: var(--line-strong);
+}
+
+.chart-recharts-wrapper {
+  width: 100%;
+  height: 300px;
+  margin-top: var(--space-4);
 }
 
 .pos {
