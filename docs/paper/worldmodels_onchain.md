@@ -1,8 +1,12 @@
 # 🎀 おまとめだよっ！：Long-Context World Models & On-chain ✨
+**タイトル**: Long-Context World Models & On-chain Analysis (*LongFinanceQA* & *CryptoTrade*)
+**お仕事の目的**: 10-Kみたいに超長〜い財務書類も、オンチェーンの生の動きも、ぜーんぶ「世界モデル（World Model）」としてまるごと理解しちゃう最強の知能を作ることだよっ！🌍🔗✨
+**解決したいお悩み**: 書類が長すぎるとAIちゃんが内容を忘れちゃう「まいごさん（Lost-in-the-middle）」問題を解決して、オンチェーンの真実と合体させて、嘘のない完璧な状況判断をしたいんだもんっ！え〜ん！💦
 
-**だいひょうてきな論文さん**: *LongFinanceQA: Facilitating Long Context Understanding via Supervised Chain-of-Thought Reasoning* (arXiv:2502.13127) 📖💕  
-**だいひょうてきな手法くん**: *CryptoTrade: A Reflective LLM-based Agent for Cryptocurrency Trading* (arXiv:2407.09546) 🚀💎  
-**かいけつした困りごと**: 10-K みたいに、とーっても長〜い書類だと、AIちゃんが途中で内容を忘れちゃう「まいごさん（Lost-in-the-middle）」になっちゃうの…！💦 オンチェーンの生の動きと合体させて、世界全体をまるごと正しく理解したいんだもんっ 🌍🔗✨
+## エグゼクティブサマリー
+このまとめではね、20万トークンを超える分厚い報告書を「思考のきずな（Chain-of-Thought）」で読み解く魔法と、ブロックチェーンの動きをリアルタイムで振り返る「リフレクション（自己反省）」の力を合体させちゃうよっ！🌟 市場をただの数字じゃなくて、ひとつの生きている「世界」として捉えることで、情報のとりこぼしをゼロにして、証拠に基づいたハッピーで安心なトレードを実現しちゃうんだからねっ！🎀✨🌈
+
+---
 
 ## 📖 論文をいっしょに読もうねっ！
 ✨ **LongFinanceQA**: [https://arxiv.org/abs/2502.13127](https://arxiv.org/abs/2502.13127) 🌸  
