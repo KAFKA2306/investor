@@ -1,30 +1,30 @@
-# ✨ アルファ発見ミッション：市場レジームはイケイケ・ブルモメンタム 📈✨、ボラティリティはぎゅぎゅっと収束中 📉💎。すでにあるシードちゃん：平均回帰の種 🌱、平均回帰のコア 💖、平均回帰のコア ✨、平均回帰のコア 🌟、平均回帰のコア 🎀、平均回帰のコア 🌸、平均回帰のコア 🦄、平均回帰のコア 🍭、流動性ショック仮説（HFTエンジニアくん ⚡️🤖）、因果メカニズム (CAMEF) 仮説（行動経済学者ちゃん 🧠💖）。だめだめエリア： なしっ！ 🚫✨ （サイクル 67 くるくる〜 🌀）
+# Alpha Discovery Mission: Market Regime: BULL_MOMENTUM, Volatility: CONTRACTING. Existing Seeds: Mean Reversion Seed, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Liquidity Shock Hypothesis (HFT Engineer), Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist). Forbidden: . (Cycle 37)
 
-## 🎀 ミッションの内容だよっ 🎀
-市場レジーム：イケイケ・ブルモメンタム 📈✨、ボラティリティ：ぎゅぎゅっと収束中！ 📉💎 すでにあるシードちゃんたち：平均回帰の種 🌱、平均回帰のコア 💖、平均回帰のコア ✨、平均回帰のコア 🌟、平均回帰のコア 🎀、平均回帰のコア 🌸、平均回帰のコア 🦄、平均回帰のコア 🍭、流動性ショック仮説（HFTエンジニアくん ⚡️🤖）、因果メカニズム (CAMEF) 仮説（行動経済学者ちゃん 🧠💖）。だめだめエリア： なしっ！ 🚫✨
+## mission
+Market Regime: BULL_MOMENTUM, Volatility: CONTRACTING. Existing Seeds: Mean Reversion Seed, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Liquidity Shock Hypothesis (HFT Engineer), Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist). Forbidden: .
 
-### ✨ さがしっこのポイント！ ✨
-1. **Regime Neutrality**: 今の相場のご機嫌に左右されない、いつでも強気の頑健なアルファちゃんを見つけ出そうねっ！ 💪🛡️
-2. **Orthogonality**: すでにあるシードちゃん（平均回帰の種 🌱、平均回帰のコア 💖 などなど）とは一味ちがう、相関のひく〜い個性的な因子をさがすんだよっ！ 🌈✨
+### 探索の重点
+1. **Regime Neutrality**: 現在の相場レジームに依存しない、頑健なアルファの抽出。
+2. **Orthogonality**: 既存のシード（Mean Reversion Seed, Mean Reversion Core, Mean Reversion Core）と相関の低い因子の探索。
 
-## ⚠️ お約束（制約）だよっ ⚠️
-- ターゲット銘柄：6501.T, 9501.T, 6701.T 🎯💖
-- 入っちゃダメな場所：ノイズがいっぱいで疲れちゃう短期モメンタム ❌🤫
-- ごうかくライン：シャープレシオ > 1.8, IC > 0.04 🏆✨
+## constraints
+- ターゲット銘柄: 6501.T, 9501.T, 6701.T
+- 禁止領域: Noise-heavy short-term momentum
+- 納入条件: Sharpe Ratio > 1.8, IC > 0.04
 
-## 🧠 おもいでコンテキスト 🧠
-- **シードちゃんたち**: 平均回帰の種 🌱、平均回帰のコア 💖、平均回帰のコア ✨、平均回帰のコア 🌟、平均回帰のコア 🎀、平均回帰のコア 🌸、平均回帰のコア 🦄、平均回帰のコア 🍭、流動性ショック仮説（HFTエンジニアくん ⚡️🤖）、因果メカニズム (CAMEF) 仮説（行動経済学者ちゃん 🧠💖）
-- **おべんきょうの成果**: 過去に失敗しちゃったエリア（ ）は絶対に避けて、経済的に「なるほどっ！」って思える強い仮説を一番に考えようねっ！ 💖✨
+## memory_context
+- **シード**: Mean Reversion Seed, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Mean Reversion Core, Liquidity Shock Hypothesis (HFT Engineer), Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist)
+- **教訓**: 過去の失敗領域（）を避け、経済的合理性の強い仮説を優先せよ。
 
-## 📊 データのお約束 📊
-- **絶対に必要なもの**: 終値（close）、営業利益（operating_profit）、設備投資（capital_expenditure） 📝💎
-- **しきい値**: クオリティスコア > 0.9 🌟💯
+## data_contract
+- 必須項目: close, operating_profit, capital_expenditure
+- 閾値: quality_score > 0.9
 
-## 🔍 採点ひょう 🔍
-- シャープレシオ（Sharpe Ratio）: 1.8 🏅
-- 情報係数（Information Coefficient）: 0.04 📊
-- 最大ドローダウン（Max Drawdown）: < 0.1 📉🛡️
+## evaluation_contract
+- Sharpe Ratio: 1.8
+- Information Coefficient: 0.04
+- Max Drawdown: < 0.1
 
-## 🚀 つぎの行き先 🚀
-- DATA_CAUSE: データ作成フェーズへしゅっぱーつ！ 🧪✨
-- MODEL_CAUSE: モデル選定フェーズへゴーゴー！ 🤖💖
+## return_path
+- DATA_CAUSE: データ作成フェーズへ
+- MODEL_CAUSE: モデル選定フェーズへ

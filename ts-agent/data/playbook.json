@@ -4859,8 +4859,13 @@
       }
     },
     {
+      "id": "ctx-e0ndxvnv",
       "content": "Causal Mechanism (CAMEF) Hypothesis (HFT Engineer): CLAIM: Structural drift identification via Causal Mechanism (CAMEF) and causality. [REASONING] The HFT Engineer persona targets intervention using a counterfactual approach. Optimized for mechanism regimes.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T03:26:14.193Z",
+      "updated_at": "2026-03-01T03:26:14.193Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -4889,16 +4894,16 @@
         "score": 0.581923076923077,
         "generation": 1,
         "mutationType": "NEW_SEED"
-      },
-      "id": "ctx-e0ndxvnv",
+      }
+    },
+    {
+      "id": "ctx-n5jvi63r",
+      "content": "10-K Intelligence 2.0 (Mission) Hypothesis (Macro Strategist): CLAIM: High-precision ai_exposure forecasting using 10-K Intelligence 2.0 (Mission). [REASONING] A segment_sentiment model that uses itemization to filter noise during kg_centrality periods. Proposed by Macro Strategist.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-03-01T03:26:14.193Z",
-      "updated_at": "2026-03-01T03:26:14.193Z"
-    },
-    {
-      "content": "10-K Intelligence 2.0 (Mission) Hypothesis (Macro Strategist): CLAIM: High-precision ai_exposure forecasting using 10-K Intelligence 2.0 (Mission). [REASONING] A segment_sentiment model that uses itemization to filter noise during kg_centrality periods. Proposed by Macro Strategist.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-03-01T03:26:14.193Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -4919,12 +4924,1203 @@
         "score": 0.6319230769230769,
         "generation": 1,
         "mutationType": "NEW_SEED"
-      },
-      "id": "ctx-n5jvi63r",
+      }
+    },
+    {
+      "id": "ctx-au8w7mmk",
+      "content": "Macro-Socio Divergence (e-Stat) Hypothesis (Behavioral Economist): CLAIM: Structural drift identification via Macro-Socio Divergence (e-Stat) and demographic. [REASONING] The Behavioral Economist persona targets industrial using a labor approach. Optimized for household regimes.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-03-01T03:26:14.193Z",
-      "updated_at": "2026-03-01T03:26:14.193Z"
+      "created_at": "2026-03-01T04:50:05.770Z",
+      "updated_at": "2026-03-01T04:50:05.770Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-4498948D",
+        "runId": "uqtl_20260301T134954_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "SMA",
+          "left": {
+            "type": "constant",
+            "value": 0.18
+          },
+          "right": {
+            "type": "constant",
+            "value": 4
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6570491803278689,
+        "fitnessScore": 0.6000000000000001,
+        "noveltyScore": 0.8852459016393442,
+        "stabilityScore": 0.5,
+        "adoptionScore": 0.702688524590164,
+        "ideaHash": "bb02444ff9a755ba79372951",
+        "featureSignature": [],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-ro8kjh82",
+      "content": "[EVOLVED] Fine-tune (FEMALE): Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Micro-mutation from ALPHA-HFT-89C6EB51. Focusing on exploititive stability.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:50:05.770Z",
+      "updated_at": "2026-03-01T04:50:05.770Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-F48BD9A1",
+        "runId": "uqtl_20260301T134954_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "variable",
+            "name": "kg_centrality"
+          },
+          "right": {
+            "type": "constant",
+            "value": 10
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5270491803278688,
+        "fitnessScore": 0.45,
+        "noveltyScore": 0.8852459016393442,
+        "stabilityScore": 0.475,
+        "adoptionScore": 0.598688524590164,
+        "ideaHash": "2cfb0c92c6daf4b0d9b3804f",
+        "featureSignature": [
+          "kg_centrality"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-HFT-89C6EB51",
+        "mutationType": "POINT_MUTATION"
+      }
+    },
+    {
+      "id": "ctx-11jusqjz",
+      "content": "[EVOLVED] Crossover: Macro-Socio Divergence (e-Stat) Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from ALPHA-BEHAVIORAL-4498948D. CLAIM: Structural drift identification via Cross-Asset Retrieval (FactorMiner) and memory. [REASONING] The Fundamental Researcher persona targets cross-asset using a skill approach. Optimized for experience regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:50:26.207Z",
+      "updated_at": "2026-03-01T04:50:26.207Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-755390A5",
+        "runId": "uqtl_20260301T135022_1",
+        "loopIteration": 1,
+        "ast": {
+          "op": "sub",
+          "left": {
+            "op": "col",
+            "name": "turnover_value"
+          },
+          "right": {
+            "op": "col",
+            "name": "open"
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6228571428571429,
+        "fitnessScore": 0.6000000000000001,
+        "noveltyScore": 0.7142857142857143,
+        "stabilityScore": 0.5,
+        "adoptionScore": 0.6411428571428572,
+        "ideaHash": "e6a84a5e2f369b4e8f0b2e6c",
+        "featureSignature": [],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 2,
+        "parentId": "ALPHA-BEHAVIORAL-4498948D",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-qca4giye",
+      "content": "[EVOLVED] Crossover: DAG-based Evolution (AlphaPROBE) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from ALPHA-FUNDAMENTAL-E79E7EA3. CLAIM: Strategic Behavioral Momentum extraction using overreaction. [REASONING] Detects sentiment and exploits drift in crowding markets. Verified by Behavioral Economist protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:50:26.207Z",
+      "updated_at": "2026-03-01T04:50:26.207Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-2F2B58D5",
+        "runId": "uqtl_20260301T135022_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "constant",
+                "value": 3.89
+              },
+              "right": {
+                "type": "variable",
+                "name": "high"
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "volume"
+            },
+            "right": {
+              "type": "variable",
+              "name": "open"
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.6178571428571429,
+        "fitnessScore": 0.575,
+        "noveltyScore": 0.7142857142857143,
+        "stabilityScore": 0.5375,
+        "adoptionScore": 0.6371428571428572,
+        "ideaHash": "1f1bc69fce76bcbafcc04007",
+        "featureSignature": [
+          "close",
+          "high",
+          "open",
+          "volume"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 2,
+        "parentId": "ALPHA-FUNDAMENTAL-E79E7EA3",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-u7kv74tu",
+      "content": "[EVOLVED] Crossover: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from ALPHA-HFT-7583C250. CLAIM: Structural drift identification via DAG-based Evolution (AlphaPROBE) and graph. [REASONING] The Fundamental Researcher persona targets biased using a retrieval approach. Optimized for evolution regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:51:02.201Z",
+      "updated_at": "2026-03-01T04:51:02.201Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-E4C47634",
+        "runId": "uqtl_20260301T135058_1",
+        "loopIteration": 1,
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "col",
+              "name": "open"
+            },
+            "right": {
+              "op": "col",
+              "name": "profit_margin"
+            }
+          },
+          "right": {
+            "op": "sub",
+            "left": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "operating_profit"
+              },
+              "right": {
+                "op": "col",
+                "name": "net_sales"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5888888888888889,
+        "fitnessScore": 0.525,
+        "noveltyScore": 0.8194444444444444,
+        "stabilityScore": 0.5125,
+        "adoptionScore": 0.635,
+        "ideaHash": "239d6020f21b172c479fbb6a",
+        "featureSignature": [],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-HFT-7583C250",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-b9r2ilfq",
+      "content": "[EVOLVED] Shift (MALE): Evolved POINT_MUTATION [v4]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-HFT-478FA2DB. Focusing on explorative diversity.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:51:02.201Z",
+      "updated_at": "2026-03-01T04:51:02.201Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-1818C6D3",
+        "runId": "uqtl_20260301T135058_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "operator",
+              "name": "SUB",
+              "left": {
+                "type": "variable",
+                "name": "ai_exposure"
+              },
+              "right": {
+                "type": "variable",
+                "name": "kg_centrality"
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "LAG",
+              "left": {
+                "type": "variable",
+                "name": "correction_freq"
+              },
+              "right": {
+                "type": "constant",
+                "value": 7
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "LAG",
+            "left": {
+              "type": "variable",
+              "name": "correction_freq"
+            },
+            "right": {
+              "type": "constant",
+              "value": 10
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5638888888888889,
+        "fitnessScore": 0.5,
+        "noveltyScore": 0.8194444444444444,
+        "stabilityScore": 0.5,
+        "adoptionScore": 0.615,
+        "ideaHash": "dc0506bb0f83892a418b5eef",
+        "featureSignature": [
+          "ai_exposure",
+          "correction_freq",
+          "kg_centrality"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 4,
+        "parentId": "ALPHA-HFT-478FA2DB",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-s6drvous",
+      "content": "DAG-based Evolution (AlphaPROBE) Hypothesis (Fundamental Researcher): CLAIM: Strategic DAG-based Evolution (AlphaPROBE) extraction using retrieval. [REASONING] Detects graph and exploits biased in evolution markets. Verified by Fundamental Researcher protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:51:41.862Z",
+      "updated_at": "2026-03-01T04:51:41.862Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-626487CE",
+        "runId": "uqtl_20260301T135138_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "activist_bias"
+            },
+            "right": {
+              "type": "constant",
+              "value": 4.52
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 7
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5185185185185186,
+        "fitnessScore": 0.5,
+        "noveltyScore": 0.5925925925925926,
+        "stabilityScore": 0.5,
+        "adoptionScore": 0.5333333333333334,
+        "ideaHash": "b03098b6e8d9634759696888",
+        "featureSignature": [
+          "activist_bias"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-6p7pklix",
+      "content": "Inventory Lead Hypothesis (HFT Engineer): CLAIM: Strategic Inventory Lead extraction using backlog. [REASONING] Detects cycle and exploits utilization in bottleneck markets. Verified by HFT Engineer protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:51:41.862Z",
+      "updated_at": "2026-03-01T04:51:41.862Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-37843AFB",
+        "runId": "uqtl_20260301T135138_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "operator",
+              "name": "SMA",
+              "left": {
+                "type": "variable",
+                "name": "segment_sentiment"
+              },
+              "right": {
+                "type": "constant",
+                "value": 8
+              }
+            },
+            "right": {
+              "type": "variable",
+              "name": "correction_freq"
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "operator",
+              "name": "SUB",
+              "left": {
+                "type": "variable",
+                "name": "macro_cpi"
+              },
+              "right": {
+                "type": "variable",
+                "name": "close"
+              }
+            },
+            "right": {
+              "type": "variable",
+              "name": "open"
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5185185185185186,
+        "fitnessScore": 0.5,
+        "noveltyScore": 0.5925925925925926,
+        "stabilityScore": 0.5,
+        "adoptionScore": 0.5333333333333334,
+        "ideaHash": "575481bb75ba7532524926a0",
+        "featureSignature": [
+          "close",
+          "correction_freq",
+          "macro_cpi",
+          "open",
+          "segment_sentiment"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-q1z8d4j1",
+      "content": "[EVOLVED] Crossover: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from ALPHA-MACRO-18A7A916. CLAIM: Strategic Behavioral Momentum extraction using overreaction. [REASONING] Detects sentiment and exploits drift in crowding markets. Verified by Quant Analyst protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:51:53.599Z",
+      "updated_at": "2026-03-01T04:51:53.599Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-EFDA45E6",
+        "runId": "uqtl_20260301T135150_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "variable",
+          "name": "open"
+        },
+        "status": "SELECTED",
+        "score": 0.6507575757575758,
+        "fitnessScore": 0.575,
+        "noveltyScore": 0.8787878787878788,
+        "stabilityScore": 0.5375,
+        "adoptionScore": 0.6963636363636364,
+        "ideaHash": "b7f9f65f21aac8f4ed52f9a6",
+        "featureSignature": [
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-MACRO-18A7A916",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-h5ic7jth",
+      "content": "Efficiency Divergence Hypothesis (HFT Engineer): CLAIM: Structural drift identification via Efficiency Divergence and margin. [REASONING] The HFT Engineer persona targets leverage using a operating approach. Optimized for structural regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:51:53.599Z",
+      "updated_at": "2026-03-01T04:51:53.599Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-84C9611D",
+        "runId": "uqtl_20260301T135150_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "variable",
+              "name": "macro_iip"
+            },
+            "right": {
+              "type": "variable",
+              "name": "kg_centrality"
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "variable",
+              "name": "ai_exposure"
+            },
+            "right": {
+              "type": "variable",
+              "name": "activist_bias"
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5907575757575758,
+        "fitnessScore": 0.4750000000000001,
+        "noveltyScore": 0.8787878787878788,
+        "stabilityScore": 0.5875,
+        "adoptionScore": 0.6483636363636365,
+        "ideaHash": "2e2c3557f99c0e925cd6a632",
+        "featureSignature": [
+          "activist_bias",
+          "ai_exposure",
+          "kg_centrality",
+          "macro_iip"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-jqv7pmih",
+      "content": "[EVOLVED] Crossover: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from ALPHA-FUNDAMENTAL-C388C0C6. CLAIM: Autonomous hypothesis on Cross-Asset Retrieval (FactorMiner) using skill. [REASONING] This model identifies memory trajectories to extract cross-asset edge in experience regimes. Reasoning trace by Behavioral Economist.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:52:00.695Z",
+      "updated_at": "2026-03-01T04:52:00.695Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-05925689",
+        "runId": "uqtl_20260301T135157_2",
+        "loopIteration": 2,
+        "ast": {
+          "type": "operator",
+          "name": "SUB",
+          "left": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "high"
+              },
+              "right": {
+                "type": "variable",
+                "name": "volume"
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "low"
+            },
+            "right": {
+              "type": "operator",
+              "name": "DIV",
+              "left": {
+                "type": "variable",
+                "name": "low"
+              },
+              "right": {
+                "type": "variable",
+                "name": "high"
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5757142857142858,
+        "fitnessScore": 0.55,
+        "noveltyScore": 0.6285714285714286,
+        "stabilityScore": 0.525,
+        "adoptionScore": 0.5862857142857144,
+        "ideaHash": "a27bf5d15f70a31c9f36e94a",
+        "featureSignature": [
+          "close",
+          "high",
+          "low",
+          "volume"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-FUNDAMENTAL-C388C0C6",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-v6wsvza1",
+      "content": "Liquidity Shock Hypothesis (HFT Engineer): CLAIM: Autonomous hypothesis on Liquidity Shock using flow. [REASONING] This model identifies illiquidity trajectories to extract impact edge in imbalance regimes. Reasoning trace by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:52:00.695Z",
+      "updated_at": "2026-03-01T04:52:00.695Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-033B1822",
+        "runId": "uqtl_20260301T135157_2",
+        "loopIteration": 2,
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "LAG",
+            "left": {
+              "type": "operator",
+              "name": "SMA",
+              "left": {
+                "type": "variable",
+                "name": "activist_bias"
+              },
+              "right": {
+                "type": "constant",
+                "value": 7
+              }
+            },
+            "right": {
+              "type": "constant",
+              "value": 2
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "operator",
+              "name": "SUB",
+              "left": {
+                "type": "variable",
+                "name": "ai_exposure"
+              },
+              "right": {
+                "type": "variable",
+                "name": "close"
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "LAG",
+              "left": {
+                "type": "variable",
+                "name": "open"
+              },
+              "right": {
+                "type": "constant",
+                "value": 4
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5557142857142857,
+        "fitnessScore": 0.55,
+        "noveltyScore": 0.6285714285714286,
+        "stabilityScore": 0.475,
+        "adoptionScore": 0.5702857142857143,
+        "ideaHash": "dfe014605b72d08ddc127381",
+        "featureSignature": [
+          "activist_bias",
+          "ai_exposure",
+          "close",
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-w4wwsia9",
+      "content": "Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (HFT Engineer): [LLM_THEME] Regime transition and microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used because remote proposal was unavailable. | CLAIM: High-precision volume forecasting using Adaptive Regime Cross-Signal (gpt-5-nano). [REASONING] A macro_cpi model that uses macro_iip to filter noise during close periods. Proposed by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:52:08.272Z",
+      "updated_at": "2026-03-01T04:52:08.272Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-2B8695D2",
+        "runId": "uqtl_20260301T135204_3",
+        "loopIteration": 3,
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "operator",
+            "name": "LAG",
+            "left": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "variable",
+                "name": "macro_iip"
+              },
+              "right": {
+                "type": "variable",
+                "name": "close"
+              }
+            },
+            "right": {
+              "type": "constant",
+              "value": 1
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "constant",
+              "value": 1.78
+            },
+            "right": {
+              "type": "operator",
+              "name": "LAG",
+              "left": {
+                "type": "variable",
+                "name": "low"
+              },
+              "right": {
+                "type": "constant",
+                "value": 4
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.645909090909091,
+        "fitnessScore": 0.6000000000000001,
+        "noveltyScore": 0.8295454545454546,
+        "stabilityScore": 0.5,
+        "adoptionScore": 0.6826363636363637,
+        "ideaHash": "48e4237ace7b0de22ab630d4",
+        "featureSignature": [
+          "macro_iip",
+          "macro_cpi",
+          "volume",
+          "close"
+        ],
+        "themeSource": "OPENAI",
+        "llmModel": "gpt-5-nano",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-wiw58gyq",
+      "content": "Behavioral Momentum Hypothesis (Quant Analyst): CLAIM: Alpha captures sentiment patterns in Behavioral Momentum via overreaction logic. [REASONING] Leveraging drift signals in crowding markets ensures robustness. Persona: Quant Analyst.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T04:52:08.272Z",
+      "updated_at": "2026-03-01T04:52:08.272Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-18B58E9C",
+        "runId": "uqtl_20260301T135204_3",
+        "loopIteration": 3,
+        "ast": {
+          "type": "operator",
+          "name": "SMA",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "constant",
+              "value": 1.75
+            },
+            "right": {
+              "type": "variable",
+              "name": "close"
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 9
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5909090909090909,
+        "fitnessScore": 0.525,
+        "noveltyScore": 0.8295454545454546,
+        "stabilityScore": 0.5125,
+        "adoptionScore": 0.6386363636363637,
+        "ideaHash": "dec586b816795fbcf5cbeabf",
+        "featureSignature": [
+          "close"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-pxkusi6h",
+      "content": "[EVOLVED] Crossover: [EVOLVED] Crossover [v4]: [EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from ALPHA-BEHAVIORAL-05925689. CLAIM: Strategic Corporate Governance (J-Quants) extraction using shareholder. [REASONING] Detects board and exploits payout in disclosure markets. Verified by Macro Strategist protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T05:23:05.929Z",
+      "updated_at": "2026-03-01T05:23:05.929Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-AEBF5672",
+        "runId": "uqtl_20260301T142251_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "SUB",
+          "left": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "high"
+              },
+              "right": {
+                "type": "variable",
+                "name": "volume"
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "low"
+            },
+            "right": {
+              "type": "operator",
+              "name": "DIV",
+              "left": {
+                "type": "variable",
+                "name": "low"
+              },
+              "right": {
+                "type": "variable",
+                "name": "high"
+              }
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.562704918032787,
+        "fitnessScore": 0.525,
+        "noveltyScore": 0.6885245901639344,
+        "stabilityScore": 0.5125,
+        "adoptionScore": 0.5878688524590165,
+        "ideaHash": "52f84e5a97ce33d6885537b4",
+        "featureSignature": [
+          "close",
+          "high",
+          "low",
+          "volume"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 4,
+        "parentId": "ALPHA-BEHAVIORAL-05925689",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-rnt5ne45",
+      "content": "[EVOLVED] Fine-tune (FEMALE): [EVOLVED] Crossover [v4]: [EVOLUTIONARY TRACE] Micro-mutation from ALPHA-BEHAVIORAL-05925689. Focusing on exploititive stability.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T05:23:05.929Z",
+      "updated_at": "2026-03-01T05:23:05.929Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-2373B193",
+        "runId": "uqtl_20260301T142251_1",
+        "loopIteration": 1,
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "constant",
+              "value": 1.08
+            },
+            "right": {
+              "type": "variable",
+              "name": "high"
+            }
+          },
+          "right": {
+            "type": "variable",
+            "name": "volume"
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.512704918032787,
+        "fitnessScore": 0.475,
+        "noveltyScore": 0.6885245901639344,
+        "stabilityScore": 0.4875,
+        "adoptionScore": 0.5478688524590165,
+        "ideaHash": "9777deb5579b78243c7c6404",
+        "featureSignature": [
+          "high",
+          "volume"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 4,
+        "parentId": "ALPHA-BEHAVIORAL-05925689",
+        "mutationType": "POINT_MUTATION"
+      }
+    },
+    {
+      "id": "ctx-0jouq1ia",
+      "content": "Causal Mechanism (CAMEF) Hypothesis (Fundamental Researcher): CLAIM: Autonomous hypothesis on Causal Mechanism (CAMEF) using counterfactual. [REASONING] This model identifies causality trajectories to extract intervention edge in mechanism regimes. Reasoning trace by Fundamental Researcher.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T05:23:17.964Z",
+      "updated_at": "2026-03-01T05:23:17.964Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-8910CC4B",
+        "runId": "uqtl_20260301T142311_2",
+        "loopIteration": 2,
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "LAG",
+            "left": {
+              "type": "constant",
+              "value": 1.65
+            },
+            "right": {
+              "type": "constant",
+              "value": 9
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 5
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5850000000000001,
+        "fitnessScore": 0.525,
+        "noveltyScore": 0.8,
+        "stabilityScore": 0.5125,
+        "adoptionScore": 0.6280000000000001,
+        "ideaHash": "b7ac9a46f41b5ef21a0e26c0",
+        "featureSignature": [],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-9ftwj8u6",
+      "content": "[EVOLVED] Crossover: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from ALPHA-MACRO-0817E1C0. CLAIM: High-precision leverage forecasting using Efficiency Divergence. [REASONING] A operating model that uses margin to filter noise during structural periods. Proposed by Behavioral Economist.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T05:23:17.964Z",
+      "updated_at": "2026-03-01T05:23:17.964Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-C5F794BF",
+        "runId": "uqtl_20260301T142311_2",
+        "loopIteration": 2,
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "variable",
+              "name": "high"
+            },
+            "right": {
+              "type": "variable",
+              "name": "open"
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "constant",
+              "value": 1.16
+            },
+            "right": {
+              "type": "constant",
+              "value": 4.03
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.55,
+        "fitnessScore": 0.45000000000000007,
+        "noveltyScore": 0.8,
+        "stabilityScore": 0.5750000000000001,
+        "adoptionScore": 0.6000000000000001,
+        "ideaHash": "1f9304a3ae29a8d71055f80f",
+        "featureSignature": [
+          "high",
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-MACRO-0817E1C0",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "content": "[EVOLVED] Crossover: [EVOLVED] Shift [v4]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from ALPHA-QUANT-D0F18A6A. CLAIM: Strategic DAG-based Evolution (AlphaPROBE) extraction using retrieval. [REASONING] Detects graph and exploits biased in evolution markets. Verified by HFT Engineer protocols.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-A9D6E6DB",
+        "runId": "uqtl_20260301T142322_3",
+        "loopIteration": 3,
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "variable",
+              "name": "open"
+            },
+            "right": {
+              "type": "constant",
+              "value": 2.82
+            }
+          },
+          "right": {
+            "type": "variable",
+            "name": "high"
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.509375,
+        "fitnessScore": 0.45,
+        "noveltyScore": 0.796875,
+        "stabilityScore": 0.475,
+        "adoptionScore": 0.566875,
+        "ideaHash": "04ef33b84b787ab1a499ba12",
+        "featureSignature": [
+          "high",
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 4,
+        "parentId": "ALPHA-QUANT-D0F18A6A",
+        "mutationType": "CROSSOVER"
+      },
+      "id": "ctx-sng3zsfx",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T05:23:28.131Z",
+      "updated_at": "2026-03-01T05:23:28.131Z"
+    },
+    {
+      "content": "[EVOLVED] Shift (MALE): Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-FUNDAMENTAL-C388C0C6. Focusing on explorative diversity.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-51308428",
+        "runId": "uqtl_20260301T142322_3",
+        "loopIteration": 3,
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "variable",
+              "name": "low"
+            },
+            "right": {
+              "type": "variable",
+              "name": "macro_cpi"
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "variable",
+              "name": "ai_exposure"
+            },
+            "right": {
+              "type": "variable",
+              "name": "ai_exposure"
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5593750000000001,
+        "fitnessScore": 0.5,
+        "noveltyScore": 0.796875,
+        "stabilityScore": 0.5,
+        "adoptionScore": 0.606875,
+        "ideaHash": "46e3ce65952218da2e45f669",
+        "featureSignature": [
+          "ai_exposure",
+          "low",
+          "macro_cpi"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-FUNDAMENTAL-C388C0C6",
+        "mutationType": "STRUCTURAL_SHIFT"
+      },
+      "id": "ctx-fw2vdmrf",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T05:23:28.131Z",
+      "updated_at": "2026-03-01T05:23:28.131Z"
     }
   ]
 }
