@@ -14,53 +14,65 @@ import { BaseAgent } from "../system/app_runtime_core.ts";
  */
 export class StrategicReasonerAgent extends BaseAgent {
   /**
-   * Performs strategic reasoning on an alpha outcome.
-   * This mimics the "Strategic Reasoner" from Alpha-R1.
+   * Performs strategic reasoning with a Multi-Agent Council.
    */
   public async reasonAboutAlpha(
     outcome: StandardOutcome,
     marketContext: string,
   ): Promise<StrategicReasoning> {
     console.log(
-      `[Alpha-R1] Reasoning about alpha: ${outcome.strategyId} in context: ${marketContext}`,
+      `[Council of Quants] Reasoning about alpha: ${outcome.strategyId}`,
     );
 
     const rawReasoning = outcome.reasoning || "";
-    const claimMatch = rawReasoning.match(/CLAIM:\s*(.*?)(?=\[REASONING\]|$)/);
-    const reasoningMatch = rawReasoning.match(/\[REASONING\]\s*(.*)/);
+    const extractedClaim =
+      rawReasoning.match(/CLAIM:\s*(.*?)(?=\[REASONING\]|$)/)?.[1]?.trim() ||
+      "General Alpha";
 
-    const extractedClaim = claimMatch
-      ? (claimMatch[1] ?? "").trim()
-      : "General Alpha Hypothesis";
-    const extractedReasoning = reasoningMatch
-      ? (reasoningMatch[1] ?? "").trim()
-      : outcome.summary;
+    // Persona 1: Risk Manager
+    const riskVerdict =
+      (outcome.verification?.metrics?.maxDrawdown ?? 0 < -0.2)
+        ? "INVALID"
+        : "VALID";
+    const riskEvidence = `MaxDrawdown check: ${outcome.verification?.metrics?.maxDrawdown}.`;
 
-    const rationale = `Alpha-R1 Strategic Analysis: The agent analyzed the claim "${extractedClaim}". 
-    Strategic reasoning trace: ${extractedReasoning}. Market context is currently "${marketContext}".`;
+    // Persona 2: Alpha Hunter
+    const hunterVerdict =
+      (outcome.alpha?.pValue ?? 1) < 0.05 ? "VALID" : "UNCERTAIN";
+    const hunterEvidence = `P-Value: ${outcome.alpha?.pValue}.`;
+
+    // Persona 3: Regime Specialist
+    const regimeVerdict =
+      marketContext.includes("BULL") &&
+      extractedClaim.toLowerCase().includes("momentum")
+        ? "VALID"
+        : "UNCERTAIN";
+    const regimeEvidence = `Alignment with ${marketContext}.`;
 
     const logicChecks: StrategicReasoning["logicChecks"] = [
       {
-        claim: extractedClaim,
-        verdict:
-          extractedClaim.toLowerCase().includes("momentum") &&
-          marketContext.includes("BULL")
-            ? "VALID"
-            : "UNCERTAIN",
-        evidence: `Matches current regime ${marketContext}.`,
+        claim: "Risk Manager Review",
+        verdict: riskVerdict,
+        evidence: riskEvidence,
       },
       {
-        claim: "Logical consistency of reasoning trace",
-        verdict: extractedReasoning.length > 20 ? "VALID" : "INVALID",
-        evidence: "Reasoning depth check.",
+        claim: "Alpha Hunter Review",
+        verdict: hunterVerdict,
+        evidence: hunterEvidence,
+      },
+      {
+        claim: "Regime Specialist Review",
+        verdict: regimeVerdict,
+        evidence: regimeEvidence,
       },
     ];
 
-    const contextAlignment =
-      extractedClaim.toLowerCase().includes("momentum") &&
-      marketContext.includes("MOMENTUM")
-        ? 0.92
-        : 0.55;
+    const validCount = logicChecks.filter((c) => c.verdict === "VALID").length;
+    const contextAlignment = validCount / 3;
+
+    const rationale = `[Council Consensus] The alpha was reviewed by the Risk Manager, Alpha Hunter, and Regime Specialist. 
+    Final Verdict Count: ${validCount}/3 VALID. 
+    Key Critique: ${validCount < 3 ? "One or more specialists raised concerns about robustness or risk." : "Unanimous approval."}`;
 
     return {
       rationale,
@@ -90,12 +102,11 @@ export class StrategicReasonerAgent extends BaseAgent {
 
     if (sharpe < 0.5 || pValue > 0.1) {
       status = "DECAYED";
-      reason = "Statistically significant performance decay detected.";
+      reason = `[REJECTED] ${reasoning.rationale}`;
       score *= 0.5;
     } else if (reasoning.contextAlignment < 0.5) {
       status = "INACTIVE";
-      reason =
-        "Alpha logic is currently misaligned with the prevailing market regime.";
+      reason = `[INACTIVE] ${reasoning.rationale}`;
       score *= 0.8;
     }
 

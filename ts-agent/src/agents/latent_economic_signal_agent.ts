@@ -35,12 +35,13 @@ export interface AlphaFactor {
   reasoning: string;
   // [NEW] DAG Metadata for AlphaPROBE/QuantaAlpha evolution
   parentId?: string | undefined;
-  generation?: number;
-  mutationType?:
+  generation: number; // [NEW] Mandatory for evolutionary trace
+  mutationType:
     | "CROSSOVER"
     | "POINT_MUTATION"
     | "STRUCTURAL_SHIFT"
     | "NEW_SEED";
+  gender: "MALE" | "FEMALE"; // [NEW] GGA Subpopulation
 }
 
 export interface FactorEvaluation {
@@ -66,28 +67,78 @@ export class LesAgent extends BaseAgent {
     const lesModel = registry.models.find((m) => m.id === "les-forecast");
     const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
 
+    // [NEW] Load dynamic mission context if available
+    let missionContext = "";
+    if (
+      fs.existsSync(
+        "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md",
+      )
+    ) {
+      missionContext = fs.readFileSync(
+        "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md",
+        "utf8",
+      );
+      if (missionContext.trim().length > 0) {
+        const titleMatch = missionContext.match(/# (.*)/);
+        const title = titleMatch ? titleMatch[1] : "Custom Mission";
+        console.log(`🎯 MISSION LOADED: Focusing on ${title}...`);
+      }
+    }
+
     console.log(
       `🚀 LES: Seed Alpha Factory is requesting DSL generation from LLM${source}...`,
     );
 
     // [NOVELTY ENFORCEMENT] Extract existing strategy names/IDs from playbook
     const existingThemes = new Set<string>();
+    const forbiddenThemes = new Set<string>();
+
     for (const bullet of playbookBullets) {
       if (bullet.content) {
         const match = bullet.content.match(/^([^:]+):/);
-        if (match?.[1]) existingThemes.add(match[1].trim().toLowerCase());
+        const themeName = match?.[1]?.trim().toLowerCase();
+
+        if (themeName) {
+          if (bullet.section === "strategies_and_hard_rules") {
+            forbiddenThemes.add(themeName);
+          } else {
+            existingThemes.add(themeName);
+          }
+        }
+
+        // [CRITIQUE ANALYSIS] Extract failure keywords from Council Consensus
+        if (bullet.content.includes("[REJECTED]")) {
+          const critiqueKeywords = [
+            "momentum",
+            "mean reversion",
+            "volatility",
+            "regime",
+          ];
+          for (const kw of critiqueKeywords) {
+            if (bullet.content.toLowerCase().includes(kw)) {
+              forbiddenThemes.add(kw);
+            }
+          }
+        }
       }
     }
 
     // [ULTRA-DIVERSITY GENERATOR]
     // Fulfilling the mandate for "completely new" hypotheses by using personas and expanded themes.
-    const ops = ["DIV", "MUL", "SUB", "ADD"] as const;
+    const ops = ["DIV", "MUL", "SUB", "ADD", "SMA", "LAG"] as const;
     const cols = [
       "close",
       "open",
       "high",
       "low",
       "volume",
+      "correction_freq",
+      "activist_bias",
+      "macro_iip",
+      "macro_cpi",
+      "segment_sentiment",
+      "ai_exposure",
+      "kg_centrality",
     ];
     const personas = [
       "Quant Analyst",
@@ -97,22 +148,68 @@ export class LesAgent extends BaseAgent {
       "Fundamental Researcher",
     ];
 
-    const generateRandomAST = (depth: number): FactorAST => {
-      if (depth <= 0 || (depth === 1 && Math.random() > 0.6)) {
+    const generateRandomAST = (
+      depth: number,
+      biasCols?: string[],
+      mutationStrength = 1.0,
+    ): FactorAST => {
+      if (
+        depth <= 0 ||
+        (depth === 1 && Math.random() > 0.6 * mutationStrength)
+      ) {
         if (Math.random() > 0.2) {
+          const pool = biasCols && Math.random() > 0.5 ? biasCols : cols;
           return {
             type: "variable",
-            name: pickOne(cols),
+            name: pickOne(pool),
           };
         }
-        return { type: "constant", value: Number((Math.random() * 5).toFixed(2)) };
+        return {
+          type: "constant",
+          value: Number((Math.random() * 5).toFixed(2)),
+        };
+      }
+      const op = pickOne(ops);
+      if (op === "SMA" || op === "LAG") {
+        return {
+          type: "operator",
+          name: op,
+          left: generateRandomAST(depth - 1, biasCols, mutationStrength),
+          right: {
+            type: "constant",
+            value: Math.floor(Math.random() * 10) + 1,
+          },
+        };
       }
       return {
         type: "operator",
-        name: pickOne(ops),
-        left: generateRandomAST(depth - 1),
-        right: generateRandomAST(depth - 1),
+        name: op,
+        left: generateRandomAST(depth - 1, biasCols, mutationStrength),
+        right: generateRandomAST(depth - 1, biasCols, mutationStrength),
       };
+    };
+
+    /**
+     * [GGA] Arithmetic Crossover for parameters
+     */
+    const arithmeticCrossover = (
+      astX: FactorAST,
+      astY: FactorAST,
+      alpha = 0.5,
+    ): FactorAST => {
+      if (astX.type === "constant" && astY.type === "constant") {
+        return {
+          type: "constant",
+          value: Number(
+            (
+              (1 - alpha) * (astX.value || 0) +
+              alpha * (astY.value || 0)
+            ).toFixed(2),
+          ),
+        };
+      }
+      // If structures differ, return one or the other
+      return Math.random() > 0.5 ? astX : astY;
     };
 
     const themes = [
@@ -164,6 +261,35 @@ export class LesAgent extends BaseAgent {
         name: "Cross-Asset Retrieval (FactorMiner)",
         terms: ["memory", "skill", "cross-asset", "experience", "trajectory"],
       },
+      {
+        name: "Causal Mechanism (CAMEF)",
+        terms: [
+          "causality",
+          "counterfactual",
+          "intervention",
+          "mechanism",
+          "evidence",
+        ],
+      },
+      {
+        name: "Neuro-Symbolic Logic (NeuroSymbolic)",
+        terms: ["symbolic", "neural", "explainable", "rule-based", "hybrid"],
+      },
+      // [NEW] Dynamically injected mission seed
+      ...(missionContext.trim().length > 0
+        ? [
+            {
+              name: "10-K Intelligence 2.0 (Mission)",
+              terms: [
+                "itemization",
+                "segment_sentiment",
+                "ai_exposure",
+                "kg_centrality",
+                "drift",
+              ],
+            },
+          ]
+        : []),
     ];
 
     const reasoningTemplates = [
@@ -186,7 +312,9 @@ export class LesAgent extends BaseAgent {
     while (candidates.length < count && attempts < 50) {
       attempts++;
 
-      const isEvolution = seeds.length > 0 && Math.random() > 0.4;
+      const gender = Math.random() > 0.5 ? "MALE" : "FEMALE";
+      const isEvolution =
+        seeds.length > 0 && Math.random() > (gender === "MALE" ? 0.3 : 0.6);
       const seed = isEvolution
         ? seeds[Math.floor(Math.random() * seeds.length)]
         : null;
@@ -194,8 +322,12 @@ export class LesAgent extends BaseAgent {
       const themeIndex = Math.floor(Math.random() * themes.length);
       const theme = themes[themeIndex]!;
 
-      // If the theme is already in the playbook, skip or attempt evolution
-      if (!isEvolution && existingThemes.has(theme.name.toLowerCase()))
+      // If the theme is already in the playbook or has failed recently, skip or attempt evolution
+      if (
+        !isEvolution &&
+        (existingThemes.has(theme.name.toLowerCase()) ||
+          forbiddenThemes.has(theme.name.toLowerCase()))
+      )
         continue;
 
       const personaIndex = Math.floor(Math.random() * personas.length);
@@ -207,7 +339,10 @@ export class LesAgent extends BaseAgent {
 
       const uuidPart = crypto.randomUUID().split("-")[0]!;
       const id = `ALPHA-${persona.split(" ")[0]!.toUpperCase()}-${uuidPart.toUpperCase()}`;
-      const depth = 1 + Math.floor(Math.random() * 3);
+      const depth =
+        gender === "MALE"
+          ? 2 + Math.floor(Math.random() * 2)
+          : 1 + Math.floor(Math.random() * 2);
 
       let reasoning = template
         .replace("{0}", theme.name)
@@ -221,15 +356,42 @@ export class LesAgent extends BaseAgent {
       let generation = 1;
       let mutationType: AlphaFactor["mutationType"] = "NEW_SEED";
       let parentId: string | undefined;
+      let ast: FactorAST;
+
+      const missionBias = theme.name.includes("(Mission)")
+        ? theme.terms.filter((t) => cols.includes(t))
+        : undefined;
 
       if (isEvolution && seed) {
         parentId = seed.metadata?.id as string | undefined;
         generation =
           ((seed.metadata?.generation as number | undefined) || 1) + 1;
-        mutationType =
-          Math.random() > 0.5 ? "POINT_MUTATION" : "STRUCTURAL_SHIFT";
-        description = `Evolved ${mutationType}: ${seed.content.split(":")[0]} [v${generation}]`;
-        reasoning = `[EVOLUTIONARY TRACE] Evolved from ${parentId}. ${reasoning}`;
+
+        const dice = Math.random();
+        if (dice < 0.4) {
+          mutationType = "CROSSOVER";
+          description = `[EVOLVED] Crossover: ${seed.content.split(":")[0]} [v${generation}]`;
+          reasoning = `[EVOLUTIONARY TRACE] Crossover mutation (GGA ${gender}) from ${parentId}. ${reasoning}`;
+
+          // GGA Crossover: If we have multiple seeds, crossover with another. Else point mutation.
+          const partner = pickOne(seeds);
+          ast = arithmeticCrossover(
+            seed.metadata?.ast as FactorAST,
+            partner.metadata?.ast as FactorAST,
+          );
+        } else if (gender === "MALE") {
+          mutationType = "STRUCTURAL_SHIFT";
+          description = `[EVOLVED] Shift (MALE): ${seed.content.split(":")[0]} [v${generation}]`;
+          reasoning = `[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ${parentId}. Focusing on explorative diversity.`;
+          ast = generateRandomAST(depth, missionBias, 1.5); // Higher mutation strength
+        } else {
+          mutationType = "POINT_MUTATION";
+          description = `[EVOLVED] Fine-tune (FEMALE): ${seed.content.split(":")[0]} [v${generation}]`;
+          reasoning = `[EVOLUTIONARY TRACE] Micro-mutation from ${parentId}. Focusing on exploititive stability.`;
+          ast = generateRandomAST(depth, missionBias, 0.5); // Lower mutation strength
+        }
+      } else {
+        ast = generateRandomAST(depth, missionBias);
       }
 
       // Secondary check: description overlap
@@ -237,12 +399,13 @@ export class LesAgent extends BaseAgent {
 
       candidates.push({
         id,
-        ast: generateRandomAST(depth),
+        ast,
         description,
         reasoning,
         parentId,
         generation,
         mutationType,
+        gender,
       });
       existingThemes.add(description.toLowerCase());
     }
@@ -296,6 +459,12 @@ export class LesAgent extends BaseAgent {
       /volatility|regime|dispersion|uncertainty|skew|tail|convexity/.test(text)
     )
       rs += 0.05;
+    if (
+      /itemization|segment|sentiment|ai_exposure|knowledge_graph|kg_centrality/.test(
+        text,
+      )
+    )
+      rs += 0.1;
     if (evidence && Object.keys(evidence).length > 0) rs += 0.1;
     rs = Math.min(0.8, rs);
 
