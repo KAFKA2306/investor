@@ -5340,10 +5340,15 @@ bullets:
       llmModel: ''
       generation: 1
       mutationType: NEW_SEED
-  - content: >-
+  - id: ctx-1hnqxk1k
+    content: >-
       [EVOLVED] Fine-tune (FEMALE): [EVOLVED] Shift [v4]: [EVOLUTIONARY TRACE] Micro-mutation from
       ALPHA-BEHAVIORAL-E7D76A24. Focusing on exploititive stability.
     section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T05:40:04.701Z'
+    updated_at: '2026-03-01T05:40:04.701Z'
     metadata:
       source: AlphaDiscovery
       type: HYPOTHESIS
@@ -5373,16 +5378,16 @@ bullets:
       generation: 4
       parentId: ALPHA-BEHAVIORAL-E7D76A24
       mutationType: POINT_MUTATION
-    id: ctx-1hnqxk1k
-    helpful_count: 0
-    harmful_count: 0
-    created_at: '2026-03-01T05:40:04.701Z'
-    updated_at: '2026-03-01T05:40:04.701Z'
-  - content: >-
+  - id: ctx-3n3zyi5v
+    content: >-
       10-K Intelligence 2.0 (Mission) Hypothesis (Behavioral Economist): CLAIM: Autonomous hypothesis on 10-K
       Intelligence 2.0 (Mission) using segment_sentiment. [REASONING] This model identifies itemization trajectories to
       extract ai_exposure edge in kg_centrality regimes. Reasoning trace by Behavioral Economist.
     section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T05:40:04.701Z'
+    updated_at: '2026-03-01T05:40:04.701Z'
     metadata:
       source: AlphaDiscovery
       type: HYPOTHESIS
@@ -5436,8 +5441,310 @@ bullets:
       llmModel: ''
       generation: 1
       mutationType: NEW_SEED
-    id: ctx-3n3zyi5v
+  - id: ctx-5w8iw56t
+    content: >-
+      Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Fundamental Researcher): [LLM_THEME] Regime transition and
+      microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used because remote
+      proposal was unavailable. | CLAIM: Strategic Adaptive Regime Cross-Signal (gpt-5-nano) extraction using macro_cpi.
+      [REASONING] Detects macro_iip and exploits volume in close markets. Verified by Fundamental Researcher protocols.
+    section: strategies_and_hard_rules
     helpful_count: 0
     harmful_count: 0
-    created_at: '2026-03-01T05:40:04.701Z'
-    updated_at: '2026-03-01T05:40:04.701Z'
+    created_at: '2026-03-01T05:59:42.089Z'
+    updated_at: '2026-03-01T05:59:42.089Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-2EF5EDF6
+      runId: uqtl_20260301T145937_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: ADD
+        left:
+          type: operator
+          name: ADD
+          left:
+            type: constant
+            value: 2.95
+          right:
+            type: variable
+            name: kg_centrality
+        right:
+          type: operator
+          name: MUL
+          left:
+            type: variable
+            name: ai_exposure
+          right:
+            type: variable
+            name: correction_freq
+      status: SELECTED
+      score: 0.6537373737373737
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.8686868686868687
+      stabilityScore: 0.5
+      adoptionScore: 0.6967272727272728
+      ideaHash: c10ceda1eea85ab845d51e01
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-klwof8zr
+    content: >-
+      [EVOLVED] Crossover: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from
+      ALPHA-MACRO-DA8E5419. CLAIM: Alpha captures illiquidity patterns in Liquidity Shock via flow logic. [REASONING]
+      Leveraging impact signals in imbalance markets ensures robustness. Persona: Quant Analyst.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T05:59:42.089Z'
+    updated_at: '2026-03-01T05:59:42.089Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-381379C3
+      runId: uqtl_20260301T145937_1
+      loopIteration: 1
+      ast:
+        op: add
+        left:
+          op: div
+          left:
+            op: col
+            name: volume
+          right:
+            op: mul
+            left:
+              op: col
+              name: operating_profit
+            right:
+              op: col
+              name: close
+        right:
+          op: sub
+          left:
+            op: mul
+            left:
+              op: col
+              name: profit_margin
+            right:
+              op: col
+              name: net_sales
+          right:
+            op: mul
+            left:
+              op: lit
+              value: 4.15
+            right:
+              op: col
+              name: net_sales
+      status: SELECTED
+      score: 0.6287373737373738
+      fitnessScore: 0.575
+      noveltyScore: 0.8686868686868687
+      stabilityScore: 0.48750000000000004
+      adoptionScore: 0.6767272727272728
+      ideaHash: 3c8019d8a2336dc404931a45
+      featureSignature: []
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-MACRO-DA8E5419
+      mutationType: CROSSOVER
+  - id: ctx-1lid07gp
+    content: >-
+      [EVOLVED] Fine-tune (FEMALE): Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Micro-mutation from
+      ALPHA-HFT-F05073DB. Focusing on exploititive stability.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T05:59:52.266Z'
+    updated_at: '2026-03-01T05:59:52.266Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-AC5D6247
+      runId: uqtl_20260301T145946_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: constant
+            value: 2.45
+          right:
+            type: variable
+            name: high
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: activist_bias
+          right:
+            type: variable
+            name: low
+      status: REJECTED
+      score: 0.5627118644067797
+      fitnessScore: 0.5
+      noveltyScore: 0.8135593220338984
+      stabilityScore: 0.5
+      adoptionScore: 0.6128813559322034
+      ideaHash: c3a298e53fed8deb5a271c9d
+      featureSignature:
+        - activist_bias
+        - high
+        - low
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-HFT-F05073DB
+      mutationType: POINT_MUTATION
+  - id: ctx-n20gzztb
+    content: >-
+      Volatility Regime Hypothesis (Behavioral Economist): CLAIM: Alpha captures dispersion patterns in Volatility
+      Regime via uncertainty logic. [REASONING] Leveraging skew signals in tail markets ensures robustness. Persona:
+      Behavioral Economist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T05:59:52.266Z'
+    updated_at: '2026-03-01T05:59:52.266Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-DD3B26EC
+      runId: uqtl_20260301T145946_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: operator
+          name: DIV
+          left:
+            type: variable
+            name: segment_sentiment
+          right:
+            type: variable
+            name: macro_cpi
+        right:
+          type: constant
+          value: 2.65
+      status: SELECTED
+      score: 0.6227118644067796
+      fitnessScore: 0.6
+      noveltyScore: 0.8135593220338984
+      stabilityScore: 0.45
+      adoptionScore: 0.6608813559322034
+      ideaHash: dcceea3f960c9cb9ce8d585e
+      featureSignature:
+        - macro_cpi
+        - segment_sentiment
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - content: >-
+      DAG-based Evolution (AlphaPROBE) Hypothesis (Macro Strategist): CLAIM: High-precision biased forecasting using
+      DAG-based Evolution (AlphaPROBE). [REASONING] A retrieval model that uses graph to filter noise during evolution
+      periods. Proposed by Macro Strategist.
+    section: strategies_and_hard_rules
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-MACRO-F8018DC4
+      runId: uqtl_20260301T145955_3
+      loopIteration: 3
+      ast:
+        type: constant
+        value: 1.55
+      status: SELECTED
+      score: 0.5222222222222223
+      fitnessScore: 0.5
+      noveltyScore: 0.6111111111111112
+      stabilityScore: 0.5
+      adoptionScore: 0.54
+      ideaHash: 0e839ed53b7600e84c9a694a
+      featureSignature: []
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+    id: ctx-63lkez3a
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:00:00.516Z'
+    updated_at: '2026-03-01T06:00:00.516Z'
+  - content: >-
+      Causal Mechanism (CAMEF) Hypothesis (Quant Analyst): CLAIM: High-precision intervention forecasting using Causal
+      Mechanism (CAMEF). [REASONING] A counterfactual model that uses causality to filter noise during mechanism
+      periods. Proposed by Quant Analyst.
+    section: strategies_and_hard_rules
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-0F3DC4D7
+      runId: uqtl_20260301T145955_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: DIV
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: operator
+            name: LAG
+            left:
+              type: variable
+              name: volume
+            right:
+              type: constant
+              value: 4
+          right:
+            type: variable
+            name: segment_sentiment
+        right:
+          type: operator
+          name: LAG
+          left:
+            type: operator
+            name: ADD
+            left:
+              type: constant
+              value: 4.52
+            right:
+              type: variable
+              name: segment_sentiment
+          right:
+            type: constant
+            value: 7
+      status: REJECTED
+      score: 0.4722222222222222
+      fitnessScore: 0.45
+      noveltyScore: 0.6111111111111112
+      stabilityScore: 0.475
+      adoptionScore: 0.5
+      ideaHash: ba901ac645060a56f8be5e07
+      featureSignature:
+        - segment_sentiment
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+    id: ctx-gikq8im2
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:00:00.516Z'
+    updated_at: '2026-03-01T06:00:00.516Z'
