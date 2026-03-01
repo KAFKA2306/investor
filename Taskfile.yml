@@ -5,6 +5,7 @@ vars:
   DASHBOARD_DIR: ts-agent/src/dashboard
   API_PORT: '{{default "8787" .API_PORT}}'
   UI_PORT: '{{default "5173" .UI_PORT}}'
+  VIEWER_PORT: '{{default "3400" .VIEWER_PORT}}'
 
 tasks:
   default:
@@ -69,6 +70,11 @@ tasks:
     dir: "{{.DASHBOARD_DIR}}"
     cmds:
       - npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}
+
+  viewer:
+    desc: claude-code-viewer 起動（既定ポート 3400）
+    cmds:
+      - claude-code-viewer --port {{.VIEWER_PORT}}
 
   view:
     desc: API + UI 起動
@@ -173,10 +179,23 @@ tasks:
       - cmd: >
           bash -lc 'set -euo pipefail;
           cycles="${ALPHA_LOOP_MAX_CYCLES:-3}";
+          input_channel="${UQTL_INPUT_CHANNEL:-task}";
           if [ "$cycles" -lt 1 ]; then
             cycles=1;
           fi;
-          ALPHA_LOOP_MAX_CYCLES="$cycles" task run:newalphasearch:loop'
+          ALPHA_LOOP_MAX_CYCLES="$cycles" UQTL_INPUT_CHANNEL="$input_channel" UQTL_NL_INPUT="${UQTL_NL_INPUT:-}" UQTL_NL_INPUT_FILE="${UQTL_NL_INPUT_FILE:-}" task run:newalphasearch:loop'
+
+  run:newalphasearch:nl:
+    desc: 自然言語入力つき自律アルファ探索（Task経路固定）
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          prompt="${NL_INPUT:-${UQTL_NL_INPUT:-}}";
+          if [ -z "${prompt}" ]; then
+            echo "[run:newalphasearch:nl] NL_INPUT or UQTL_NL_INPUT is required";
+            exit 1;
+          fi;
+          UQTL_NL_INPUT="$prompt" UQTL_INPUT_CHANNEL="${UQTL_INPUT_CHANNEL:-codex}" task run:newalphasearch'
 
   run:newalphasearch:loop:
     desc: 自律アルファ探索を連続ループ実行（自律探索/改善/テーマ更新を毎サイクル必須実行）
@@ -186,22 +205,28 @@ tasks:
           max_cycles="${ALPHA_LOOP_MAX_CYCLES:-3}";
           sleep_sec="${ALPHA_LOOP_SLEEP_SEC:-0}";
           max_failures="${ALPHA_LOOP_MAX_FAILURES:-3}";
-          seen_ids_file="/tmp/uqtl_seen_selected_alpha_ids.txt";
-          touch "$seen_ids_file";
+          input_channel="${UQTL_INPUT_CHANNEL:-task}";
+          nl_input="${UQTL_NL_INPUT:-}";
+          nl_input_file="${UQTL_NL_INPUT_FILE:-}";
+          if [ -z "$nl_input" ] && [ -n "$nl_input_file" ] && [ -f "$nl_input_file" ]; then
+            nl_input="$(cat "$nl_input_file")";
+          fi;
+          seen_signatures_file="/tmp/uqtl_seen_selected_alpha_signatures.txt";
+          touch "$seen_signatures_file";
           if [ "$max_cycles" -lt 1 ]; then
             max_cycles=1;
-          fi
+          fi;
           cycle=0;
           failures=0;
           while true; do
             cycle=$((cycle+1));
             run_id="uqtl_$(date +%Y%m%dT%H%M%S)_${cycle}";
             before_count=$(find logs/unified -maxdepth 1 -type f -name "alpha_discovery_*.json" 2>/dev/null | wc -l | tr -d " ");
-            before_plot_ts=$(bash -lc 'f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi');
-            echo "[loop] cycle=${cycle} run_id=${run_id} started_at=$(date -Is)";
-            if UQTL_RUN_ID="$run_id" UQTL_LOOP_ITERATION="$cycle" task run:newalphasearch:cycle; then
+            before_plot_ts=$(f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi);
+            echo "[loop] cycle=${cycle} run_id=${run_id} channel=${input_channel} nl_input_len=${#nl_input} started_at=$(date -Is)";
+            if UQTL_RUN_ID="$run_id" UQTL_LOOP_ITERATION="$cycle" UQTL_INPUT_CHANNEL="$input_channel" UQTL_NL_INPUT="$nl_input" task run:newalphasearch:cycle; then
               after_count=$(find logs/unified -maxdepth 1 -type f -name "alpha_discovery_*.json" 2>/dev/null | wc -l | tr -d " ");
-              after_plot_ts=$(bash -lc 'f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi');
+              after_plot_ts=$(f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi);
               if [ "$after_count" -le "$before_count" ]; then
                 echo "[loop] cycle=${cycle} status=fail reason=no_new_alpha_discovery_log before=${before_count} after=${after_count}";
                 failures=$((failures+1));
@@ -211,7 +236,7 @@ tasks:
                 fi
               else
                 latest_file=$(ls -1t logs/unified/alpha_discovery_*.json | head -n1);
-                selected_count=$(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding='utf-8')); print(len((j.get('payload') or {}).get('selected', [])))" "$latest_file");
+                selected_count=$(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding=\"utf-8\")); print(len((j.get(\"payload\") or {}).get(\"selected\", [])))" "$latest_file");
                 if [ "${selected_count}" -lt 1 ]; then
                   echo "[loop] cycle=${cycle} status=fail reason=no_selected_alpha latest=${latest_file}";
                   failures=$((failures+1));
@@ -221,14 +246,14 @@ tasks:
                   fi
                 else
                   new_alpha_found=0;
-                  while IFS= read -r sid; do
-                    [ -z "$sid" ] && continue;
-                    if ! grep -Fxq "$sid" "$seen_ids_file"; then
+                  while IFS= read -r signature; do
+                    [ -z "$signature" ] && continue;
+                    if ! grep -Fxq "$signature" "$seen_signatures_file"; then
                       new_alpha_found=1;
                     fi
-                    echo "$sid" >> "$seen_ids_file";
-                  done < <(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding='utf-8')); [print(str(x)) for x in ((j.get('payload') or {}).get('selected', []))]" "$latest_file")
-                  sort -u "$seen_ids_file" -o "$seen_ids_file";
+                    echo "$signature" >> "$seen_signatures_file";
+                  done < <(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding=\"utf-8\")); payload=(j.get(\"payload\") or {}); details=payload.get(\"selectedDetails\") or []; out=[]; [out.append(\"hash:\"+str((d or {}).get(\"ideaHash\",\"\")).strip()) for d in details if str((d or {}).get(\"ideaHash\",\"\")).strip()]; [out.append(\"id:\"+str(x)) for x in (payload.get(\"selected\") or [])] if not out else None; [print(v) for v in out]" "$latest_file")
+                  sort -u "$seen_signatures_file" -o "$seen_signatures_file";
                   if [ "$new_alpha_found" -ne 1 ]; then
                     echo "[loop] cycle=${cycle} status=fail reason=no_new_alpha_detected latest=${latest_file}";
                     failures=$((failures+1));

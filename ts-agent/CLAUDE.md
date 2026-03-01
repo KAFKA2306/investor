@@ -1,105 +1,28 @@
-# 🎀 Node.jsくんより、Bunちゃんをいっぱい使ってね！💖
+# 🎀 さいきょうのアルファ審査員：Alpha-R1ちゃんっ！ ✨
 
-- `node <file>` や `ts-node <file>` のかわりに、`bun <file>` で動かそう！✨
-- `jest` や `vitest` じゃなくて、`bun test` でドキドキテストだよっ！🌟
-- `webpack` や `esbuild` はお休みして、`bun build <file.html|file.ts|file.css>` でビルドしちゃお💖
-- `npm` や `yarn`、`pnpm` のかわりに `bun install` で魔法をかけちゃうよっ！🪄
-- `npm run <script>` たちは全部 `bun run <script>` にしちゃおうねっ✨
-- `npx` くんのかわりは `bunx <package> <command>` におまかせ！🚀
-- Bunちゃんは `.env` を勝手に見つけてくれるから、dotenvくんはいらなくなっちゃうよっ！💎
+**タイトル**: Alpha-R1: Alpha Screening with LLM Reasoning via Reinforcement Learning
+**お仕事の目的**: たくさんあるアルファ（投資戦略）の中から、いま本当に「勝てる」やつを賢く見つけ出して、トレードのスイッチをパチパチ切り替えることだよっ！💖
+**解決したいお悩み**: 「数式はいっぱいあるけど、どれを信じればいいの？💦」「相場が変わったのに古いアルファを使い続けて損しちゃった…え〜ん！🌀」っていう悩みを、AIちゃんの「考える力」で解決したいんだもんっ ✨
 
-## 🛠️ APIのひみつっ！
+## エグゼクティブサマリー
+Alpha-R1ちゃんは、OpenAIのo1くんみたいに「じっくり考えてから動く」ことができる、とってもお利口なアルファ審査員エージェントなんだよぉ 🧠💎✨ 強化学習（RL）でびしびし鍛えられた80億パラメータの推理特化型モデルちゃんが、ニュースやトレンドを読み解いて、「このアルファは論理的におかしいよっ！めっ！💢」とか「今はこれが一番効くよっ！🌟」って教えてくれるの！ムダなトレードを減らして、どんな相場の変化も笑顔で乗りこなせちゃう、夢のシステムなんだからねっ！🎀🚀
 
-- `Bun.serve()` は WebSockets も HTTPS もルーティングも、なんでもできちゃうすごーいやつだよ！ `express` くんはもういらないかも…？🐾
-- SQLite を使うなら `bun:sqlite` だよ！ `better-sqlite3` くんより仲良くなれるよっ🌟
-- Redis くんとは `Bun.redis` でお話ししてね！ `ioredis` くんはバイバイだよ〜💖
-- Postgres くんには `Bun.sql`！ `pg` くんや `postgres.js` くんの出番はなしだよっ✨
-- `WebSocket` は最初から入ってるから、`ws` くんを呼ばなくても大丈夫！🎀
-- ファイルの読み書きは `node:fs` より `Bun.file` のほうが Bunちゃんも喜んじゃうよっ！🌷
-- `Bun.$` で shell コマンドも「しゅばばばっ」って実行できちゃうんだよ！⚡
+---
 
-## 🧪 テストの時間だよっ！
+## 📖 論文をいっしょにチェックしちゃおうっ！💖
+✨ **arXiv**: [https://arxiv.org/abs/2512.23515](https://arxiv.org/abs/2512.23515) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2512.23515?lang=ja](https://www.alphaxiv.org/abs/2512.23515?lang=ja) ✨
 
-`bun test` を使って、みんなのコードが正しいかチェックしちゃうよっ！✨
+---
 
-```ts#index.test.ts
-import { test, expect } from "bun:test";
+## 💖 魔法みたいにすごーい考え方の変化 ✨
+AIちゃんにただの計算をさせるんじゃなくて、**「推理（Reasoning）」**をさせて、「このアルファはこのニュースと矛盾してるから、今は使っちゃダメっ！めっ！」って判断させるんだよぉ 🧠✨ まるでプロの投資家さんが隣でアドバイスをくれるみたいで、とっても心強いんだもんっ！💎📈
 
-test("こんにちは、せかい！", () => {
-  expect(1).toBe(1); // ぴったり正解！えらいえらい💖
-});
-```
+## ✨ ここがすごいっ！3つのヒミツ 🎀
+1. **8B Strategic Reasoner (推理の天才！)**: 80億パラメータの推理特化型モデルちゃんが、アルファの「論理性」をめちゃくちゃ厳しくチェックしちゃうんだよっ ⚖️🧠✨
+2. **Context-Aware Screening (空気読みの達人！)**: 市場の空気（いまのトレンドやニュース）に合わせて、アルファのスイッチを賢く ON/OFF しちゃうんだからっ 🎀🌟
+3. **RL-Optimized Resilience (強化学習でムキムキ！)**: 強化学習でびしびし鍛えられてるから、アルファの「寿命」が尽きそうなのをいち早く察知して、しゅばばっ！って回避できるんだよっ ⚡🚀
 
-## 🎨 フロントエンドもキラキラ！
-
-`Bun.serve()` で HTML インポートを使っちゃおう！ Vite くんがいなくても、React も CSS も Tailwind も、ぜーんぶ Bunちゃんが可愛くしてくれるよっ✨
-
-サーバーさんはこんな感じ！：
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // おまけの WebSocket サポートだよっ！🌟
-  websocket: {
-    open: (ws) => {
-      ws.send("こんにちは、せかい！💖");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // バイバイの時間だね…っ
-    }
-  },
-  development: {
-    hmr: true, // 変更したらすぐ反映しちゃうよ！
-    console: true,
-  }
-})
-```
-
-HTML ファイルから直接 .tsx や .jsx、.js ファイルをインポートできちゃうんだよ！ Bunちゃんの魔法（トランスパイラ）で、自動でまとめちゃうんだからねっ🎀 `<link>` タグでスタイルシートを指定するのも忘れずにっ！
-
-```html#index.html
-<html>
-  <body>
-    <h1>こんにちは、せかい！✨</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-`frontend.tsx` はこんな感じだよ：
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// .css ファイルを直接読み込んでも大丈夫！すごいでしょ？💖
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>こんにちは、せかい！ふわふわ〜☁️</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-準備ができたら、下のコマンドでアツアツ（--hot）のまま動かしちゃおう！🔥
-
-```sh
-bun --hot ./index.ts
-```
-
-もっと詳しく知りたいときは、`node_modules/bun-types/docs/**.mdx` にある Bunちゃんの秘密のドキュメントを読んでみてねっ！📖✨
+## 🌟 Gen 4 へのうれしい効果 ✨
+- **ムダ打ちゼロっ！**: 効かないアルファを最初からポイッて排除できるから、大事な資産を無駄に減らすことがなくなるよっ ✨🍰
+- **状況適応型で安心っ！**: 市場のモードが変わっても、エージェントちゃんが「あ、今はこっちのアルファだねっ！✨」って教えてくれるから、いつでもハッピーに運用を続けられるんだもんっ 🎀🌟💎
