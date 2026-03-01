@@ -39,9 +39,33 @@ interface YahooChartPayload {
 
 abstract class BaseMarketDataGateway implements MarketDataGateway {
   private readonly estat = new EstatProvider();
+  protected readonly cache = core.cache;
 
   public async getEstatStats(dataId: string): Promise<Record<string, unknown>> {
     return await this.estat.getStats(dataId);
+  }
+
+  /**
+   * Yahoo Financeから価格履歴を取得する共通ロジックだよっ！📊✨
+   */
+  protected async fetchYahooHistory(
+    symbol: string,
+    limit: number,
+  ): Promise<number[]> {
+    const res = await requestJson({
+      url: `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}${symbol.includes(".") ? "" : ".T"}`,
+      query: { interval: "1d", range: "2y" },
+      cache: this.cache,
+      ttlMs: 24 * 60 * 60 * 1000,
+    });
+
+    const result = (res.payload as unknown as YahooChartPayload).chart
+      .result?.[0];
+    if (!result) throw new Error(`No chart result for ${symbol}`);
+    const closes = (result.indicators.quote[0]?.close ?? []).filter(
+      (v: number | null): v is number => v !== null,
+    );
+    return closes.slice(-limit);
   }
 
   public abstract getDailyBars(
@@ -65,7 +89,6 @@ abstract class BaseMarketDataGateway implements MarketDataGateway {
 
 export class LiveMarketDataGateway extends BaseMarketDataGateway {
   private readonly jquants = new PeadJquantsGateway();
-  private readonly cache = core.cache;
 
   public async getDailyBars(
     symbol: string,
@@ -93,10 +116,10 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
         const bars = await this.jquants.getEarningsCalendar({ date });
         const filtered = symbol
           ? (bars as { code: string }[]).filter((b) => {
-              const code = b.code;
-              if (!code) return false;
-              return code.startsWith(symbol) || symbol.startsWith(code);
-            })
+            const code = b.code;
+            if (!code) return false;
+            return code.startsWith(symbol) || symbol.startsWith(code);
+          })
           : (bars as Record<string, unknown>[]);
 
         if (symbol && filtered.length === 0) return null;
@@ -120,20 +143,7 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
   }
 
   public async getHistory(symbol: string, limit: number): Promise<number[]> {
-    const res = await requestJson({
-      url: `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.T`,
-      query: { interval: "1d", range: "2y" },
-      cache: this.cache,
-      ttlMs: 24 * 60 * 60 * 1000,
-    });
-
-    const result = (res.payload as unknown as YahooChartPayload).chart
-      .result?.[0];
-    if (!result) throw new Error("No chart result");
-    const closes = (result.indicators.quote[0]?.close ?? []).filter(
-      (v: number | null): v is number => v !== null,
-    );
-    return closes.slice(-limit);
+    return this.fetchYahooHistory(symbol, limit);
   }
 
   public async getMarketDataEndDate(): Promise<string> {
@@ -191,8 +201,7 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
   }
 
   public async getHistory(symbol: string, limit: number): Promise<number[]> {
-    const bars = this.db.getBars(symbol, limit);
-    return bars.map((b: Record<string, unknown>) => Number(b.Close ?? 0));
+    return this.fetchYahooHistory(symbol, limit);
   }
 
   public async getUpcomingEarnings(
