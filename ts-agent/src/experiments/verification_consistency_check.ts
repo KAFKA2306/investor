@@ -26,16 +26,20 @@ function dailyReturnsFromCumulative(cumulativePct: number[]): number[] {
 function verify(report: QuantitativeVerification): string[] {
   const issues: string[] = [];
   const n = report.dates.length;
-  if (report.strategyCum.length !== n) issues.push("strategyCum length mismatch");
-  if (report.benchmarkCum.length !== n) issues.push("benchmarkCum length mismatch");
+  if (report.strategyCum.length !== n)
+    issues.push("strategyCum length mismatch");
+  if (report.benchmarkCum.length !== n)
+    issues.push("benchmarkCum length mismatch");
   const symbols = Object.keys(report.individualData);
   if (symbols.length === 0) issues.push("individualData empty");
   for (const symbol of symbols) {
     const d = report.individualData[symbol];
     if (!d) continue;
     if (d.prices.length !== n) issues.push(`${symbol} prices length mismatch`);
-    if (d.factors.length !== n) issues.push(`${symbol} factors length mismatch`);
-    if (d.positions.length !== n) issues.push(`${symbol} positions length mismatch`);
+    if (d.factors.length !== n)
+      issues.push(`${symbol} factors length mismatch`);
+    if (d.positions.length !== n)
+      issues.push(`${symbol} positions length mismatch`);
   }
 
   const meanAbsSignal = new Array(n).fill(0);
@@ -59,7 +63,8 @@ function verify(report: QuantitativeVerification): string[] {
     }
   }
 
-  if (positionState.size <= 1) issues.push("all positions identical over full period");
+  if (positionState.size <= 1)
+    issues.push("all positions identical over full period");
   if (std(meanAbsSignal) < 1e-8) issues.push("alpha signal intensity is flat");
   if (std(meanPosition) < 1e-8) issues.push("portfolio position is flat");
 
@@ -73,7 +78,10 @@ function verify(report: QuantitativeVerification): string[] {
       issues.push(`pnl exists with zero position at ${report.dates[t]}`);
       break;
     }
-    if ((tradeCount[t] ?? 0) === 0 && Math.abs((netReturns[t] ?? 0) - (netReturns[t - 1] ?? 0)) > 0.2) {
+    if (
+      (tradeCount[t] ?? 0) === 0 &&
+      Math.abs((netReturns[t] ?? 0) - (netReturns[t - 1] ?? 0)) > 0.2
+    ) {
       issues.push(`large pnl jump without trade at ${report.dates[t]}`);
       break;
     }
