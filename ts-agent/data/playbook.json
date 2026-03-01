@@ -4766,8 +4766,13 @@
       }
     },
     {
+      "id": "ctx-isjey11y",
       "content": "Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst): CLAIM: High-precision industrial forecasting using Macro-Socio Divergence (e-Stat). [REASONING] A labor model that uses demographic to filter noise during household periods. Proposed by Quant Analyst.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:22:59.086Z",
+      "updated_at": "2026-02-28T17:22:59.086Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -4788,16 +4793,16 @@
         "score": 0.6197058823529412,
         "generation": 1,
         "mutationType": "NEW_SEED"
-      },
-      "id": "ctx-isjey11y",
+      }
+    },
+    {
+      "id": "ctx-2cz7svva",
+      "content": "[EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v2]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-QUANT-8D7EA1F9. Focusing on explorative diversity.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T17:22:59.086Z",
-      "updated_at": "2026-02-28T17:22:59.086Z"
-    },
-    {
-      "content": "[EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v2]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-QUANT-8D7EA1F9. Focusing on explorative diversity.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T17:22:59.086Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -4851,12 +4856,75 @@
         "generation": 2,
         "parentId": "ALPHA-QUANT-8D7EA1F9",
         "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "content": "Causal Mechanism (CAMEF) Hypothesis (HFT Engineer): CLAIM: Structural drift identification via Causal Mechanism (CAMEF) and causality. [REASONING] The HFT Engineer persona targets intervention using a counterfactual approach. Optimized for mechanism regimes.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-3C1A4312",
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "variable",
+            "name": "kg_centrality"
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "constant",
+              "value": 0.68
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.581923076923077,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
       },
-      "id": "ctx-2cz7svva",
+      "id": "ctx-e0ndxvnv",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T17:22:59.086Z",
-      "updated_at": "2026-02-28T17:22:59.086Z"
+      "created_at": "2026-03-01T03:26:14.193Z",
+      "updated_at": "2026-03-01T03:26:14.193Z"
+    },
+    {
+      "content": "10-K Intelligence 2.0 (Mission) Hypothesis (Macro Strategist): CLAIM: High-precision ai_exposure forecasting using 10-K Intelligence 2.0 (Mission). [REASONING] A segment_sentiment model that uses itemization to filter noise during kg_centrality periods. Proposed by Macro Strategist.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-F7EC19F9",
+        "ast": {
+          "type": "operator",
+          "name": "SUB",
+          "left": {
+            "type": "constant",
+            "value": 0.56
+          },
+          "right": {
+            "type": "constant",
+            "value": 3.27
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6319230769230769,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      },
+      "id": "ctx-n5jvi63r",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-03-01T03:26:14.193Z",
+      "updated_at": "2026-03-01T03:26:14.193Z"
     }
   ]
 }
