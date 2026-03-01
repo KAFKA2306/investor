@@ -1,9 +1,3 @@
-/**
- * EdinetItemizer
- *
- * Logic to segment Japanese EDINET documents (Annual Reports, etc.) into logical sections.
- */
-
 export interface EdinetSegment {
   title: string;
   content: string;
@@ -11,10 +5,6 @@ export interface EdinetSegment {
 }
 
 export class EdinetItemizer {
-  /**
-   * Standard Japanese section headers in EDINET reports.
-   * These are usually enclosed in 【 】.
-   */
   private static readonly SECTION_PATTERNS = [
     "【事業の内容】",
     "【主要な経営指標等の推移】",
@@ -34,34 +24,28 @@ export class EdinetItemizer {
     "【議決権の状況】",
   ];
 
-  /**
-   * Segment the provided HTML/Text into logical units based on headers.
-   */
   public segment(text: string): EdinetSegment[] {
     const segments: EdinetSegment[] = [];
     const matches: { title: string; index: number; matchedText: string }[] = [];
 
     for (const pattern of EdinetItemizer.SECTION_PATTERNS) {
-      // Escape special chars and allow for optional numbering/whitespace
-      // Supports: 【...】, 1【...】, 第1【...】, 1.【...】, etc.
       const escaped = pattern.replace(/[【】]/g, "");
       const regex = new RegExp(
         `(?:[第\\d]+\\s*[・．\\.]?\\s*)?【\\s*${escaped}\\s*】`,
         "g",
       );
 
-      let match: RegExpExecArray | null;
-      // biome-ignore lint/suspicious/noAssignInExpressions: standard regex exec pattern
-      while ((match = regex.exec(text)) !== null) {
+      let match = regex.exec(text);
+      while (match !== null) {
         matches.push({
           title: pattern,
           index: match.index,
           matchedText: match[0],
         });
+        match = regex.exec(text);
       }
     }
 
-    // Sort by index to maintain document order
     matches.sort((a, b) => a.index - b.index);
 
     for (let i = 0; i < matches.length; i++) {
@@ -84,9 +68,6 @@ export class EdinetItemizer {
     return segments;
   }
 
-  /**
-   * Extract only a specific section.
-   */
   public extractSection(text: string, titlePattern: string): string | null {
     const segments = this.segment(text);
     const match = segments.find((s) => s.title.includes(titlePattern));

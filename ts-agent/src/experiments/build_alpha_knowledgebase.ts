@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import {
   AlphaKnowledgebase,
   type BacktestRunInput,
+  type EventFeatureInput,
   type FeatureVersionInput,
   type MarketDailyInput,
   type SignalInput,
@@ -15,6 +16,7 @@ import { paths } from "../system/path_registry.ts";
 type CliArgs = {
   limit: number;
   symbols: string[];
+  alphaVersion: "v1" | "v2";
   dbPath?: string;
 };
 
@@ -22,6 +24,8 @@ type IntelligencePoint = {
   sentiment: number;
   aiExposure: number;
   kgCentrality: number;
+  correctionFlag: number;
+  correctionCount90d: number;
 };
 
 type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
@@ -85,9 +89,12 @@ const parseArgs = (): CliArgs => {
         .filter((s) => /^\d{4}$/.test(s))
     : [];
   const dbPathArg = pickArg(args, "--db-path");
+  const alphaVersionRaw = pickArg(args, "--alpha-version") ?? "v2";
+  const alphaVersion = alphaVersionRaw === "v1" ? "v1" : "v2";
   const parsed: CliArgs = {
     limit,
     symbols,
+    alphaVersion,
   };
   if (dbPathArg) {
     parsed.dbPath = resolve(dbPathArg);
@@ -119,6 +126,14 @@ const loadIntelligenceMap = (): IntelligenceMap => {
         sentiment: clamp(toFiniteNumber(point.sentiment, 0.5), 0, 1),
         aiExposure: Math.max(0, toFiniteNumber(point.aiExposure, 0)),
         kgCentrality: Math.max(0, toFiniteNumber(point.kgCentrality, 0)),
+        correctionFlag: Math.max(
+          0,
+          Math.min(1, Math.floor(toFiniteNumber(point.correctionFlag, 0))),
+        ),
+        correctionCount90d: Math.max(
+          0,
+          Math.floor(toFiniteNumber(point.correctionCount90d, 0)),
+        ),
       };
     }
   }
@@ -193,9 +208,25 @@ const featureDefinitions: readonly FeatureVersionInput[] = [
     formula: "pead_5d_t = close_{t+5} / close_t - 1 on filing events",
   },
   {
+    featureName: "governance_penalty",
+    version: "v1.0.0",
+    formula: "governance_penalty_t = min(1, correction_count_90d / 3)",
+  },
+  {
+    featureName: "revision_intensity_penalty",
+    version: "v1.0.0",
+    formula: "revision_intensity_penalty_t = 1 if correction_flag_t = 1 else 0",
+  },
+  {
     featureName: "combined_alpha",
     version: "v1.0.0",
     formula: "combined_alpha_t = -risk_delta_t + 0.6*pead_1d_t + 0.4*pead_5d_t",
+  },
+  {
+    featureName: "combined_alpha_v2",
+    version: "v2.0.0",
+    formula:
+      "combined_alpha_v2_t = -risk_delta_t + 0.3*pead_1d_t + 0.2*pead_5d_t - 0.2*governance_penalty_t - 0.3*revision_intensity_penalty_t",
   },
 ];
 
@@ -230,6 +261,7 @@ async function run(): Promise<void> {
   const gateway = await MarketdataLocalGateway.create(selectedSymbols);
   let insertedMarketRows = 0;
   let insertedSignals = 0;
+  let insertedEventFeatures = 0;
   const allCombinedAlphaRows: { date: string; value: number }[] = [];
 
   for (const symbol of selectedSymbols) {
@@ -284,6 +316,7 @@ async function run(): Promise<void> {
     insertedMarketRows += marketRows.length;
 
     const signals: SignalInput[] = [];
+    const eventFeatures: EventFeatureInput[] = [];
     const lineage: SignalLineageInput[] = [];
     let prevRiskScore: number | null = null;
 
@@ -304,9 +337,23 @@ async function run(): Promise<void> {
         index,
         Math.min(5, bars.length - index - 1),
       );
-      const combinedAlpha = -riskDelta + 0.6 * pead1d + 0.4 * pead5d;
+      const governancePenalty = Math.min(
+        1,
+        Math.max(0, point.correctionCount90d) / 3,
+      );
+      const revisionPenalty = point.correctionFlag > 0 ? 1 : 0;
+      const combinedAlphaV1 = -riskDelta + 0.6 * pead1d + 0.4 * pead5d;
+      const combinedAlphaV2 =
+        -riskDelta +
+        0.3 * pead1d +
+        0.2 * pead5d -
+        0.2 * governancePenalty -
+        0.3 * revisionPenalty;
+      const combinedAlpha =
+        args.alphaVersion === "v1" ? combinedAlphaV1 : combinedAlphaV2;
       const signalId = `SIG-${symbol}-${filingDate.replaceAll("-", "")}`;
       const sourceDocId = `EDINET-${symbol}-${filingDate.replaceAll("-", "")}`;
+      const eventId = `EVT-${symbol}-${filingDate.replaceAll("-", "")}`;
 
       signals.push({
         signalId,
@@ -317,17 +364,35 @@ async function run(): Promise<void> {
         pead5d,
         combinedAlpha,
       });
+      eventFeatures.push({
+        eventId,
+        symbol,
+        filedAt: filingDate,
+        docId: sourceDocId,
+        riskDelta,
+        sentiment: point.sentiment,
+        aiExposure: point.aiExposure,
+        kgCentrality: point.kgCentrality,
+        correctionFlag: point.correctionFlag > 0,
+        correctionCount90d: point.correctionCount90d,
+        featureVersion: "edinet_event_features_v1.0.0",
+      });
       lineage.push({
         signalId,
         sourceDocId,
         sourceSection: "Risk Factors",
-        modelVersion: "risk_delta_v1.0.0+pead_proxy_v1.0.0",
+        modelVersion:
+          args.alphaVersion === "v1"
+            ? "risk_delta_v1.0.0+pead_proxy_v1.0.0"
+            : "risk_delta_v1.0.0+pead_proxy_v1.0.0+governance_v1.0.0",
       });
     }
 
     knowledgebase.upsertSignals(signals);
+    knowledgebase.upsertEventFeatures(eventFeatures);
     knowledgebase.upsertSignalLineage(lineage);
     insertedSignals += signals.length;
+    insertedEventFeatures += eventFeatures.length;
     for (const signal of signals) {
       allCombinedAlphaRows.push({
         date: signal.date,
@@ -353,7 +418,10 @@ async function run(): Promise<void> {
       sortedSignalRows[sortedSignalRows.length - 1]?.date ?? "1970-01-01";
     const run: BacktestRunInput = {
       runId: `kb-bootstrap-${Date.now()}`,
-      strategyId: "EDINET_RISK_DELTA_PEAD_HYBRID",
+      strategyId:
+        args.alphaVersion === "v1"
+          ? "EDINET_RISK_DELTA_PEAD_HYBRID"
+          : "EDINET_RISK_DELTA_PEAD_GOVERNANCE_V2",
       fromDate: firstDate,
       toDate: lastDate,
       sharpe,
@@ -373,8 +441,10 @@ async function run(): Promise<void> {
             args.dbPath ??
             join(paths.logsRoot, "cache", "alpha_knowledgebase.sqlite"),
           selectedSymbols: selectedSymbols.length,
+          alphaVersion: args.alphaVersion,
           insertedMarketRows,
           insertedSignals,
+          insertedEventFeatures,
           counts,
         },
       },

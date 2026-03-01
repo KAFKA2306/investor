@@ -66,6 +66,33 @@ const ConfigSchema = z.object({
       slippageBps: z.number().min(0),
     }),
   }),
+  alpha: z
+    .object({
+      edinet: z
+        .object({
+          gates: z
+            .object({
+              minSignalsPerDay: z.number().int().positive(),
+              maxCorrection90d: z.number().int().min(0),
+              minLiquidityJpy: z.number().min(0),
+              regimeAllowlist: z.array(z.string()).min(1),
+            })
+            .optional(),
+          weights: z
+            .object({
+              base: z
+                .object({
+                  riskDelta: z.number(),
+                  pead1d: z.number(),
+                  pead5d: z.number(),
+                })
+                .optional(),
+            })
+            .optional(),
+        })
+        .optional(),
+    })
+    .optional(),
   logging: z
     .object({
       envelope: z

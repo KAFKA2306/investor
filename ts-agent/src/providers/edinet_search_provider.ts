@@ -1,14 +1,13 @@
 import { Database } from "bun:sqlite";
+import { exec as execCb } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { promisify } from "node:util";
 import { core } from "../system/app_runtime_core.ts";
 import { EdinetItemizer } from "./edinet_itemizer.ts";
 
-/**
- * EdinetSearchProvider
- *
- * Implements BM25 search over EDINET documents using SQLite FTS5.
- */
+const exec = promisify(execCb);
+
 export class EdinetSearchProvider {
   private readonly dbPath: string;
   private readonly docsDir: string;
@@ -25,121 +24,102 @@ export class EdinetSearchProvider {
 
   private initializeSchema(): void {
     this.db.exec(`
-            CREATE VIRTUAL TABLE IF NOT EXISTS edinet_search USING fts5(
-                docID UNINDEXED,
-                secCode UNINDEXED,
-                filerName,
-                docDescription,
-                sectionName,
-                content,
-                tokenize='unicode61'
-            );
+      CREATE VIRTUAL TABLE IF NOT EXISTS edinet_search USING fts5(
+        docID UNINDEXED,
+        secCode UNINDEXED,
+        filerName,
+        docDescription,
+        sectionName,
+        content,
+        tokenize='unicode61'
+      );
 
-            CREATE TABLE IF NOT EXISTS indexed_docs (
-                docID TEXT PRIMARY KEY,
-                indexed_at TEXT NOT NULL
-            );
-        `);
+      CREATE TABLE IF NOT EXISTS indexed_docs (
+        docID TEXT PRIMARY KEY,
+        indexed_at TEXT NOT NULL
+      );
+    `);
   }
 
-  /**
-   * Index a single document if it exists in the docsDir
-   * Currently supports crude extraction from ZIP files
-   */
   public async indexDocument(
     docID: string,
     secCode?: string,
     filerName?: string,
     docDescription?: string,
   ): Promise<void> {
-    const isAlreadyIndexed = this.db
+    const indexed = this.db
       .query("SELECT 1 FROM indexed_docs WHERE docID = ?")
       .get(docID);
-    if (isAlreadyIndexed) return;
+    if (indexed) return;
 
     const zipPath = join(this.docsDir, `${docID}_type1.zip`);
-
     let content = "";
 
     if (existsSync(zipPath)) {
-      try {
-        // Get list of HTM files in PublicDoc
-        const stdout = await new Promise<string>((resolve, reject) => {
-          const { exec } = require("node:child_process");
-          exec(
-            `unzip -p "${zipPath}" "XBRL/PublicDoc/*.htm"`,
-            { maxBuffer: 50 * 1024 * 1024 },
-            (err: Error | null, stdout: string) => {
-              if (err) reject(err);
-              else resolve(stdout);
-            },
-          );
-        });
-
-        // Simple HTML stripping
-        content = stdout
-          .replace(/<[^>]*>?/gm, " ") // Remove tags
-          .replace(/\s+/g, " ") // Normalize whitespace
-          .trim();
-
-        console.log(
-          `📄 [EdinetSearch] Extracted ${content.length} chars from ${docID}`,
-        );
-      } catch (e) {
-        console.error(
-          `❌ [EdinetSearch] Failed to extract from ${zipPath}: ${e}`,
-        );
-      }
+      const { stdout } = await exec(
+        `unzip -p "${zipPath}" "XBRL/PublicDoc/*.htm"`,
+        { maxBuffer: 100 * 1024 * 1024 },
+      );
+      content = stdout
+        .replace(/<[^>]*>?/gm, " ")
+        .replace(/\s+/g, " ")
+        .trim();
     }
 
-    if (content.length > 0) {
-      const segments = this.itemizer.segment(content);
+    if (content.length === 0) {
+      const fallback = [filerName, docDescription].filter(Boolean).join(" ");
+      content = fallback.trim();
+    }
 
-      if (segments.length > 0) {
-        const stmt = this.db.prepare(
-          "INSERT INTO edinet_search (docID, secCode, filerName, docDescription, sectionName, content) VALUES (?, ?, ?, ?, ?, ?)",
-        );
-        for (const seg of segments) {
-          stmt.run(
+    if (content.length === 0) {
+      this.db
+        .query(
+          "INSERT OR IGNORE INTO indexed_docs (docID, indexed_at) VALUES (?, ?)",
+        )
+        .run(docID, new Date().toISOString());
+      return;
+    }
+
+    const sections = this.itemizer.segment(content);
+    const rows: Array<{ sectionName: string; content: string }> =
+      sections.length > 0
+        ? sections.map((section) => ({
+            sectionName: section.title,
+            content: section.content,
+          }))
+        : [{ sectionName: "全文", content }];
+
+    const insert = this.db.prepare(`
+      INSERT INTO edinet_search
+      (docID, secCode, filerName, docDescription, sectionName, content)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+
+    const tx = this.db.transaction(
+      (payload: Array<{ sectionName: string; content: string }>): void => {
+        for (const row of payload) {
+          insert.run(
             docID,
-            secCode || null,
-            filerName || null,
-            docDescription || null,
-            seg.title,
-            seg.content,
+            secCode ?? null,
+            filerName ?? null,
+            docDescription ?? null,
+            row.sectionName,
+            row.content,
           );
         }
-      } else {
-        // Fallback for documents without standard sections
-        this.db.run(
-          "INSERT INTO edinet_search (docID, secCode, filerName, docDescription, sectionName, content) VALUES (?, ?, ?, ?, ?, ?)",
-          [
-            docID,
-            secCode || null,
-            filerName || null,
-            docDescription || null,
-            "FULL_TEXT",
-            content,
-          ],
-        );
-      }
-
-      this.db.run(
-        "INSERT INTO indexed_docs (docID, indexed_at) VALUES (?, ?)",
-        [docID, new Date().toISOString()],
-      );
-      console.log(
-        `✅ [EdinetSearch] Indexed document ${docID} with ${segments.length} segments`,
-      );
-    }
+        this.db
+          .query(
+            "INSERT OR IGNORE INTO indexed_docs (docID, indexed_at) VALUES (?, ?)",
+          )
+          .run(docID, new Date().toISOString());
+      },
+    );
+    tx(rows);
   }
 
-  /**
-   * Perform BM25 search
-   */
   public search(
     query: string,
-    limit: number = 10,
+    limit = 10,
   ): {
     docID: string;
     secCode: string | null;
@@ -149,12 +129,12 @@ export class EdinetSearchProvider {
     rank: number;
   }[] {
     const stmt = this.db.prepare(`
-            SELECT docID, secCode, filerName, docDescription, sectionName, bm25(edinet_search) as rank
-            FROM edinet_search
-            WHERE edinet_search MATCH ?
-            ORDER BY rank
-            LIMIT ?
-        `);
+      SELECT docID, secCode, filerName, docDescription, sectionName, bm25(edinet_search) as rank
+      FROM edinet_search
+      WHERE edinet_search MATCH ?
+      ORDER BY rank
+      LIMIT ?
+    `);
     return stmt.all(query, limit) as {
       docID: string;
       secCode: string | null;

@@ -13,6 +13,8 @@ type IntelligencePoint = {
   sentiment: number;
   aiExposure: number;
   kgCentrality: number;
+  correctionFlag: number;
+  correctionCount90d: number;
 };
 
 type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
@@ -148,6 +150,12 @@ const loadMap = (): IntelligenceMap => {
         kgCentrality: Number.isFinite(Number(point.kgCentrality))
           ? Number(point.kgCentrality)
           : 0,
+        correctionFlag: Number.isFinite(Number(point.correctionFlag))
+          ? Number(point.correctionFlag)
+          : 0,
+        correctionCount90d: Number.isFinite(Number(point.correctionCount90d))
+          ? Number(point.correctionCount90d)
+          : 0,
       };
     }
   }
@@ -182,7 +190,11 @@ const getSubmitDate = (doc: EdinetDocument): string | null => {
   return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
 };
 
-const buildFeature = (riskSection: string): IntelligencePoint => {
+const buildFeature = (
+  riskSection: string,
+  correctionFlag = 0,
+  correctionCount90d = 0,
+): IntelligencePoint => {
   const pos = (riskSection.match(/成長|拡大|改善|向上|回復|増益/g) ?? [])
     .length;
   const neg = (riskSection.match(/不明|減速|悪化|不調|懸念|減益/g) ?? [])
@@ -194,7 +206,51 @@ const buildFeature = (riskSection: string): IntelligencePoint => {
   const kgCentrality = (
     riskSection.match(/[A-Z][a-z]+ [A-Z][a-z]+|株式会社/g) ?? []
   ).length;
-  return { sentiment, aiExposure, kgCentrality };
+  return {
+    sentiment,
+    aiExposure,
+    kgCentrality,
+    correctionFlag: correctionFlag > 0 ? 1 : 0,
+    correctionCount90d: Math.max(0, Math.floor(correctionCount90d)),
+  };
+};
+
+const isCorrectionDocument = (doc: EdinetDocument): boolean => {
+  const text = [doc.docDescription ?? "", doc.filerName ?? ""].join(" ");
+  return /訂正|修正/.test(text);
+};
+
+const recomputeCorrectionCounts = (featureMap: IntelligenceMap): void => {
+  for (const symbol of Object.keys(featureMap)) {
+    const byDate = featureMap[symbol];
+    if (!byDate) continue;
+    const rows = Object.entries(byDate)
+      .map(([date, point]) => ({
+        date,
+        correctionFlag: Number(point.correctionFlag ?? 0) > 0 ? 1 : 0,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const queue: string[] = [];
+    for (const row of rows) {
+      const current = new Date(`${row.date}T00:00:00Z`).getTime();
+      const minTs = current - 90 * 24 * 60 * 60 * 1000;
+      while (queue.length > 0) {
+        const oldest = queue[0];
+        if (!oldest) break;
+        const oldestTs = new Date(`${oldest}T00:00:00Z`).getTime();
+        if (oldestTs >= minTs) break;
+        queue.shift();
+      }
+      if (row.correctionFlag > 0) {
+        queue.push(row.date);
+      }
+      const point = byDate[row.date];
+      if (!point) continue;
+      point.correctionFlag = row.correctionFlag;
+      point.correctionCount90d = queue.length;
+    }
+  }
 };
 
 const metadataText = (doc: EdinetDocument): string =>
@@ -367,6 +423,7 @@ async function main(): Promise<void> {
 
     try {
       console.log(`🗂️ ${doc.docID} -> ${symbol4}@${submitDate}`);
+      const correctionFlag = isCorrectionDocument(doc) ? 1 : 0;
       const existingSegments = sectionQuery.all(doc.docID) as SectionRow[];
       if (existingSegments.length > 0) {
         const indexedRiskSection =
@@ -378,7 +435,7 @@ async function main(): Promise<void> {
           continue;
         }
         if (!featureMap[symbol4]) featureMap[symbol4] = {};
-        featureMap[symbol4][submitDate] = buildFeature(text);
+        featureMap[symbol4][submitDate] = buildFeature(text, correctionFlag);
         inserted += 1;
         insertedFromIndexed += 1;
         if (inserted % args.flushEvery === 0) {
@@ -395,7 +452,10 @@ async function main(): Promise<void> {
           continue;
         }
         if (!featureMap[symbol4]) featureMap[symbol4] = {};
-        featureMap[symbol4][submitDate] = buildFeature(fallbackText);
+        featureMap[symbol4][submitDate] = buildFeature(
+          fallbackText,
+          correctionFlag,
+        );
         inserted += 1;
         insertedFromMetadata += 1;
         if (inserted % args.flushEvery === 0) {
@@ -436,7 +496,10 @@ async function main(): Promise<void> {
         continue;
       }
       if (!featureMap[symbol4]) featureMap[symbol4] = {};
-      featureMap[symbol4][submitDate] = buildFeature(riskSection);
+      featureMap[symbol4][submitDate] = buildFeature(
+        riskSection,
+        correctionFlag,
+      );
       inserted += 1;
 
       if (inserted % args.flushEvery === 0) {
@@ -449,6 +512,7 @@ async function main(): Promise<void> {
     }
   }
 
+  recomputeCorrectionCounts(featureMap);
   saveMap(featureMap);
   const after = coverageStats(featureMap);
   console.log(

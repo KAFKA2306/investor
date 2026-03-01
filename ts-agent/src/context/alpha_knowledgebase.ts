@@ -40,6 +40,39 @@ export type SignalInput = {
   combinedAlpha: number;
 };
 
+export type EventFeatureInput = {
+  eventId: string;
+  symbol: string;
+  filedAt: string; // YYYY-MM-DD
+  docId: string;
+  riskDelta: number;
+  sentiment: number;
+  aiExposure: number;
+  kgCentrality: number;
+  correctionFlag: boolean;
+  correctionCount90d: number;
+  featureVersion: string;
+};
+
+export type MacroRegimeInput = {
+  date: string; // YYYY-MM-DD
+  regimeId: string;
+  inflationZ: number;
+  iipZ: number;
+  yieldSlopeZ: number;
+  riskOnScore: number;
+};
+
+export type GateDecisionInput = {
+  signalId: string;
+  date: string; // YYYY-MM-DD
+  gateName: string;
+  passed: boolean;
+  threshold: string;
+  actualValue: number | null;
+  reason: string;
+};
+
 export type FeatureVersionInput = {
   featureName: string;
   version: string;
@@ -72,6 +105,22 @@ export type SignalBacktestEvent = {
   pead1d: number;
   pead5d: number;
   nextReturn: number;
+};
+
+export type TradableSignalEvent = {
+  signalId: string;
+  symbol: string;
+  date: string;
+  combinedAlpha: number;
+  riskDelta: number;
+  pead1d: number;
+  pead5d: number;
+  nextReturn: number;
+  correctionFlag: boolean;
+  correctionCount90d: number;
+  regimeId: string | null;
+  entryClose: number;
+  entryVolume: number;
 };
 
 export class AlphaKnowledgebase {
@@ -142,6 +191,46 @@ export class AlphaKnowledgebase {
         UNIQUE(symbol, date)
       );
 
+      CREATE TABLE IF NOT EXISTS edinet_event_features (
+        event_id TEXT PRIMARY KEY,
+        symbol TEXT NOT NULL,
+        filed_at TEXT NOT NULL,
+        doc_id TEXT NOT NULL,
+        risk_delta REAL NOT NULL,
+        sentiment REAL NOT NULL,
+        ai_exposure REAL NOT NULL,
+        kg_centrality REAL NOT NULL,
+        correction_flag INTEGER NOT NULL DEFAULT 0,
+        correction_count_90d INTEGER NOT NULL DEFAULT 0,
+        feature_version TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(symbol, filed_at),
+        FOREIGN KEY(doc_id) REFERENCES documents(doc_id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS macro_regime_daily (
+        date TEXT PRIMARY KEY,
+        regime_id TEXT NOT NULL,
+        inflation_z REAL NOT NULL,
+        iip_z REAL NOT NULL,
+        yield_slope_z REAL NOT NULL,
+        risk_on_score REAL NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS signal_gate_decisions (
+        signal_id TEXT NOT NULL,
+        date TEXT NOT NULL,
+        gate_name TEXT NOT NULL,
+        passed INTEGER NOT NULL,
+        threshold TEXT NOT NULL,
+        actual_value REAL,
+        reason TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        PRIMARY KEY(signal_id, gate_name),
+        FOREIGN KEY(signal_id) REFERENCES signals(signal_id) ON DELETE CASCADE
+      );
+
       CREATE TABLE IF NOT EXISTS backtest_runs (
         run_id TEXT PRIMARY KEY,
         strategy_id TEXT NOT NULL,
@@ -180,6 +269,14 @@ export class AlphaKnowledgebase {
         ON market_daily(symbol, date);
       CREATE INDEX IF NOT EXISTS idx_signals_symbol_date
         ON signals(symbol, date);
+      CREATE INDEX IF NOT EXISTS idx_edinet_event_symbol_date
+        ON edinet_event_features(symbol, filed_at);
+      CREATE INDEX IF NOT EXISTS idx_edinet_event_doc
+        ON edinet_event_features(doc_id);
+      CREATE INDEX IF NOT EXISTS idx_macro_regime_date
+        ON macro_regime_daily(date);
+      CREATE INDEX IF NOT EXISTS idx_signal_gate_date
+        ON signal_gate_decisions(date, gate_name, passed);
       CREATE INDEX IF NOT EXISTS idx_backtest_runs_strategy
         ON backtest_runs(strategy_id, created_at);
       CREATE INDEX IF NOT EXISTS idx_signal_lineage_doc
@@ -316,6 +413,118 @@ export class AlphaKnowledgebase {
     }
   }
 
+  public upsertEventFeatures(rows: readonly EventFeatureInput[]): void {
+    if (rows.length === 0) return;
+    this.db.exec("BEGIN;");
+    try {
+      const stmt = this.db.query(`
+        INSERT INTO edinet_event_features (
+          event_id, symbol, filed_at, doc_id, risk_delta, sentiment,
+          ai_exposure, kg_centrality, correction_flag, correction_count_90d,
+          feature_version
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(event_id) DO UPDATE SET
+          symbol = excluded.symbol,
+          filed_at = excluded.filed_at,
+          doc_id = excluded.doc_id,
+          risk_delta = excluded.risk_delta,
+          sentiment = excluded.sentiment,
+          ai_exposure = excluded.ai_exposure,
+          kg_centrality = excluded.kg_centrality,
+          correction_flag = excluded.correction_flag,
+          correction_count_90d = excluded.correction_count_90d,
+          feature_version = excluded.feature_version
+      `);
+      for (const row of rows) {
+        stmt.run(
+          row.eventId,
+          row.symbol,
+          row.filedAt,
+          row.docId,
+          row.riskDelta,
+          row.sentiment,
+          row.aiExposure,
+          row.kgCentrality,
+          row.correctionFlag ? 1 : 0,
+          Math.max(0, Math.floor(row.correctionCount90d)),
+          row.featureVersion,
+        );
+      }
+      this.db.exec("COMMIT;");
+    } catch (error) {
+      this.db.exec("ROLLBACK;");
+      throw error;
+    }
+  }
+
+  public upsertMacroRegimes(rows: readonly MacroRegimeInput[]): void {
+    if (rows.length === 0) return;
+    this.db.exec("BEGIN;");
+    try {
+      const stmt = this.db.query(`
+        INSERT INTO macro_regime_daily (
+          date, regime_id, inflation_z, iip_z, yield_slope_z, risk_on_score
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(date) DO UPDATE SET
+          regime_id = excluded.regime_id,
+          inflation_z = excluded.inflation_z,
+          iip_z = excluded.iip_z,
+          yield_slope_z = excluded.yield_slope_z,
+          risk_on_score = excluded.risk_on_score
+      `);
+      for (const row of rows) {
+        stmt.run(
+          row.date,
+          row.regimeId,
+          row.inflationZ,
+          row.iipZ,
+          row.yieldSlopeZ,
+          row.riskOnScore,
+        );
+      }
+      this.db.exec("COMMIT;");
+    } catch (error) {
+      this.db.exec("ROLLBACK;");
+      throw error;
+    }
+  }
+
+  public upsertGateDecisions(rows: readonly GateDecisionInput[]): void {
+    if (rows.length === 0) return;
+    this.db.exec("BEGIN;");
+    try {
+      const stmt = this.db.query(`
+        INSERT INTO signal_gate_decisions (
+          signal_id, date, gate_name, passed, threshold, actual_value, reason
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(signal_id, gate_name) DO UPDATE SET
+          date = excluded.date,
+          passed = excluded.passed,
+          threshold = excluded.threshold,
+          actual_value = excluded.actual_value,
+          reason = excluded.reason
+      `);
+      for (const row of rows) {
+        stmt.run(
+          row.signalId,
+          row.date,
+          row.gateName,
+          row.passed ? 1 : 0,
+          row.threshold,
+          row.actualValue,
+          row.reason,
+        );
+      }
+      this.db.exec("COMMIT;");
+    } catch (error) {
+      this.db.exec("ROLLBACK;");
+      throw error;
+    }
+  }
+
   public upsertFeatureVersion(input: FeatureVersionInput): void {
     this.db
       .query(`
@@ -415,6 +624,9 @@ export class AlphaKnowledgebase {
       sections: countOf("sections"),
       market_daily: countOf("market_daily"),
       signals: countOf("signals"),
+      edinet_event_features: countOf("edinet_event_features"),
+      macro_regime_daily: countOf("macro_regime_daily"),
+      signal_gate_decisions: countOf("signal_gate_decisions"),
       backtest_runs: countOf("backtest_runs"),
       feature_versions: countOf("feature_versions"),
       signal_lineage: countOf("signal_lineage"),
@@ -492,6 +704,120 @@ export class AlphaKnowledgebase {
       .filter(
         (row) =>
           Number.isFinite(row.combinedAlpha) && Number.isFinite(row.nextReturn),
+      );
+  }
+
+  public fetchTradableSignals(
+    fromDate?: string,
+    toDate?: string,
+    tradeLagDays = 1,
+  ): TradableSignalEvent[] {
+    const lag = Math.max(1, Math.floor(tradeLagDays));
+    const entryOffset = lag - 1;
+    const exitOffset = lag;
+    const rows = this.db
+      .query(`
+        SELECT
+          s.signal_id AS signalId,
+          s.symbol AS symbol,
+          s.date AS date,
+          s.combined_alpha AS combinedAlpha,
+          s.risk_delta AS riskDelta,
+          s.pead_1d AS pead1d,
+          s.pead_5d AS pead5d,
+          COALESCE(ef.correction_flag, 0) AS correctionFlag,
+          COALESCE(ef.correction_count_90d, 0) AS correctionCount90d,
+          (
+            SELECT mr.regime_id
+            FROM macro_regime_daily mr
+            WHERE mr.date <= s.date
+            ORDER BY mr.date DESC
+            LIMIT 1
+          ) AS regimeId,
+          (
+            SELECT m_entry.close
+            FROM market_daily m_entry
+            WHERE m_entry.symbol = s.symbol AND m_entry.date > s.date
+            ORDER BY m_entry.date ASC
+            LIMIT 1 OFFSET ?
+          ) AS entryClose,
+          (
+            SELECT m_entry.volume
+            FROM market_daily m_entry
+            WHERE m_entry.symbol = s.symbol AND m_entry.date > s.date
+            ORDER BY m_entry.date ASC
+            LIMIT 1 OFFSET ?
+          ) AS entryVolume,
+          (
+            (
+              SELECT m_exit.close
+              FROM market_daily m_exit
+              WHERE m_exit.symbol = s.symbol AND m_exit.date > s.date
+              ORDER BY m_exit.date ASC
+              LIMIT 1 OFFSET ?
+            ) / (
+              SELECT m_entry.close
+              FROM market_daily m_entry
+              WHERE m_entry.symbol = s.symbol AND m_entry.date > s.date
+              ORDER BY m_entry.date ASC
+              LIMIT 1 OFFSET ?
+            ) - 1
+          ) AS nextReturn
+        FROM signals s
+        LEFT JOIN edinet_event_features ef
+          ON ef.symbol = s.symbol AND ef.filed_at = s.date
+        WHERE
+          (? IS NULL OR s.date >= ?)
+          AND (? IS NULL OR s.date <= ?)
+        ORDER BY s.date ASC, s.symbol ASC
+      `)
+      .all(
+        entryOffset,
+        entryOffset,
+        exitOffset,
+        entryOffset,
+        fromDate ?? null,
+        fromDate ?? null,
+        toDate ?? null,
+        toDate ?? null,
+      ) as Array<{
+      signalId: string;
+      symbol: string;
+      date: string;
+      combinedAlpha: number | null;
+      riskDelta: number | null;
+      pead1d: number | null;
+      pead5d: number | null;
+      nextReturn: number | null;
+      correctionFlag: number | null;
+      correctionCount90d: number | null;
+      regimeId: string | null;
+      entryClose: number | null;
+      entryVolume: number | null;
+    }>;
+
+    return rows
+      .map((row) => ({
+        signalId: row.signalId,
+        symbol: row.symbol,
+        date: row.date,
+        combinedAlpha: Number(row.combinedAlpha ?? 0),
+        riskDelta: Number(row.riskDelta ?? 0),
+        pead1d: Number(row.pead1d ?? 0),
+        pead5d: Number(row.pead5d ?? 0),
+        nextReturn: Number(row.nextReturn ?? Number.NaN),
+        correctionFlag: Number(row.correctionFlag ?? 0) > 0,
+        correctionCount90d: Number(row.correctionCount90d ?? 0),
+        regimeId: row.regimeId ?? null,
+        entryClose: Number(row.entryClose ?? 0),
+        entryVolume: Number(row.entryVolume ?? 0),
+      }))
+      .filter(
+        (row) =>
+          Number.isFinite(row.combinedAlpha) &&
+          Number.isFinite(row.nextReturn) &&
+          Number.isFinite(row.entryClose) &&
+          Number.isFinite(row.entryVolume),
       );
   }
 

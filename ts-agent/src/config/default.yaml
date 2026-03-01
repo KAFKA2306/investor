@@ -63,6 +63,19 @@ execution:
     feeBps: 1.0
     slippageBps: 0.5
 
+alpha:
+  edinet:
+    gates:
+      minSignalsPerDay: 4
+      maxCorrection90d: 2
+      minLiquidityJpy: 100000000
+      regimeAllowlist: [RISK_ON, NEUTRAL]
+    weights:
+      base:
+        riskDelta: 0.5
+        pead1d: 0.3
+        pead5d: 0.2
+
 logging:
   envelope:
     version: v2
