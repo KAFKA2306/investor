@@ -3806,8 +3806,13 @@
       }
     },
     {
+      "id": "ctx-dhkv8843",
       "content": "Evolved POINT_MUTATION: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Evolved from ALPHA-QUANT-C22732CB. CLAIM: Structural drift identification via Efficiency Divergence and margin. [REASONING] The Quant Analyst persona targets leverage using a operating approach. Optimized for structural regimes.",
       "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T10:58:19.781Z",
+      "updated_at": "2026-02-28T10:58:19.781Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -3829,16 +3834,16 @@
         "generation": 3,
         "parentId": "ALPHA-QUANT-C22732CB",
         "mutationType": "POINT_MUTATION"
-      },
-      "id": "ctx-dhkv8843",
+      }
+    },
+    {
+      "id": "ctx-65nl1qv0",
+      "content": "Evolved STRUCTURAL_SHIFT: Volatility Regime Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-BEHAVIORAL-4F2DC594. CLAIM: High-precision entropy forecasting using Regime Transition. [REASONING] A stability model that uses breakout to filter noise during chaos periods. Proposed by Macro Strategist.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
       "created_at": "2026-02-28T10:58:19.781Z",
-      "updated_at": "2026-02-28T10:58:19.781Z"
-    },
-    {
-      "content": "Evolved STRUCTURAL_SHIFT: Volatility Regime Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-BEHAVIORAL-4F2DC594. CLAIM: High-precision entropy forecasting using Regime Transition. [REASONING] A stability model that uses breakout to filter noise during chaos periods. Proposed by Macro Strategist.",
-      "section": "strategies_and_hard_rules",
+      "updated_at": "2026-02-28T10:58:19.781Z",
       "metadata": {
         "source": "AlphaDiscovery",
         "type": "HYPOTHESIS",
@@ -3876,12 +3881,982 @@
         "generation": 2,
         "parentId": "ALPHA-BEHAVIORAL-4F2DC594",
         "mutationType": "STRUCTURAL_SHIFT"
-      },
-      "id": "ctx-65nl1qv0",
+      }
+    },
+    {
+      "id": "ctx-q4avfv9s",
+      "content": "Evolved STRUCTURAL_SHIFT: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Evolved from ALPHA-MACRO-C81F705E. CLAIM: High-precision payout forecasting using Corporate Governance (J-Quants). [REASONING] A shareholder model that uses board to filter noise during disclosure periods. Proposed by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
       "helpful_count": 0,
       "harmful_count": 0,
-      "created_at": "2026-02-28T10:58:19.781Z",
-      "updated_at": "2026-02-28T10:58:19.781Z"
+      "created_at": "2026-02-28T11:17:59.260Z",
+      "updated_at": "2026-02-28T11:17:59.260Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-A6445224",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "variable",
+              "name": "volume"
+            },
+            "right": {
+              "type": "constant",
+              "value": 1.71
+            }
+          },
+          "right": {
+            "type": "variable",
+            "name": "volume"
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.56,
+        "generation": 3,
+        "parentId": "ALPHA-MACRO-C81F705E",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-03lqtt7p",
+      "content": "Behavioral Momentum Hypothesis (Fundamental Researcher): CLAIM: Alpha captures sentiment patterns in Behavioral Momentum via overreaction logic. [REASONING] Leveraging drift signals in crowding markets ensures robustness. Persona: Fundamental Researcher.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T11:17:59.260Z",
+      "updated_at": "2026-02-28T11:17:59.260Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-512BF248",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "constant",
+                "value": 3.89
+              },
+              "right": {
+                "type": "variable",
+                "name": "high"
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "volume"
+            },
+            "right": {
+              "type": "variable",
+              "name": "open"
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5850000000000001,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-vjufrtew",
+      "content": "Evolved STRUCTURAL_SHIFT: Volatility Regime Hypothesis (HFT Engineer) [v2]: [EVOLUTIONARY TRACE] Evolved from ALPHA-HFT-38BC01DB. CLAIM: Strategic Behavioral Momentum extraction using overreaction. [REASONING] Detects sentiment and exploits drift in crowding markets. Verified by Fundamental Researcher protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T11:21:35.273Z",
+      "updated_at": "2026-02-28T11:21:35.273Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-765544A4",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "variable",
+              "name": "open"
+            },
+            "right": {
+              "type": "constant",
+              "value": 2.82
+            }
+          },
+          "right": {
+            "type": "variable",
+            "name": "high"
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6124324324324325,
+        "generation": 2,
+        "parentId": "ALPHA-HFT-38BC01DB",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-dv5x2iid",
+      "content": "Evolved POINT_MUTATION: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Evolved from ALPHA-HFT-1B8534E1. CLAIM: Structural drift identification via DAG-based Evolution (AlphaPROBE) and graph. [REASONING] The Fundamental Researcher persona targets biased using a retrieval approach. Optimized for evolution regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T11:21:35.273Z",
+      "updated_at": "2026-02-28T11:21:35.273Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-0BEE84F7",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "variable",
+                "name": "high"
+              },
+              "right": {
+                "type": "variable",
+                "name": "close"
+              }
+            },
+            "right": {
+              "type": "variable",
+              "name": "open"
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "constant",
+              "value": 1.95
+            },
+            "right": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "low"
+              },
+              "right": {
+                "type": "variable",
+                "name": "low"
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5574324324324325,
+        "generation": 3,
+        "parentId": "ALPHA-HFT-1B8534E1",
+        "mutationType": "POINT_MUTATION"
+      }
+    },
+    {
+      "id": "ctx-f9rwr11u",
+      "content": "[EVOLVED] Shift: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Structural shift from ALPHA-HFT-89C6EB51. CLAIM: Autonomous hypothesis on Governance Fragility (Mission) using reporting. [REASONING] This model identifies correction trajectories to extract stability edge in governance regimes. Reasoning trace by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:27:55.480Z",
+      "updated_at": "2026-02-28T16:27:55.480Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-43B18FEE",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "operator",
+              "name": "DIV",
+              "left": {
+                "type": "variable",
+                "name": "volume"
+              },
+              "right": {
+                "type": "variable",
+                "name": "open"
+              }
+            },
+            "right": {
+              "type": "variable",
+              "name": "close"
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "SMA",
+            "left": {
+              "type": "variable",
+              "name": "open"
+            },
+            "right": {
+              "type": "constant",
+              "value": 6
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5657407407407408,
+        "generation": 3,
+        "parentId": "ALPHA-HFT-89C6EB51",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-r3vj4kig",
+      "content": "[EVOLVED] Crossover: DAG-based Evolution (AlphaPROBE) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-FUNDAMENTAL-E79E7EA3. CLAIM: High-precision cross-asset forecasting using Cross-Asset Retrieval (FactorMiner). [REASONING] A skill model that uses memory to filter noise during experience periods. Proposed by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:27:55.480Z",
+      "updated_at": "2026-02-28T16:27:55.480Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-1B6F3634",
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "open"
+            },
+            "right": {
+              "type": "variable",
+              "name": "low"
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 4
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5407407407407407,
+        "generation": 2,
+        "parentId": "ALPHA-FUNDAMENTAL-E79E7EA3",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-rkk63liq",
+      "content": "[EVOLVED] Crossover: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-FUNDAMENTAL-6DAA2C52. CLAIM: Alpha captures dispersion patterns in Volatility Regime via uncertainty logic. [REASONING] Leveraging skew signals in tail markets ensures robustness. Persona: Macro Strategist.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:29:07.042Z",
+      "updated_at": "2026-02-28T16:29:07.042Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-D41E1AD5",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "variable",
+            "name": "correction_freq"
+          },
+          "right": {
+            "type": "operator",
+            "name": "SMA",
+            "left": {
+              "type": "variable",
+              "name": "activist_bias"
+            },
+            "right": {
+              "type": "constant",
+              "value": 2
+            }
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6304545454545455,
+        "generation": 3,
+        "parentId": "ALPHA-FUNDAMENTAL-6DAA2C52",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-kpzute77",
+      "content": "[EVOLVED] Crossover: DAG-based Evolution (AlphaPROBE) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-FUNDAMENTAL-E79E7EA3. CLAIM: Structural drift identification via Inventory Lead and cycle. [REASONING] The Quant Analyst persona targets utilization using a backlog approach. Optimized for bottleneck regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:29:07.042Z",
+      "updated_at": "2026-02-28T16:29:07.042Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-89790288",
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "variable",
+                "name": "open"
+              },
+              "right": {
+                "type": "variable",
+                "name": "correction_freq"
+              }
+            },
+            "right": {
+              "type": "variable",
+              "name": "correction_freq"
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 7
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5704545454545455,
+        "generation": 2,
+        "parentId": "ALPHA-FUNDAMENTAL-E79E7EA3",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-hw36455b",
+      "content": "[EVOLVED] Crossover: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-FUNDAMENTAL-C388C0C6. CLAIM: High-precision payout forecasting using Corporate Governance (J-Quants). [REASONING] A shareholder model that uses board to filter noise during disclosure periods. Proposed by Quant Analyst.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:41:23.642Z",
+      "updated_at": "2026-02-28T16:41:23.642Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-16E171D2",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "variable",
+            "name": "volume"
+          },
+          "right": {
+            "type": "constant",
+            "value": 0.98
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.552,
+        "generation": 3,
+        "parentId": "ALPHA-FUNDAMENTAL-C388C0C6",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-32tvu8z2",
+      "content": "[EVOLVED] Shift: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Structural shift from ALPHA-MACRO-C81F705E. CLAIM: Strategic Liquidity Shock extraction using flow. [REASONING] Detects illiquidity and exploits impact in imbalance markets. Verified by Behavioral Economist protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:41:23.642Z",
+      "updated_at": "2026-02-28T16:41:23.642Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-E7D76A24",
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "variable",
+            "name": "activist_bias"
+          },
+          "right": {
+            "type": "constant",
+            "value": 10
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6320000000000001,
+        "generation": 3,
+        "parentId": "ALPHA-MACRO-C81F705E",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-1oivf3s3",
+      "content": "[EVOLVED] Crossover: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-HFT-7583C250. CLAIM: Autonomous hypothesis on Behavioral Momentum using overreaction. [REASONING] This model identifies sentiment trajectories to extract drift edge in crowding regimes. Reasoning trace by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:41:48.144Z",
+      "updated_at": "2026-02-28T16:41:48.144Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-43337727",
+        "ast": {
+          "type": "operator",
+          "name": "SMA",
+          "left": {
+            "type": "variable",
+            "name": "activist_bias"
+          },
+          "right": {
+            "type": "constant",
+            "value": 3
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.6007692307692308,
+        "generation": 3,
+        "parentId": "ALPHA-HFT-7583C250",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-i6129pfu",
+      "content": "[EVOLVED] Shift: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Structural shift from ALPHA-HFT-89C6EB51. CLAIM: Strategic Liquidity Shock extraction using flow. [REASONING] Detects illiquidity and exploits impact in imbalance markets. Verified by Quant Analyst protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:41:48.144Z",
+      "updated_at": "2026-02-28T16:41:48.144Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-D0F18A6A",
+        "ast": {
+          "type": "variable",
+          "name": "activist_bias"
+        },
+        "status": "SELECTED",
+        "score": 0.6057692307692308,
+        "generation": 3,
+        "parentId": "ALPHA-HFT-89C6EB51",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-4o9lzqfq",
+      "content": "[EVOLVED] Shift: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Structural shift from ALPHA-FUNDAMENTAL-C388C0C6. CLAIM: Autonomous hypothesis on Behavioral Momentum using overreaction. [REASONING] This model identifies sentiment trajectories to extract drift edge in crowding regimes. Reasoning trace by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:51:31.451Z",
+      "updated_at": "2026-02-28T16:51:31.451Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-186C11E7",
+        "ast": {
+          "type": "variable",
+          "name": "open"
+        },
+        "status": "SELECTED",
+        "score": 0.6155172413793104,
+        "generation": 3,
+        "parentId": "ALPHA-FUNDAMENTAL-C388C0C6",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-h35b9isz",
+      "content": "Inventory Lead Hypothesis (Macro Strategist): CLAIM: Structural drift identification via Inventory Lead and cycle. [REASONING] The Macro Strategist persona targets utilization using a backlog approach. Optimized for bottleneck regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:51:31.451Z",
+      "updated_at": "2026-02-28T16:51:31.451Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-E33CF16F",
+        "ast": {
+          "type": "variable",
+          "name": "activist_bias"
+        },
+        "status": "REJECTED",
+        "score": 0.5905172413793104,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-f7g0pv0p",
+      "content": "Corporate Governance (J-Quants) Hypothesis (HFT Engineer): CLAIM: Structural drift identification via Corporate Governance (J-Quants) and board. [REASONING] The HFT Engineer persona targets payout using a shareholder approach. Optimized for disclosure regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:56:08.920Z",
+      "updated_at": "2026-02-28T16:56:08.920Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-4B76275A",
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "variable",
+            "name": "volume"
+          },
+          "right": {
+            "type": "variable",
+            "name": "correction_freq"
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.5650000000000001,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-k6ssdyd0",
+      "content": "[EVOLVED] Crossover: [EVOLVED] Shift [v4]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-BEHAVIORAL-E7D76A24. CLAIM: Strategic Corporate Governance (J-Quants) extraction using shareholder. [REASONING] Detects board and exploits payout in disclosure markets. Verified by Quant Analyst protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T16:56:08.920Z",
+      "updated_at": "2026-02-28T16:56:08.920Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-5ACEDB72",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "variable",
+            "name": "open"
+          },
+          "right": {
+            "type": "variable",
+            "name": "open"
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.515,
+        "generation": 4,
+        "parentId": "ALPHA-BEHAVIORAL-E7D76A24",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-3zvafpd8",
+      "content": "Liquidity Shock Hypothesis (Quant Analyst): CLAIM: Structural drift identification via Liquidity Shock and illiquidity. [REASONING] The Quant Analyst persona targets impact using a flow approach. Optimized for imbalance regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:08:29.464Z",
+      "updated_at": "2026-02-28T17:08:29.464Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-77AE2F7E",
+        "ast": {
+          "type": "operator",
+          "name": "SMA",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "close"
+              },
+              "right": {
+                "type": "variable",
+                "name": "volume"
+              }
+            },
+            "right": {
+              "type": "constant",
+              "value": 0.15
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 10
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6410389610389611,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-9leuusy6",
+      "content": "[EVOLVED] Crossover: [EVOLVED] Shift [v4]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-HFT-186C11E7. CLAIM: Alpha captures demographic patterns in Macro-Socio Divergence (e-Stat) via labor logic. [REASONING] Leveraging industrial signals in household markets ensures robustness. Persona: Fundamental Researcher.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:08:29.464Z",
+      "updated_at": "2026-02-28T17:08:29.464Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-FUNDAMENTAL-476A993E",
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "constant",
+              "value": 1.66
+            },
+            "right": {
+              "type": "variable",
+              "name": "low"
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "variable",
+              "name": "volume"
+            },
+            "right": {
+              "type": "variable",
+              "name": "activist_bias"
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.616038961038961,
+        "generation": 4,
+        "parentId": "ALPHA-HFT-186C11E7",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-jfhbwpaa",
+      "content": "[EVOLVED] Shift: Regime Transition Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE] Structural shift from ALPHA-BEHAVIORAL-F174F807. CLAIM: High-precision stability forecasting using Governance Fragility (Mission). [REASONING] A reporting model that uses correction to filter noise during governance periods. Proposed by HFT Engineer.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:08:59.220Z",
+      "updated_at": "2026-02-28T17:08:59.220Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-455C9F78",
+        "ast": {
+          "type": "variable",
+          "name": "activist_bias"
+        },
+        "status": "SELECTED",
+        "score": 0.6027777777777779,
+        "generation": 2,
+        "parentId": "ALPHA-BEHAVIORAL-F174F807",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-hi49reku",
+      "content": "[EVOLVED] Crossover: [EVOLVED] Shift [v4]: [EVOLUTIONARY TRACE] Crossover mutation from ALPHA-BEHAVIORAL-E7D76A24. CLAIM: Structural drift identification via Cross-Asset Signal and correlation. [REASONING] The HFT Engineer persona targets basis using a spread approach. Optimized for parity regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:08:59.220Z",
+      "updated_at": "2026-02-28T17:08:59.220Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-CE0C994A",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "variable",
+            "name": "low"
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "low"
+            },
+            "right": {
+              "type": "variable",
+              "name": "macro_iip"
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.6027777777777779,
+        "generation": 4,
+        "parentId": "ALPHA-BEHAVIORAL-E7D76A24",
+        "mutationType": "CROSSOVER"
+      }
+    },
+    {
+      "id": "ctx-2w7p1k5a",
+      "content": "Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Behavioral Economist): CLAIM: Structural drift identification via Neuro-Symbolic Logic (NeuroSymbolic) and symbolic. [REASONING] The Behavioral Economist persona targets explainable using a neural approach. Optimized for rule-based regimes.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:10:07.727Z",
+      "updated_at": "2026-02-28T17:10:07.727Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-225B5ABD",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "constant",
+            "value": 1.36
+          },
+          "right": {
+            "type": "variable",
+            "name": "macro_cpi"
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6264705882352942,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "id": "ctx-0f27e6ar",
+      "content": "[EVOLVED] Shift: Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Structural shift from ALPHA-QUANT-C22732CB. CLAIM: Strategic Cross-Asset Signal extraction using spread. [REASONING] Detects correlation and exploits basis in parity markets. Verified by Macro Strategist protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:10:07.727Z",
+      "updated_at": "2026-02-28T17:10:07.727Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-MACRO-27B14E73",
+        "ast": {
+          "type": "variable",
+          "name": "segment_sentiment"
+        },
+        "status": "REJECTED",
+        "score": 0.5764705882352942,
+        "generation": 3,
+        "parentId": "ALPHA-QUANT-C22732CB",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-nzi32hh9",
+      "content": "[EVOLVED] Shift: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Structural shift from ALPHA-HFT-1B8534E1. CLAIM: Strategic Inventory Lead extraction using backlog. [REASONING] Detects cycle and exploits utilization in bottleneck markets. Verified by Behavioral Economist protocols.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:11:05.357Z",
+      "updated_at": "2026-02-28T17:11:05.357Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-BEHAVIORAL-AC6E22A9",
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "variable",
+            "name": "open"
+          },
+          "right": {
+            "type": "operator",
+            "name": "LAG",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "constant",
+              "value": 7
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5799295774647888,
+        "generation": 3,
+        "parentId": "ALPHA-HFT-1B8534E1",
+        "mutationType": "STRUCTURAL_SHIFT"
+      }
+    },
+    {
+      "id": "ctx-cro5rjcu",
+      "content": "10-K Intelligence 2.0 (Mission) Hypothesis (Quant Analyst): CLAIM: Autonomous hypothesis on 10-K Intelligence 2.0 (Mission) using segment_sentiment. [REASONING] This model identifies itemization trajectories to extract ai_exposure edge in kg_centrality regimes. Reasoning trace by Quant Analyst.",
+      "section": "strategies_and_hard_rules",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:11:05.357Z",
+      "updated_at": "2026-02-28T17:11:05.357Z",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-12DC0604",
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "constant",
+              "value": 4.52
+            },
+            "right": {
+              "type": "variable",
+              "name": "segment_sentiment"
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 7
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6049295774647887,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      }
+    },
+    {
+      "content": "Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst): CLAIM: High-precision industrial forecasting using Macro-Socio Divergence (e-Stat). [REASONING] A labor model that uses demographic to filter noise during household periods. Proposed by Quant Analyst.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-QUANT-DE6B8B13",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "variable",
+            "name": "macro_iip"
+          },
+          "right": {
+            "type": "constant",
+            "value": 3.43
+          }
+        },
+        "status": "SELECTED",
+        "score": 0.6197058823529412,
+        "generation": 1,
+        "mutationType": "NEW_SEED"
+      },
+      "id": "ctx-isjey11y",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:22:59.086Z",
+      "updated_at": "2026-02-28T17:22:59.086Z"
+    },
+    {
+      "content": "[EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v2]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-QUANT-8D7EA1F9. Focusing on explorative diversity.",
+      "section": "strategies_and_hard_rules",
+      "metadata": {
+        "source": "AlphaDiscovery",
+        "type": "HYPOTHESIS",
+        "id": "ALPHA-HFT-FF39B407",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "high"
+            },
+            "right": {
+              "type": "operator",
+              "name": "SMA",
+              "left": {
+                "type": "variable",
+                "name": "kg_centrality"
+              },
+              "right": {
+                "type": "constant",
+                "value": 4
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "constant",
+              "value": 1.96
+            },
+            "right": {
+              "type": "operator",
+              "name": "SUB",
+              "left": {
+                "type": "variable",
+                "name": "macro_cpi"
+              },
+              "right": {
+                "type": "constant",
+                "value": 0.39
+              }
+            }
+          }
+        },
+        "status": "REJECTED",
+        "score": 0.5647058823529412,
+        "generation": 2,
+        "parentId": "ALPHA-QUANT-8D7EA1F9",
+        "mutationType": "STRUCTURAL_SHIFT"
+      },
+      "id": "ctx-2cz7svva",
+      "helpful_count": 0,
+      "harmful_count": 0,
+      "created_at": "2026-02-28T17:22:59.086Z",
+      "updated_at": "2026-02-28T17:22:59.086Z"
     }
   ]
 }
