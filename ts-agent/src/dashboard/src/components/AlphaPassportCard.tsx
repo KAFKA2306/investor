@@ -116,7 +116,7 @@ export const AlphaPassportCard: React.FC<AlphaPassportCardProps> = ({
             className="ast-viewer"
             style={{ marginTop: "0.4rem", color: "var(--ink-soft)" }}
           >
-            {featureSignature}
+            {String(featureSignature)}
           </div>
         </div>
       )}
@@ -160,7 +160,7 @@ export const AlphaPassportCard: React.FC<AlphaPassportCardProps> = ({
           )}
           {referenceLinks?.map((link, idx) => (
             <a
-              key={idx}
+              key={link}
               href={link}
               target="_blank"
               rel="noopener noreferrer"
