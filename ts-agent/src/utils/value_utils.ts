@@ -4,13 +4,6 @@ import { mathUtils } from "./math_utils.ts";
 // ── 正規化 (Normalizers) ───────────────────────────────────────────────────
 
 /**
- * 証券コードを4桁に整えるよっ！🔢✨
- */
-export function toSymbol4(value: string): string {
-  return value.replace(".T", "").trim().slice(0, 4);
-}
-
-/**
  * 日付をISO形式（YYYY-MM-DD）に正規化するよっ！📅✨
  * 形式が合わない場合は null を返すよ。
  */
@@ -22,6 +15,32 @@ export function toIsoDate(value: string): string | null {
     return `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)}`;
   }
   return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
+}
+
+/**
+ * 日付を8桁の文字列（YYYYMMDD）に変換するよっ！🕰️
+ */
+export function toYmd(value: string | Date): string {
+  const d = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}${m}${day}`;
+}
+
+/**
+ * 証券コードを4桁に正規化するよっ！🔢
+ */
+export function normalizeSymbol(symbol: string): string {
+  return symbol.replace(".T", "").trim().slice(0, 4);
+}
+
+/**
+ * 証券コードを4桁に整えるよっ！🔢✨ (互換性のために残すね)
+ */
+export function toSymbol4(value: string): string {
+  return normalizeSymbol(value);
 }
 
 /**
@@ -42,6 +61,15 @@ export function getNumberByKeys(
   const val = keys.map((k) => row[k]).find((v) => v !== undefined);
   const num = Number(val);
   return Number.isFinite(num) ? num : 0;
+}
+
+/**
+ * 文字列をブール値っぽく解釈するよっ！✅
+ */
+export function parseBoolLike(value: string | undefined): boolean {
+  if (value === undefined) return false;
+  const v = value.toLowerCase();
+  return v === "true" || v === "1" || v === "on" || v === "yes" || v === "t";
 }
 
 // ── フォーマット (Formatters) ────────────────────────────────────────────────
@@ -97,7 +125,7 @@ export function parseIntelligenceMap(filePath: string): IntelligenceMap {
   >;
   const result: IntelligenceMap = {};
   for (const [symbolRaw, datedValues] of Object.entries(raw)) {
-    const symbol = toSymbol4(symbolRaw);
+    const symbol = normalizeSymbol(symbolRaw);
     if (!/^\d{4}$/.test(symbol)) continue;
     for (const [dateRaw, point] of Object.entries(datedValues ?? {})) {
       const isoDate = toIsoDate(dateRaw) ?? dateRaw;
@@ -165,11 +193,14 @@ export function normalizeBars(
 
 export const valueNormalizers = {
   toSymbol4,
+  normalizeSymbol,
   toIsoDate,
+  toYmd,
   toFiniteNumber,
   getNumberByKeys,
   parseIntelligenceMap,
   normalizeBars,
+  parseBool: parseBoolLike,
 };
 
 export const valueFormatters = {

@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { z } from "zod";
@@ -70,6 +71,21 @@ export function writeReport<T>(
 }
 
 /**
+ * ユニークなIDをしゅばばばっと生成するよっ！🆔
+ */
+export function generateId(prefix = "ID"): string {
+  return `${prefix}-${randomUUID().split("-")[0]!.toUpperCase()}`;
+}
+
+/**
+ * タイムスタンプ付きのファイル名を作るよっ！📅
+ */
+export function generateTimestampedName(base: string, ext: string): string {
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  return `${base}_${ts}.${ext}`;
+}
+
+/**
  * ファイル操作の可愛い相棒、fsUtilsだよっ！📁💖
  */
 export const fsUtils = {
@@ -80,4 +96,6 @@ export const fsUtils = {
   readJsonFile,
   requirePrerequisites,
   writeReport,
+  generateId,
+  generateTimestampedName,
 };

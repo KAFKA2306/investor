@@ -68,6 +68,24 @@ export function calculateCorr(x: number[], y: number[]): number {
 }
 
 /**
+ * 配列からランダムに一つ選ぶよっ！🎯
+ */
+export function pickOne<T>(items: readonly T[]): T {
+  const value = items[Math.floor(Math.random() * items.length)];
+  if (value === undefined) {
+    throw new Error("random selection failed: array is empty");
+  }
+  return value;
+}
+
+/**
+ * 指定した範囲の整数の乱数を生成するよっ！🎲
+ */
+export function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/**
  * 数字の「きゅーとな相棒」mathUtilsだよっ！🔢💖
  */
 export const mathUtils = {
@@ -77,4 +95,6 @@ export const mathUtils = {
   stdDev,
   zScore,
   calculateCorr,
+  pickOne,
+  randomInt,
 };
