@@ -1,0 +1,317 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "2eed0ce6-0eb1-42ab-b796-2776a189525f",
+  "runId": "uqtl_20260301T154628_2",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T06:46:32.917Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260301",
+    "generatedAt": "2026-03-01T06:46:32.917Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5,
+      "selectedNovelCount": 1,
+      "openAIThemeUsage": 0
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-BEHAVIORAL-B4E61DBA"
+    ],
+    "selectedDetails": [
+      {
+        "id": "ALPHA-BEHAVIORAL-B4E61DBA",
+        "ideaHash": "456f13594f0ab77eeb4e4519",
+        "featureSignature": [
+          "activist_bias",
+          "low",
+          "macro_cpi"
+        ],
+        "noveltyScore": 0.7083333333333333,
+        "adoptionScore": 0.6150000000000001,
+        "themeSource": "LOCAL",
+        "llmModel": ""
+      }
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-BEHAVIORAL-B4E61DBA",
+        "description": "Cross-Asset Retrieval (FactorMiner) Hypothesis (Behavioral Economist)",
+        "reasoning": "CLAIM: Structural drift identification via Cross-Asset Retrieval (FactorMiner) and memory. [REASONING] The Behavioral Economist persona targets cross-asset using a skill approach. Optimized for experience regimes.",
+        "status": "SELECTED",
+        "recency": "2026-03-01T06:46:32.917Z",
+        "scores": {
+          "priority": 0.5916666666666668,
+          "plausibility": 0.6000000000000001,
+          "riskAdjusted": 0.5,
+          "novelty": 0.7083333333333333,
+          "fitness": 0.55,
+          "stability": 0.525,
+          "adoption": 0.6150000000000001
+        },
+        "ideaHash": "456f13594f0ab77eeb4e4519",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "activist_bias",
+          "low",
+          "macro_cpi"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "SMA",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "macro_cpi"
+              },
+              "right": {
+                "type": "variable",
+                "name": "low"
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "constant",
+                "value": 0.21
+              },
+              "right": {
+                "type": "variable",
+                "name": "activist_bias"
+              }
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 7
+          }
+        }
+      },
+      {
+        "id": "ALPHA-HFT-DCD474EF",
+        "description": "[EVOLVED] Crossover: Evolved STRUCTURAL_SHIFT [v2]",
+        "reasoning": "[EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from ALPHA-QUANT-8D7EA1F9. CLAIM: Structural drift identification via Information Asymmetry and insider. [REASONING] The HFT Engineer persona targets latency using a leakage approach. Optimized for skewness regimes.",
+        "status": "REJECTED",
+        "rejectReason": "RPA: High linguistic risk profile detected.",
+        "recency": "2026-03-01T06:46:32.917Z",
+        "scores": {
+          "priority": 0.5666666666666667,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.5,
+          "novelty": 0.7083333333333333,
+          "fitness": 0.525,
+          "stability": 0.5125,
+          "adoption": 0.595
+        },
+        "ideaHash": "a704893da62d87662d29ef80",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 2,
+        "parentId": "ALPHA-QUANT-8D7EA1F9",
+        "mutationType": "CROSSOVER",
+        "ast": {
+          "op": "div",
+          "left": {
+            "op": "div",
+            "left": {
+              "op": "div",
+              "left": {
+                "op": "col",
+                "name": "turnover_value"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            },
+            "right": {
+              "op": "col",
+              "name": "close"
+            }
+          },
+          "right": {
+            "op": "mul",
+            "left": {
+              "op": "mul",
+              "left": {
+                "op": "col",
+                "name": "close"
+              },
+              "right": {
+                "op": "col",
+                "name": "net_sales"
+              }
+            },
+            "right": {
+              "op": "add",
+              "left": {
+                "op": "col",
+                "name": "volume"
+              },
+              "right": {
+                "op": "col",
+                "name": "profit_margin"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-03-01T06:46:32.862Z",
+    "input": {
+      "channel": "task",
+      "nlInputProvided": false,
+      "nlInputHash": "",
+      "nlInputPreview": ""
+    }
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

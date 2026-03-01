@@ -46,5 +46,5 @@ Direct scripts (inside `ts-agent/`):
 - If process flow changes, update both diagram docs and related README sections in the same PR.
 
 ## Security & Configuration Tips
-- Store secrets in `ts-agent/.env` (e.g., `JQUANTS_API_KEY`, `ESTAT_APP_ID`); never commit credentials.
+- Store secrets in the repo-root `.env` (e.g., `JQUANTS_API_KEY`, `ESTAT_APP_ID`); never commit credentials.
 - Treat API outputs and generated logs as audit artifacts; do not rewrite history in-place.

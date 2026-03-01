@@ -215,7 +215,7 @@ sequenceDiagram
 task setup
 ```
 
-環境変数はルートの `.env` に設定します（`ts-agent/.env` はレガシー互換のみ）。
+環境変数はルートの `.env` に設定します（読み込み元は `ts-agent/src/config/default.yaml` の `runtime.envFile` で一元管理）。
 secret を `default.yaml` などの config に直接書く運用は禁止です。
 
 ```env
@@ -223,7 +223,21 @@ JQUANTS_API_KEY=your_jquants_api_key
 EDINET_API_KEY=your_edinet_api_key
 ESTAT_APP_ID=your_estat_app_id
 OPENAI_API_KEY=your_openai_api_key
+UQTL_API_TOKEN=replace_with_strong_random_token
 VERIFY_TARGETS=jquants,kabucom,edinet,estat
+```
+
+`UQTL_API_TOKEN` is required for mutating API endpoints:
+- `POST /api/workflows/run`
+- `POST /api/kill`
+
+Example:
+
+```bash
+curl -X POST http://127.0.0.1:8787/api/workflows/run \
+  -H "Authorization: Bearer $UQTL_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"workflowId":"newalphasearch"}'
 ```
 
 初回は `.env.example` をコピーして値を設定し、依存関係はルートで一元同期します。

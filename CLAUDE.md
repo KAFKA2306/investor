@@ -105,8 +105,8 @@ task jquants:warm-all:stop
 
 ## Configuration
 
-- `ts-agent/.env` — API keys: `JQUANTS_API_KEY`, `ESTAT_APP_ID`, `VERIFY_TARGETS`
-- `ts-agent/src/config/default.yaml` — All runtime configuration; loaded via `core.config` (the `ConfigSchema` Zod object in `app_runtime_core.ts`)
+- `/.env` — API keys: `JQUANTS_API_KEY`, `ESTAT_APP_ID`, `VERIFY_TARGETS` (single source of truth)
+- `ts-agent/src/config/default.yaml` — All runtime configuration; `runtime.envFile` defines `.env` loading path and provider entries keep only env var names (`apiKeyEnv` / `appIdEnv`)
 
 ## Commit conventions
 
