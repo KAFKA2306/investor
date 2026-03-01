@@ -2,7 +2,7 @@ import { Database } from "bun:sqlite";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { core } from "../system/app_runtime_core.ts";
-import { EdinetItemizer } from "./edinet_itemizer.ts";
+import { EdinetItemizer } from "../utils/edinet_utils.ts";
 
 const unzipListMaxChars = 20 * 1024 * 1024;
 const unzipExtractMaxChars = 100 * 1024 * 1024;
@@ -139,9 +139,9 @@ export class EdinetSearchProvider {
     const rows: Array<{ sectionName: string; content: string }> =
       sections.length > 0
         ? sections.map((section) => ({
-            sectionName: section.title,
-            content: section.content,
-          }))
+          sectionName: section.title,
+          content: section.content,
+        }))
         : [{ sectionName: "全文", content }];
 
     const insert = this.db.prepare(`
