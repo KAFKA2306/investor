@@ -3,6 +3,10 @@ import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -14,6 +18,8 @@ import type { AlphaDiscoveryPayload } from "../dashboard_core";
 
 interface ResearchLogProps {
   alphaDiscovery: Map<string, AlphaDiscoveryPayload[]>;
+  activeDate?: string;
+  onSelectDate?: (date: string) => void;
 }
 
 type CandidateLogEntry = AlphaDiscoveryPayload["candidates"][number] & {
@@ -21,12 +27,17 @@ type CandidateLogEntry = AlphaDiscoveryPayload["candidates"][number] & {
   generatedAt: string;
 };
 
-export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
+export const ResearchLog: React.FC<ResearchLogProps> = ({
+  alphaDiscovery,
+  activeDate,
+  onSelectDate,
+}) => {
   const [filterStatus, setFilterStatus] = useState<
     "ALL" | "SELECTED" | "REJECTED"
   >("ALL");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
+  const [filterToActive, setFilterToActive] = useState(false);
 
   const allCandidates = useMemo(() => {
     const list: CandidateLogEntry[] = [];
@@ -59,10 +70,15 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
   }, [allCandidates]);
 
   const filteredCandidates = useMemo(() => {
-    return allCandidates.filter(
-      (c) => filterStatus === "ALL" || c.status === filterStatus,
-    );
-  }, [allCandidates, filterStatus]);
+    let list = allCandidates;
+    if (filterStatus !== "ALL") {
+      list = list.filter((c) => c.status === filterStatus);
+    }
+    if (filterToActive && activeDate) {
+      list = list.filter((c) => c.date === activeDate);
+    }
+    return list;
+  }, [allCandidates, filterStatus, filterToActive, activeDate]);
 
   const chartData = [
     { name: "Selected", value: stats.selected, fill: "var(--brand)" },
@@ -127,8 +143,11 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
             </div>
           </div>
         </div>
-        <div className="hero-side">
-          <div className="chart-recharts-wrapper" style={{ height: "180px" }}>
+        <div
+          className="hero-side"
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
+          <div className="chart-recharts-wrapper" style={{ height: "140px" }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} layout="vertical">
                 <XAxis type="number" hide />
@@ -137,13 +156,73 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
                   type="category"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
                 />
-                <Tooltip />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--glass-bg)",
+                    border: "1px solid var(--line)",
+                    borderRadius: "8px",
+                    fontSize: "10px",
+                  }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={15} />
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <div
+            style={{
+              fontSize: "0.65rem",
+              color: "var(--ink-soft)",
+              textAlign: "center",
+            }}
+          >
+            Selection Summary
+          </div>
+        </div>
+      </div>
+
+      <div className="panel section" style={{ minHeight: "240px" }}>
+        <h3 className="quick-title">
+          Discovery Progress (Priority vs Novelty)
+        </h3>
+        <div style={{ height: "200px", marginTop: "1rem" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={allCandidates.slice().reverse()}>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="rgba(255,255,255,0.05)"
+              />
+              <XAxis dataKey="date" hide />
+              <YAxis domain={[0, 1]} tick={{ fontSize: 10 }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "var(--glass-bg)",
+                  border: "1px solid var(--line)",
+                  borderRadius: "8px",
+                  fontSize: "11px",
+                }}
+              />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: "10px" }} />
+              <Line
+                type="monotone"
+                dataKey="scores.priority"
+                name="Priority"
+                stroke="var(--brand)"
+                dot={false}
+                strokeWidth={2}
+              />
+              <Line
+                type="monotone"
+                dataKey="scores.novelty"
+                name="Novelty"
+                stroke="var(--accent)"
+                dot={false}
+                strokeWidth={1.5}
+                strokeDasharray="5 5"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -156,19 +235,40 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
           justifyContent: "space-between",
         }}
       >
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          {["ALL", "SELECTED", "REJECTED"].map((status) => (
-            <button
-              key={status}
-              type="button"
-              className={`tab-btn ${filterStatus === status ? "active" : ""}`}
-              onClick={() =>
-                setFilterStatus(status as "ALL" | "SELECTED" | "REJECTED")
-              }
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          {activeDate && (
+            <label
+              style={{
+                fontSize: "0.8rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                cursor: "pointer",
+                color: "var(--ink-soft)",
+              }}
             >
-              {status}
-            </button>
-          ))}
+              <input
+                type="checkbox"
+                checked={filterToActive}
+                onChange={(e) => setFilterToActive(e.target.checked)}
+              />
+              {activeDate} に絞るっ！🎯
+            </label>
+          )}
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            {["ALL", "SELECTED", "REJECTED"].map((status) => (
+              <button
+                key={status}
+                type="button"
+                className={`tab-btn ${filterStatus === status ? "active" : ""}`}
+                onClick={() =>
+                  setFilterStatus(status as "ALL" | "SELECTED" | "REJECTED")
+                }
+              >
+                {status}
+              </button>
+            ))}
+          </div>
         </div>
         <div>
           {selectedIds.size > 0 && (
@@ -178,8 +278,8 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
               onClick={() => setShowCompare(!showCompare)}
             >
               {showCompare
-                ? "Hide Comparison"
-                : `Compare Selected (${selectedIds.size})`}
+                ? "比較を閉じるっ！"
+                : `選ばれた子を比較っ！ (${selectedIds.size})`}
             </button>
           )}
         </div>
@@ -214,9 +314,9 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
                     return (
                       <td key={id}>
                         <span
-                          className={`chip ${c.status === "SELECTED" ? "ready" : "risk"}`}
+                          className={`chip ${c?.status === "SELECTED" ? "ready" : "risk"}`}
                         >
-                          {c.status}
+                          {c?.status || "UNKNOWN"}
                         </span>
                       </td>
                     );
@@ -226,14 +326,20 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
                   <td>Risk Adj. Score</td>
                   {Array.from(selectedIds).map((id) => {
                     const c = allCandidates.find((x) => x.id === id);
-                    return <td key={id}>{c.scores.riskAdjusted.toFixed(3)}</td>;
+                    return (
+                      <td key={id}>
+                        {c?.scores.riskAdjusted.toFixed(3) || "N/A"}
+                      </td>
+                    );
                   })}
                 </tr>
                 <tr>
                   <td>Novelty Score</td>
                   {Array.from(selectedIds).map((id) => {
                     const c = allCandidates.find((x) => x.id === id);
-                    return <td key={id}>{c.scores.novelty.toFixed(3)}</td>;
+                    return (
+                      <td key={id}>{c?.scores.novelty.toFixed(3) || "N/A"}</td>
+                    );
                   })}
                 </tr>
                 <tr>
@@ -250,7 +356,7 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
                             color: "var(--brand)",
                           }}
                         >
-                          {c.featureSignature || "N/A"}
+                          {c?.featureSignature || "N/A"}
                         </pre>
                       </td>
                     );
@@ -287,10 +393,32 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
                   onChange={() => handleToggleSelect(candidate.id)}
                   style={{ cursor: "pointer" }}
                 />
-                <span className="timeline-date">{candidate.date}</span>
+                <span
+                  className="timeline-date"
+                  style={{
+                    fontWeight:
+                      candidate.date === activeDate ? "bold" : "normal",
+                    color:
+                      candidate.date === activeDate
+                        ? "var(--brand)"
+                        : "inherit",
+                  }}
+                >
+                  {candidate.date} {candidate.date === activeDate && "✨"}
+                </span>
                 <span style={{ fontSize: "0.6rem", color: "var(--ink-soft)" }}>
                   {new Date(candidate.generatedAt).toLocaleString()}
                 </span>
+                {onSelectDate && candidate.date !== activeDate && (
+                  <button
+                    type="button"
+                    className="button"
+                    style={{ fontSize: "0.55rem", padding: "2px 6px" }}
+                    onClick={() => onSelectDate(candidate.date)}
+                  >
+                    この日にジャンプっ！🕰️
+                  </button>
+                )}
               </div>
 
               <AlphaPassportCard
@@ -301,6 +429,9 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
                 status={candidate.status}
                 featureSignature={candidate.featureSignature}
                 ast={candidate.ast}
+                docId={candidate.docId}
+                edinetCode={candidate.edinetCode}
+                referenceLinks={candidate.referenceLinks}
               />
 
               {candidate.status === "REJECTED" && parsedReason && (

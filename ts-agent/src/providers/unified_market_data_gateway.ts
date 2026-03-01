@@ -116,10 +116,10 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
         const bars = await this.jquants.getEarningsCalendar({ date });
         const filtered = symbol
           ? (bars as { code: string }[]).filter((b) => {
-            const code = b.code;
-            if (!code) return false;
-            return code.startsWith(symbol) || symbol.startsWith(code);
-          })
+              const code = b.code;
+              if (!code) return false;
+              return code.startsWith(symbol) || symbol.startsWith(code);
+            })
           : (bars as Record<string, unknown>[]);
 
         if (symbol && filtered.length === 0) return null;

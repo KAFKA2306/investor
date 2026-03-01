@@ -1,16 +1,19 @@
-import type {
-  AlphaScreening,
-  StandardOutcome,
-  StrategicReasoning,
+import {
+  type AlphaScreening,
+  AlphaStatus,
+  type StandardOutcome,
+  type StrategicReasoning,
+  Verdict,
 } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
+import { logger } from "../utils/logger.ts";
 
 export class StrategicReasonerAgent extends BaseAgent {
   public async reasonAboutAlpha(
     outcome: StandardOutcome,
     marketContext: string,
   ): Promise<StrategicReasoning> {
-    console.log(
+    logger.info(
       `[Council of Quants] Reasoning about alpha: ${outcome.strategyId}`,
     );
 
@@ -20,20 +23,20 @@ export class StrategicReasonerAgent extends BaseAgent {
       "General Alpha";
 
     const riskVerdict =
-      (outcome.verification?.metrics?.maxDrawdown ?? 0 < -0.2)
-        ? "INVALID"
-        : "VALID";
+      (outcome.verification?.metrics?.maxDrawdown ?? 0) < -0.2
+        ? Verdict.INVALID
+        : Verdict.VALID;
     const riskEvidence = `MaxDrawdown check: ${outcome.verification?.metrics?.maxDrawdown}.`;
 
     const hunterVerdict =
-      (outcome.alpha?.pValue ?? 1) < 0.05 ? "VALID" : "UNCERTAIN";
+      (outcome.alpha?.pValue ?? 1) < 0.05 ? Verdict.VALID : Verdict.UNCERTAIN;
     const hunterEvidence = `P-Value: ${outcome.alpha?.pValue}.`;
 
     const regimeVerdict =
       marketContext.includes("BULL") &&
       extractedClaim.toLowerCase().includes("momentum")
-        ? "VALID"
-        : "UNCERTAIN";
+        ? Verdict.VALID
+        : Verdict.UNCERTAIN;
     const regimeEvidence = `Alignment with ${marketContext}.`;
 
     const logicChecks: StrategicReasoning["logicChecks"] = [
@@ -54,7 +57,9 @@ export class StrategicReasonerAgent extends BaseAgent {
       },
     ];
 
-    const validCount = logicChecks.filter((c) => c.verdict === "VALID").length;
+    const validCount = logicChecks.filter(
+      (c) => c.verdict === Verdict.VALID,
+    ).length;
     const contextAlignment = validCount / 3;
 
     const rationale = `[Council Consensus] The alpha was reviewed by the Risk Manager, Alpha Hunter, and Regime Specialist. 
@@ -73,22 +78,22 @@ export class StrategicReasonerAgent extends BaseAgent {
     outcome: StandardOutcome,
     reasoning: StrategicReasoning,
   ): Promise<AlphaScreening> {
-    console.log(`[Alpha-R1] Screening alpha: ${outcome.strategyId}`);
+    logger.info(`[Alpha-R1] Screening alpha: ${outcome.strategyId}`);
 
     const sharpe = outcome.verification?.metrics?.sharpeRatio ?? 0;
     const pValue = outcome.alpha?.pValue ?? 1.0;
 
-    let status: AlphaScreening["status"] = "ACTIVE";
+    let status = AlphaStatus.ACTIVE;
     let reason =
       "Alpha logic remains sound and performance is within expected range.";
     let score = reasoning.contextAlignment * 0.6 + (1 - pValue) * 0.4;
 
     if (sharpe < 0.5 || pValue > 0.1) {
-      status = "DECAYED";
+      status = AlphaStatus.DECAYED;
       reason = `[REJECTED] ${reasoning.rationale}`;
       score *= 0.5;
     } else if (reasoning.contextAlignment < 0.5) {
-      status = "INACTIVE";
+      status = AlphaStatus.INACTIVE;
       reason = `[INACTIVE] ${reasoning.rationale}`;
       score *= 0.8;
     }
@@ -111,6 +116,6 @@ export class StrategicReasonerAgent extends BaseAgent {
   }
 
   public async run(): Promise<void> {
-    console.log("🎀 Alpha-R1: Strategic Reasoner is standing by...");
+    logger.info("🎀 Alpha-R1: Strategic Reasoner is standing by...");
   }
 }

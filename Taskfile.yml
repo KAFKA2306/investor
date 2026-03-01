@@ -423,6 +423,18 @@ tasks:
           fi;
           python3 -c "import json,sys; s=json.loads(sys.argv[1]); hit=float(s.get(\"hitRatePct\",0)); aborted=bool(s.get(\"abortedByRateLimit\",True)); print(json.dumps({\"ok\": (hit>=99 and not aborted), \"hitRatePct\": hit, \"abortedByRateLimit\": aborted}, ensure_ascii=False)); raise SystemExit(0 if (hit>=99 and not aborted) else 1)" "$summary"'
 
+  db:test:
+    desc: Postgres くんと仲良くお話しできるか確認するテストだよっ！🛡️✨
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run db:test
+
+  db:migrate:
+    desc: SQLite の思い出データを Postgres くんに届けるお引っ越しスクリプトだよっ！🚚💖
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run db:migrate
+
   clean:logs:
     desc: ログ掃除
     cmds:

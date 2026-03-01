@@ -37,25 +37,17 @@ const CHART_WIDTH = 700;
 const CHART_HEIGHT = 170;
 const CHART_PADDING = 14;
 
-const buildLinePath = (
-  points: TrendPoint[],
-  toX: (index: number) => number,
-  toY: (value: number) => number,
-  selector: (point: TrendPoint) => number | undefined,
-): string => {
-  let path = "";
-  let drawing = false;
-  points.forEach((point, index) => {
-    const value = selector(point);
-    if (value === undefined) {
-      drawing = false;
-      return;
-    }
-    path += `${drawing ? " L" : "M"} ${toX(index)} ${toY(value)}`;
-    drawing = true;
-  });
-  return path;
-};
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
   report,
@@ -119,10 +111,10 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
       .map((date) => {
         const daily = dailyByDate.get(date)?.report;
         return {
-          date,
+          date: formatDate(date),
           netReturn: pickNumber(daily?.results?.backtest?.netReturn),
           basketDailyReturn: pickNumber(daily?.results?.basketDailyReturn),
-        } satisfies TrendPoint;
+        };
       })
       .filter(
         (point) =>
@@ -131,73 +123,19 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
       );
   }, [timeline, dailyByDate]);
 
-  const chart = useMemo(() => {
-    if (trendPoints.length === 0) return null;
-    const values = trendPoints.flatMap((point) => {
-      const rows: number[] = [];
-      if (point.netReturn !== undefined) rows.push(point.netReturn);
-      if (point.basketDailyReturn !== undefined)
-        rows.push(point.basketDailyReturn);
-      return rows;
-    });
-    if (values.length === 0) return null;
-
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const span = Math.max(max - min, 1e-9);
-    const width = CHART_WIDTH;
-    const height = CHART_HEIGHT;
-    const xSpan = Math.max(trendPoints.length - 1, 1);
-
-    const toX = (index: number) =>
-      CHART_PADDING + ((width - CHART_PADDING * 2) * index) / xSpan;
-    const toY = (value: number) =>
-      CHART_PADDING + ((height - CHART_PADDING * 2) * (max - value)) / span;
-
-    const netPath = buildLinePath(
-      trendPoints,
-      toX,
-      toY,
-      (point) => point.netReturn,
-    );
-    const basketPath = buildLinePath(
-      trendPoints,
-      toX,
-      toY,
-      (point) => point.basketDailyReturn,
-    );
-
-    const latestNet = [...trendPoints]
-      .reverse()
-      .find((point) => point.netReturn !== undefined);
-    const latestBasket = [...trendPoints]
-      .reverse()
-      .find((point) => point.basketDailyReturn !== undefined);
-
-    return {
-      width,
-      height,
-      min,
-      max,
-      netPath,
-      basketPath,
-      latestNet,
-      latestBasket,
-      toX,
-      toY,
-      firstDate: trendPoints[0]?.date ?? "",
-      lastDate: trendPoints[trendPoints.length - 1]?.date ?? "",
-    };
-  }, [trendPoints]);
-
-  if (!report && stageRows.length === 0 && !chart && !verificationData) {
+  if (
+    !report &&
+    stageRows.length === 0 &&
+    trendPoints.length === 0 &&
+    !verificationData
+  ) {
     return <div className="empty">金融メトリクスの根拠ログがありません。</div>;
   }
 
   return (
     <div
       className="financial-view"
-      style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+      style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
     >
       <section className="kpi-grid">
         <article className="kpi-card">
@@ -272,78 +210,77 @@ export const FinancialMetricsView: React.FC<FinancialMetricsViewProps> = ({
           <h3>Return Trend</h3>
           <span>Net Return vs Basket Daily Return</span>
         </div>
-        {chart ? (
-          <div className="chart-host">
-            <svg
-              className="line-chart"
-              viewBox={`0 0 ${chart.width} ${chart.height}`}
-              role="img"
-              aria-label="financial return trend"
-            >
-              <line
-                className="chart-grid-line"
-                x1={CHART_PADDING}
-                y1={CHART_PADDING}
-                x2={chart.width - CHART_PADDING}
-                y2={CHART_PADDING}
-              />
-              <line
-                className="chart-grid-line mid"
-                x1={CHART_PADDING}
-                y1={chart.height / 2}
-                x2={chart.width - CHART_PADDING}
-                y2={chart.height / 2}
-              />
-              <line
-                className="chart-grid-line"
-                x1={CHART_PADDING}
-                y1={chart.height - CHART_PADDING}
-                x2={chart.width - CHART_PADDING}
-                y2={chart.height - CHART_PADDING}
-              />
-              {chart.netPath && (
-                <path d={chart.netPath} className="chart-line" />
-              )}
-              {chart.basketPath && (
-                <path
-                  d={chart.basketPath}
-                  className="chart-line chart-line-alt"
+        {trendPoints.length > 0 ? (
+          <div
+            className="chart-host"
+            style={{ height: "300px", marginTop: "1rem" }}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={trendPoints}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.05)"
                 />
-              )}
-              {chart.latestNet?.netReturn !== undefined && (
-                <circle
-                  className="chart-point-active"
-                  cx={chart.toX(trendPoints.indexOf(chart.latestNet))}
-                  cy={chart.toY(chart.latestNet.netReturn)}
-                  r="3.2"
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
+                  axisLine={{ stroke: "var(--line)" }}
+                  tickLine={false}
                 />
-              )}
-              {chart.latestBasket?.basketDailyReturn !== undefined && (
-                <circle
-                  className="chart-point-alt"
-                  cx={chart.toX(trendPoints.indexOf(chart.latestBasket))}
-                  cy={chart.toY(chart.latestBasket.basketDailyReturn)}
-                  r="3.2"
+                <YAxis
+                  tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
+                  axisLine={{ stroke: "var(--line)" }}
+                  tickLine={false}
+                  tickFormatter={(val) => `${(val * 100).toFixed(1)}%`}
                 />
-              )}
-            </svg>
-            <div className="financial-chart-legend">
-              <span className="legend-item">
-                <span className="legend-dot legend-dot-net" />
-                Net Return
-              </span>
-              <span className="legend-item">
-                <span className="legend-dot legend-dot-daily" />
-                Basket Daily Return
-              </span>
-              <span className="legend-boundary">
-                {formatDate(chart.firstDate)} - {formatDate(chart.lastDate)}
-              </span>
-              <span className="legend-boundary">
-                min {formatPercentNullable(chart.min)} / max{" "}
-                {formatPercentNullable(chart.max)}
-              </span>
-            </div>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--glass-bg)",
+                    border: "1px solid var(--line)",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                  }}
+                  formatter={(val: number | string | undefined) => {
+                    const num =
+                      typeof val === "string" ? Number.parseFloat(val) : val;
+                    return [
+                      num !== undefined ? `${(num * 100).toFixed(3)}%` : "N/A",
+                      "",
+                    ];
+                  }}
+                />
+                <Legend
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }}
+                />
+                <ReferenceLine
+                  y={0}
+                  stroke="var(--ink-soft)"
+                  strokeDasharray="3 3"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="netReturn"
+                  name="Net Return"
+                  stroke="var(--brand)"
+                  strokeWidth={2}
+                  dot={{ r: 3, strokeWidth: 0, fill: "var(--brand)" }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="basketDailyReturn"
+                  name="Basket Daily Return"
+                  stroke="var(--accent)"
+                  strokeWidth={2}
+                  dot={{ r: 3, strokeWidth: 0, fill: "var(--accent)" }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         ) : (
           <div className="empty">Return時系列が不足しています。</div>

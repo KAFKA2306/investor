@@ -3,6 +3,8 @@ import { readdir, readFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
 import { serve } from "bun";
 import { MemoryCenter } from "../context/unified_context_services.ts";
+import { mirrorEventToCanonical } from "../db/adapters/canonical_bridge.ts";
+import { bootstrapCanonicalDb } from "../db/bootstrap.ts";
 
 interface WorkflowMeta {
   id: string;
@@ -295,6 +297,9 @@ const isSafeFileName = (file: string, ext: ".png" | ".csv"): boolean =>
 
 const apiPort = Number(process.env.UQTL_API_PORT ?? "8787");
 console.log(`UQTL API Server listening on http://localhost:${apiPort}`);
+void bootstrapCanonicalDb().catch((error) => {
+  console.warn(`[API] canonical DB bootstrap skipped: ${String(error)}`);
+});
 
 serve({
   port: apiPort,
@@ -394,6 +399,14 @@ serve({
         payload: { message: "KILL SWITCH ACTIVATED via Dashboard" },
       };
       memory.pushEvent(event);
+      void mirrorEventToCanonical({
+        id: event.id,
+        timestamp: event.timestamp,
+        type: event.type,
+        payload: event.payload,
+      }).catch((error) => {
+        console.warn(`[API] canonical event mirror failed: ${String(error)}`);
+      });
       return new Response(
         JSON.stringify({ ok: true, message: "Kill signal received" }),
         {

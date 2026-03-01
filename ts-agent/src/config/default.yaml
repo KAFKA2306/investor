@@ -120,3 +120,14 @@ alpha:
 logging:
   envelope:
     version: v2
+
+database:
+  canonicalDb:
+    enabled: true
+    dualWriteEnabled: false
+    host: localhost
+    port: 5432
+    database: investor
+    user: investor
+    password: ""
+    ssl: false

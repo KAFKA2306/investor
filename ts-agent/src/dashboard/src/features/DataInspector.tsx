@@ -103,10 +103,18 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
   const bottomSymbols = crossSectionData.slice(-5).reverse();
 
   return (
-    <div className="main">
+    <div className="main tab-fade">
       <div className="section-head">
         <h2>Data Inspector</h2>
-        <div className="workflow-controls">
+        <div
+          className="workflow-controls rail"
+          style={{
+            flexDirection: "row",
+            background: "var(--bg-soft)",
+            padding: "0.2rem",
+            borderRadius: "999px",
+          }}
+        >
           <button
             type="button"
             className={`tab-btn ${mode === "single" ? "active" : ""}`}

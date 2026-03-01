@@ -44,6 +44,10 @@ interface AlphaPassportCardProps {
   rejectReason?: string;
   featureSignature?: string;
   ast?: unknown;
+  // [NEW] Drill-down metadata
+  docId?: string;
+  edinetCode?: string;
+  referenceLinks?: string[];
 }
 
 export const AlphaPassportCard: React.FC<AlphaPassportCardProps> = ({
@@ -55,6 +59,9 @@ export const AlphaPassportCard: React.FC<AlphaPassportCardProps> = ({
   rejectReason,
   featureSignature,
   ast,
+  docId,
+  edinetCode,
+  referenceLinks,
 }) => {
   return (
     <div className={`passport-card ${status.toLowerCase()}`}>
@@ -118,7 +125,7 @@ export const AlphaPassportCard: React.FC<AlphaPassportCardProps> = ({
         <div>
           <span className="quick-title">Logic Tree (AST)</span>
           <div style={{ marginTop: "0.4rem" }}>
-            <ASTViewer ast={ast} />
+            <ASTViewer ast={ast as any} />
           </div>
         </div>
       )}
@@ -126,6 +133,43 @@ export const AlphaPassportCard: React.FC<AlphaPassportCardProps> = ({
       {status === "REJECTED" && rejectReason && (
         <div style={{ color: "var(--danger)", fontSize: "0.8rem" }}>
           <strong>Reject Reason:</strong> {rejectReason}
+        </div>
+      )}
+
+      {(docId || edinetCode || referenceLinks) && (
+        <div
+          style={{
+            marginTop: "0.8rem",
+            paddingTop: "0.8rem",
+            borderTop: "1px dashed var(--brand-divider)",
+            fontSize: "0.75rem",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.5rem",
+          }}
+        >
+          {docId && (
+            <span className="pill ready" title="Source Document ID">
+              Doc: {docId}
+            </span>
+          )}
+          {edinetCode && (
+            <span className="pill ready" title="EDINET Code">
+              Entity: {edinetCode}
+            </span>
+          )}
+          {referenceLinks?.map((link, idx) => (
+            <a
+              key={idx}
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pill ready"
+              style={{ textDecoration: "none" }}
+            >
+              Ref {idx + 1}
+            </a>
+          ))}
         </div>
       )}
     </div>

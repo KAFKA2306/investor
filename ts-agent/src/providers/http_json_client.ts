@@ -15,9 +15,13 @@ export type RequestJsonOptions = {
   ttlMs?: number;
   allowStaleCache?: boolean;
   timeoutMs?: number;
+  maxRetries?: number;
+  retryDelayMs?: number;
 };
 
 const DEFAULT_TIMEOUT_MS = 60_000;
+const DEFAULT_MAX_RETRIES = 3;
+const DEFAULT_RETRY_DELAY_MS = 1000;
 
 export type RequestJsonResult = {
   payload: JsonMap;
@@ -70,36 +74,68 @@ export async function requestJson(
     }
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(),
-    options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-  );
+  const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
+  const retryDelay = options.retryDelayMs ?? DEFAULT_RETRY_DELAY_MS;
+  let lastError: Error | undefined;
 
-  const response = await fetch(urlStr, {
-    headers,
-    signal: controller.signal,
-  });
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(
+        () => controller.abort(),
+        options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      );
 
-  if (!response.ok) {
-    throw new ProviderHttpError(
-      response.status,
-      urlStr,
-      await response.text().catch(() => "Unknown error"),
-    );
+      const response = await fetch(urlStr, {
+        headers,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+
+      if (!response.ok) {
+        if (response.status >= 500 && attempt < maxRetries) {
+          const delay = retryDelay * 2 ** attempt;
+          console.warn(
+            `⚠️ [HTTP ${response.status}] Retrying ${urlStr} in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+        throw new ProviderHttpError(
+          response.status,
+          urlStr,
+          await response.text().catch(() => "Unknown error"),
+        );
+      }
+
+      const payload = (await response.json()) as JsonMap;
+      const validated = z.record(z.string(), z.unknown()).parse(payload);
+
+      return {
+        payload: validated,
+        cached: false,
+        status: response.status,
+        finalUrl: urlStr,
+      };
+    } catch (err: any) {
+      lastError = err;
+      if (
+        (err.name === "AbortError" || err.message?.includes("fetch")) &&
+        attempt < maxRetries
+      ) {
+        const delay = retryDelay * 2 ** attempt;
+        console.warn(
+          `⚠️ [${err.name}] Retrying ${urlStr} in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+      throw err;
+    }
   }
 
-  const payload = (await response.json()) as JsonMap;
-  const validated = z.record(z.string(), z.unknown()).parse(payload);
-
-  clearTimeout(timeout);
-
-  return {
-    payload: validated,
-    cached: false,
-    status: response.status,
-    finalUrl: urlStr,
-  };
+  throw lastError || new Error(`Request failed after ${maxRetries} retries`);
 }
 
 export async function requestRows(

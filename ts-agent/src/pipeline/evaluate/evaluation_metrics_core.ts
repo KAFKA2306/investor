@@ -6,6 +6,7 @@ import {
   UnifiedLogSchema,
 } from "../../schemas/financial_domain_schemas.ts";
 import { CanonicalLogEnvelopeSchema } from "../../schemas/system_event_schemas.ts";
+import { mathUtils } from "../../utils/math_utils.ts";
 
 const EPS = 1e-12;
 
@@ -35,42 +36,13 @@ export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
 export const PerformanceMetricsSchema = EvaluationResultSchema;
 export type PerformanceMetrics = z.infer<typeof PerformanceMetricsSchema>;
 
-export const mean = (xs: readonly number[]): number =>
-  xs.length === 0 ? 0 : xs.reduce((a, b) => a + b, 0) / xs.length;
+export const mean = mathUtils.mean;
 
-export const std = (xs: readonly number[]): number => {
-  if (xs.length < 2) return 0;
-  const mu = mean(xs);
-  const variance = xs.reduce((acc, x) => acc + (x - mu) ** 2, 0) / xs.length;
-  return Math.sqrt(variance);
-};
+export const std = mathUtils.stdDev;
 
-export function computeMaxDrawdown(returns: readonly number[]): number {
-  let peak = 1,
-    equity = 1,
-    maxDD = 0;
-  for (const r of returns) {
-    equity *= 1 + r;
-    peak = Math.max(peak, equity);
-    maxDD = Math.min(maxDD, (equity - peak) / peak);
-  }
-  return maxDD;
-}
+export const computeMaxDrawdown = mathUtils.computeMaxDrawdown;
 
-export function calculateCorrelation(
-  xs: readonly number[],
-  ys: readonly number[],
-): number {
-  if (xs.length !== ys.length || xs.length === 0) return 0;
-  const muX = mean(xs),
-    muY = mean(ys),
-    stdX = std(xs),
-    stdY = std(ys);
-  if (stdX < EPS || stdY < EPS) return 0;
-  let sum = 0;
-  for (let i = 0; i < xs.length; i++) sum += (xs[i]! - muX) * (ys[i]! - muY);
-  return sum / (xs.length * stdX * stdY);
-}
+export const calculateCorrelation = mathUtils.calculateCorr;
 
 export function evaluate(
   logs: readonly DailyLog[],
@@ -252,22 +224,12 @@ export namespace QuantMetrics {
     return den === 0 ? 0 : (n * sXY - sX * sY) / den;
   }
 
-  export function mean(x: number[]): number {
-    return x.reduce((a, b) => a + b, 0) / (x.length || 1);
-  }
+  export const mean = mathUtils.mean;
   export function calculateCorr(p: number[], t: number[]): number {
     return pearson(gaussRank(p), gaussRank(t));
   }
-  export function calculateTStat(r: number[]): number {
-    const n = r.length;
-    if (n < 2) return 0;
-    const mu = mean(r),
-      sigma = Math.sqrt(r.reduce((acc, v) => acc + (v - mu) ** 2, 0) / n);
-    return sigma === 0 ? 0 : mu / (sigma / Math.sqrt(n));
-  }
-  export function calculatePValue(t: number, n: number): number {
-    return n < 2 ? 1.0 : 2 * (1 - normalCdf(Math.abs(t)));
-  }
+  export const calculateTStat = mathUtils.calculateTStat;
+  export const calculatePValue = mathUtils.calculatePValue;
   export function calculateRMSE(a: number[], p: number[]): number {
     const n = Math.min(a.length, p.length);
     if (n === 0) return 0;
@@ -297,15 +259,6 @@ export namespace QuantMetrics {
         correct++;
     return (correct / n) * 100;
   }
-  export function calculateSharpeRatio(returns: number[], rfr = 0): number {
-    if (returns.length < 2) return 0;
-    const mu = mean(returns),
-      sigma = Math.sqrt(
-        returns.reduce((acc, v) => acc + (v - mu) ** 2, 0) / returns.length,
-      );
-    return sigma === 0 ? 0 : ((mu - rfr) / sigma) * Math.sqrt(252);
-  }
-  export function calculateAnnualizedReturn(net: number, days: number): number {
-    return days <= 0 ? 0 : (1 + net) ** (252 / days) - 1;
-  }
+  export const calculateSharpeRatio = mathUtils.calculateSharpeRatio;
+  export const calculateAnnualizedReturn = mathUtils.calculateAnnualizedReturn;
 }

@@ -8,22 +8,14 @@ import type {
   ComputeResponse,
 } from "../providers/factor_compute_engine_client.ts";
 import { OpenAIThemeProvider } from "../providers/openai_theme_provider.ts";
-import type {
-  AceBullet,
-  StandardOutcome,
+import {
+  type AceBullet,
+  EvidenceSource,
+  type StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
-import { paths } from "../system/path_registry.ts";
-
-const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
-
-const pickOne = <T>(items: readonly T[]): T => {
-  const value = items[Math.floor(Math.random() * items.length)];
-  if (value === undefined) {
-    throw new Error("random selection failed");
-  }
-  return value;
-};
+import { logger } from "../utils/logger.ts";
+import { mathUtils } from "../utils/math_utils.ts";
 
 export interface AlphaFactor {
   id: string;
@@ -73,18 +65,18 @@ export class LesAgent extends BaseAgent {
     const missionContext = this.loadMissionContext();
     if (missionContext.trim().length > 0) {
       const titleMatch = missionContext.match(/# (.*)/);
-      console.log(
+      logger.info(
         `🎯 MISSION LOADED: Focusing on ${titleMatch ? titleMatch[1] : "Custom Mission"}...`,
       );
     }
     const naturalLanguageInput = this.readNaturalLanguageInput();
     if (naturalLanguageInput.source !== "NONE") {
-      console.log(
+      logger.info(
         `🗣️ NL INPUT LOADED (${naturalLanguageInput.source}): ${naturalLanguageInput.text.slice(0, 80)}...`,
       );
     }
 
-    console.log(
+    logger.info(
       `🚀 LES: Seed Alpha Factory is requesting DSL generation from LLM${source}...`,
     );
 
@@ -166,7 +158,7 @@ export class LesAgent extends BaseAgent {
           const pool = biasCols && Math.random() > 0.5 ? biasCols : cols;
           return {
             type: "variable",
-            name: pickOne(pool),
+            name: mathUtils.pickOne(pool),
           };
         }
         return {
@@ -174,7 +166,7 @@ export class LesAgent extends BaseAgent {
           value: Number((Math.random() * 5).toFixed(2)),
         };
       }
-      const op = pickOne(ops);
+      const op = mathUtils.pickOne(ops);
       if (op === "SMA" || op === "LAG") {
         return {
           type: "operator",
@@ -403,7 +395,7 @@ export class LesAgent extends BaseAgent {
           reasoning = `[EVOLUTIONARY TRACE] Crossover mutation (GGA ${gender}) from ${parentId}. ${reasoning}`;
 
           const seedAst = seed.metadata?.ast as FactorAST | undefined;
-          const partnerAst = pickOne(seeds).metadata?.ast as
+          const partnerAst = mathUtils.pickOne(seeds).metadata?.ast as
             | FactorAST
             | undefined;
           if (!seedAst || !partnerAst) {
@@ -518,7 +510,7 @@ export class LesAgent extends BaseAgent {
     if (/ortho|divergence|rebound|stress|dispersion/.test(text)) rs += 0.1;
     if (/neutral|volatility|liquidity|risk-adjusted/.test(text)) rs += 0.1;
     if (/leverage|martingale|averaging down/.test(text)) rs -= 0.3;
-    rs = clamp01(Math.min(0.85, rs));
+    rs = mathUtils.clamp01(Math.min(0.85, rs));
 
     const rejectionReason: string | undefined =
       rs <= 0.5 ? "RPA: High linguistic risk profile detected." : undefined;
@@ -645,10 +637,12 @@ export class LesAgent extends BaseAgent {
       },
     };
 
-    outcome.evidenceSource = backtest ? "QUANT_BACKTEST" : "LINGUISTIC_ONLY";
+    outcome.evidenceSource = backtest
+      ? EvidenceSource.QUANT_BACKTEST
+      : EvidenceSource.LINGUISTIC_ONLY;
 
     if (
-      outcome.evidenceSource === "QUANT_BACKTEST" &&
+      outcome.evidenceSource === EvidenceSource.QUANT_BACKTEST &&
       (!backtest?.history || backtest.history.length === 0)
     ) {
       throw new Error(

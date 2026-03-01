@@ -139,9 +139,9 @@ export class EdinetSearchProvider {
     const rows: Array<{ sectionName: string; content: string }> =
       sections.length > 0
         ? sections.map((section) => ({
-          sectionName: section.title,
-          content: section.content,
-        }))
+            sectionName: section.title,
+            content: section.content,
+          }))
         : [{ sectionName: "全文", content }];
 
     const insert = this.db.prepare(`

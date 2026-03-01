@@ -39,7 +39,7 @@ export function stdDev(values: readonly number[]): number {
 /**
  * Z-Score（標準化スコア）を計算して、平均 0、分散 1 にするよっ！✨
  */
-export function zScore(values: number[]): number[] {
+export function zScore(values: readonly number[]): number[] {
   const avg = mean(values);
   const std = stdDev(values);
   if (std === 0) return values.map(() => 0);
@@ -49,7 +49,10 @@ export function zScore(values: number[]): number[] {
 /**
  * 相関係数（Correlation）を計算するよっ！🤝
  */
-export function calculateCorr(x: number[], y: number[]): number {
+export function calculateCorr(
+  x: readonly number[],
+  y: readonly number[],
+): number {
   if (x.length !== y.length || x.length === 0) return 0;
   const xMean = mean(x);
   const yMean = mean(y);
@@ -65,6 +68,74 @@ export function calculateCorr(x: number[], y: number[]): number {
   }
   const den = Math.sqrt(denX * denY);
   return den === 0 ? 0 : num / den;
+}
+
+/**
+ * 最大ドローダウン（Max Drawdown）を計算するよっ！📉
+ */
+export function computeMaxDrawdown(returns: readonly number[]): number {
+  let peak = 1;
+  let equity = 1;
+  let maxDD = 0;
+  for (const r of returns) {
+    equity *= 1 + r;
+    peak = Math.max(peak, equity);
+    maxDD = Math.min(maxDD, (equity - peak) / peak);
+  }
+  return maxDD;
+}
+
+/**
+ * t-統計量（t-Statistic）を計算するよっ！📊
+ */
+export function calculateTStat(r: readonly number[]): number {
+  const n = r.length;
+  if (n < 2) return 0;
+  const mu = mean(r);
+  const sigma = stdDev(r);
+  return sigma === 0 ? 0 : mu / (sigma / Math.sqrt(n));
+}
+
+/**
+ * p-値（p-Value）を計算するよっ！🔍
+ */
+export function calculatePValue(t: number, n: number): number {
+  if (n < 2) return 1.0;
+  const x = Math.abs(t);
+  const k = 1 / (1 + 0.2316419 * x);
+  const d = 0.3989423 * Math.exp((-x * x) / 2);
+  const prob =
+    d *
+    k *
+    (0.3193815 +
+      k * (-0.3565638 + k * (1.781478 + k * (-1.821256 + k * 1.330274))));
+  const p = x > 0 ? 1 - prob : prob;
+  return 2 * (1 - p);
+}
+
+/**
+ * シャープレシオ（Sharpe Ratio）を計算するよっ！🏆
+ */
+export function calculateSharpeRatio(
+  returns: readonly number[],
+  rfr = 0,
+  annualizeFactor = 252,
+): number {
+  if (returns.length < 2) return 0;
+  const mu = mean(returns);
+  const sigma = stdDev(returns);
+  return sigma === 0 ? 0 : ((mu - rfr) / sigma) * Math.sqrt(annualizeFactor);
+}
+
+/**
+ * 年率リターン（Annualized Return）を計算するよっ！📈
+ */
+export function calculateAnnualizedReturn(
+  netReturn: number,
+  days: number,
+  annualizeFactor = 252,
+): number {
+  return days <= 0 ? 0 : (1 + netReturn) ** (annualizeFactor / days) - 1;
 }
 
 /**
@@ -95,6 +166,11 @@ export const mathUtils = {
   stdDev,
   zScore,
   calculateCorr,
+  computeMaxDrawdown,
+  calculateTStat,
+  calculatePValue,
+  calculateSharpeRatio,
+  calculateAnnualizedReturn,
   pickOne,
   randomInt,
 };

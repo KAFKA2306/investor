@@ -7,8 +7,12 @@ interface StatusBarProps {
   dataFingerprint?: string;
   runId?: string;
   environment?: string;
+  generatedAt?: string;
   activeTab: string;
+  timeline: string[];
+  activeDate: string;
   onTabChange: (tab: string) => void;
+  onDateChange: (date: string) => void;
   onRefresh: () => void;
   onKill: () => void;
 }
@@ -21,7 +25,10 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   runId,
   environment,
   activeTab,
+  timeline,
+  activeDate,
   onTabChange,
+  onDateChange,
   onRefresh,
   onKill,
 }) => {
@@ -59,6 +66,41 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       </nav>
 
       <div className="topbar-right">
+        {timeline.length > 0 && (
+          <div
+            className="pill"
+            style={{
+              padding: "0.2rem 0.5rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <span style={{ fontSize: "0.6rem", textTransform: "uppercase" }}>
+              Time Machine
+            </span>
+            <select
+              className="input-select"
+              value={activeDate}
+              onChange={(e) => onDateChange(e.target.value)}
+              style={{
+                fontSize: "0.7rem",
+                padding: "2px 4px",
+                border: "none",
+                background: "transparent",
+                color: "var(--brand)",
+                fontWeight: "bold",
+              }}
+            >
+              {timeline.map((date) => (
+                <option key={date} value={date}>
+                  {date}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <span className="pill mono" style={{ fontSize: "0.65rem" }}>
           アップデート：{lastUpdated}
         </span>

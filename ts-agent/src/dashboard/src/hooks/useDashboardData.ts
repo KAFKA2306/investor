@@ -16,6 +16,7 @@ import {
 
 const listUnifiedLogFiles = async (): Promise<string[]> => {
   const res = await fetch(
+    // @ts-expect-error
     `${import.meta.env.BASE_URL}logs/__index?bucket=unified`,
   ).catch(() => undefined);
   if (!res?.ok) return [];
@@ -46,6 +47,7 @@ export const useDashboardData = () => {
   const [timeline, setTimeline] = useState<string[]>([]);
   const [ingestErrors, setIngestErrors] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeDate, setActiveDate] = useState<string>("");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -150,20 +152,25 @@ export const useDashboardData = () => {
       b.localeCompare(a),
     );
     const sortedAll = Array.from(allDates).sort((a, b) => b.localeCompare(a));
+    const nextTimeline = sortedDaily.length > 0 ? sortedDaily : sortedAll;
 
-    setTimeline(sortedDaily.length > 0 ? sortedDaily : sortedAll);
+    setTimeline(nextTimeline);
     setDailyByDate(nextDailyMap);
     setBenchmarkByDate(nextBenchmarkMap);
     setUnifiedByDate(nextUnifiedMap);
     setQualityGateByDate(nextQualityGateMap);
     setAlphaByDate(nextAlphaMap);
 
-    // [NEW] Fetch standard verification data (singleton for now)
+    // Set default activeDate if empty
+    setActiveDate((prev) =>
+      prev === "" && nextTimeline.length > 0 ? nextTimeline[0] : prev,
+    );
+
+    // Fetch standard verification data
+    // @ts-expect-error
     const verifRes = await fetch(
       `${import.meta.env.BASE_URL}verification/standard_verification_data.json`,
-      {
-        cache: "no-store",
-      },
+      { cache: "no-store" },
     ).catch(() => undefined);
     if (verifRes?.ok) {
       const verifRaw = await verifRes.json().catch(() => undefined);
@@ -191,6 +198,8 @@ export const useDashboardData = () => {
     alphaByDate,
     verificationData,
     timeline,
+    activeDate,
+    setActiveDate,
     ingestErrors,
     loading,
     refresh,

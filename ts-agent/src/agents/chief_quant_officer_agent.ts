@@ -1,5 +1,10 @@
-import type { StandardOutcome } from "../schemas/financial_domain_schemas.ts";
+import {
+  AlphaStatus,
+  type StandardOutcome,
+  Verdict,
+} from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
+import { logger } from "../utils/logger.ts";
 import { LesAgent } from "./latent_economic_signal_agent.ts";
 
 export interface AuditReport {
@@ -17,7 +22,7 @@ export interface AuditReport {
 
 export class CqoAgent extends BaseAgent {
   public auditStrategy(outcome: StandardOutcome): AuditReport {
-    console.log(
+    logger.info(
       `[CQO] Critical Audit starting for strategy: ${outcome.strategyId}...`,
     );
 
@@ -73,7 +78,7 @@ export class CqoAgent extends BaseAgent {
 
     if (r1) {
       const invalidChecks = r1.logicChecks.filter(
-        (c) => c.verdict === "INVALID",
+        (c) => c.verdict === Verdict.INVALID,
       );
       if (invalidChecks.length > 0) {
         critique.push(
@@ -87,7 +92,7 @@ export class CqoAgent extends BaseAgent {
       }
     }
 
-    if (screening && screening.status !== "ACTIVE") {
+    if (screening && screening.status !== AlphaStatus.ACTIVE) {
       critique.push(
         `[Alpha-R1] Screening status is ${screening.status}: ${screening.reason}`,
       );
@@ -96,7 +101,7 @@ export class CqoAgent extends BaseAgent {
     const isProductionReady =
       critique.length === 0 &&
       (outcome.stability?.isProductionReady ?? false) &&
-      screening?.status === "ACTIVE";
+      screening?.status === AlphaStatus.ACTIVE;
 
     let verdict: AuditReport["verdict"] = "APPROVED";
     if (
@@ -157,6 +162,6 @@ ${audit.critique.length > 0 ? audit.critique.map((c) => `- ${c}`).join("\n") : "
   }
 
   public async run(): Promise<void> {
-    console.log("💼 CQO: Auditor standing by for strategy review...");
+    logger.info("💼 CQO: Auditor standing by for strategy review...");
   }
 }

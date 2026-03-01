@@ -170,6 +170,10 @@ export const AlphaDiscoveryPayloadSchema = z.object({
         }),
         ast: z.unknown().optional(),
         featureSignature: z.string().optional(),
+        // [NEW] Drill-down metadata
+        docId: z.string().optional(),
+        edinetCode: z.string().optional(),
+        referenceLinks: z.array(z.string()).optional(),
       }),
     )
     .min(1),

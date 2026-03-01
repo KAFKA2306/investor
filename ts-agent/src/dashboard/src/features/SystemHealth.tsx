@@ -3,6 +3,11 @@ import {
   Bar,
   BarChart,
   Cell,
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -32,6 +37,13 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
     .reverse();
 
   const providers = Object.entries(qualityGate.connectivity);
+  const radarData = Object.entries(qualityGate.components).map(
+    ([name, score]) => ({
+      subject: name,
+      score: score,
+      fullMark: 100,
+    }),
+  );
 
   return (
     <div className="main">
@@ -98,34 +110,39 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
         </div>
 
         <div className="panel section">
-          <h3 className="quick-title">Component Breakdown</h3>
-          <div className="main" style={{ marginTop: "1rem" }}>
-            {Object.entries(qualityGate.components).map(([name, score]) => (
-              <div key={name} className="score-bar-grid">
-                <span
-                  className="score-bar-label"
-                  style={{ fontSize: "0.7rem" }}
-                >
-                  {name}
-                </span>
-                <div className="score-bar-bg" style={{ height: "6px" }}>
-                  <div
-                    className="score-bar-fill"
-                    style={{
-                      width: `${score}%`,
-                      background:
-                        score >= 80 ? "var(--brand)" : "var(--accent)",
-                    }}
-                  />
-                </div>
-                <span
-                  className="score-bar-value"
-                  style={{ fontSize: "0.7rem" }}
-                >
-                  {score.toFixed(0)}
-                </span>
-              </div>
-            ))}
+          <h3 className="quick-title">Component Pulse (Radar)</h3>
+          <div
+            className="chart-recharts-wrapper"
+            style={{ height: "250px", marginTop: "1rem" }}
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                <PolarGrid stroke="var(--line)" />
+                <PolarAngleAxis
+                  dataKey="subject"
+                  tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
+                />
+                <PolarRadiusAxis
+                  angle={30}
+                  domain={[0, 100]}
+                  tick={{ fontSize: 9 }}
+                />
+                <Radar
+                  name="Score"
+                  dataKey="score"
+                  stroke="var(--brand)"
+                  fill="var(--brand)"
+                  fillOpacity={0.5}
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "1px solid var(--line)",
+                    fontSize: "12px",
+                  }}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

@@ -28,15 +28,21 @@ export function buildPathRegistry(): PathRegistry {
   const raw = yaml.load(readFileSync(configPath, "utf8")) as {
     paths: { data: string; logs: string; verification: string };
   };
-  const dataRoot = isAbsolute(raw.paths.data)
-    ? raw.paths.data
-    : resolve(configDir, raw.paths.data);
-  const logsRoot = isAbsolute(raw.paths.logs)
-    ? raw.paths.logs
-    : resolve(configDir, raw.paths.logs);
-  const verificationRoot = isAbsolute(raw.paths.verification)
-    ? raw.paths.verification
-    : resolve(configDir, raw.paths.verification);
+  const dataRoot =
+    process.env.UQTL_DATA_ROOT ||
+    (isAbsolute(raw.paths.data)
+      ? raw.paths.data
+      : resolve(configDir, raw.paths.data));
+  const logsRoot =
+    process.env.UQTL_LOGS_ROOT ||
+    (isAbsolute(raw.paths.logs)
+      ? raw.paths.logs
+      : resolve(configDir, raw.paths.logs));
+  const verificationRoot =
+    process.env.UQTL_VERIFICATION_ROOT ||
+    (isAbsolute(raw.paths.verification)
+      ? raw.paths.verification
+      : resolve(configDir, raw.paths.verification));
   const cacheDir = join(logsRoot, "cache");
   return {
     dataRoot,

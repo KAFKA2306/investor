@@ -1,3 +1,4 @@
+import { bootstrapCanonicalDb } from "./db/bootstrap.ts";
 import {
   DataEngineerBridge,
   ElderBridge,
@@ -9,6 +10,7 @@ import {
 
 async function main() {
   console.log("Starting Autonomous Quant Alpha Pipeline");
+  await bootstrapCanonicalDb();
 
   const orchestrator = new PipelineOrchestrator(
     new ElderBridge(),

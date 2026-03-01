@@ -1,5 +1,22 @@
 import { z } from "zod";
 
+export enum Verdict {
+  VALID = "VALID",
+  INVALID = "INVALID",
+  UNCERTAIN = "UNCERTAIN",
+}
+
+export enum AlphaStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  DECAYED = "DECAYED",
+}
+
+export enum EvidenceSource {
+  QUANT_BACKTEST = "QUANT_BACKTEST",
+  LINGUISTIC_ONLY = "LINGUISTIC_ONLY",
+}
+
 export const Ohlc6Schema = z.object({
   open: z.number(),
   high: z.number(),
@@ -95,7 +112,7 @@ export const StrategicReasoningSchema = z.object({
   logicChecks: z.array(
     z.object({
       claim: z.string(),
-      verdict: z.enum(["VALID", "INVALID", "UNCERTAIN"]),
+      verdict: z.nativeEnum(Verdict),
       evidence: z.string().optional(),
     }),
   ),
@@ -104,7 +121,7 @@ export const StrategicReasoningSchema = z.object({
 });
 
 export const AlphaScreeningSchema = z.object({
-  status: z.enum(["ACTIVE", "INACTIVE", "DECAYED"]),
+  status: z.nativeEnum(AlphaStatus),
   reason: z.string(),
   lastUpdated: z.string().datetime(),
   score: z.number().min(0).max(1),
@@ -165,7 +182,7 @@ export const StandardOutcomeSchema = z.object({
   alphaScreening: AlphaScreeningSchema.optional(),
   modelRegistryStatus: z.string().optional(),
   experimentId: z.string().optional(),
-  evidenceSource: z.enum(["QUANT_BACKTEST", "LINGUISTIC_ONLY"]).optional(),
+  evidenceSource: z.nativeEnum(EvidenceSource).optional(),
   alpha: AlphaSignificanceSchema.optional(),
   verification: VerificationPerformanceSchema.optional(),
   stability: OperationalStabilitySchema.optional(),

@@ -9,8 +9,17 @@ import { SystemHealth } from "./features/SystemHealth";
 import { useDashboardData } from "./hooks/useDashboardData";
 
 const App: React.FC = () => {
-  const { alphaByDate, qualityGateByDate, verificationData, loading, refresh } =
-    useDashboardData();
+  const {
+    alphaByDate,
+    qualityGateByDate,
+    unifiedByDate,
+    verificationData,
+    timeline,
+    activeDate,
+    setActiveDate,
+    loading,
+    refresh,
+  } = useDashboardData();
 
   const [activeTab, setActiveTab] = useState("evidence");
 
@@ -27,6 +36,7 @@ const App: React.FC = () => {
       return;
     }
 
+    // @ts-expect-error - ImportMeta type issue in this env
     const token = (import.meta.env.VITE_API_TOKEN as string) ?? "";
     const res = await fetch("/api/kill", {
       method: "POST",
@@ -40,7 +50,7 @@ const App: React.FC = () => {
     alert("Kill signal failed. API connection or valid token required.");
   };
 
-  if (loading && !verificationData) {
+  if (loading && !verificationData && timeline.length === 0) {
     return (
       <div
         className="loading-screen"
@@ -59,7 +69,12 @@ const App: React.FC = () => {
     );
   }
 
-  const latestAlphaPayloads = Array.from(alphaByDate.values()).flat();
+  const activeAlphaPayloads = activeDate
+    ? (alphaByDate.get(activeDate) ?? [])
+    : [];
+  const activeQualityGate = activeDate
+    ? (qualityGateByDate.get(activeDate) ?? null)
+    : null;
 
   return (
     <div id="app">
@@ -72,7 +87,10 @@ const App: React.FC = () => {
         environment={verificationData?.audit.environment}
         generatedAt={verificationData?.generatedAt}
         activeTab={activeTab}
+        timeline={timeline}
+        activeDate={activeDate}
         onTabChange={setActiveTab}
+        onDateChange={setActiveDate}
         onRefresh={refresh}
         onKill={handleKill}
       />
@@ -81,27 +99,31 @@ const App: React.FC = () => {
         {activeTab === "evidence" && (
           <EvidenceRoom
             verificationData={verificationData}
-            alphaDiscovery={latestAlphaPayloads}
+            alphaDiscovery={activeAlphaPayloads}
             onNavigate={handleNavigate}
           />
         )}
         {activeTab === "inspector" && (
-          <DataInspector
-            verificationData={verificationData}
-            onNavigate={handleNavigate}
-          />
+          <DataInspector verificationData={verificationData} />
         )}
         {activeTab === "research" && (
-          <ResearchLog alphaDiscovery={alphaByDate} />
+          <ResearchLog
+            alphaDiscovery={alphaByDate}
+            activeDate={activeDate}
+            onSelectDate={setActiveDate}
+          />
         )}
         {activeTab === "health" && (
           <SystemHealth
-            qualityGate={Array.from(qualityGateByDate.values())[0] || null}
+            qualityGate={activeQualityGate}
             history={qualityGateByDate}
           />
         )}
         {activeTab === "backtest" && (
-          <BacktestAnalysis verificationData={verificationData} />
+          <BacktestAnalysis
+            verificationData={verificationData}
+            historicalOutcomes={unifiedByDate}
+          />
         )}
       </div>
     </div>

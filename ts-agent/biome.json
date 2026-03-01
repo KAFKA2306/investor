@@ -25,9 +25,9 @@
     "ignoreUnknown": true,
     "includes": [
       "src/**",
-      "!src/dashboard/dist/**",
-      "!src/experiments/foundation_models/.venv/**",
-      "!src/model_registry/.venv/**"
+      "!src/dashboard/dist",
+      "!src/experiments/foundation_models/.venv",
+      "!src/model_registry/.venv"
     ]
   }
 }

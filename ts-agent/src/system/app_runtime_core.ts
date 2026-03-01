@@ -1,11 +1,17 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import yaml from "js-yaml";
 import { z } from "zod";
 import {
   type EventStore,
+  eventStore,
   MemoryCenter,
 } from "../context/unified_context_services.ts";
+import { mirrorEventToCanonical } from "../db/adapters/canonical_bridge.ts";
+import {
+  buildCanonicalDbConfig,
+  PostgresClient,
+} from "../db/postgres_client.ts";
 import {
   type StandardOutcome,
   StandardOutcomeSchema,
@@ -16,6 +22,9 @@ import type {
   CanonicalLogKind,
   EventType,
 } from "../schemas/system_event_schemas.ts";
+import { dateUtils } from "../utils/date_utils.ts";
+import { fsUtils } from "../utils/fs_utils.ts";
+import { logger } from "../utils/logger.ts";
 import { withTelemetry } from "./telemetry_logger.ts";
 
 const ConfigSchema = z.object({
@@ -158,6 +167,23 @@ const ConfigSchema = z.object({
         .optional(),
     })
     .optional(),
+  database: z
+    .object({
+      canonicalDb: z
+        .object({
+          enabled: z.boolean().default(false),
+          dualWriteEnabled: z.boolean().default(false),
+          connectionString: z.string().optional(),
+          host: z.string().optional(),
+          port: z.number().int().positive().optional(),
+          database: z.string().optional(),
+          user: z.string().optional(),
+          password: z.string().optional(),
+          ssl: z.boolean().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
   logging: z
     .object({
       envelope: z
@@ -176,6 +202,7 @@ class Core {
   // インポートサイクルを避けるため any/unknown で扱うか、インポートを関数内に閉じる
   public readonly cache: any;
   public readonly db: any;
+  public readonly postgres: PostgresClient | null;
   public readonly eventStore: EventStore;
 
   public static loadDefaultConfigYaml(): unknown {
@@ -185,14 +212,24 @@ class Core {
 
   constructor() {
     this.config = this.loadConfig();
-    // 実際の実装ではここで初期化
-    this.eventStore = {} as any;
+    // 歴史を刻むための EventStore くんを準備するよっ！📜✨
+    this.eventStore = eventStore;
+    // db や cache は後で可愛く繋いであげるから待っててねっ！🎀
+    this.db = null;
+    this.cache = null;
+
+    // Postgres くんの準備もしておくねっ！🐘💎
+    const pgCfg = buildCanonicalDbConfig(this.config);
+    this.postgres = pgCfg.enabled ? new PostgresClient(pgCfg) : null;
   }
 
   private loadConfig(): Config {
     const data = Core.loadDefaultConfigYaml();
     const result = ConfigSchema.safeParse(data);
-    if (!result.success) throw new Error("Invalid configuration");
+    if (!result.success) {
+      logger.error("Invalid configuration 😡");
+      throw new Error("Invalid configuration");
+    }
     return result.data as Config;
   }
 
@@ -215,7 +252,7 @@ export abstract class BaseAgent {
     metadata: Record<string, object | string | number | boolean> = {},
   ) {
     const id = crypto.randomUUID();
-    const timestamp = new Date().toISOString();
+    const timestamp = dateUtils.nowIso();
     const event = {
       id,
       timestamp,
@@ -228,6 +265,20 @@ export abstract class BaseAgent {
     const memory = new MemoryCenter();
     memory.pushEvent(event);
     memory.close();
+    void mirrorEventToCanonical({
+      id: event.id,
+      timestamp: event.timestamp,
+      type: event.type,
+      agentId: event.agentId,
+      experimentId: event.experimentId,
+      parentEventId: event.parentEventId,
+      payload: event.payload,
+      metadata: event.metadata,
+    }).catch((error) => {
+      logger.warn(
+        `[${this.constructor.name}] canonical event mirror failed: ${String(error)}`,
+      );
+    });
   }
 
   public abstract run(): Promise<void>;
@@ -243,8 +294,11 @@ export abstract class BaseAgent {
     if (fromEnv.length > 0) return { text: fromEnv, source: "ENV" };
     const filePath = (process.env.UQTL_NL_INPUT_FILE || "").trim();
     if (filePath.length > 0 && existsSync(filePath)) {
-      const content = readFileSync(filePath, "utf8").trim();
-      if (content.length > 0) return { text: content, source: "FILE" };
+      const content = fsUtils.readJsonFile<{ text?: string } | string>(
+        filePath,
+      );
+      const text = typeof content === "string" ? content : content.text || "";
+      if (text.length > 0) return { text, source: "FILE" };
     }
     return { text: "", source: "NONE" };
   }
@@ -254,7 +308,7 @@ export abstract class BaseAgent {
    */
   protected loadMissionContext(): string {
     const { paths: currentPaths } = require("./path_registry.ts");
-    if (existsSync(currentPaths.missionMd)) {
+    if (currentPaths.missionMd && existsSync(currentPaths.missionMd)) {
       return readFileSync(currentPaths.missionMd, "utf8");
     }
     return "";
@@ -267,10 +321,10 @@ export abstract class BaseAgent {
     const validated = StandardOutcomeSchema.parse(outcome);
     writeCanonicalLog({
       schema: "investor.investment-outcome.v1",
-      generatedAt: validated.timestamp,
+      generatedAt: validated.timestamp || dateUtils.nowIso(),
       report: validated,
     });
-    console.log(
+    logger.info(
       `📝 [${this.constructor.name}] StandardOutcome persisted: ${validated.strategyId}`,
     );
   }
@@ -297,11 +351,11 @@ function createLogPath(bucket: string, fileName: string): string {
 
 export function writeCanonicalLog(data: UnifiedLog): void {
   const validated = UnifiedLogSchema.parse(data);
-  const dateStr = ""; // 簡易化
+  const dateStr = dateUtils.todayYmd();
   writeCanonicalEnvelope({
-    kind: "daily_decision", // 簡易化
-    asOfDate: dateStr || "20000101",
-    generatedAt: validated.generatedAt || new Date().toISOString(),
+    kind: "daily_decision",
+    asOfDate: dateStr,
+    generatedAt: validated.generatedAt || dateUtils.nowIso(),
     payload: validated,
   });
 }
@@ -312,8 +366,8 @@ export function writeCanonicalEnvelope(input: {
   asOfDate?: string;
   generatedAt?: string;
 }): string {
-  const generatedAt = input.generatedAt || new Date().toISOString();
-  const asOfDate = input.asOfDate || "20000101";
+  const generatedAt = input.generatedAt || dateUtils.nowIso();
+  const asOfDate = input.asOfDate || dateUtils.todayYmd();
   const canonical = {
     schema: "investor.log-envelope.v2",
     id: crypto.randomUUID(),
@@ -323,6 +377,6 @@ export function writeCanonicalEnvelope(input: {
     payload: input.payload,
   };
   const canonicalPath = createLogPath("unified", `log_${Date.now()}.json`);
-  writeFileSync(canonicalPath, JSON.stringify(canonical, null, 2), "utf8");
+  fsUtils.writeValidatedJson(canonicalPath, canonical);
   return canonicalPath;
 }
