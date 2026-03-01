@@ -433,6 +433,8 @@ async function generateStandardVerificationReport() {
     }
   }
 
+  const dailyReturnMean = QuantMetrics.mean(strategyDailyReturns);
+
   const report: QuantitativeVerification = QuantitativeVerificationSchema.parse(
     {
       schemaVersion: "1.1.0",
@@ -477,10 +479,10 @@ async function generateStandardVerificationReport() {
         volatility: Number(
           (
             Math.sqrt(
-              strategyDailyReturns.reduce((acc, r) => {
-                const mu = QuantMetrics.mean(strategyDailyReturns);
-                return acc + (r - mu) ** 2;
-              }, 0) / Math.max(strategyDailyReturns.length, 1),
+              strategyDailyReturns.reduce(
+                (acc, r) => acc + (r - dailyReturnMean) ** 2,
+                0,
+              ) / Math.max(strategyDailyReturns.length, 1),
             ) * Math.sqrt(252)
           ).toFixed(4),
         ),
