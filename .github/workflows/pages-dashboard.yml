@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "ts-agent/src/tools/dashboard/**"
+      - "ts-agent/src/dashboard/**"
       - ".github/workflows/pages-dashboard.yml"
   workflow_dispatch:
 
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ts-agent/src/tools/dashboard
+        working-directory: ts-agent/src/dashboard
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,12 +44,14 @@ jobs:
       - name: Bundle daily logs for static dashboard
         run: |
           mkdir -p dist/logs/daily
-          cp ../../../../logs/daily/*.json dist/logs/daily/
-          bun scripts/generate-log-manifest.mjs dist/logs/daily
+          if ls ../../../logs/daily/*.json >/dev/null 2>&1; then
+            cp ../../../logs/daily/*.json dist/logs/daily/
+          fi
+          bun -e 'import { readdirSync, writeFileSync } from "node:fs"; const dir = process.argv[1]; const files = readdirSync(dir).filter((name) => name.endsWith(".json") && name !== "manifest.json").sort(); writeFileSync(`${dir}/manifest.json`, JSON.stringify(files));' dist/logs/daily
           mkdir -p dist/logs/unified
-          if ls ../../../../logs/unified/*.json >/dev/null 2>&1; then
-            cp ../../../../logs/unified/*.json dist/logs/unified/
-            bun scripts/generate-log-manifest.mjs dist/logs/unified
+          if ls ../../../logs/unified/*.json >/dev/null 2>&1; then
+            cp ../../../logs/unified/*.json dist/logs/unified/
+            bun -e 'import { readdirSync, writeFileSync } from "node:fs"; const dir = process.argv[1]; const files = readdirSync(dir).filter((name) => name.endsWith(".json") && name !== "manifest.json").sort(); writeFileSync(`${dir}/manifest.json`, JSON.stringify(files));' dist/logs/unified
           else
             echo "[]" > dist/logs/unified/manifest.json
           fi
@@ -60,7 +62,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ts-agent/src/tools/dashboard/dist
+          path: ts-agent/src/dashboard/dist
 
       - name: Deploy to GitHub Pages
         id: deployment
