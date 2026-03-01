@@ -1,0 +1,48 @@
+[project]
+name = "finance-investor-workspace"
+version = "0.1.0"
+description = "Root workspace for finance investor projects"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib",
+    "numpy",
+    "python-dotenv",
+    "tqdm",
+    "requests",
+    "polars",
+    "loguru",
+    "anthropic",
+    "backoff",
+    "pdfminer.six",
+]
+
+[project.optional-dependencies]
+verification = [
+    "matplotlib",
+    "numpy",
+]
+inference = [
+    "torch",
+    "numpy",
+    "pandas",
+    "transformers",
+    "chronos-forecasting",
+    "huggingface-hub",
+    "accelerate",
+    "timesfm"
+]
+dev = [
+    "datasets",
+    "japanize-matplotlib",
+    "matplotlib-fontja",
+    "matplotlib",
+    "pytest",
+    "ruff",
+    "scikit-learn",
+]
+
+[tool.uv]
+managed = true
+
+[tool.uv.workspace]
+members = ["ts-agent", "edinet2dataset"]

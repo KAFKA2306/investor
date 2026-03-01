@@ -23,9 +23,8 @@ tasks:
 
   python:uv:sync:
     desc: uv 環境同期
-    dir: "{{.TS_DIR}}"
     cmds:
-      - uv sync
+      - bash -lc 'set -euo pipefail; cache_root="${TMPDIR:-/tmp}/ts-agent-cache"; uv_cache_dir="$cache_root/uv"; mkdir -p "$cache_root" "$uv_cache_dir"; UV_CACHE_DIR="$uv_cache_dir" XDG_CACHE_HOME="$cache_root" uv sync'
 
   qa:
     desc: format + lint + typecheck
