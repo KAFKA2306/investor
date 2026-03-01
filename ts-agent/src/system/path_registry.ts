@@ -55,8 +55,7 @@ export function buildPathRegistry(): PathRegistry {
     unifiedLogDir: join(logsRoot, "unified"),
     edinetCacheSqlite: join(cacheDir, "edinet_cache.sqlite"),
     edinetDocsDir: join(cacheDir, "edinet_docs"),
-    missionMd:
-      "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md",
+    missionMd: join(import.meta.dir, "..", "..", "alpha_discovery_mission.md"),
   };
 }
 

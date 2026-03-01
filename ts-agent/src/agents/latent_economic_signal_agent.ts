@@ -1,5 +1,4 @@
 import * as fs from "node:fs";
-import * as path from "node:path";
 import { loadModelRegistry } from "../model_registry/model_registry_loader.ts";
 import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
@@ -14,6 +13,7 @@ import type {
   StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
+import { paths } from "../system/path_registry.ts";
 
 const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
 
@@ -85,10 +85,8 @@ export class LesAgent extends BaseAgent {
     const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
 
     let missionContext = "";
-    const missionPath =
-      "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md";
-    if (fs.existsSync(missionPath)) {
-      missionContext = fs.readFileSync(missionPath, "utf8");
+    if (fs.existsSync(paths.missionMd)) {
+      missionContext = fs.readFileSync(paths.missionMd, "utf8");
       if (missionContext.trim().length > 0) {
         const titleMatch = missionContext.match(/# (.*)/);
         console.log(
@@ -421,11 +419,15 @@ export class LesAgent extends BaseAgent {
           description = `[EVOLVED] Crossover: ${seed.content.split(":")[0]} [v${generation}]`;
           reasoning = `[EVOLUTIONARY TRACE] Crossover mutation (GGA ${gender}) from ${parentId}. ${reasoning}`;
 
-          const partner = pickOne(seeds);
-          ast = arithmeticCrossover(
-            seed.metadata?.ast as FactorAST,
-            partner.metadata?.ast as FactorAST,
-          );
+          const seedAst = seed.metadata?.ast as FactorAST | undefined;
+          const partnerAst = pickOne(seeds).metadata?.ast as
+            | FactorAST
+            | undefined;
+          if (!seedAst || !partnerAst) {
+            ast = generateRandomAST(depth, bias);
+          } else {
+            ast = arithmeticCrossover(seedAst, partnerAst);
+          }
         } else if (gender === "MALE") {
           mutationType = "STRUCTURAL_SHIFT";
           description = `[EVOLVED] Shift (MALE): ${seed.content.split(":")[0]} [v${generation}]`;
@@ -681,31 +683,6 @@ export class LesAgent extends BaseAgent {
     REASONING: { minRS: 0.7 },
   };
 
-  public validateStrategy(outcome: StandardOutcome): boolean {
-    const crit = LesAgent.EVALUATION_CRITERIA;
-    const a = outcome.alpha;
-    const p = outcome.verification?.metrics;
-    const s = outcome.stability;
-
-    const isAlphaValid =
-      a &&
-      (a.tStat ?? 0) >= crit.ALPHA.minTStat &&
-      (a.pValue ?? 1) <= crit.ALPHA.maxPValue;
-    const isPerfValid =
-      p &&
-      (p.sharpeRatio ?? 0) >= crit.PERFORMANCE.minSharpe &&
-      (p.maxDrawdown ?? 1) <= crit.PERFORMANCE.maxDrawdown;
-    const isStable =
-      (s?.trackingError ?? 0.01) <= crit.STABILITY.maxTrackingError;
-    const isReasoningValid =
-      (outcome.reasoningScore ?? 0) >= crit.REASONING.minRS;
-
-    console.log(
-      `[EVALUATION] Alpha: ${isAlphaValid}, Perf: ${isPerfValid}, Stable: ${isStable}, RS: ${isReasoningValid}`,
-    );
-    return !!(isAlphaValid && isPerfValid && isStable && isReasoningValid);
-  }
-
   public async run(): Promise<void> {
     console.log("🚀 LES: Running Large-scale Stock Forecasting Agent...");
     const factors = await this.generateAlphaFactors();
@@ -716,77 +693,5 @@ export class LesAgent extends BaseAgent {
     console.log(
       `✅ LES: Weights optimized (${weights.length} factors) based on Reasoning Score (RS).`,
     );
-  }
-
-  public generateArXivReport(outcome: StandardOutcome): string {
-    const m = outcome.verification?.metrics;
-    const a = outcome.alpha;
-    const date = outcome.timestamp.split("T")[0];
-
-    return `# LES フレームワーク実証レポート (${outcome.strategyId})
-
-**レポート作成日:** ${new Date().toISOString().split("T")[0]}
-**検証対象日:** ${date}
-**ステータス:** **${this.validateStrategy(outcome) ? "VERIFIED ✅" : "FAILED ❌"}**
-**対象戦略:** ${outcome.strategyName}
-
-## 1. 概要
-${outcome.summary}
-
-## 2. 検証結果 (KPI)
-| 指標 | 目標 | 実測値 | 判定 |
-| :--- | :--- | :--- | :--- |
-| **年間超過収益 (Alpha)** | 8% - 15% | **${((m?.annualizedReturn ?? 0) * 100).toFixed(1)}%** | ${(m?.annualizedReturn ?? 0) >= 0.08 ? "PASS" : "FAIL"} |
-| **シャープレシオ (Sharpe Ratio)** | ${LesAgent.EVALUATION_CRITERIA.PERFORMANCE.minSharpe} 以上 | **${m?.sharpeRatio?.toFixed(2) ?? "--"}** | ${(m?.sharpeRatio ?? 0) >= LesAgent.EVALUATION_CRITERIA.PERFORMANCE.minSharpe ? "PASS" : "FAIL"} |
-| **予測方向正確基準 (Directional Accuracy)** | 45% 以上 | **${((m?.directionalAccuracy ?? 0) * 100).toFixed(1)}%** | ${(m?.directionalAccuracy ?? 0) >= 0.45 ? "PASS" : "FAIL"} |
-| **統合 Reasoning Score (RS)** | ${LesAgent.EVALUATION_CRITERIA.REASONING.minRS} 以上 | **${outcome.reasoningScore?.toFixed(2) ?? "--"}** | ${(outcome.reasoningScore ?? 0) >= LesAgent.EVALUATION_CRITERIA.REASONING.minRS ? "PASS" : "FAIL"} |
-
-## 3. 統計的有意性 (Tier 1)
-- **t-Stat**: ${a?.tStat?.toFixed(2) ?? "--"}
-- **p-Value**: ${a?.pValue?.toFixed(4) ?? "--"}
-- **Information Coefficient (IC)**: ${a?.informationCoefficient?.toFixed(3) ?? "--"}
-
-## 4. 考察
-${outcome.reasoning || "特記事項なし。"}
-
----
-*本レポートは自律型クオンツ・エージェント (Antigravity) によって自動生成されました。*
-`;
-  }
-
-  public async saveArXivReport(outcome: StandardOutcome): Promise<string> {
-    const report = this.generateArXivReport(outcome);
-    const ts = outcome.timestamp || new Date().toISOString();
-    const date = ts.split("T")[0]?.replace(/-/g, "") || "unknown";
-    const filename = `${date}_${outcome.strategyId.toLowerCase().replace(/[^a-z0-9]/g, "_")}.md`;
-    const baseDir = process.cwd().endsWith("ts-agent")
-      ? path.join(process.cwd(), "..")
-      : process.cwd();
-    const targetDir = path.join(baseDir, "docs", "arxiv");
-
-    fs.mkdirSync(targetDir, { recursive: true });
-
-    const filePath = path.join(targetDir, filename);
-    fs.writeFileSync(filePath, report);
-    console.log(`📄 LES: ArXiv report saved to ${filePath}`);
-    return filePath;
-  }
-
-  public async pruneLowPerformers(
-    outcome: StandardOutcome,
-    playbookPath?: string,
-  ): Promise<void> {
-    if ((outcome.reasoningScore ?? 0) < 0.65) {
-      console.log(
-        `⚠️ [ACE CURATOR] Low reasoning score detected (${outcome.reasoningScore}). Triggering context pruning...`,
-      );
-      const { ContextPlaybook } = await import(
-        "../context/unified_context_services.ts"
-      );
-      const playbook = new ContextPlaybook(playbookPath);
-      await playbook.load();
-      const pruned = await playbook.prune(2);
-      console.log(`✅ [ACE CURATOR] Pruned ${pruned} stale/harmful bullets.`);
-    }
   }
 }
