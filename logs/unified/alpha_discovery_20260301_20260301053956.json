@@ -1,0 +1,269 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "368df0f4-43ef-42bd-94ba-3f931756ed3f",
+  "runId": "uqtl_20260301T143952_2",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T05:39:56.965Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260301",
+    "generatedAt": "2026-03-01T05:39:56.965Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5,
+      "selectedNovelCount": 1,
+      "openAIThemeUsage": 0
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-MACRO-F77B94E2"
+    ],
+    "selectedDetails": [
+      {
+        "id": "ALPHA-MACRO-F77B94E2",
+        "ideaHash": "44a16977cd5f7e8bf508ad4a",
+        "featureSignature": [
+          "activist_bias",
+          "close",
+          "segment_sentiment"
+        ],
+        "noveltyScore": 0.6326530612244898,
+        "adoptionScore": 0.5477551020408165,
+        "themeSource": "LOCAL",
+        "llmModel": ""
+      }
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-MACRO-F77B94E2",
+        "description": "Causal Mechanism (CAMEF) Hypothesis (Macro Strategist)",
+        "reasoning": "CLAIM: Alpha captures causality patterns in Causal Mechanism (CAMEF) via counterfactual logic. [REASONING] Leveraging intervention signals in mechanism markets ensures robustness. Persona: Macro Strategist.",
+        "status": "SELECTED",
+        "recency": "2026-03-01T05:39:56.965Z",
+        "scores": {
+          "priority": 0.526530612244898,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.5,
+          "novelty": 0.6326530612244898,
+          "fitness": 0.5,
+          "stability": 0.5,
+          "adoption": 0.5477551020408165
+        },
+        "ideaHash": "44a16977cd5f7e8bf508ad4a",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "activist_bias",
+          "close",
+          "segment_sentiment"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "variable",
+              "name": "activist_bias"
+            }
+          },
+          "right": {
+            "type": "variable",
+            "name": "segment_sentiment"
+          }
+        }
+      },
+      {
+        "id": "ALPHA-HFT-2715E27C",
+        "description": "Causal Mechanism (CAMEF) Hypothesis (HFT Engineer)",
+        "reasoning": "CLAIM: Autonomous hypothesis on Causal Mechanism (CAMEF) using counterfactual. [REASONING] This model identifies causality trajectories to extract intervention edge in mechanism regimes. Reasoning trace by HFT Engineer.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-03-01T05:39:56.965Z",
+        "scores": {
+          "priority": 0.5015306122448979,
+          "plausibility": 0.45,
+          "riskAdjusted": 0.5,
+          "novelty": 0.6326530612244898,
+          "fitness": 0.475,
+          "stability": 0.4875,
+          "adoption": 0.5277551020408163
+        },
+        "ideaHash": "8dc4f08ba834b96c7db5599f",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "activist_bias",
+          "low"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "variable",
+            "name": "activist_bias"
+          },
+          "right": {
+            "type": "variable",
+            "name": "low"
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-03-01T05:39:56.743Z",
+    "input": {
+      "channel": "task",
+      "nlInputProvided": false,
+      "nlInputHash": "",
+      "nlInputPreview": ""
+    }
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}
