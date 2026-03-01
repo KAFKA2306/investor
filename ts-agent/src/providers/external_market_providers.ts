@@ -144,6 +144,13 @@ export interface YahooBar {
   Low: number;
   Close: number;
   Volume: number;
+  CorrectionCount?: number; // [NEW] EDINET Signals
+  LargeHolderCount?: number; // [NEW] EDINET Signals
+  MacroIIP?: number; // [NEW] e-Stat Signals
+  MacroCPI?: number; // [NEW] e-Stat Signals
+  SegmentSentiment?: number; // [NEW] 10-K Intelligence 2.0
+  AiExposure?: number; // [NEW] 10-K Intelligence 2.0
+  KgCentrality?: number; // [NEW] 10-K Intelligence 2.0
 }
 
 export class YahooFinanceGateway {
