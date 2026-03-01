@@ -10,8 +10,9 @@ import {
   parseCliArgs,
 } from "../providers/cli_args.ts";
 import { EstatProvider } from "../providers/external_market_providers.ts";
-import { clamp, mean, std, toIsoDate } from "../providers/value_normalizers.ts";
 import { paths } from "../system/path_registry.ts";
+import { clamp, mean, stdDev as std } from "../utils/math_utils.ts";
+import { toIsoDate } from "../utils/value_utils.ts";
 
 type CliArgs = {
   from?: string;

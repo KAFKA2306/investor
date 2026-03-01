@@ -14,12 +14,12 @@ import {
   EdinetProvider,
 } from "../providers/edinet_provider.ts";
 import { EdinetSearchProvider } from "../providers/edinet_search_provider.ts";
+import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
 import {
   type IntelligenceMap,
   type IntelligencePoint,
   toSymbol4,
-} from "../providers/value_normalizers.ts";
-import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
+} from "../utils/value_utils.ts";
 
 type CliArgs = {
   from: string;

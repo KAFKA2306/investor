@@ -3,10 +3,10 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import yaml from "js-yaml";
 import { z } from "zod";
 import {
-  EventStore,
+  type EventStore,
   MemoryCenter,
 } from "../context/unified_context_services.ts";
-import {
+import type {
   MarketdataDbCache,
   SqliteHttpCache,
 } from "../providers/cache_providers.ts";
@@ -436,17 +436,17 @@ export function writeCanonicalEnvelope(input: {
     payload: input.payload,
     derived: input.derived ?? false,
     ...(input.sourceSchema ||
-      input.sourceBucket ||
-      input.sourceFile ||
-      input.parentIds
+    input.sourceBucket ||
+    input.sourceFile ||
+    input.parentIds
       ? {
-        lineage: {
-          sourceSchema: input.sourceSchema,
-          sourceBucket: input.sourceBucket,
-          sourceFile: input.sourceFile,
-          parentIds: input.parentIds,
-        },
-      }
+          lineage: {
+            sourceSchema: input.sourceSchema,
+            sourceBucket: input.sourceBucket,
+            sourceFile: input.sourceFile,
+            parentIds: input.parentIds,
+          },
+        }
       : {}),
   });
 
@@ -703,35 +703,35 @@ export async function runApiVerification(): Promise<
 
   const verifyJquants = targets.has("jquants")
     ? gateway
-      .getJquantsListedInfo()
-      .then((l) => ({ listedCount: l.length, status: "PASS" as const }))
-      .catch((error: Error) => ({
-        status: "FAIL" as const,
-        reason: error.message,
-      }))
+        .getJquantsListedInfo()
+        .then((l) => ({ listedCount: l.length, status: "PASS" as const }))
+        .catch((error: Error) => ({
+          status: "FAIL" as const,
+          reason: error.message,
+        }))
     : Promise.resolve({ status: "SKIP" as const });
 
   const verifyEstat = targets.has("estat")
     ? gateway
-      .getEstatStatsData("0000010101")
-      .then((r) => ({
-        hasStatsData: Object.hasOwn(r, "GET_STATS_DATA"),
-        status: "PASS" as const,
-      }))
-      .catch((error: Error) => ({
-        status: "FAIL" as const,
-        reason: error.message,
-      }))
+        .getEstatStatsData("0000010101")
+        .then((r) => ({
+          hasStatsData: Object.hasOwn(r, "GET_STATS_DATA"),
+          status: "PASS" as const,
+        }))
+        .catch((error: Error) => ({
+          status: "FAIL" as const,
+          reason: error.message,
+        }))
     : Promise.resolve({ status: "SKIP" as const });
 
   const verifyEdinet = targets.has("edinet")
     ? (async () => {
-      const { EdinetProvider } = await import(
-        "../providers/edinet_provider.ts"
-      );
-      const edinet = new EdinetProvider();
-      return edinet.verify();
-    })()
+        const { EdinetProvider } = await import(
+          "../providers/edinet_provider.ts"
+        );
+        const edinet = new EdinetProvider();
+        return edinet.verify();
+      })()
     : Promise.resolve({ status: "SKIP" as const, documentsCount: 0 });
 
   const [jquants, kabucom, edinet, estat] = await Promise.all([
@@ -770,9 +770,9 @@ export function deriveQualityGateFromVerification(
   };
   const weightedScore = Math.round(
     components.dataConnectivity * 0.35 +
-    components.dataAvailability * 0.35 +
-    components.executionObservability * 0.15 +
-    components.reproducibility * 0.15,
+      components.dataAvailability * 0.35 +
+      components.executionObservability * 0.15 +
+      components.reproducibility * 0.15,
   );
   const verdict =
     weightedScore >= 75

@@ -17,12 +17,13 @@ import {
   hasFlag,
   parseCliArgs,
 } from "../providers/cli_args.ts";
-import { clamp, mean } from "../providers/value_normalizers.ts";
 import {
   type StandardOutcome,
   UnifiedLogSchema,
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
+import { clamp, mean } from "../utils/math_utils.ts";
+import { valueUtils } from "../utils/value_utils.ts";
 
 type CliArgs = {
   topK: number;

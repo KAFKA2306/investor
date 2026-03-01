@@ -6,15 +6,15 @@ import {
   parseCliArgs,
 } from "../providers/cli_args.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
+import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
+import { paths } from "../system/path_registry.ts";
+import { mean } from "../utils/math_utils.ts";
 import {
   type IntelligenceMap,
-  mean,
   normalizeBars,
   parseIntelligenceMap,
   toSymbol4,
-} from "../providers/value_normalizers.ts";
-import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
-import { paths } from "../system/path_registry.ts";
+} from "../utils/value_utils.ts";
 
 type CliArgs = {
   symbols: string[];

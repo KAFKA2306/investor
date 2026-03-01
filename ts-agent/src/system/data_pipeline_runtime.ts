@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
+import { clamp } from "../utils/math_utils.ts";
+import { toIsoDate } from "../utils/value_utils.ts";
 import { core } from "./app_runtime_core.ts";
 import { paths } from "./path_registry.ts";
 
@@ -102,11 +104,8 @@ export type VerificationWindow = {
   to: string;
 };
 
-const clamp = (v: number, lo: number, hi: number): number =>
-  Math.max(lo, Math.min(hi, v));
-
 const toYmd = (d: Date): string =>
-  `${d.getUTCFullYear()}${`${d.getUTCMonth() + 1}`.padStart(2, "0")}${`${d.getUTCDate()}`.padStart(2, "0")}`;
+  toIsoDate(d.toISOString())?.replaceAll("-", "") ?? "";
 
 export class QuantResearchRuntime {
   public buildManifest(
@@ -188,7 +187,7 @@ export class QuantResearchRuntime {
     gateway: import("../providers/unified_market_data_gateway.ts").MarketdataLocalGateway,
     symbol: string,
   ): Promise<import("../providers/value_normalizers.ts").NormalizedBar[]> {
-    const { normalizeBars } = await import("../providers/value_normalizers.ts");
+    const { normalizeBars } = await import("../utils/value_utils.ts");
     const barsRaw = await gateway.getBarsAll(symbol);
     return normalizeBars(barsRaw);
   }

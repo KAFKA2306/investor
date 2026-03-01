@@ -6,8 +6,8 @@ import {
   getStringArg,
   parseCliArgs,
 } from "../providers/cli_args.ts";
-import { toSymbol4 } from "../providers/value_normalizers.ts";
 import { paths } from "../system/path_registry.ts";
+import { toSymbol4 } from "../utils/value_utils.ts";
 
 type CliArgs = {
   missionId: string;
