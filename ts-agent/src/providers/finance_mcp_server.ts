@@ -9,9 +9,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { EdinetSearchProvider } from "./edinet_search_provider.ts";
 import { EdinetItemizer } from "./edinet_itemizer.ts";
 import { EdinetProvider } from "./edinet_provider.ts";
+import { EdinetSearchProvider } from "./edinet_search_provider.ts";
 
 // Constants
 const SERVER_NAME = "finance-alpha-intelligence";

@@ -1,5 +1,5 @@
-import { BaseAgent } from "../system/app_runtime_core.ts";
 import { writeFileSync } from "node:fs";
+import { BaseAgent } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
 
 export interface MissionContext {

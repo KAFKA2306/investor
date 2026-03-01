@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
-import { join } from "node:path";
 import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { core } from "../system/app_runtime_core.ts";
 import { EdinetItemizer } from "./edinet_itemizer.ts";
 

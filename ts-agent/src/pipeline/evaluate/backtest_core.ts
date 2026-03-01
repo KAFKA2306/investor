@@ -5,8 +5,8 @@ import { extractEstatValues } from "../../experiments/analysis/daily_alpha_featu
 import { MarketdataLocalGateway } from "../../providers/unified_market_data_gateway.ts";
 import { logIO, logMetric } from "../../system/telemetry_logger.ts";
 import {
-  QuantMetrics,
   calculatePerformanceMetrics,
+  QuantMetrics,
 } from "./evaluation_metrics_core.ts";
 
 /**

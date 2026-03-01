@@ -28,6 +28,11 @@ tasks:
       - bun run lint
       - bun run typecheck
 
+  check:
+    desc: format + lint + typecheck (Alias for qa)
+    cmds:
+      - task: qa
+
   qa:fast:
     desc: lint + typecheck
     dir: "{{.TS_DIR}}"

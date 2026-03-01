@@ -1,24 +1,24 @@
+import { readFileSync } from "node:fs";
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
 import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
 import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
+import { MissionAgent } from "../agents/mission_agent.ts";
 import { MemoryCenter } from "../context/unified_context_services.ts";
-import { readFileSync } from "node:fs";
 import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
-import { QuantitativeVerificationSchema } from "../schemas/financial_domain_schemas.ts";
 import type {
   AceBullet,
   Metrics,
   QuantitativeVerification,
   StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
+import { QuantitativeVerificationSchema } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent, core } from "./app_runtime_core.ts";
 import { DataPipelineRuntime } from "./data_pipeline_runtime.ts";
 import { paths } from "./path_registry.ts";
 import { QuantResearchRuntime } from "./quant_research_runtime.ts";
 import { logIO, logMetric } from "./telemetry_logger.ts";
-import { MissionAgent } from "../agents/mission_agent.ts";
 
 type VerificationVerdict =
   | "ADOPTED"
@@ -292,7 +292,7 @@ export class PipelineOrchestrator extends BaseAgent {
     await this.elder.saveIdeaCandidate(candidate);
 
     let dataAttempt = 1;
-    let acceptedData = await this.acquireAcceptedDataset(
+    const acceptedData = await this.acquireAcceptedDataset(
       requirement,
       candidate.id,
       dataAttempt,
@@ -402,7 +402,6 @@ export class PipelineOrchestrator extends BaseAgent {
         dataAttempt = nextData.nextAttempt;
         retryMode = "NONE";
         await this.persistDataset(dataset, requirement);
-        continue;
       }
     }
   }
