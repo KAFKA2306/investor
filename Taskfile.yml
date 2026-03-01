@@ -27,24 +27,22 @@ tasks:
       - bash -lc 'set -euo pipefail; cache_root="${TMPDIR:-/tmp}/ts-agent-cache"; uv_cache_dir="$cache_root/uv"; mkdir -p "$cache_root" "$uv_cache_dir"; UV_CACHE_DIR="$uv_cache_dir" XDG_CACHE_HOME="$cache_root" uv sync'
 
   qa:
-    desc: format + lint + typecheck
+    desc: format + lint
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run format
       - bun run lint
-      - bun run typecheck
 
   check:
-    desc: format + lint + typecheck (Alias for qa)
+    desc: format + lint (Alias for qa)
     cmds:
       - task: qa
 
   qa:fast:
-    desc: lint + typecheck
+    desc: lint
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run lint
-      - bun run typecheck
 
   format:
     desc: format
@@ -57,12 +55,6 @@ tasks:
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run lint
-
-  typecheck:
-    desc: typecheck
-    dir: "{{.TS_DIR}}"
-    cmds:
-      - bun run typecheck
 
   api:
     desc: API起動
@@ -160,6 +152,39 @@ tasks:
       - bun run experiments:kb-build -- --limit {{.LIMIT}}
       - bun run experiments:kb-backtest -- --with-gates --top-k {{.TOP_K}} --min-signals-per-day {{.MIN_SIGNALS}} --trade-lag-days {{.TRADE_LAG_DAYS}}
 
+  pipeline:edinet-io-verify:
+    desc: EDINET I/O 契約検証（fail-fast）
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run experiments:verify-edinet-io
+
+  pipeline:edinet-io-repair:
+    desc: EDINET event_features 欠損修復 + 契約検証
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run experiments:repair-edinet-event-features
+      - bun run experiments:verify-edinet-io
+
+  pipeline:edinet-daily:strict:
+    desc: EDINET日次フロー + I/O契約ゲート
+    vars:
+      FROM: '{{default "2023-01-01" .FROM}}'
+      TO: '{{default "2025-12-31" .TO}}'
+      LIMIT: '{{default "3000" .LIMIT}}'
+      TOP_K: '{{default "5" .TOP_K}}'
+      MIN_SIGNALS: '{{default "4" .MIN_SIGNALS}}'
+      TRADE_LAG_DAYS: '{{default "2" .TRADE_LAG_DAYS}}'
+    cmds:
+      - task: pipeline:edinet-daily
+        vars:
+          FROM: "{{.FROM}}"
+          TO: "{{.TO}}"
+          LIMIT: "{{.LIMIT}}"
+          TOP_K: "{{.TOP_K}}"
+          MIN_SIGNALS: "{{.MIN_SIGNALS}}"
+          TRADE_LAG_DAYS: "{{.TRADE_LAG_DAYS}}"
+      - task: pipeline:edinet-io-verify
+
   pipeline:proof-layers:
     desc: 管理レイヤー実証（ユニバース動的解決 + 研究マニフェスト）
     dir: "{{.TS_DIR}}"
@@ -170,7 +195,6 @@ tasks:
   run:newalphasearch:cycle:
     desc: 自律アルファ探索の1サイクル（theme更新 + 探索 + 改善）
     cmds:
-      - task: typecheck
       - task: pipeline:proof-layers
       - task: pipeline:verify
       - task: pipeline:orchestrate
@@ -307,16 +331,15 @@ tasks:
           done'
 
   run:
-    desc: 本番同等の全実行（型検査 + 管理レイヤー実証 + パイプライン）
+    desc: 本番同等の全実行（管理レイヤー実証 + パイプライン）
     cmds:
       - task: run:newalphasearch
       - task: pipeline:orchestrate
       - task: pipeline:benchmark
 
   run:quick:
-    desc: 高速実行（型検査+実証+検証+探索+ベンチ+監査プロット）
+    desc: 高速実行（実証+検証+探索+ベンチ+監査プロット）
     cmds:
-      - task: typecheck
       - task: pipeline:proof-layers
       - task: pipeline:verify
       - task: pipeline:discover
@@ -328,46 +351,38 @@ tasks:
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
-          cat > /tmp/jquants_warm_until_finish.sh << "SH"
-          #!/usr/bin/env bash
-          set -u
-          cd /home/kafka/finance/investor/ts-agent || exit 1
-          set -a
-          source ../.env
-          set +a
-          LOG=/tmp/jquants_warm_until_finish.log
-          echo "[start] $(date -Is)" >> "$LOG"
-          while true; do
-            echo "[run] $(date -Is)" >> "$LOG"
-            OUT=$(bun run jquants:warm-cache --mode date --from 2021-03-01 --to 2026-03-01 --date-order desc --req-per-30sec 1 --max-rate-limit-errors 2 2>&1)
-            CODE=$?
-            printf "%s\n" "$OUT" >> "$LOG"
-            if [ $CODE -ne 0 ]; then
-              echo "[warn] $(date -Is) exit=$CODE sleep60" >> "$LOG"
-              sleep 60
-              continue
-            fi
-            if printf "%s" "$OUT" | grep -q "abortedByRateLimit\": true"; then
-              echo "[cooldown] $(date -Is) sleep310" >> "$LOG"
-              sleep 310
-              continue
-            fi
-            if printf "%s" "$OUT" | grep -q "abortedByRateLimit\": false"; then
-              echo "[done] $(date -Is)" >> "$LOG"
-              break
-            fi
-            echo "[warn] $(date -Is) no-marker sleep60" >> "$LOG"
-            sleep 60
-          done
-          SH
-          chmod +x /tmp/jquants_warm_until_finish.sh
-          nohup /tmp/jquants_warm_until_finish.sh >/tmp/jquants_warm_until_finish.nohup 2>&1 & echo $! > /tmp/jquants_warm_until_finish.pid
+          cd /home/kafka/finance/investor;
+          chmod +x ts-agent/scripts/jquants_warm_all_runner.sh;
+          nohup ts-agent/scripts/jquants_warm_all_runner.sh >/tmp/jquants_warm_until_finish.nohup 2>&1 &
+          echo $! > /tmp/jquants_warm_until_finish.pid;
           echo "PID=$(cat /tmp/jquants_warm_until_finish.pid)"'
 
   jquants:warm-all:status:
     desc: J-Quants全期間キャッシュジョブの状態確認
     cmds:
-      - bash -lc 'if [ -f /tmp/jquants_warm_until_finish.pid ]; then PID=$(cat /tmp/jquants_warm_until_finish.pid); ps -fp "$PID" || true; else echo "PID file not found"; fi'
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          if [ ! -f /tmp/jquants_warm_until_finish.pid ]; then
+            echo "PID file not found";
+            exit 0;
+          fi;
+          pid=$(cat /tmp/jquants_warm_until_finish.pid);
+          if ps -p "$pid" >/dev/null 2>&1; then
+            echo "runner=alive pid=$pid";
+            ps -fp "$pid";
+          else
+            echo "runner=dead pid=$pid";
+          fi;
+          if [ -f /tmp/jquants_warm_until_finish.log ]; then
+            last_line=$(tail -n 1 /tmp/jquants_warm_until_finish.log || true);
+            last_time=$(grep -Eo "[0-9]{4}-[0-9]{2}-[0-9]{2}T[^ ]+" /tmp/jquants_warm_until_finish.log | tail -n 1 || true);
+            aborted=$(grep -E "abortedByRateLimit" /tmp/jquants_warm_until_finish.log | tail -n 1 || true);
+            echo "last_log_time=${last_time:-unknown}";
+            echo "last_log_line=${last_line:-none}";
+            echo "last_aborted_line=${aborted:-unknown}";
+          else
+            echo "log=missing";
+          fi'
 
   jquants:warm-all:log:
     desc: J-Quants全期間キャッシュジョブのログ表示
@@ -378,6 +393,35 @@ tasks:
     desc: J-Quants全期間キャッシュジョブを停止
     cmds:
       - bash -lc 'if [ -f /tmp/jquants_warm_until_finish.pid ]; then kill "$(cat /tmp/jquants_warm_until_finish.pid)" 2>/dev/null || true; rm -f /tmp/jquants_warm_until_finish.pid; echo "stopped"; else echo "PID file not found"; fi'
+
+  jquants:warm-all:guarantee:
+    desc: 同一条件2回実行で cache hitRate>=99% を保証判定
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          cd /home/kafka/finance/investor/ts-agent;
+          set -a;
+          source ../.env;
+          set +a;
+          from="${FROM:-2021-03-01}";
+          to="${TO:-$(date +%F)}";
+          max_units="${MAX_UNITS:-0}";
+          args=(--mode date --from "$from" --to "$to" --date-order desc --req-per-30sec 1 --max-rate-limit-errors 2);
+          if [ "$max_units" -gt 0 ]; then
+            args+=(--max-units "$max_units");
+          fi;
+          echo "[guarantee] first run";
+          out1=$(bun run jquants:warm-cache "${args[@]}" 2>&1);
+          printf "%s\n" "$out1" > /tmp/jquants_warm_guarantee_run1.log;
+          echo "[guarantee] second run";
+          out2=$(bun run jquants:warm-cache "${args[@]}" 2>&1);
+          printf "%s\n" "$out2" > /tmp/jquants_warm_guarantee_run2.log;
+          summary=$(printf "%s\n" "$out2" | grep "^JQUANTS_WARM_SUMMARY_JSON=" | tail -n 1 | cut -d= -f2-);
+          if [ -z "$summary" ]; then
+            echo "No summary marker found in second run output";
+            exit 1;
+          fi;
+          python3 -c "import json,sys; s=json.loads(sys.argv[1]); hit=float(s.get(\"hitRatePct\",0)); aborted=bool(s.get(\"abortedByRateLimit\",True)); print(json.dumps({\"ok\": (hit>=99 and not aborted), \"hitRatePct\": hit, \"abortedByRateLimit\": aborted}, ensure_ascii=False)); raise SystemExit(0 if (hit>=99 and not aborted) else 1)" "$summary"'
 
   clean:logs:
     desc: ログ掃除

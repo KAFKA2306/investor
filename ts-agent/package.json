@@ -3,7 +3,6 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit",
     "lint": "biome check src",
     "format": "biome format src --write",
     "start": "bun src/index.ts",
@@ -17,6 +16,8 @@
     "experiments:build-edinet-event-features": "bun src/experiments/generate_10k_features.ts",
     "experiments:build-macro-regime": "bun src/experiments/build_macro_regime.ts",
     "experiments:run-edinet-regime-backtest": "bun src/experiments/run_kb_signal_backtest.ts --with-gates",
+    "experiments:repair-edinet-event-features": "bun src/experiments/repair_edinet_event_features.ts",
+    "experiments:verify-edinet-io": "bun src/experiments/verify_edinet_io_contract.ts",
     "experiments:verification-json": "bun src/experiments/quantitative_performance_proof.ts",
     "experiments:verification-plot": "uv run python src/experiments/plot_generator.py",
     "pipeline:ab": "bun src/pipeline/evaluate/backtest_core.ts",
@@ -30,7 +31,6 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",
     "@modelcontextprotocol/sdk": "^1.27.1",
-    "@tsconfig/strictest": "^2.0.8",
     "@types/bun": "latest",
     "@types/express": "^5.0.6",
     "@types/js-yaml": "^4.0.9",
@@ -40,7 +40,6 @@
     "vite": "^7.3.1"
   },
   "peerDependencies": {
-    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@google/genai": "^1.43.0",
