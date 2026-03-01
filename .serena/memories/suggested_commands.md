@@ -28,7 +28,3 @@
 - `bun src/experiments/les_reproduction.ts`：しっかり再現実験もこなすよっ！🐾
 - `bun src/experiments/04_foundation_benchmark.ts`：モデルさんの実力を測っちゃうにょ！📈✨
 
-## テストの時間だよっ！🧪✨
-- おすすめのテスト・ランナー：`bun test` で決まりだねっ！🐰💖
-- 特定の確認用スクリプトは `ts-agent/src/tests/` や `ts-agent/src/experiments/*test*.ts` の下にあるにょ！✨
-- 実行例だょ：`cd ts-agent && bun src/experiments/test_audit_loop.ts` で監査ループをテストしちゃおう！🌀💕
