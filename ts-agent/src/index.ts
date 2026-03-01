@@ -22,4 +22,9 @@ async function main() {
   console.log("Autonomous Alpha Evolution Loop cycle completed");
 }
 
-import.meta.main && void main();
+if (import.meta.main) {
+  main().catch((e) => {
+    console.error(`❌ Fatal Error: ${e.message}`);
+    process.exit(1);
+  });
+}

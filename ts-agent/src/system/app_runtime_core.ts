@@ -29,6 +29,11 @@ const ConfigSchema = z.object({
   project: z.object({
     name: z.string(),
   }),
+  runtime: z
+    .object({
+      envFile: z.string().optional(),
+    })
+    .optional(),
   paths: z.object({
     data: z.string(),
     logs: z.string(),
@@ -195,36 +200,41 @@ class Core {
   }
 
   private loadEnvFromFiles(): void {
-    const envCandidates = [
-      resolve(import.meta.dir, "..", "..", "..", ".env"), // repo root
-      resolve(import.meta.dir, "..", "..", ".env"), // ts-agent/.env (legacy)
-    ];
+    const configPath = join(import.meta.dir, "..", "config", "default.yaml");
+    const configDir = dirname(configPath);
+    const configRaw = yaml.load(readFileSync(configPath, "utf8")) as
+      | { runtime?: { envFile?: string } }
+      | undefined;
+    const configuredEnvFile = (
+      configRaw?.runtime?.envFile ?? "../../../.env"
+    ).trim();
+    const overrideEnvFile = (process.env.UQTL_ENV_FILE ?? "").trim();
+    const envFile = overrideEnvFile || configuredEnvFile;
+    const envPath = isAbsolute(envFile) ? envFile : resolve(configDir, envFile);
 
-    for (const envPath of envCandidates) {
-      try {
-        const raw = readFileSync(envPath, "utf8");
-        for (const line of raw.split(/\r?\n/)) {
-          const trimmed = line.trim();
-          if (!trimmed || trimmed.startsWith("#")) continue;
-          const m = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
-          if (!m) continue;
-          const key = m[1];
-          if (!key) continue;
-          let value = m[2];
-          if (value === undefined) continue;
-          if (
-            (value.startsWith('"') && value.endsWith('"')) ||
-            (value.startsWith("'") && value.endsWith("'"))
-          ) {
-            value = value.slice(1, -1);
-          }
-          if (process.env[key] === undefined) {
-            process.env[key] = value;
-          }
+    try {
+      const raw = readFileSync(envPath, "utf8");
+      for (const line of raw.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const m = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+        if (!m) continue;
+        const key = m[1];
+        if (!key) continue;
+        let value = m[2];
+        if (value === undefined) continue;
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
+          value = value.slice(1, -1);
         }
-      } catch {
-        // Optional env files: ignore missing/unreadable candidates.
+        if (process.env[key] === undefined) {
+          process.env[key] = value;
+        }
       }
+    } catch {
+      // Optional env file: allow execution when .env is not present.
     }
   }
 
@@ -834,3 +844,14 @@ export async function runAndPersistQualityGate() {
 
 export { core as Core };
 export const eventStore = core.eventStore;
+
+if (import.meta.main) {
+  runAndPersistQualityGate()
+    .then(() =>
+      console.log("✅ API Verification and Quality Gate update successful."),
+    )
+    .catch((e) => {
+      console.error(`❌ Quality Gate failed: ${e.message}`);
+      process.exit(1);
+    });
+}

@@ -154,10 +154,10 @@ tasks:
       MIN_SIGNALS: '{{default "4" .MIN_SIGNALS}}'
       TRADE_LAG_DAYS: '{{default "2" .TRADE_LAG_DAYS}}'
     cmds:
-      - bun run experiments:10k-features -- --from={{.FROM}} --to={{.TO}} --metadata-only --indexed-only
+      - bun run experiments:10k-features -- --from {{.FROM}} --to {{.TO}} --metadata-only --indexed-only
       - bun run experiments:build-macro-regime
-      - bun run experiments:kb-build -- --limit={{.LIMIT}}
-      - bun run experiments:kb-backtest -- --with-gates --top-k={{.TOP_K}} --min-signals-per-day={{.MIN_SIGNALS}} --trade-lag-days={{.TRADE_LAG_DAYS}}
+      - bun run experiments:kb-build -- --limit {{.LIMIT}}
+      - bun run experiments:kb-backtest -- --with-gates --top-k {{.TOP_K}} --min-signals-per-day {{.MIN_SIGNALS}} --trade-lag-days {{.TRADE_LAG_DAYS}}
 
   pipeline:proof-layers:
     desc: 管理レイヤー実証（ユニバース動的解決 + 研究マニフェスト）
@@ -332,13 +332,13 @@ tasks:
           set -u
           cd /home/kafka/finance/investor/ts-agent || exit 1
           set -a
-          source .env
+          source ../.env
           set +a
           LOG=/tmp/jquants_warm_until_finish.log
           echo "[start] $(date -Is)" >> "$LOG"
           while true; do
             echo "[run] $(date -Is)" >> "$LOG"
-            OUT=$(bun run jquants:warm-cache --mode=date --from=2021-03-01 --to=2026-03-01 --date-order=desc --req-per-30sec=1 --max-rate-limit-errors=2 2>&1)
+            OUT=$(bun run jquants:warm-cache --mode date --from 2021-03-01 --to 2026-03-01 --date-order desc --req-per-30sec 1 --max-rate-limit-errors 2 2>&1)
             CODE=$?
             printf "%s\n" "$OUT" >> "$LOG"
             if [ $CODE -ne 0 ]; then
