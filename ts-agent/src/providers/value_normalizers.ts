@@ -39,6 +39,18 @@ export const toFiniteNumber = (value: unknown, defaultValue = 0): number => {
   return Number.isFinite(num) ? num : defaultValue;
 };
 
+/**
+ * オブジェクトから複数のキー候補を使って数値を取り出すよっ！✨
+ */
+export const getNumberByKeys = (
+  row: Record<string, unknown>,
+  keys: readonly string[],
+): number => {
+  const val = keys.map((k) => row[k]).find((v) => v !== undefined);
+  const num = Number(val);
+  return Number.isFinite(num) ? num : 0;
+};
+
 // ── IntelligenceMap ──────────────────────────────────────────────────────────
 export type IntelligencePoint = {
   sentiment: number;
@@ -52,7 +64,7 @@ export type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
 
 /**
  * edinet_10k_intelligence_map.json を読み込んでパースするよ。
- * ファイルが存在しない場合は空のマップを返すよっ。
+ * ファイルが存在しない場合は空のマップを返すよっ。🧠✨
  */
 export function parseIntelligenceMap(filePath: string): IntelligenceMap {
   if (!existsSync(filePath)) return {};

@@ -24,22 +24,31 @@ export type RequestJsonResult = {
   finalUrl: string;
 };
 
-export async function requestJson(
-  options: RequestJsonOptions,
-): Promise<RequestJsonResult> {
-  const fullUrl = options.url
-    ? new URL(options.url)
-    : new URL(`${options.baseUrl ?? ""}${options.endpoint ?? ""}`);
-
-  if (options.query) {
-    for (const [k, v] of Object.entries(options.query)) {
+/**
+ * URLを可愛く組み立てるよっ！🌐✨
+ */
+export function buildUrl(
+  base: string,
+  endpoint: string,
+  query?: Record<string, QueryValue>,
+): string {
+  const url = new URL(`${base}${endpoint}`);
+  if (query) {
+    for (const [k, v] of Object.entries(query)) {
       if (v !== undefined && v !== null) {
-        fullUrl.searchParams.append(k, String(v));
+        url.searchParams.append(k, String(v));
       }
     }
   }
+  return url.toString();
+}
 
-  const urlStr = fullUrl.toString();
+export async function requestJson(
+  options: RequestJsonOptions,
+): Promise<RequestJsonResult> {
+  const urlStr = options.url
+    ? options.url
+    : buildUrl(options.baseUrl ?? "", options.endpoint ?? "", options.query);
   const headers = options.headers ?? {};
 
   if (options.cache && options.ttlMs !== undefined) {

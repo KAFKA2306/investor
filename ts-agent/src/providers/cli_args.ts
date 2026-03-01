@@ -83,3 +83,43 @@ export function requireIsoDate(value: string, keyName: string): string {
   }
   return value;
 }
+
+export function parseUniverseArgs(parsed: ParsedCliArgs): {
+  symbols: string[];
+  limit: number;
+} {
+  const symbolsRaw = getStringArg(parsed, "--symbols", "");
+  const symbols = symbolsRaw
+    ? symbolsRaw
+      .split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0)
+    : [];
+  const limit = getNumberArg(parsed, "--limit", 100);
+  return { symbols, limit };
+}
+
+export function parseDateRangeArgs(parsed: ParsedCliArgs): {
+  from?: string;
+  to?: string;
+} {
+  const fromRaw = getStringArg(parsed, "--from");
+  const toRaw = getStringArg(parsed, "--to");
+  return {
+    from: fromRaw ? requireIsoDate(fromRaw, "--from") : undefined,
+    to: toRaw ? requireIsoDate(toRaw, "--to") : undefined,
+  };
+}
+
+/**
+ * コマンドラインとお友達になれる cliArgs ユーティリティだよっ！🚀✨
+ */
+export const cliArgs = {
+  parse: parseCliArgs,
+  getString: getStringArg,
+  getNumber: getNumberArg,
+  hasFlag,
+  requireIsoDate,
+  parseUniverseArgs,
+  parseDateRangeArgs,
+};

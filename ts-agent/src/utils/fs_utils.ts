@@ -1,0 +1,71 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname } from "node:path";
+import type { z } from "zod";
+
+export function ensureParentDir(targetPath: string): void {
+  mkdirSync(dirname(targetPath), { recursive: true });
+}
+
+export function writeJsonl<T>(targetPath: string, records: readonly T[]): void {
+  ensureParentDir(targetPath);
+  if (records.length === 0) {
+    writeFileSync(targetPath, "");
+    return;
+  }
+  writeFileSync(
+    targetPath,
+    `${records.map((record) => JSON.stringify(record)).join("\n")}\n`,
+  );
+}
+
+export function writeValidatedJson<T>(
+  targetPath: string,
+  data: T,
+  schema?: z.Schema<T>,
+): void {
+  ensureParentDir(targetPath);
+  const validated = schema ? schema.parse(data) : data;
+  writeFileSync(targetPath, `${JSON.stringify(validated, null, 2)}\n`);
+}
+
+export function readJsonl<T>(sourcePath: string): T[] {
+  if (!existsSync(sourcePath)) return [];
+  return readFileSync(sourcePath, "utf8")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => JSON.parse(line) as T);
+}
+
+/**
+ * JSONファイルを型安全に読み込むよっ！📖✨
+ */
+export function readJsonFile<T>(filePath: string): T {
+  return JSON.parse(readFileSync(filePath, "utf8")) as T;
+}
+
+/**
+ * ファイルやディレクトリの存在チェックと、前提条件の確認を一挙に引き受けるよっ！🛡️✨
+ */
+export function requirePrerequisites(
+  paths: Record<string, string>,
+): string | null {
+  for (const [name, path] of Object.entries(paths)) {
+    if (!existsSync(path)) {
+      return `${name} missing: ${path}`;
+    }
+  }
+  return null;
+}
+
+/**
+ * ファイル操作の可愛い相棒、fsUtilsだよっ！📁💖
+ */
+export const fsUtils = {
+  ensureParentDir,
+  writeJsonl,
+  readJsonl,
+  writeValidatedJson,
+  readJsonFile,
+  requirePrerequisites,
+};
