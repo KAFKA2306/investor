@@ -1,22 +1,3 @@
-I will read the content of `docs/paper/quantaalpha.md` to understand what needs to be rewritten in the kawaii style.
-I will check the content of `docs/paper/causalalpha.md` to see if it needs a kawaii rewrite, as the current `quantaalpha.md` is already in that style.
-I will read the content of `docs/paper/alpha_gpt.md` to see if it is not in the kawaii style.
-I will read the content of `docs/paper/trading_r1.md` to see if it needs a kawaii rewrite.
-I will search for Markdown files in `docs/paper/` that do not start with a kawaii emoji to identify which ones need a rewrite.
-I will read the content of `docs/paper/mcp_mas_framework.md` to check its style.
-I will search for any Markdown files in `docs/paper/` that are in English to see if they need a rewrite.
-I will list the Markdown files in `docs/paper/` and read them to identify any English ones that need a rewrite.
-I will read the content of `docs/paper/alphaevolution.md` to see if it is in English and needs a rewrite.
-I will read the content of `docs/specs/alpha_discovery_runbook.md.tmp` to see if it needs a rewrite.
-I will read the content of `docs/specs/alpha_discovery_runbook.md` to see if it needs a rewrite.
-I will read the content of `docs/paper/10k_intelligence_2.0.md` to see if it is in English and needs a rewrite.
-I will read the content of `docs/paper/alphar1.md` to see its structure and style.
-I will read the content of `docs/paper/quantaalpha.md` again to confirm its current style.
-I will rewrite `docs/paper/quantaalpha.md` to use the new "extremely cute" structure and field names (`**だいひょうてきな論文っ**:`, `**🎂 おたんじょうび**:`, `**😿 おなやみ解決！**:`) to match the user's provided example for `CausalAlpha`.
-I will rewrite `docs/paper/alpha_gpt.md` to match the new "extremely cute" structure and field names (`**だいひょうてきな論文っ**:`, `**🎂 おたんじょうび**:`, `**😿 おなやみ解決！**:`) to maintain consistency with the user's latest example.
-I will rewrite `docs/paper/alphar1.md` to follow the latest structure and "extremely cute" kawaii style for consistency.
-I will read the content of `docs/paper/causalalpha.md` to ensure it matches the user's example exactly.
-I have completed the requested rewrite for `docs/paper/quantaalpha.md` and related files, ensuring they follow the new "extremely cute" kawaii structure and field names (`**だいひょうてきな論文っ**:`, `**🎂 おたんじょうび**:`, `**😿 おなやみ解決！**:`) as demonstrated in your `CausalAlpha` example.
 
 # 🎀 超進化系っ！QuantaAlphaちゃんで最強アルファを見つけちゃおうっ ✨
 

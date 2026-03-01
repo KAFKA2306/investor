@@ -101,6 +101,7 @@ tasks:
     desc: 設計本流（sequence/simpleflowchart準拠）
     dir: "{{.TS_DIR}}"
     cmds:
+      - bun run experiments:verification-json
       - bun run start
 
   pipeline:verify:
