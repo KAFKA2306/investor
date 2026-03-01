@@ -31,3 +31,4 @@ edinet2dataset/.env
 logs/
 .agent/logs/
 /root/.gemini/antigravity/brain/
+ts-agent/data/*.png
