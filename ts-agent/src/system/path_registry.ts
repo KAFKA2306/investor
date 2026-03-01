@@ -17,6 +17,9 @@ export type PathRegistry = {
   jquantsPeadCacheSqlite: string;
   uqtlSqlite: string;
   unifiedLogDir: string;
+  edinetCacheSqlite: string;
+  edinetDocsDir: string;
+  missionMd: string;
 };
 
 export function buildPathRegistry(): PathRegistry {
@@ -50,6 +53,10 @@ export function buildPathRegistry(): PathRegistry {
     jquantsPeadCacheSqlite: join(cacheDir, "jquants_pead_cache.sqlite"),
     uqtlSqlite: join(cacheDir, "uqtl.sqlite"),
     unifiedLogDir: join(logsRoot, "unified"),
+    edinetCacheSqlite: join(cacheDir, "edinet_cache.sqlite"),
+    edinetDocsDir: join(cacheDir, "edinet_docs"),
+    missionMd:
+      "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md",
   };
 }
 

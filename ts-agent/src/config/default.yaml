@@ -25,6 +25,8 @@ paths:
   cacheHttpSqlite: ../../../logs/cache/http_cache.sqlite
   cacheYahooSqlite: ../../../logs/cache/yahoo_finance_cache.sqlite
   cacheJquantsPeadSqlite: ../../../logs/cache/jquants_pead_cache.sqlite
+  cacheEdinetSqlite: ../../../logs/cache/edinet_cache.sqlite
+  edinetDocsDir: ../../../logs/cache/edinet_docs
   cacheUqtlSqlite: ../../../logs/cache/uqtl.sqlite
   logsUnifiedDir: ../../../logs/unified
   docsRoot: ../../../docs

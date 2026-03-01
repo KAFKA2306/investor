@@ -311,7 +311,7 @@ export function writeCanonicalEnvelope(input: {
     "unified",
     buildCanonicalFileName(canonical.kind, asOfDate, generatedAt),
   );
-  writeFileSync(canonicalPath, JSON.stringify(canonical, [], 2), "utf8");
+  writeFileSync(canonicalPath, JSON.stringify(canonical, null, 2), "utf8");
   console.log(`[Core] Canonical log written to ${canonicalPath}`);
   return canonicalPath;
 }
@@ -572,10 +572,20 @@ export async function runApiVerification(): Promise<
         }))
     : Promise.resolve({ status: "SKIP" as const });
 
+  const verifyEdinet = targets.has("edinet")
+    ? (async () => {
+        const { EdinetProvider } = await import(
+          "../providers/edinet_provider.ts"
+        );
+        const edinet = new EdinetProvider();
+        return edinet.verify();
+      })()
+    : Promise.resolve({ status: "SKIP" as const, documentsCount: 0 });
+
   const [jquants, kabucom, edinet, estat] = await Promise.all([
     verifyJquants,
     { status: "SKIP" as const },
-    { status: "SKIP" as const },
+    verifyEdinet,
     verifyEstat,
   ]);
 
