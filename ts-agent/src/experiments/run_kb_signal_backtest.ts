@@ -12,6 +12,13 @@ import {
   QuantMetrics,
 } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
+  getNumberArg,
+  getStringArg,
+  hasFlag,
+  parseCliArgs,
+} from "../providers/cli_args.ts";
+import { clamp, mean } from "../providers/value_normalizers.ts";
+import {
   type StandardOutcome,
   UnifiedLogSchema,
 } from "../schemas/financial_domain_schemas.ts";
@@ -46,53 +53,40 @@ type BacktestRow = {
   nextReturn: number;
 };
 
-const mean = (values: readonly number[]): number =>
-  values.length === 0
-    ? 0
-    : values.reduce((sum, value) => sum + value, 0) / values.length;
-
-const clamp = (value: number, min: number, max: number): number =>
-  Math.max(min, Math.min(max, value));
-
-const pickArg = (args: readonly string[], key: string): string | undefined => {
-  const prefix = `${key}=`;
-  const matched = args.find((value) => value.startsWith(prefix));
-  return matched ? matched.slice(prefix.length) : undefined;
-};
-
-const parseArgs = (args: readonly string[]): CliArgs => {
+const parseArgs = (argv: readonly string[]): CliArgs => {
+  const args = parseCliArgs(argv);
   const edinetGates = core.config.alpha?.edinet?.gates;
   const parsed: CliArgs = {
-    topK: Math.max(1, Number(pickArg(args, "--top-k") ?? 3)),
+    topK: Math.max(1, getNumberArg(args, "--top-k", 3)),
     minSignalsPerDay: Math.max(
       2,
-      Number(
-        pickArg(args, "--min-signals-per-day") ??
-          edinetGates?.minSignalsPerDay ??
-          4,
+      getNumberArg(
+        args,
+        "--min-signals-per-day",
+        edinetGates?.minSignalsPerDay ?? 4,
       ),
     ),
-    tradeLagDays: Math.max(1, Number(pickArg(args, "--trade-lag-days") ?? 2)),
-    withGates: args.includes("--with-gates"),
+    tradeLagDays: Math.max(1, getNumberArg(args, "--trade-lag-days", 2)),
+    withGates: hasFlag(args, "--with-gates"),
     minLiquidityJpy: Math.max(
       0,
-      Number(
-        pickArg(args, "--min-liquidity-jpy") ??
-          edinetGates?.minLiquidityJpy ??
-          100_000_000,
+      getNumberArg(
+        args,
+        "--min-liquidity-jpy",
+        edinetGates?.minLiquidityJpy ?? 100_000_000,
       ),
     ),
     maxCorrection90d: Math.max(
       0,
-      Number(
-        pickArg(args, "--max-correction-90d") ??
-          edinetGates?.maxCorrection90d ??
-          2,
+      getNumberArg(
+        args,
+        "--max-correction-90d",
+        edinetGates?.maxCorrection90d ?? 2,
       ),
     ),
     allowRegimes: new Set(
       (
-        pickArg(args, "--allow-regimes") ??
+        getStringArg(args, "--allow-regimes") ??
         edinetGates?.regimeAllowlist?.join(",") ??
         "RISK_ON,NEUTRAL"
       )
@@ -102,9 +96,9 @@ const parseArgs = (args: readonly string[]): CliArgs => {
     ),
   };
 
-  const fromDate = pickArg(args, "--from");
-  const toDate = pickArg(args, "--to");
-  const dbPath = pickArg(args, "--db-path");
+  const fromDate = getStringArg(args, "--from");
+  const toDate = getStringArg(args, "--to");
+  const dbPath = getStringArg(args, "--db-path");
 
   if (fromDate) parsed.fromDate = fromDate;
   if (toDate) parsed.toDate = toDate;

@@ -1,555 +1,199 @@
-import { execSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import yaml from "js-yaml";
-import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
+import { existsSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { calculatePerformanceMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
-  type FactorAST,
-  FactorComputeEngine,
-} from "../pipeline/factor_mining/factor_compute_engine.ts";
+  getNumberArg,
+  getStringArg,
+  parseCliArgs,
+} from "../providers/cli_args.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
-  type QuantitativeVerification,
-  QuantitativeVerificationSchema,
-} from "../schemas/financial_domain_schemas.ts";
-import { core } from "../system/app_runtime_core.ts";
+  clamp,
+  mean,
+  toIsoDate,
+  toSymbol4,
+} from "../providers/value_normalizers.ts";
 import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
 import { paths } from "../system/path_registry.ts";
 
-type PlaybookBullet = {
-  updated_at: string;
-  content: string;
-  metadata?: {
-    id?: string;
-    status?: string;
-    ast?: Record<string, unknown>;
-  };
+type CliArgs = {
+  symbols: string[];
+  limit: number;
+  dbPath?: string;
+  from?: string;
+  to?: string;
 };
 
-type PlaybookData = { bullets: PlaybookBullet[] };
-type LocalBar = {
-  Date: string;
-  Open: number;
-  High: number;
-  Low: number;
-  Close: number;
-  Volume: number;
+type IntelligencePoint = {
+  sentiment: number;
+  aiExposure: number;
+  kgCentrality: number;
+  correctionFlag: number;
+  correctionCount90d: number;
 };
 
-type EnrichedBar = LocalBar & {
-  SegmentSentiment?: number;
-  AiExposure?: number;
-  KgCentrality?: number;
-  CorrectionCount?: number;
-  LargeHolderCount?: number;
+type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
+
+type NormalizedBar = {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
 };
 
-function astExecutable(ast: FactorAST): boolean {
-  const barA = {
-    Date: "2022-01-04",
-    Open: 100,
-    High: 103,
-    Low: 99,
-    Close: 102,
-    Volume: 2_000_000,
+const parseArgs = (): CliArgs => {
+  const args = parseCliArgs(process.argv.slice(2));
+  const limit = Math.max(1, getNumberArg(args, "--limit", 3000));
+  const rawSymbols = getStringArg(args, "--symbols");
+  const symbols = rawSymbols
+    ? rawSymbols
+        .split(",")
+        .map((s) => toSymbol4(s.trim()))
+        .filter((s) => /^\d{4}$/.test(s))
+    : [];
+  const from = getStringArg(args, "--from");
+  const to = getStringArg(args, "--to");
+  const dbPathArg = getStringArg(args, "--db-path");
+  const parsed: CliArgs = {
+    limit,
+    symbols,
   };
-  const barB = {
-    Date: "2022-01-05",
-    Open: 101,
-    High: 106,
-    Low: 100,
-    Close: 104,
-    Volume: 1_500_000,
-  };
-  const bars = [barA, barB];
-  const v1 = FactorComputeEngine.evaluate(ast, bars, 0);
-  const v2 = FactorComputeEngine.evaluate(ast, bars, 1);
-  if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
-  return true;
-}
+  if (from) parsed.from = from;
+  if (to) parsed.to = to;
+  if (dbPathArg) parsed.dbPath = resolve(dbPathArg);
+  return parsed;
+};
 
-function buildDynamicUniverse(
-  pool: string[],
-  size: number,
-  govMap: ReturnType<typeof loadGovMap> = {},
-  intel10kMap: ReturnType<typeof load10kMap> = {},
-): string[] {
-  const intelSymbols = pool.filter((s) => intel10kMap[s]);
-  const signalSymbols = pool.filter(
-    (s) =>
-      !intelSymbols.includes(s) &&
-      govMap[s] &&
-      Object.values(govMap[s]).some((v) => v.corrections > 0),
-  );
-  const otherSymbols = pool.filter(
-    (s) => !intelSymbols.includes(s) && !signalSymbols.includes(s),
-  );
+const intelligenceMapPath = (): string =>
+  join(paths.verificationRoot, "edinet_10k_intelligence_map.json");
 
-  const sortedSignals = signalSymbols.sort((a, b) => {
-    const countA = Object.values(govMap[a] || {}).reduce(
-      (acc: number, v) => acc + (v.corrections || 0),
-      0,
-    );
-    const countB = Object.values(govMap[b] || {}).reduce(
-      (acc: number, v) => acc + (v.corrections || 0),
-      0,
-    );
-    return countB - countA;
-  });
-
-  const finalPool = [...intelSymbols, ...sortedSignals, ...otherSymbols];
-  return finalPool.slice(0, size);
-}
-
-function normalizeLocalBar(row: Record<string, unknown>): LocalBar {
-  const dateRaw = String(row.Date ?? "");
-  const date = dateRaw.includes("-")
-    ? dateRaw
-    : `${dateRaw.slice(0, 4)}-${dateRaw.slice(4, 6)}-${dateRaw.slice(6, 8)}`;
-  return {
-    Date: date,
-    Open: Number(row.Open ?? 0),
-    High: Number(row.High ?? 0),
-    Low: Number(row.Low ?? 0),
-    Close: Number(row.Close ?? 0),
-    Volume: Number(row.Volume ?? 0),
-  };
-}
-
-async function loadLocalHistory(
-  symbols4: string[],
-): Promise<{ symbol: string; bars: LocalBar[] }[]> {
-  const gateway = await MarketdataLocalGateway.create(symbols4);
-  const rows = await Promise.all(symbols4.map((s) => gateway.getBarsAll(s)));
-  const histories = symbols4.map((symbol, idx) => {
-    const bars = (rows[idx] ?? [])
-      .map((r) => normalizeLocalBar(r))
-      .filter(
-        (b) =>
-          b.Date.length === 10 &&
-          Number.isFinite(b.Open) &&
-          Number.isFinite(b.High) &&
-          Number.isFinite(b.Low) &&
-          Number.isFinite(b.Close) &&
-          Number.isFinite(b.Volume) &&
-          b.Open > 0 &&
-          b.Close > 0,
-      )
-      .reverse();
-    return { symbol: `${symbol}.T`, bars };
-  });
-  return histories.filter((h) => h.bars.length > 0);
-}
-
-function getLatestSelectedStrategyFromPlaybook(): {
-  id: string;
-  name: string;
-  description: string;
-  ast: Record<string, unknown> | null;
-} | null {
-  const playbookPath = join(process.cwd(), "data", "playbook.yaml");
-  const raw = readFileSync(playbookPath, "utf8");
-  const data = yaml.load(raw) as PlaybookData;
-  const selected = data.bullets
-    .filter(
-      (b) =>
-        b.metadata?.id &&
-        b.metadata?.status === "SELECTED" &&
-        b.metadata?.ast &&
-        b.updated_at,
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-    )
-    .find((b) => astExecutable(b.metadata?.ast as FactorAST));
-  if (!selected || !selected.metadata?.id) return null;
-  const text = selected.content.trim();
-  const split = text.indexOf(":");
-  const name = split > 0 ? text.slice(0, split).trim() : selected.metadata.id;
-  const description = split > 0 ? text.slice(split + 1).trim() : text;
-  return {
-    id: selected.metadata.id,
-    name,
-    description,
-    ast: selected.metadata.ast ?? null,
-  };
-}
-
-function loadGovMap(): Record<
-  string,
-  Record<string, { corrections: number; activist: number }>
-> {
-  const path = join(process.cwd(), "data", "edinet_governance_map.json");
-  return JSON.parse(readFileSync(path, "utf8"));
-}
-
-function load10kMap(): Record<
-  string,
-  Record<
+const loadIntelligenceMap = (): IntelligenceMap => {
+  const filePath = intelligenceMapPath();
+  if (!existsSync(filePath)) return {};
+  const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<
     string,
-    { sentiment: number; aiExposure: number; kgCentrality: number }
-  >
-> {
-  const path = join(process.cwd(), "data", "edinet_10k_intelligence_map.json");
-  return JSON.parse(readFileSync(path, "utf8"));
-}
-
-async function generateStandardVerificationReport() {
-  const args = process.argv.slice(2);
-  const getArg = (key: string) => {
-    const found = args.find((a) => a.startsWith(`${key}=`));
-    return found ? found.split("=")[1] : undefined;
-  };
-
-  const latestSelected = getLatestSelectedStrategyFromPlaybook();
-  const strategyId =
-    getArg("--id") || latestSelected?.id || "GEN3-FACTORY-VP-001";
-  const strategyName =
-    getArg("--name") || latestSelected?.name || "Volume-Price Divergence";
-  const strategyDescription =
-    getArg("--desc") ||
-    latestSelected?.description ||
-    "Detects price-volume decoupling to identify underreaction in supply-shock regimes. Net-of-cost performance.";
-
-  const astRaw = getArg("--ast");
-  const strategyAST = astRaw
-    ? (JSON.parse(astRaw) as FactorAST)
-    : ((latestSelected?.ast as FactorAST | null) ?? null);
-  if (!strategyAST) {
-    throw new Error(`No executable AST found for strategy=${strategyId}`);
-  }
-
-  console.log(
-    `🛠️ 標準実証レポート用データの生成開始 [${strategyId}] (Audit-Ready)...`,
-  );
-
-  const commitHash = execSync("git rev-parse HEAD").toString().trim();
-
-  const strategyMetadata = {
-    id: strategyId,
-    name: strategyName,
-    description: strategyDescription,
-  };
-
-  const govMap = loadGovMap();
-  const intelligence10kMap = load10kMap();
-  const universePool = new DataPipelineRuntime().resolveUniverse([], 500);
-  const selectedSymbols4 = buildDynamicUniverse(
-    [...universePool],
-    16,
-    govMap,
-    intelligence10kMap,
-  );
-  const localHistory = await loadLocalHistory(selectedSymbols4);
-  console.log(`📡 Selecting ${selectedSymbols4.join(", ")} for backtest.`);
-  console.log(
-    `📊 10-K Map has coverage for: ${Object.keys(intelligence10kMap).join(", ")}`,
-  );
-
-  let totalEnriched = 0;
-  for (const h of localHistory) {
-    const symbol4 = h.symbol.slice(0, 4);
-    const tickerMap = govMap[symbol4] || {};
-    let lastCorrection = 0;
-    let lastActivist = 0;
-    let effectWindow = 0;
-
-    let lastSentiment = 0.5;
-    let lastAiExposure = 0;
-    let lastKgCentrality = 0;
-
-    for (const b of h.bars) {
-      const signal = tickerMap[b.Date];
-      if (signal) {
-        lastCorrection = signal.corrections || 0;
-        lastActivist = signal.activist || 0;
-        effectWindow = 30;
-      }
-
-      const intel10k = intelligence10kMap[symbol4]?.[b.Date];
-      if (intel10k) {
-        lastSentiment = intel10k.sentiment;
-        lastAiExposure = intel10k.aiExposure;
-        lastKgCentrality = intel10k.kgCentrality;
-        totalEnriched++;
-      }
-
-      (b as EnrichedBar).SegmentSentiment = lastSentiment;
-      (b as EnrichedBar).AiExposure = lastAiExposure;
-      (b as EnrichedBar).KgCentrality = lastKgCentrality;
-
-      if (effectWindow > 0) {
-        (b as EnrichedBar).CorrectionCount = lastCorrection;
-        (b as EnrichedBar).LargeHolderCount = lastActivist;
-        effectWindow--;
-      } else {
-        (b as EnrichedBar).CorrectionCount = 0;
-        (b as EnrichedBar).LargeHolderCount = 0;
-      }
+    Record<string, Partial<IntelligencePoint>>
+  >;
+  const result: IntelligenceMap = {};
+  for (const [symbolRaw, datedValues] of Object.entries(raw)) {
+    const symbol = toSymbol4(symbolRaw);
+    if (!/^\d{4}$/.test(symbol)) continue;
+    for (const [dateRaw, point] of Object.entries(datedValues)) {
+      const isoDate = toIsoDate(dateRaw);
+      if (!isoDate) continue;
+      if (!result[symbol]) result[symbol] = {};
+      result[symbol][isoDate] = {
+        sentiment: clamp(Number(point.sentiment ?? 0.5), 0, 1),
+        aiExposure: Math.max(0, Number(point.aiExposure ?? 0)),
+        kgCentrality: Math.max(0, Number(point.kgCentrality ?? 0)),
+        correctionFlag: Number(point.correctionFlag ?? 0) > 0 ? 1 : 0,
+        correctionCount90d: Math.max(
+          0,
+          Math.floor(Number(point.correctionCount90d ?? 0)),
+        ),
+      };
     }
   }
-  console.log(
-    `✅ Enrichment complete. Total bars with PIT 10-K signals: ${totalEnriched}`,
-  );
+  return result;
+};
 
-  const EVAL_START = "2021-01-01";
-  const filteredHistory = localHistory
-    .map((h) => ({
-      ...h,
-      bars: h.bars.filter((b) => b.Date >= EVAL_START),
-    }))
-    .filter((h) => h.bars.length > 5);
+const normalizeBars = (
+  rows: readonly Record<string, unknown>[],
+): NormalizedBar[] =>
+  rows
+    .map((row) => {
+      const date = toIsoDate(String(row.Date ?? row.date ?? ""));
+      if (!date) return null;
+      const open = Number(row.Open ?? row.open ?? 0);
+      const close = Number(row.Close ?? row.close ?? 0);
+      if (open <= 0 || close <= 0) return null;
+      return {
+        date,
+        open,
+        high: Number(row.High ?? row.high ?? close),
+        low: Number(row.Low ?? row.low ?? close),
+        close,
+        volume: Number(row.Volume ?? row.volume ?? 0),
+      };
+    })
+    .filter((row): row is NormalizedBar => row !== null)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
-  if (filteredHistory.length === 0) {
-    throw new Error("No market data available after 2021-01-01");
+async function run(): Promise<void> {
+  const args = parseArgs();
+  const intelligenceMap = loadIntelligenceMap();
+  const runtime = new DataPipelineRuntime();
+  const autoUniverse =
+    args.symbols.length > 0
+      ? args.symbols
+      : runtime.resolveUniverse([], args.limit);
+  const targetSymbols = autoUniverse.slice(0, args.limit);
+
+  if (targetSymbols.length === 0) {
+    throw new Error("No symbols selected for proof.");
   }
 
-  const dateSet = filteredHistory.map(
-    (h) => new Set(h.bars.map((b) => b.Date)),
-  );
-  const commonDates = filteredHistory[0]!.bars
-    .map((b) => b.Date)
-    .filter((d) => dateSet.every((s) => s.has(d)));
-  if (commonDates.length < 40) {
-    throw new Error(
-      `Insufficient common dates for verification: ${commonDates.length}`,
-    );
-  }
-  const allHistory = localHistory.map(({ symbol, bars }) => {
-    const byDate = new Map(bars.map((b) => [b.Date, b]));
-    return {
-      symbol,
-      bars: commonDates
-        .map((d) => byDate.get(d)!)
-        .filter((b) => b !== undefined),
-    };
-  });
-  const activeSymbols = allHistory.map((h) => h.symbol);
-  const n = commonDates.length;
+  console.log(`📊 Performance Proof for ${targetSymbols.length} symbols...`);
+  const gateway = await MarketdataLocalGateway.create(targetSymbols);
+  const dailyPnl: Record<string, number[]> = {};
 
-  const feeBps = core.config.execution.costs.feeBps;
-  const slippageBps = core.config.execution.costs.slippageBps;
-  const totalCostRate = (feeBps + slippageBps) / 10000;
+  for (const symbol of targetSymbols) {
+    const barsRaw = await gateway.getBarsAll(symbol);
+    const bars = normalizeBars(barsRaw);
+    if (bars.length < 10) continue;
 
-  const individualData: QuantitativeVerification["individualData"] = {};
-  activeSymbols.forEach((s) => {
-    individualData[s] = { prices: [], factors: [], positions: [] };
-  });
+    const points = intelligenceMap[symbol] ?? {};
+    const filingDates = Object.keys(points).sort();
 
-  const strategyDailyReturns: number[] = new Array(n).fill(0);
-  const benchmarkDailyReturns: number[] = new Array(n).fill(0);
-  const previousPositions: Record<string, number> = Object.fromEntries(
-    activeSymbols.map((s) => [s, 0]),
-  );
-  const previousFactors: Record<string, number | undefined> =
-    Object.fromEntries(activeSymbols.map((s) => [s, undefined]));
+    let prevRiskScore: number | null = null;
+    for (const filingDate of filingDates) {
+      if (args.from && filingDate < args.from) continue;
+      if (args.to && filingDate > args.to) continue;
 
-  for (let i = 0; i < n; i++) {
-    let mktReturnSum = 0;
-    let stratReturnSum = 0;
-    const day = allHistory.map(({ symbol, bars }) => {
-      const b = bars[i];
-      if (!b) {
-        throw new Error(`Missing bar at ${symbol} idx=${i}`);
-      }
-      const initialPrice = bars[0]?.Open || 1;
-      const data = individualData[symbol];
-      if (!data) {
-        throw new Error(`Missing individualData for ${symbol}`);
-      }
-      data.prices.push((b.Close / initialPrice) * 100);
-      const factor = FactorComputeEngine.evaluate(strategyAST, bars, i);
-      if (!Number.isFinite(factor)) {
-        throw new Error(`Non-finite factor at ${symbol} ${b.Date}`);
-      }
-      data.factors.push(factor);
-      return { symbol, factor, next: bars[i + 1] };
-    });
-    day.forEach(({ symbol, factor, next }) => {
-      const prevFactor = previousFactors[symbol];
-      const pos = prevFactor === undefined ? 0 : factor > prevFactor ? 1 : 0;
-      previousFactors[symbol] = factor;
-      const data = individualData[symbol];
-      if (!data) {
-        throw new Error(`Missing individualData for ${symbol}`);
-      }
-      data.positions.push(pos);
-      if (i < n - 1 && next) {
-        const ret = (next.Close - next.Open) / next.Open;
-        mktReturnSum += ret / activeSymbols.length;
-        const prevPos = previousPositions[symbol] ?? 0;
-        const turnover = Math.abs(pos - prevPos);
-        const netRet = pos * ret - turnover * totalCostRate;
-        previousPositions[symbol] = pos;
-        stratReturnSum += netRet / activeSymbols.length;
-      }
-    });
+      const idx = bars.findIndex((b) => b.date === filingDate);
+      if (idx < 0 || idx + 5 >= bars.length) continue;
 
-    if (i < n - 1) {
-      benchmarkDailyReturns[i] = mktReturnSum;
-      strategyDailyReturns[i] = stratReturnSum;
+      const point = points[filingDate];
+      if (!point) continue;
+      const riskScore = 1 - point.sentiment + Math.log1p(point.aiExposure) / 6;
+      const riskDelta = prevRiskScore === null ? 0 : riskScore - prevRiskScore;
+      prevRiskScore = riskScore;
+
+      const nextReturn = bars[idx + 1]!.close / bars[idx]!.close - 1;
+      const signalValue = -riskDelta;
+
+      if (!dailyPnl[filingDate]) dailyPnl[filingDate] = [];
+      dailyPnl[filingDate].push(signalValue * nextReturn);
     }
   }
 
-  let cumS = 1.0,
-    cumB = 1.0;
-  const strategyCum = strategyDailyReturns.map((r) => {
-    cumS *= 1 + r;
-    return (cumS - 1) * 100;
-  });
-  const benchmarkCum = benchmarkDailyReturns.map((r) => {
-    cumB *= 1 + r;
-    return (cumB - 1) * 100;
-  });
+  const sortedDates = Object.keys(dailyPnl).sort();
+  const pnlSeries = sortedDates.map((d) => mean(dailyPnl[d] ?? [0]));
+  const metrics = calculatePerformanceMetrics(pnlSeries);
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const fileName = `VERIF_${strategyMetadata.id}_${activeSymbols.length}S_${timestamp}.png`;
-  const predictions: number[] = [];
-  const targets: number[] = [];
-  for (const symbol of activeSymbols) {
-    const d = individualData[symbol];
-    if (!d) continue;
-    for (let i = 0; i < n - 1; i++) {
-      const p0 = d.prices[i] ?? 0;
-      const p1 = d.prices[i + 1] ?? 0;
-      if (p0 <= 0 || p1 <= 0) continue;
-      const ret = (p1 - p0) / p0;
-      const factor = d.factors[i] ?? 0;
-      if (!Number.isFinite(ret) || !Number.isFinite(factor)) continue;
-      predictions.push(factor);
-      targets.push(ret);
-    }
-  }
-  console.log(
-    `📊 Collected ${predictions.length} prediction/target pairs for IC.`,
-  );
-  let ic = 0;
-  if (predictions.length >= 2) {
-    ic = QuantMetrics.calculateCorr(predictions, targets);
-    if (Number.isNaN(ic)) {
-      console.warn("⚠️ IC calculation returned NaN. Defaulting to 0.");
-      ic = 0;
-    }
-  }
-
-  const dailyReturnMean = QuantMetrics.mean(strategyDailyReturns);
-
-  const report: QuantitativeVerification = QuantitativeVerificationSchema.parse(
-    {
-      schemaVersion: "1.1.0",
-      strategyId: strategyMetadata.id,
-      strategyName: strategyMetadata.name,
-      description: strategyMetadata.description,
-      generatedAt: new Date().toISOString(),
-      audit: {
-        commitHash,
-        environment: `Node ${process.version} / ${process.platform}`,
-        schemaVersion: "1.1.8",
-      },
-      evaluationWindow: {
-        from: commonDates[0] ?? "",
-        to: commonDates[n - 1] ?? "",
-        days: n,
-      },
-      fileName,
-      dates: commonDates,
-      strategyCum,
-      benchmarkCum,
-      individualData,
-      metrics: {
-        ic: Number(ic.toFixed(4)),
-        sharpe: Number(
-          QuantMetrics.calculateSharpeRatio(strategyDailyReturns).toFixed(2),
-        ),
-        maxDD: Number(
-          Math.min(
-            ...strategyCum.map(
-              (v, i) => v - Math.max(...strategyCum.slice(0, i + 1)),
-            ),
-          ).toFixed(2),
-        ),
-        totalReturn: Number((strategyCum[n - 1] ?? 0).toFixed(2)),
-        universe: activeSymbols,
-        winRate: Number(
-          (
-            strategyDailyReturns.filter((r) => r > 0).length / Math.max(n, 1)
-          ).toFixed(4),
-        ),
-        volatility: Number(
-          (
-            Math.sqrt(
-              strategyDailyReturns.reduce(
-                (acc, r) => acc + (r - dailyReturnMean) ** 2,
-                0,
-              ) / Math.max(strategyDailyReturns.length, 1),
-            ) * Math.sqrt(252)
-          ).toFixed(4),
-        ),
-        cagr: Number(
-          QuantMetrics.calculateAnnualizedReturn(
-            (strategyCum[n - 1] ?? 0) / 100,
-            n,
-          ).toFixed(4),
-        ),
-      },
-      costs: {
-        feeBps,
-        slippageBps,
-        totalCostBps: feeBps + slippageBps,
-      },
-      layout: {
-        mainTitle: `Alpha Verification [Audit Ready]: ${strategyMetadata.name}`,
-        subTitle: `Strategy: ${strategyMetadata.id} | Commit: ${commitHash.substring(0, 7)} | Costs: ${feeBps + slippageBps}bps`,
-        panel1Title: "Universe Asset Performance",
-        panel2Title: `Rolling IC (30d): ${strategyMetadata.id}`,
-        panel3Title: "Strategy Drawdown",
-        panel4Title: "Cumulative Performance (Net of Costs)",
-        yAxisReturn: "Net Return (%)",
-        yAxisSignal: "Signal Intensity",
-        legendStrategy: "Strategy (Net)",
-        legendBenchmark: "Benchmark (Gross)",
-      },
-    },
-  );
-
-  const outDir = paths.verificationRoot;
-  mkdirSync(outDir, { recursive: true });
-  const jsonPath = join(outDir, "standard_verification_data.json");
-  writeFileSync(jsonPath, JSON.stringify(report, null, 2));
-  const annualizedReturn = QuantMetrics.calculateAnnualizedReturn(
-    (report.metrics.totalReturn ?? 0) / 100,
-    report.evaluationWindow.days,
-  );
   console.log(
     JSON.stringify(
       {
-        financial_summary: {
-          strategyId: report.strategyId,
-          period: `${report.evaluationWindow.from}..${report.evaluationWindow.to}`,
-          days: report.evaluationWindow.days,
-          symbols: report.metrics.universe.length,
-          costsBps: report.costs.totalCostBps,
-          sharpe: report.metrics.sharpe,
-          ic: report.metrics.ic,
-          totalReturnPct: report.metrics.totalReturn,
-          maxDrawdownPct: report.metrics.maxDD,
-          annualizedReturn: Number(annualizedReturn.toFixed(6)),
-          winRate: report.metrics.winRate,
-          volatility: report.metrics.volatility,
-          cagr: report.metrics.cagr,
+        proof: {
+          symbols: targetSymbols.length,
+          days: sortedDates.length,
+          sharpe: metrics.sharpe,
+          totalReturn: metrics.cumulativeReturn,
+          maxDrawdown: metrics.maxDrawdown,
+          winRate: metrics.winRate,
         },
       },
       null,
       2,
     ),
   );
-  console.log(
-    `✅ 監査準備完了（CommitHash: ${commitHash.substring(0, 7)}）: ${jsonPath}`,
-  );
 }
 
-generateStandardVerificationReport().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+if (import.meta.main) {
+  run().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

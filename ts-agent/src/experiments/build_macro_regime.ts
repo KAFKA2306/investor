@@ -4,7 +4,13 @@ import {
   AlphaKnowledgebase,
   type MacroRegimeInput,
 } from "../context/alpha_knowledgebase.ts";
+import {
+  getNumberArg,
+  getStringArg,
+  parseCliArgs,
+} from "../providers/cli_args.ts";
 import { EstatProvider } from "../providers/external_market_providers.ts";
+import { clamp, mean, std, toIsoDate } from "../providers/value_normalizers.ts";
 import { paths } from "../system/path_registry.ts";
 
 type CliArgs = {
@@ -23,31 +29,6 @@ type MacroPoint = {
   MacroYieldSlope?: number;
 };
 
-const pickArg = (args: readonly string[], key: string): string | undefined => {
-  const prefix = `${key}=`;
-  const found = args.find((v) => v.startsWith(prefix));
-  return found ? found.slice(prefix.length) : undefined;
-};
-
-const toIsoDate = (value: string): string | null =>
-  /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : null;
-
-const clamp = (value: number, min: number, max: number): number =>
-  Math.max(min, Math.min(max, value));
-
-const mean = (values: readonly number[]): number =>
-  values.length === 0
-    ? 0
-    : values.reduce((sum, value) => sum + value, 0) / values.length;
-
-const std = (values: readonly number[]): number => {
-  if (values.length <= 1) return 0;
-  const m = mean(values);
-  const variance =
-    values.reduce((sum, value) => sum + (value - m) ** 2, 0) / values.length;
-  return Math.sqrt(Math.max(variance, 0));
-};
-
 const zscore = (windowValues: readonly number[], current: number): number => {
   const sigma = std(windowValues);
   if (sigma <= 1e-9) return 0;
@@ -55,24 +36,17 @@ const zscore = (windowValues: readonly number[], current: number): number => {
 };
 
 const parseArgs = (): CliArgs => {
-  const args = process.argv.slice(2);
+  const args = parseCliArgs(process.argv.slice(2));
   const sourcePath = resolve(
-    pickArg(args, "--source-path") ??
+    getStringArg(args, "--source-path") ??
       `${paths.verificationRoot}/macro_indicators_map.json`,
   );
-  const window = Math.max(
-    3,
-    Number.parseInt(pickArg(args, "--window") ?? "12", 10),
-  );
-  const from = pickArg(args, "--from");
-  const to = pickArg(args, "--to");
-  const riskOnThreshold = Number.parseFloat(
-    pickArg(args, "--risk-on-threshold") ?? "0.5",
-  );
-  const riskOffThreshold = Number.parseFloat(
-    pickArg(args, "--risk-off-threshold") ?? "-0.5",
-  );
-  const dbPathArg = pickArg(args, "--db-path");
+  const window = Math.max(3, Math.trunc(getNumberArg(args, "--window", 12)));
+  const from = getStringArg(args, "--from");
+  const to = getStringArg(args, "--to");
+  const riskOnThreshold = getNumberArg(args, "--risk-on-threshold", 0.5);
+  const riskOffThreshold = getNumberArg(args, "--risk-off-threshold", -0.5);
+  const dbPathArg = getStringArg(args, "--db-path");
   return {
     window,
     sourcePath,

@@ -2,11 +2,19 @@ import { Database } from "bun:sqlite";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
+  getNumberArg,
+  getStringArg,
+  hasFlag,
+  parseCliArgs,
+  requireIsoDate,
+} from "../providers/cli_args.ts";
+import {
   type EdinetDocument,
   EdinetDocumentSchema,
   EdinetProvider,
 } from "../providers/edinet_provider.ts";
 import { EdinetSearchProvider } from "../providers/edinet_search_provider.ts";
+import { toSymbol4 } from "../providers/value_normalizers.ts";
 import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
 
 type IntelligencePoint = {
@@ -48,64 +56,39 @@ const wait = async (ms: number): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const pickArg = (args: readonly string[], key: string): string | undefined => {
-  const prefix = `${key}=`;
-  const matched = args.find((value) => value.startsWith(prefix));
-  return matched ? matched.slice(prefix.length) : undefined;
-};
-
-const hasFlag = (args: readonly string[], flag: string): boolean =>
-  args.includes(flag);
-
-const toSymbol4 = (value: string): string =>
-  value.replace(".T", "").trim().slice(0, 4);
-
-const parseIsoDate = (value: string): string => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw new Error(`Invalid date format: ${value} (expected YYYY-MM-DD)`);
-  }
-  return value;
-};
-
 const parseArgs = (): CliArgs => {
-  const args = process.argv.slice(2);
+  const parsed = parseCliArgs(process.argv.slice(2));
   const today = new Date().toISOString().slice(0, 10);
-  const from = parseIsoDate(pickArg(args, "--from") ?? DEFAULT_FROM);
-  const to = parseIsoDate(pickArg(args, "--to") ?? today);
+  const from = requireIsoDate(
+    getStringArg(parsed, "--from", DEFAULT_FROM)!,
+    "--from",
+  );
+  const to = requireIsoDate(getStringArg(parsed, "--to", today)!, "--to");
   if (from > to) {
     throw new Error(`--from must be <= --to (from=${from}, to=${to})`);
   }
-  const maxSymbols = Math.max(
-    1,
-    Number.parseInt(pickArg(args, "--max-symbols") ?? "3000", 10),
-  );
-  const allSymbols = hasFlag(args, "--all-symbols");
-  const rawSymbols = pickArg(args, "--symbols");
+  const maxSymbols = Math.max(1, getNumberArg(parsed, "--max-symbols", 3000));
+  const allSymbols = hasFlag(parsed, "--all-symbols");
+  const rawSymbols = getStringArg(parsed, "--symbols");
   const symbols = rawSymbols
     ? rawSymbols
         .split(",")
         .map((s) => toSymbol4(s))
         .filter((s) => /^\d{4}$/.test(s))
     : [];
-  const docTypesRaw = pickArg(args, "--doc-types");
+  const docTypesRaw = getStringArg(parsed, "--doc-types");
   const docTypes = new Set(
     (docTypesRaw ? docTypesRaw.split(",") : [...DEFAULT_DOC_TYPES])
       .map((v) => v.trim())
       .filter((v) => /^\d{3}$/.test(v)),
   );
-  const overwriteExisting = hasFlag(args, "--overwrite-existing");
-  const indexedOnly = hasFlag(args, "--indexed-only");
-  const cacheOnly = hasFlag(args, "--cache-only");
-  const listCacheOnly = hasFlag(args, "--list-cache-only");
-  const metadataOnly = hasFlag(args, "--metadata-only");
-  const sleepMs = Math.max(
-    0,
-    Number.parseInt(pickArg(args, "--sleep-ms") ?? "100", 10),
-  );
-  const flushEvery = Math.max(
-    1,
-    Number.parseInt(pickArg(args, "--flush-every") ?? "25", 10),
-  );
+  const overwriteExisting = hasFlag(parsed, "--overwrite-existing");
+  const indexedOnly = hasFlag(parsed, "--indexed-only");
+  const cacheOnly = hasFlag(parsed, "--cache-only");
+  const listCacheOnly = hasFlag(parsed, "--list-cache-only");
+  const metadataOnly = hasFlag(parsed, "--metadata-only");
+  const sleepMs = Math.max(0, getNumberArg(parsed, "--sleep-ms", 100));
+  const flushEvery = Math.max(1, getNumberArg(parsed, "--flush-every", 25));
   return {
     from,
     to,

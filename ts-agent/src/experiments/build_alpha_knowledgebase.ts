@@ -9,7 +9,19 @@ import {
   type SignalInput,
   type SignalLineageInput,
 } from "../context/alpha_knowledgebase.ts";
+import {
+  getNumberArg,
+  getStringArg,
+  parseCliArgs,
+} from "../providers/cli_args.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
+import {
+  clamp,
+  mean,
+  std,
+  toIsoDate,
+  toSymbol4,
+} from "../providers/value_normalizers.ts";
 import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
 import { paths } from "../system/path_registry.ts";
 
@@ -39,57 +51,23 @@ type NormalizedBar = {
   volume: number;
 };
 
-const clamp = (value: number, min: number, max: number): number =>
-  Math.max(min, Math.min(max, value));
-
-const mean = (values: readonly number[]): number =>
-  values.length === 0
-    ? 0
-    : values.reduce((sum, value) => sum + value, 0) / values.length;
-
-const std = (values: readonly number[]): number => {
-  if (values.length <= 1) return 0;
-  const m = mean(values);
-  const variance =
-    values.reduce((sum, value) => sum + (value - m) ** 2, 0) / values.length;
-  return Math.sqrt(Math.max(variance, 0));
-};
-
-const toIsoDate = (value: string): string | null => {
-  const v = value.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
-  if (/^\d{8}$/.test(v)) {
-    return `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}`;
-  }
-  return null;
-};
-
-const toSymbol4 = (value: string): string =>
-  value.replace(".T", "").slice(0, 4);
-
 const toFiniteNumber = (value: unknown, defaultValue = 0): number => {
   const num = Number(value);
   return Number.isFinite(num) ? num : defaultValue;
 };
 
-const pickArg = (args: readonly string[], key: string): string | undefined => {
-  const prefix = `${key}=`;
-  const matched = args.find((value) => value.startsWith(prefix));
-  return matched ? matched.slice(prefix.length) : undefined;
-};
-
 const parseArgs = (): CliArgs => {
-  const args = process.argv.slice(2);
-  const limit = Math.max(1, Number(pickArg(args, "--limit") ?? 3000));
-  const rawSymbols = pickArg(args, "--symbols");
+  const args = parseCliArgs(process.argv.slice(2));
+  const limit = Math.max(1, getNumberArg(args, "--limit", 3000));
+  const rawSymbols = getStringArg(args, "--symbols");
   const symbols = rawSymbols
     ? rawSymbols
         .split(",")
         .map((s) => toSymbol4(s.trim()))
         .filter((s) => /^\d{4}$/.test(s))
     : [];
-  const dbPathArg = pickArg(args, "--db-path");
-  const alphaVersionRaw = pickArg(args, "--alpha-version") ?? "v2";
+  const dbPathArg = getStringArg(args, "--db-path");
+  const alphaVersionRaw = getStringArg(args, "--alpha-version", "v2");
   const alphaVersion = alphaVersionRaw === "v1" ? "v1" : "v2";
   const parsed: CliArgs = {
     limit,
