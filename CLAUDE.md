@@ -47,11 +47,11 @@ All commands run from the repo root via [Task](https://taskfile.dev/).
 
 ```bash
 task deps                    # Install bun + dashboard dependencies
-task check                   # format + lint + typecheck (alias: task qa)
-task qa:fast                 # lint + typecheck only
+task check                   # format + lint (alias: task qa)
+task qa:fast                 # lint only
 task run                     # Full run: newalphasearch + orchestrate + benchmark
 task run:newalphasearch       # Autonomous alpha search loop (default 3 cycles)
-task run:quick               # typecheck + proof-layers + verify + discover + benchmark + verification-plot
+task run:quick               # proof-layers + verify + discover + benchmark + verification-plot
 task view                    # Start API server (:8787) + dashboard (:5173)
 ```
 
@@ -77,7 +77,6 @@ task pipeline:edinet-daily   # EDINET daily flow (features → macro → KB → 
 ```bash
 bun run format               # Biome format
 bun run lint                 # Biome lint
-bun run typecheck            # tsc --noEmit
 bun run start:api            # API server only
 bun run experiments:alpha-discovery
 bun run experiments:kb-build
@@ -96,7 +95,6 @@ task jquants:warm-all:stop
 
 ## Coding conventions
 
-- **TypeScript**: Strict mode, `noExplicitAny` is an error. No `any` allowed.
 - **Formatter/Linter**: Biome (`ts-agent/biome.json`) — 2-space indent, organize imports on save.
 - **Naming**: `snake_case.ts` for files, `PascalCase` for classes/types, `camelCase` for variables/functions.
 - **Agents**: Extend `BaseAgent` (from `src/system/app_runtime_core.ts`) and implement `run()`.

@@ -85,5 +85,38 @@ arXiv の最新知恵を MCP サーバー「Alpha Intelligence」として提供
 - **PIT リークは絶対ダメ！**: 未来の情報を使うのは絶対禁止っ！💢
 - **逆引き監査 (Traceability)**: すべての取引（`signal_id`）は、元の書類まで100%辿れなきゃダメ！
 
+---
+
+## ✅ EDINET Data I/O 保証ゲート（中央管理） 📦
+
+EDINET E2E（取得 -> 特徴量化 -> KB保存）の整合性は、`verify_edinet_io_contract.ts` が**一元管理された設定**で検証するよっ！
+
+- **中央設定（Single Source of Truth）**
+  - `ts-agent/src/experiments/edinet_io_contract_config.ts`
+  - ここで `閾値 / 出力先 / 終了コード` を管理するよっ。
+- **標準コマンド**
+```bash
+bun run experiments:verify-edinet-io
+```
+- **成果物**
+  - `logs/verification/edinet_io_report.json`（機械可読レポート）
+  - `logs/verification/edinet_io_quarantine.ndjson`（隔離対象）
+- **終了コード**
+  - `0`: Pass
+  - `2`: Violation（Fail-fast）
+  - `3`: Missing prerequisite
+- **Task ゲート**
+```bash
+task pipeline:edinet-io-verify
+task pipeline:edinet-io-repair
+task pipeline:edinet-daily:strict
+```
+
+- **修復フロー（メンテ運用）**
+```bash
+bun run experiments:repair-edinet-event-features -- --dry-run
+task pipeline:edinet-io-repair
+```
+
 **Owner**: Antigravity Quant Team 💖  
 **Status**: **Integrated EDINET Spec v2.1** ✨🚀🌈💖

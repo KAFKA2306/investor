@@ -18,7 +18,6 @@
 ## Bunさんの直接コマンド (ts-agent/ の中だょ) 🐰⭐
 - `bun run format`：コードを可愛く整えちゃうよ！🎀
 - `bun run lint`：変なところがないか見守るにょ！👀💕
-- `bun run typecheck`：型さんが合ってるかチェック！✨
 - `bun run verify:api`：APIさんとお話しできるか確認だにょ！📞💖
 - `bun run pipeline:llm-readiness`：LLMさんの準備はいいかな？🌟
 - `bun run pipeline:ab`：ABテストも頑張っちゃうぞ！💪✨

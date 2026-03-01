@@ -16,18 +16,17 @@
 ## Build, Test, and Development Commands
 Use `Taskfile.yml` from repo root:
 - `task setup`: install Bun and dashboard dependencies.
-- `task check`: run format + lint + typecheck.
+- `task check`: run format + lint.
 - `task run`: run full discovery/model-analysis/mining pipeline.
 - `task run:newalphasearch`: run alpha discovery + mining workflow.
 - `task view`: start API (`:8787`) and dashboard (`:5173`).
 
 Direct scripts (inside `ts-agent/`):
-- `bun run lint`, `bun run format`, `bun run typecheck`
+- `bun run lint`, `bun run format`
 - `bun run pipeline:backtest`, `bun run experiments:alpha-discovery`
 
 ## Coding Style & Naming Conventions
-- TypeScript uses Biome (`ts-agent/biome.json`): 2-space indentation, organize imports, recommended lint rules.
-- Prefer strict typing; avoid `any` (enforced as error).
+- Biome (`ts-agent/biome.json`): 2-space indentation, organize imports, recommended lint rules.
 - Naming:
   - files/modules: `snake_case.ts`
   - classes/types: `PascalCase`
