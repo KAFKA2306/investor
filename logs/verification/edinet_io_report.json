@@ -1,0 +1,39 @@
+{
+  "status": "pass",
+  "runAt": "2026-03-01T08:00:29.971Z",
+  "contractVersion": "v1.0.0",
+  "inputs": {
+    "knowledgebasePath": "/home/kafka/finance/investor/logs/cache/alpha_knowledgebase.sqlite",
+    "intelligenceMapPath": "/home/kafka/finance/investor/ts-agent/data/edinet_10k_intelligence_map.json",
+    "quarantineOnly": false
+  },
+  "totals": {
+    "signals": 855,
+    "eventFeatures": 855,
+    "lineageRows": 855,
+    "documents": 1842
+  },
+  "thresholdByCode": {
+    "NEGATIVE_CORRECTION_COUNT": 0,
+    "MISSING_INTELLIGENCE_ENTRY": 0,
+    "CORRECTION_COUNT_MISMATCH": 0,
+    "CORRECTION_FLAG_MISMATCH": 0,
+    "SIGNAL_WITHOUT_EVENT": 0,
+    "EVENT_WITHOUT_SIGNAL": 0,
+    "LINEAGE_WITHOUT_DOCUMENT": 0,
+    "SIGNAL_WITHOUT_LINEAGE": 0,
+    "SIGNAL_WITHOUT_FUTURE_MARKET": 0
+  },
+  "violationCountByCode": {
+    "NEGATIVE_CORRECTION_COUNT": 0,
+    "MISSING_INTELLIGENCE_ENTRY": 0,
+    "CORRECTION_COUNT_MISMATCH": 0,
+    "CORRECTION_FLAG_MISMATCH": 0,
+    "SIGNAL_WITHOUT_EVENT": 0,
+    "EVENT_WITHOUT_SIGNAL": 0,
+    "LINEAGE_WITHOUT_DOCUMENT": 0,
+    "SIGNAL_WITHOUT_LINEAGE": 0,
+    "SIGNAL_WITHOUT_FUTURE_MARKET": 0
+  },
+  "violations": []
+}

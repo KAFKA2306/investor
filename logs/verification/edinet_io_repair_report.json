@@ -1,0 +1,20 @@
+{
+  "status": "pass",
+  "runAt": "2026-03-01T08:00:29.888Z",
+  "contractVersion": "v1.0.0",
+  "inputs": {
+    "knowledgebasePath": "/home/kafka/finance/investor/logs/cache/alpha_knowledgebase.sqlite",
+    "intelligenceMapPath": "/home/kafka/finance/investor/ts-agent/data/edinet_10k_intelligence_map.json",
+    "quarantinePath": "/home/kafka/finance/investor/logs/verification/edinet_io_quarantine.ndjson",
+    "dryRun": false,
+    "symbols": []
+  },
+  "totals": {
+    "scannedMissingSignals": 0,
+    "repairedCount": 0,
+    "unresolvedCount": 0,
+    "missingBefore": 0,
+    "missingAfter": 0
+  },
+  "unresolved": []
+}
