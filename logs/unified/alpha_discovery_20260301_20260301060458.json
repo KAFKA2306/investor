@@ -1,0 +1,304 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "82a7e125-6a0c-4e57-a90b-8a437ac09624",
+  "runId": "uqtl_20260301T150454_2",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T06:04:58.404Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260301",
+    "generatedAt": "2026-03-01T06:04:58.404Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5,
+      "selectedNovelCount": 1,
+      "openAIThemeUsage": 0
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-QUANT-858E0021"
+    ],
+    "selectedDetails": [
+      {
+        "id": "ALPHA-QUANT-858E0021",
+        "ideaHash": "8d5ead2024081aba6c2ce18c",
+        "featureSignature": [
+          "correction_freq",
+          "high",
+          "macro_iip",
+          "open",
+          "volume"
+        ],
+        "noveltyScore": 0.7777777777777778,
+        "adoptionScore": 0.6200000000000001,
+        "themeSource": "LOCAL",
+        "llmModel": ""
+      }
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-MACRO-D5ECAC50",
+        "description": "Inventory Lead Hypothesis (Macro Strategist)",
+        "reasoning": "CLAIM: Strategic Inventory Lead extraction using backlog. [REASONING] Detects cycle and exploits utilization in bottleneck markets. Verified by Macro Strategist protocols.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-03-01T06:04:58.404Z",
+        "scores": {
+          "priority": 0.5555555555555556,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.5,
+          "novelty": 0.7777777777777778,
+          "fitness": 0.5,
+          "stability": 0.5,
+          "adoption": 0.6000000000000001
+        },
+        "ideaHash": "02a39042d679a6b43a0f044f",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "constant",
+            "value": 4.88
+          },
+          "right": {
+            "type": "variable",
+            "name": "open"
+          }
+        }
+      },
+      {
+        "id": "ALPHA-QUANT-858E0021",
+        "description": "Information Asymmetry Hypothesis (Quant Analyst)",
+        "reasoning": "CLAIM: Structural drift identification via Information Asymmetry and insider. [REASONING] The Quant Analyst persona targets latency using a leakage approach. Optimized for skewness regimes.",
+        "status": "SELECTED",
+        "recency": "2026-03-01T06:04:58.404Z",
+        "scores": {
+          "priority": 0.5805555555555556,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.5,
+          "novelty": 0.7777777777777778,
+          "fitness": 0.525,
+          "stability": 0.5125,
+          "adoption": 0.6200000000000001
+        },
+        "ideaHash": "8d5ead2024081aba6c2ce18c",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "correction_freq",
+          "high",
+          "macro_iip",
+          "open",
+          "volume"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "SUB",
+          "left": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "variable",
+              "name": "correction_freq"
+            },
+            "right": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "high"
+              },
+              "right": {
+                "type": "variable",
+                "name": "volume"
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "MUL",
+            "left": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "macro_iip"
+              },
+              "right": {
+                "type": "constant",
+                "value": 3.68
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "SMA",
+              "left": {
+                "type": "variable",
+                "name": "open"
+              },
+              "right": {
+                "type": "constant",
+                "value": 3
+              }
+            }
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-03-01T06:04:58.362Z",
+    "input": {
+      "channel": "task",
+      "nlInputProvided": false,
+      "nlInputHash": "",
+      "nlInputPreview": ""
+    }
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

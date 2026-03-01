@@ -1,0 +1,282 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "5bb8f529-7709-48b9-841e-49f51c0dd2c1",
+  "runId": "uqtl_20260301T153952_3",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T06:39:56.616Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260301",
+    "generatedAt": "2026-03-01T06:39:56.616Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5,
+      "selectedNovelCount": 1,
+      "openAIThemeUsage": 0
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-FUNDAMENTAL-93EA4937"
+    ],
+    "selectedDetails": [
+      {
+        "id": "ALPHA-FUNDAMENTAL-93EA4937",
+        "ideaHash": "bc6045b32f28ad1b72853bf6",
+        "featureSignature": [
+          "open"
+        ],
+        "noveltyScore": 0.4444444444444444,
+        "adoptionScore": 0.524,
+        "themeSource": "LOCAL",
+        "llmModel": ""
+      }
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-FUNDAMENTAL-93EA4937",
+        "description": "[EVOLVED] Shift (MALE): Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst) [v2]",
+        "reasoning": "[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-QUANT-2635C93E. Focusing on explorative diversity.",
+        "status": "SELECTED",
+        "recency": "2026-03-01T06:39:56.616Z",
+        "scores": {
+          "priority": 0.5438888888888889,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.6,
+          "novelty": 0.4444444444444444,
+          "fitness": 0.575,
+          "stability": 0.48750000000000004,
+          "adoption": 0.524
+        },
+        "ideaHash": "bc6045b32f28ad1b72853bf6",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 2,
+        "parentId": "ALPHA-QUANT-2635C93E",
+        "mutationType": "STRUCTURAL_SHIFT",
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "variable",
+              "name": "open"
+            },
+            "right": {
+              "type": "variable",
+              "name": "open"
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 3
+          }
+        }
+      },
+      {
+        "id": "ALPHA-MACRO-8C012FDD",
+        "description": "[EVOLVED] Shift (MALE): Causal Mechanism (CAMEF) Hypothesis (Macro Strategist) [v2]",
+        "reasoning": "[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-MACRO-F77B94E2. Focusing on explorative diversity.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-03-01T06:39:56.616Z",
+        "scores": {
+          "priority": 0.48888888888888893,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.5,
+          "novelty": 0.4444444444444444,
+          "fitness": 0.5,
+          "stability": 0.5,
+          "adoption": 0.4800000000000001
+        },
+        "ideaHash": "f69cdd4f4639557ba6e816f7",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "high"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 2,
+        "parentId": "ALPHA-MACRO-F77B94E2",
+        "mutationType": "STRUCTURAL_SHIFT",
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "SMA",
+            "left": {
+              "type": "operator",
+              "name": "LAG",
+              "left": {
+                "type": "variable",
+                "name": "high"
+              },
+              "right": {
+                "type": "constant",
+                "value": 8
+              }
+            },
+            "right": {
+              "type": "constant",
+              "value": 5
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 6
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-03-01T06:39:56.569Z",
+    "input": {
+      "channel": "task",
+      "nlInputProvided": false,
+      "nlInputHash": "",
+      "nlInputPreview": ""
+    }
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

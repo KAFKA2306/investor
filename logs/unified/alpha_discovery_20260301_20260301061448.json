@@ -1,0 +1,318 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "97ca6fac-8367-4162-a60d-9d4d59d9f36c",
+  "runId": "uqtl_20260301T151444_2",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T06:14:48.805Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260301",
+    "generatedAt": "2026-03-01T06:14:48.805Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5,
+      "selectedNovelCount": 1,
+      "openAIThemeUsage": 0
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-HFT-31870637"
+    ],
+    "selectedDetails": [
+      {
+        "id": "ALPHA-HFT-31870637",
+        "ideaHash": "48a3f5450d8a9c6a134dedcf",
+        "featureSignature": [
+          "correction_freq",
+          "kg_centrality"
+        ],
+        "noveltyScore": 0.775,
+        "adoptionScore": 0.6190000000000001,
+        "themeSource": "LOCAL",
+        "llmModel": ""
+      }
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-HFT-31870637",
+        "description": "Inventory Lead Hypothesis (HFT Engineer)",
+        "reasoning": "CLAIM: Autonomous hypothesis on Inventory Lead using backlog. [REASONING] This model identifies cycle trajectories to extract utilization edge in bottleneck regimes. Reasoning trace by HFT Engineer.",
+        "status": "SELECTED",
+        "recency": "2026-03-01T06:14:48.805Z",
+        "scores": {
+          "priority": 0.5800000000000001,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.5,
+          "novelty": 0.775,
+          "fitness": 0.525,
+          "stability": 0.5125,
+          "adoption": 0.6190000000000001
+        },
+        "ideaHash": "48a3f5450d8a9c6a134dedcf",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "correction_freq",
+          "kg_centrality"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "SUB",
+          "left": {
+            "type": "variable",
+            "name": "correction_freq"
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "kg_centrality"
+            },
+            "right": {
+              "type": "constant",
+              "value": 4.06
+            }
+          }
+        }
+      },
+      {
+        "id": "ALPHA-BEHAVIORAL-33A09439",
+        "description": "[EVOLVED] Crossover: [EVOLVED] Shift (MALE) [v3]",
+        "reasoning": "[EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from ALPHA-BEHAVIORAL-5FE4F457. CLAIM: High-precision latency forecasting using Information Asymmetry. [REASONING] A leakage model that uses insider to filter noise during skewness periods. Proposed by Behavioral Economist.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-03-01T06:14:48.805Z",
+        "scores": {
+          "priority": 0.555,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.5,
+          "novelty": 0.775,
+          "fitness": 0.5,
+          "stability": 0.5,
+          "adoption": 0.5990000000000001
+        },
+        "ideaHash": "ce647bb1715edca292956aff",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "activist_bias",
+          "kg_centrality",
+          "macro_iip",
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-BEHAVIORAL-5FE4F457",
+        "mutationType": "CROSSOVER",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "variable",
+                "name": "kg_centrality"
+              },
+              "right": {
+                "type": "variable",
+                "name": "macro_iip"
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "SMA",
+              "left": {
+                "type": "constant",
+                "value": 2.98
+              },
+              "right": {
+                "type": "constant",
+                "value": 7
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "operator",
+              "name": "SUB",
+              "left": {
+                "type": "constant",
+                "value": 0.72
+              },
+              "right": {
+                "type": "variable",
+                "name": "open"
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "ADD",
+              "left": {
+                "type": "variable",
+                "name": "activist_bias"
+              },
+              "right": {
+                "type": "constant",
+                "value": 4.41
+              }
+            }
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-03-01T06:14:48.748Z",
+    "input": {
+      "channel": "task",
+      "nlInputProvided": false,
+      "nlInputHash": "",
+      "nlInputPreview": ""
+    }
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}

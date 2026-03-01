@@ -1,0 +1,312 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "86548bbf-6f60-4af7-bfd8-db67b4bf5d55",
+  "runId": "uqtl_20260301T150446_1",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T06:04:49.946Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260301",
+    "generatedAt": "2026-03-01T06:04:49.946Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5,
+      "selectedNovelCount": 1,
+      "openAIThemeUsage": 0
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-FUNDAMENTAL-55AC326C"
+    ],
+    "selectedDetails": [
+      {
+        "id": "ALPHA-FUNDAMENTAL-55AC326C",
+        "ideaHash": "0c90b173bf7742933d470494",
+        "featureSignature": [
+          "activist_bias",
+          "macro_iip",
+          "open",
+          "segment_sentiment"
+        ],
+        "noveltyScore": 0.5,
+        "adoptionScore": 0.5640000000000001,
+        "themeSource": "LOCAL",
+        "llmModel": ""
+      }
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-FUNDAMENTAL-55AC326C",
+        "description": "[EVOLVED] Shift (MALE): Volatility Regime Hypothesis (Behavioral Economist) [v2]",
+        "reasoning": "[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-BEHAVIORAL-4F2DC594. Focusing on explorative diversity.",
+        "status": "SELECTED",
+        "recency": "2026-03-01T06:04:49.946Z",
+        "scores": {
+          "priority": 0.5800000000000001,
+          "plausibility": 0.6000000000000001,
+          "riskAdjusted": 0.6,
+          "novelty": 0.5,
+          "fitness": 0.6000000000000001,
+          "stability": 0.5,
+          "adoption": 0.5640000000000001
+        },
+        "ideaHash": "0c90b173bf7742933d470494",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "activist_bias",
+          "macro_iip",
+          "open",
+          "segment_sentiment"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 2,
+        "parentId": "ALPHA-BEHAVIORAL-4F2DC594",
+        "mutationType": "STRUCTURAL_SHIFT",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "SUB",
+            "left": {
+              "type": "operator",
+              "name": "SUB",
+              "left": {
+                "type": "variable",
+                "name": "macro_iip"
+              },
+              "right": {
+                "type": "variable",
+                "name": "activist_bias"
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "DIV",
+              "left": {
+                "type": "variable",
+                "name": "segment_sentiment"
+              },
+              "right": {
+                "type": "variable",
+                "name": "open"
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "LAG",
+            "left": {
+              "type": "operator",
+              "name": "DIV",
+              "left": {
+                "type": "variable",
+                "name": "activist_bias"
+              },
+              "right": {
+                "type": "variable",
+                "name": "open"
+              }
+            },
+            "right": {
+              "type": "constant",
+              "value": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "ALPHA-FUNDAMENTAL-B0A02FE4",
+        "description": "[EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v3]",
+        "reasoning": "[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-HFT-F05073DB. Focusing on explorative diversity.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-03-01T06:04:49.946Z",
+        "scores": {
+          "priority": 0.5,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.5,
+          "novelty": 0.5,
+          "fitness": 0.5,
+          "stability": 0.5,
+          "adoption": 0.5
+        },
+        "ideaHash": "227f0f89eada3c4236a98688",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "volume"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-HFT-F05073DB",
+        "mutationType": "STRUCTURAL_SHIFT",
+        "ast": {
+          "type": "operator",
+          "name": "LAG",
+          "left": {
+            "type": "operator",
+            "name": "SMA",
+            "left": {
+              "type": "variable",
+              "name": "volume"
+            },
+            "right": {
+              "type": "constant",
+              "value": 6
+            }
+          },
+          "right": {
+            "type": "constant",
+            "value": 7
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-03-01T06:04:49.903Z",
+    "input": {
+      "channel": "task",
+      "nlInputProvided": false,
+      "nlInputHash": "",
+      "nlInputPreview": ""
+    }
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}
