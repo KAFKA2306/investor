@@ -1,25 +1,26 @@
 import { Database } from "bun:sqlite";
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
-import { dirname } from "node:path";
-import { getStringArg, hasFlag, parseCliArgs } from "../providers/cli_args.ts";
+import { hasFlag } from "../providers/cli_args.ts";
+import { parseIntelligenceMap } from "../providers/value_normalizers.ts";
 import {
   type EdinetIoReport,
   EdinetIoReportSchema,
   type EdinetIoViolation,
   type EdinetIoViolationCode,
 } from "../schemas/edinet_io_contract_schema.ts";
+import { readJsonl } from "../utils/fs_utils.ts";
 import {
   EDINET_IO_CONTRACT_PATHS,
   EDINET_IO_CONTRACT_VERSION,
   EDINET_IO_EXIT_CODE,
   EDINET_IO_THRESHOLD_BY_CODE,
 } from "./edinet_io_contract_config.ts";
+import {
+  buildEdinetIoCliArgs,
+  countRows,
+  requirePrerequisites,
+  writeQuarantine,
+  writeReport,
+} from "./edinet_io_helpers.ts";
 
 type CliArgs = {
   knowledgebasePath: string;
@@ -37,53 +38,19 @@ type IntelligencePoint = {
 type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
 
 const parseArgs = (): CliArgs => {
-  const parsed = parseCliArgs(process.argv.slice(2));
+  const base = buildEdinetIoCliArgs({
+    knowledgebasePath: EDINET_IO_CONTRACT_PATHS.knowledgebasePath,
+    intelligenceMapPath: EDINET_IO_CONTRACT_PATHS.intelligenceMapPath,
+    reportPath: EDINET_IO_CONTRACT_PATHS.reportPath,
+    quarantinePath: EDINET_IO_CONTRACT_PATHS.quarantinePath,
+  });
   return {
-    knowledgebasePath: getStringArg(
-      parsed,
-      "--db-path",
-      EDINET_IO_CONTRACT_PATHS.knowledgebasePath,
-    )!,
-    intelligenceMapPath: getStringArg(
-      parsed,
-      "--intelligence-map-path",
-      EDINET_IO_CONTRACT_PATHS.intelligenceMapPath,
-    )!,
-    reportPath: getStringArg(
-      parsed,
-      "--report-path",
-      EDINET_IO_CONTRACT_PATHS.reportPath,
-    )!,
-    quarantinePath: getStringArg(
-      parsed,
-      "--quarantine-path",
-      EDINET_IO_CONTRACT_PATHS.quarantinePath,
-    )!,
-    quarantineOnly: hasFlag(parsed, "--quarantine-only"),
+    knowledgebasePath: base.knowledgebasePath,
+    intelligenceMapPath: base.intelligenceMapPath,
+    reportPath: base.reportPath,
+    quarantinePath: base.quarantinePath,
+    quarantineOnly: hasFlag(base.parsedArgs, "--quarantine-only"),
   };
-};
-
-const parseIntelligenceMap = (filePath: string): IntelligenceMap => {
-  const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<
-    string,
-    Record<string, Partial<IntelligencePoint>>
-  >;
-  const out: IntelligenceMap = {};
-  for (const [symbol, byDate] of Object.entries(raw)) {
-    if (!/^\d{4}$/.test(symbol)) continue;
-    for (const [date, point] of Object.entries(byDate ?? {})) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-      if (!out[symbol]) out[symbol] = {};
-      out[symbol][date] = {
-        correctionFlag: Number(point.correctionFlag ?? 0),
-        correctionCount90d: Math.max(
-          0,
-          Math.floor(Number(point.correctionCount90d ?? 0)),
-        ),
-      };
-    }
-  }
-  return out;
 };
 
 const makeViolationCountMap = (): Record<EdinetIoViolationCode, number> => ({
@@ -98,24 +65,14 @@ const makeViolationCountMap = (): Record<EdinetIoViolationCode, number> => ({
   SIGNAL_WITHOUT_FUTURE_MARKET: 0,
 });
 
-const ensureParentDir = (targetPath: string): void => {
-  mkdirSync(dirname(targetPath), { recursive: true });
-};
-
 const scopedViolationFilter = (
   violations: readonly EdinetIoViolation[],
   quarantinePath: string,
   quarantineOnly: boolean,
 ): EdinetIoViolation[] => {
   if (!quarantineOnly) return [...violations];
-  if (!existsSync(quarantinePath)) return [];
-  const lines = readFileSync(quarantinePath, "utf8")
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
   const keys = new Set<string>();
-  for (const line of lines) {
-    const v = JSON.parse(line) as Partial<EdinetIoViolation>;
+  for (const v of readJsonl<Partial<EdinetIoViolation>>(quarantinePath)) {
     if (v.signalId) keys.add(`signal:${v.signalId}`);
     if (v.eventId) keys.add(`event:${v.eventId}`);
     if (v.symbol && v.date) keys.add(`symdate:${v.symbol}:${v.date}`);
@@ -127,30 +84,6 @@ const scopedViolationFilter = (
       return true;
     return false;
   });
-};
-
-const writeQuarantine = (
-  targetPath: string,
-  violations: readonly EdinetIoViolation[],
-): void => {
-  ensureParentDir(targetPath);
-  writeFileSync(targetPath, "");
-  for (const violation of violations) {
-    appendFileSync(targetPath, `${JSON.stringify(violation)}\n`);
-  }
-};
-
-const writeReport = (targetPath: string, report: EdinetIoReport): void => {
-  ensureParentDir(targetPath);
-  const validated = EdinetIoReportSchema.parse(report);
-  writeFileSync(targetPath, `${JSON.stringify(validated, null, 2)}\n`);
-};
-
-const countOf = (db: Database, table: string): number => {
-  const row = db.query(`SELECT COUNT(*) as count FROM ${table}`).get() as {
-    count: number;
-  } | null;
-  return Number(row?.count ?? 0);
 };
 
 function main(): void {
@@ -176,19 +109,17 @@ function main(): void {
     violations: [],
   } satisfies Omit<EdinetIoReport, "status">;
 
-  if (
-    !existsSync(args.knowledgebasePath) ||
-    !existsSync(args.intelligenceMapPath)
-  ) {
-    const missingReason = !existsSync(args.knowledgebasePath)
-      ? `knowledgebase missing: ${args.knowledgebasePath}`
-      : `intelligence map missing: ${args.intelligenceMapPath}`;
+  const missingReason = requirePrerequisites({
+    knowledgebasePath: args.knowledgebasePath,
+    intelligenceMapPath: args.intelligenceMapPath,
+  });
+  if (missingReason) {
     const report: EdinetIoReport = {
       ...baseReport,
       status: "missing_prerequisite",
       failureReason: missingReason,
     };
-    writeReport(args.reportPath, report);
+    writeReport(args.reportPath, report, EdinetIoReportSchema);
     console.error(
       `❌ EDINET I/O verify prerequisite missing: ${missingReason}`,
     );
@@ -398,17 +329,17 @@ function main(): void {
     ...baseReport,
     status: hasBlockingViolation ? "fail" : "pass",
     totals: {
-      signals: countOf(db, "signals"),
-      eventFeatures: countOf(db, "edinet_event_features"),
-      lineageRows: countOf(db, "signal_lineage"),
-      documents: countOf(db, "documents"),
+      signals: countRows(db, "signals"),
+      eventFeatures: countRows(db, "edinet_event_features"),
+      lineageRows: countRows(db, "signal_lineage"),
+      documents: countRows(db, "documents"),
     },
     violationCountByCode,
     violations: scopedViolations,
   };
   db.close();
 
-  writeReport(args.reportPath, report);
+  writeReport(args.reportPath, report, EdinetIoReportSchema);
   if (hasBlockingViolation) {
     writeQuarantine(args.quarantinePath, scopedViolations);
     console.error(

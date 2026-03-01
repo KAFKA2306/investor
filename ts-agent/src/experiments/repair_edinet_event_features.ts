@@ -1,6 +1,4 @@
 import { Database } from "bun:sqlite";
-import { appendFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
 import {
   AlphaKnowledgebase,
   type EventFeatureInput,
@@ -8,7 +6,6 @@ import {
 import {
   getStringArg,
   hasFlag,
-  parseCliArgs,
   requireIsoDate,
 } from "../providers/cli_args.ts";
 import {
@@ -25,6 +22,12 @@ import {
   EDINET_IO_CONTRACT_VERSION,
   EDINET_IO_EXIT_CODE,
 } from "./edinet_io_contract_config.ts";
+import {
+  buildEdinetIoCliArgs,
+  requirePrerequisites,
+  writeQuarantine,
+  writeReport,
+} from "./edinet_io_helpers.ts";
 
 type CliArgs = {
   knowledgebasePath: string;
@@ -46,34 +49,14 @@ type MissingSignalRow = {
 
 const FEATURE_VERSION = "edinet_event_features_v1.0.0";
 
-const ensureParentDir = (targetPath: string): void => {
-  mkdirSync(dirname(targetPath), { recursive: true });
-};
-
-const writeQuarantine = (
-  targetPath: string,
-  violations: readonly EdinetIoViolation[],
-): void => {
-  ensureParentDir(targetPath);
-  writeFileSync(targetPath, "");
-  for (const violation of violations) {
-    appendFileSync(targetPath, `${JSON.stringify(violation)}\n`);
-  }
-};
-
-const writeReport = (
-  targetPath: string,
-  report: EdinetIoRepairReport,
-): void => {
-  ensureParentDir(targetPath);
-  writeFileSync(
-    targetPath,
-    `${JSON.stringify(EdinetIoRepairReportSchema.parse(report), null, 2)}\n`,
-  );
-};
-
 const parseArgs = (): CliArgs => {
-  const parsed = parseCliArgs(process.argv.slice(2));
+  const base = buildEdinetIoCliArgs({
+    knowledgebasePath: EDINET_IO_CONTRACT_PATHS.knowledgebasePath,
+    intelligenceMapPath: EDINET_IO_CONTRACT_PATHS.intelligenceMapPath,
+    reportPath: EDINET_IO_CONTRACT_PATHS.repairReportPath,
+    quarantinePath: EDINET_IO_CONTRACT_PATHS.quarantinePath,
+  });
+  const parsed = base.parsedArgs;
   const fromDateRaw = getStringArg(parsed, "--from-date");
   const toDateRaw = getStringArg(parsed, "--to-date");
   const fromDate = fromDateRaw
@@ -93,26 +76,10 @@ const parseArgs = (): CliArgs => {
       .filter((s) => /^\d{4}$/.test(s)),
   );
   const args: CliArgs = {
-    knowledgebasePath: getStringArg(
-      parsed,
-      "--db-path",
-      EDINET_IO_CONTRACT_PATHS.knowledgebasePath,
-    )!,
-    intelligenceMapPath: getStringArg(
-      parsed,
-      "--intelligence-map-path",
-      EDINET_IO_CONTRACT_PATHS.intelligenceMapPath,
-    )!,
-    reportPath: getStringArg(
-      parsed,
-      "--report-path",
-      EDINET_IO_CONTRACT_PATHS.repairReportPath,
-    )!,
-    quarantinePath: getStringArg(
-      parsed,
-      "--quarantine-path",
-      EDINET_IO_CONTRACT_PATHS.quarantinePath,
-    )!,
+    knowledgebasePath: base.knowledgebasePath,
+    intelligenceMapPath: base.intelligenceMapPath,
+    reportPath: base.reportPath,
+    quarantinePath: base.quarantinePath,
     dryRun: hasFlag(parsed, "--dry-run"),
     symbols,
   };
@@ -189,18 +156,20 @@ function main(): void {
     unresolved: [],
   } satisfies Omit<EdinetIoRepairReport, "status">;
 
-  if (
-    !existsSync(args.knowledgebasePath) ||
-    !existsSync(args.intelligenceMapPath)
-  ) {
-    const failureReason = !existsSync(args.knowledgebasePath)
-      ? `knowledgebase missing: ${args.knowledgebasePath}`
-      : `intelligence map missing: ${args.intelligenceMapPath}`;
-    writeReport(args.reportPath, {
-      ...baseReport,
-      status: "missing_prerequisite",
-      failureReason,
-    });
+  const failureReason = requirePrerequisites({
+    knowledgebasePath: args.knowledgebasePath,
+    intelligenceMapPath: args.intelligenceMapPath,
+  });
+  if (failureReason) {
+    writeReport(
+      args.reportPath,
+      {
+        ...baseReport,
+        status: "missing_prerequisite",
+        failureReason,
+      },
+      EdinetIoRepairReportSchema,
+    );
     console.error(`❌ EDINET repair prerequisite missing: ${failureReason}`);
     process.exit(EDINET_IO_EXIT_CODE.MISSING_PREREQUISITE);
   }
@@ -301,7 +270,7 @@ function main(): void {
           : "Missing signals remained after repair run"
       : undefined,
   };
-  writeReport(args.reportPath, report);
+  writeReport(args.reportPath, report, EdinetIoRepairReportSchema);
 
   if (hasFailure) {
     console.error(

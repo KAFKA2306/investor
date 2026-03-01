@@ -164,4 +164,32 @@ export class QuantResearchRuntime {
     const c = core.config.execution.costs;
     return c.feeBps + c.slippageBps;
   }
+
+  /**
+   * ターゲットとなる銘柄リストを可愛く解決するよっ！🌌✨
+   */
+  public async resolveTargetSymbols(
+    runtime: DataPipelineRuntime,
+    args: { symbols: string[]; limit: number },
+  ): Promise<string[]> {
+    const rawSymbols =
+      args.symbols.length > 0
+        ? args.symbols
+        : runtime.resolveUniverse([], args.limit);
+    return [
+      ...new Set(rawSymbols.map((s) => s.replace(".T", "").slice(0, 4))),
+    ].filter((s) => /^\d{4}$/.test(s));
+  }
+
+  /**
+   * マーケットデータを読み込んで、綺麗に整地（正規化）するよっ！💹✨
+   */
+  public async loadNormalizedBars(
+    gateway: import("../providers/unified_market_data_gateway.ts").MarketdataLocalGateway,
+    symbol: string,
+  ): Promise<import("../providers/value_normalizers.ts").NormalizedBar[]> {
+    const { normalizeBars } = await import("../providers/value_normalizers.ts");
+    const barsRaw = await gateway.getBarsAll(symbol);
+    return normalizeBars(barsRaw);
+  }
 }
