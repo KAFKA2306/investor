@@ -25,20 +25,6 @@ const pickOne = <T>(items: readonly T[]): T => {
   return value;
 };
 
-export const readNaturalLanguageInput = (): {
-  text: string;
-  source: "ENV" | "FILE" | "NONE";
-} => {
-  const fromEnv = (process.env.UQTL_NL_INPUT || "").trim();
-  if (fromEnv.length > 0) return { text: fromEnv, source: "ENV" };
-  const filePath = (process.env.UQTL_NL_INPUT_FILE || "").trim();
-  if (filePath.length > 0 && fs.existsSync(filePath)) {
-    const content = fs.readFileSync(filePath, "utf8").trim();
-    if (content.length > 0) return { text: content, source: "FILE" };
-  }
-  return { text: "", source: "NONE" };
-};
-
 export interface AlphaFactor {
   id: string;
   ast: Record<string, unknown>;
@@ -84,17 +70,14 @@ export class LesAgent extends BaseAgent {
     const lesModel = registry.models.find((m) => m.id === "les-forecast");
     const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
 
-    let missionContext = "";
-    if (fs.existsSync(paths.missionMd)) {
-      missionContext = fs.readFileSync(paths.missionMd, "utf8");
-      if (missionContext.trim().length > 0) {
-        const titleMatch = missionContext.match(/# (.*)/);
-        console.log(
-          `🎯 MISSION LOADED: Focusing on ${titleMatch ? titleMatch[1] : "Custom Mission"}...`,
-        );
-      }
+    const missionContext = this.loadMissionContext();
+    if (missionContext.trim().length > 0) {
+      const titleMatch = missionContext.match(/# (.*)/);
+      console.log(
+        `🎯 MISSION LOADED: Focusing on ${titleMatch ? titleMatch[1] : "Custom Mission"}...`,
+      );
     }
-    const naturalLanguageInput = readNaturalLanguageInput();
+    const naturalLanguageInput = this.readNaturalLanguageInput();
     if (naturalLanguageInput.source !== "NONE") {
       console.log(
         `🗣️ NL INPUT LOADED (${naturalLanguageInput.source}): ${naturalLanguageInput.text.slice(0, 80)}...`,

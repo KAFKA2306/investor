@@ -1,6 +1,5 @@
 import { Database } from "bun:sqlite";
 import { getStringArg, parseCliArgs } from "../providers/cli_args.ts";
-import { parseIntelligenceMap } from "../providers/value_normalizers.ts";
 import {
   type EdinetIoReport,
   EdinetIoReportSchema,
@@ -10,6 +9,7 @@ import {
 import { dbUtils } from "../utils/db_utils.ts";
 import { edinetPaths } from "../utils/edinet_utils.ts";
 import { fsUtils } from "../utils/fs_utils.ts";
+import { parseIntelligenceMap } from "../utils/value_utils.ts";
 import {
   EDINET_IO_CONTRACT_VERSION,
   EDINET_IO_EXIT_CODE,

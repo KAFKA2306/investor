@@ -5,16 +5,13 @@ import {
 } from "../context/alpha_knowledgebase.ts";
 import { getStringArg, parseCliArgs } from "../providers/cli_args.ts";
 import {
-  parseIntelligenceMap,
-  toSymbol4,
-} from "../providers/value_normalizers.ts";
-import {
   type EdinetIoRepairReport,
   EdinetIoRepairReportSchema,
   type EdinetIoViolation,
 } from "../schemas/edinet_io_contract_schema.ts";
 import { edinetIds, edinetPaths } from "../utils/edinet_utils.ts";
 import { fsUtils } from "../utils/fs_utils.ts";
+import { parseIntelligenceMap, toSymbol4 } from "../utils/value_utils.ts";
 import {
   EDINET_IO_CONTRACT_VERSION,
   EDINET_IO_EXIT_CODE,
