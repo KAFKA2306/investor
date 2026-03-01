@@ -1,12 +1,53 @@
 import { Database } from "bun:sqlite";
-import { exec as execCb } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { promisify } from "node:util";
 import { core } from "../system/app_runtime_core.ts";
 import { EdinetItemizer } from "./edinet_itemizer.ts";
 
-const exec = promisify(execCb);
+const unzipListMaxChars = 20 * 1024 * 1024;
+const unzipExtractMaxChars = 100 * 1024 * 1024;
+
+const isAllowedZipEntry = (value: string): boolean => {
+  if (
+    [...value].some((ch) => {
+      const code = ch.charCodeAt(0);
+      return code <= 0x1f || code === 0x7f;
+    })
+  ) {
+    return false;
+  }
+  return (
+    value.startsWith("XBRL/PublicDoc/") && value.toLowerCase().endsWith(".htm")
+  );
+};
+
+const runProcess = async (
+  command: string,
+  args: string[],
+  maxChars: number,
+): Promise<string> => {
+  const proc = Bun.spawn([command, ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ]);
+
+  if (stdout.length > maxChars) {
+    throw new Error(`command output exceeds limit: ${command}`);
+  }
+
+  if (exitCode !== 0) {
+    throw new Error(
+      `command failed: ${command} ${args.join(" ")} :: ${stderr.slice(0, 800)}`,
+    );
+  }
+
+  return stdout;
+};
 
 export class EdinetSearchProvider {
   private readonly dbPath: string;
@@ -56,21 +97,22 @@ export class EdinetSearchProvider {
     let content = "";
 
     if (existsSync(zipPath)) {
-      const { stdout: listed } = await exec(`unzip -Z1 "${zipPath}"`, {
-        maxBuffer: 20 * 1024 * 1024,
-      });
+      const listed = await runProcess(
+        "unzip",
+        ["-Z1", zipPath],
+        unzipListMaxChars,
+      );
       const targets = listed
         .split(/\r?\n/)
         .map((v) => v.trim())
-        .filter(
-          (v) =>
-            v.startsWith("XBRL/PublicDoc/") && v.toLowerCase().endsWith(".htm"),
-        );
+        .filter((v) => isAllowedZipEntry(v));
       let merged = "";
       for (const target of targets) {
-        const { stdout } = await exec(`unzip -p "${zipPath}" "${target}"`, {
-          maxBuffer: 100 * 1024 * 1024,
-        });
+        const stdout = await runProcess(
+          "unzip",
+          ["-p", zipPath, target],
+          unzipExtractMaxChars,
+        );
         merged += ` ${stdout}`;
       }
       content = merged

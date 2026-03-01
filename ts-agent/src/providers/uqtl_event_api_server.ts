@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { readdir, readFile } from "node:fs/promises";
 import { basename, extname, resolve } from "node:path";
 import { serve } from "bun";
@@ -7,7 +8,13 @@ interface WorkflowMeta {
   id: string;
   name: string;
   file: string;
-  commands: string[];
+  commands: WorkflowCommand[];
+}
+
+interface WorkflowCommand {
+  raw: string;
+  args: string[];
+  cwd: string;
 }
 
 interface WorkflowStepResult {
@@ -34,16 +41,16 @@ const workflowDir = resolve(repoRoot, ".agent/workflows");
 const timeSeriesDir = resolve(repoRoot, "ts-agent/data");
 const maxStdoutChars = 12000;
 const maxCommandMs = 8 * 60 * 1000;
-const allowedCommandPatterns = [
-  /^cd\s+ts-agent\s*&&\s*bun\s+run\s+[\w:-]+(\s+.*)?$/,
-  /^bun\s+run\s+[\w:-]+(\s+.*)?$/,
-  /^task\s+[\w:-]+(\s+.*)?$/,
-  /^ls\s+.*$/,
-];
+const tsAgentRoot = resolve(repoRoot, "ts-agent");
+const textEncoder = new TextEncoder();
+const commandControlCharsPattern = /[;&|`<>$()]/;
+const simplePathArgPattern = /^[./\w-]+$/;
+const apiToken = (process.env.UQTL_API_TOKEN ?? "").trim();
 
 const jsonHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
   "Content-Type": "application/json; charset=utf-8",
 };
 
@@ -52,19 +59,75 @@ const trimOutput = (value: string): string => {
   return `${value.slice(0, maxStdoutChars)}\n...[truncated ${value.length - maxStdoutChars} chars]`;
 };
 
-const parseWorkflowCommands = (markdown: string): string[] => {
+const parseWorkflowCommand = (command: string): WorkflowCommand | null => {
+  if (
+    command.length === 0 ||
+    command.includes("\n") ||
+    command.includes("\r") ||
+    commandControlCharsPattern.test(command)
+  ) {
+    return null;
+  }
+
+  const cdBunMatch = command.match(
+    /^cd\s+ts-agent\s*&&\s*bun\s+run\s+([\w:-]+)$/,
+  );
+  if (cdBunMatch?.[1]) {
+    return {
+      raw: command,
+      args: ["bun", "run", cdBunMatch[1]],
+      cwd: tsAgentRoot,
+    };
+  }
+
+  const bunMatch = command.match(/^bun\s+run\s+([\w:-]+)$/);
+  if (bunMatch?.[1]) {
+    return {
+      raw: command,
+      args: ["bun", "run", bunMatch[1]],
+      cwd: repoRoot,
+    };
+  }
+
+  const taskMatch = command.match(/^task\s+([\w:-]+)$/);
+  if (taskMatch?.[1]) {
+    return {
+      raw: command,
+      args: ["task", taskMatch[1]],
+      cwd: repoRoot,
+    };
+  }
+
+  const lsMatch = command.match(/^ls(?:\s+([./\w-]+))?$/);
+  if (lsMatch) {
+    const pathArg = lsMatch[1];
+    if (pathArg && !simplePathArgPattern.test(pathArg)) return null;
+    return {
+      raw: command,
+      args: pathArg ? ["ls", pathArg] : ["ls"],
+      cwd: repoRoot,
+    };
+  }
+
+  return null;
+};
+
+const parseWorkflowCommands = (markdown: string): WorkflowCommand[] => {
   const matches = Array.from(markdown.matchAll(/`([^`\n]+)`/g))
     .map((match) => match[1]?.trim())
     .filter((value): value is string => Boolean(value));
 
   const unique = new Set<string>();
+  const commands: WorkflowCommand[] = [];
   for (const command of matches) {
-    if (allowedCommandPatterns.some((pattern) => pattern.test(command))) {
+    const parsed = parseWorkflowCommand(command);
+    if (parsed && !unique.has(parsed.raw)) {
       unique.add(command);
+      commands.push(parsed);
     }
   }
 
-  return Array.from(unique);
+  return commands;
 };
 
 const readWorkflowCatalog = async (): Promise<WorkflowMeta[]> => {
@@ -88,13 +151,13 @@ const readWorkflowCatalog = async (): Promise<WorkflowMeta[]> => {
   return workflows;
 };
 
-const runShellCommand = async (
-  command: string,
+const runCommand = async (
+  command: WorkflowCommand,
 ): Promise<WorkflowStepResult> => {
   const started = Date.now();
 
-  const proc = Bun.spawn(["bash", "-c", command], {
-    cwd: repoRoot,
+  const proc = Bun.spawn(command.args, {
+    cwd: command.cwd,
     stdout: "pipe",
     stderr: "pipe",
   });
@@ -114,7 +177,7 @@ const runShellCommand = async (
   clearTimeout(timer);
 
   return {
-    command,
+    command: command.raw,
     ok: !timedOut && exitCode === 0,
     exitCode,
     durationMs: Date.now() - started,
@@ -123,6 +186,42 @@ const runShellCommand = async (
       ? `${trimOutput(stderr)}\n[timeout] command exceeded ${maxCommandMs}ms`
       : trimOutput(stderr),
   };
+};
+
+const secureEquals = (left: string, right: string): boolean => {
+  const leftBuffer = textEncoder.encode(left);
+  const rightBuffer = textEncoder.encode(right);
+  if (leftBuffer.length !== rightBuffer.length) return false;
+  return timingSafeEqual(leftBuffer, rightBuffer);
+};
+
+const getBearerToken = (req: Request): string | null => {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader) return null;
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || null;
+};
+
+const requireApiToken = (req: Request): Response | null => {
+  if (!apiToken) {
+    return new Response(
+      JSON.stringify({ error: "server token is not configured" }),
+      {
+        status: 503,
+        headers: jsonHeaders,
+      },
+    );
+  }
+
+  const requestToken = getBearerToken(req);
+  if (!requestToken || !secureEquals(requestToken, apiToken)) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: jsonHeaders,
+    });
+  }
+
+  return null;
 };
 
 const runWorkflow = async (workflowId: string) => {
@@ -144,7 +243,7 @@ const runWorkflow = async (workflowId: string) => {
   const startedAt = new Date().toISOString();
   const steps: WorkflowStepResult[] = [];
   for (const command of workflow.commands) {
-    const step = await runShellCommand(command);
+    const step = await runCommand(command);
     steps.push(step);
     if (!step.ok) break;
   }
@@ -227,7 +326,7 @@ serve({
         name: workflow.name,
         file: workflow.file,
         commandCount: workflow.commands.length,
-        commands: workflow.commands,
+        commands: workflow.commands.map((command) => command.raw),
       }));
       return new Response(JSON.stringify(summarized), {
         headers: jsonHeaders,
@@ -235,6 +334,8 @@ serve({
     }
 
     if (url.pathname === "/api/workflows/run" && req.method === "POST") {
+      const authError = requireApiToken(req);
+      if (authError) return authError;
       const body = (await req.json()) as { workflowId?: string };
       const workflowId = body.workflowId?.trim();
       if (!workflowId) {
@@ -283,6 +384,8 @@ serve({
     }
 
     if (url.pathname === "/api/kill" && req.method === "POST") {
+      const authError = requireApiToken(req);
+      if (authError) return authError;
       console.warn("[API] !!! KILL SWITCH ACTIVATED !!!");
       const event = {
         id: crypto.randomUUID(),
