@@ -1,18 +1,12 @@
 #!/usr/bin/env bun
 /**
  * EDINET CLI — 使いやすいコマンドラインツール
- *
- * Usage:
- *   bun run edinet stats              DB統計
- *   bun run edinet list <date>        書類一覧
- *   bun run edinet search <code>      銘柄コード検索 (直近30日)
- *   bun run edinet download <id> [t]  書類ダウンロード (type=1..5, default=5)
- *   bun run edinet fix-ttl            過去日付のTTLを永久に修正
- *   bun run edinet vacuum             DB最適化
  */
 import { Database } from "bun:sqlite";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
+import { parseCliArgs, getNumberArg, getStringArg } from "../src/providers/cli_args.ts";
+import { toIsoDate } from "../src/providers/value_normalizers.ts";
 
 // ─── Config ──────────────────────────────────────────────────────────────
 const DB_PATH = resolve(
@@ -23,15 +17,9 @@ const DOCS_DIR = resolve(import.meta.dir, "../../logs/cache/edinet_docs");
 const PERMANENT_TTL_MS = 100 * 365 * 24 * 60 * 60 * 1000; // 100 years
 
 const jstToday = () =>
-    new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+    new Date().toISOString().slice(0, 10);
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
-const fmt = (bytes: number): string => {
-    if (bytes > 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-    if (bytes > 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${bytes} B`;
-};
-
 const printTable = (
     rows: Record<string, unknown>[],
     cols: string[],
@@ -40,7 +28,6 @@ const printTable = (
         console.log("  (no results)");
         return;
     }
-    // Compute column widths
     const widths = cols.map((c) =>
         Math.max(c.length, ...rows.map((r) => String(r[c] ?? "").length)),
     );
@@ -58,8 +45,7 @@ const printTable = (
 
 const ensureDb = (): Database => {
     if (!existsSync(DB_PATH)) {
-        console.error(`❌ DB not found: ${DB_PATH}`);
-        process.exit(1);
+        throw new Error(`DB not found: ${DB_PATH}`);
     }
     return new Database(DB_PATH);
 };
@@ -103,7 +89,6 @@ async function cmdStats(): Promise<void> {
     console.log(`  TTL perm:    ${perm}   short(≤24h): ${short}`);
     console.log(`  Expired:     ${expired}`);
 
-    // Date distribution (top 10 months)
     const months = db
         .query(
             `SELECT
@@ -120,7 +105,6 @@ async function cmdStats(): Promise<void> {
     console.log(`\n  Recent months:`);
     printTable(months, ["month", "entries", "mb"]);
 
-    // Docs dir
     if (existsSync(DOCS_DIR)) {
         const files = new Bun.Glob("*").scanSync(DOCS_DIR);
         const docFiles = [...files];
@@ -131,7 +115,6 @@ async function cmdStats(): Promise<void> {
 }
 
 async function cmdList(date: string): Promise<void> {
-    // Dynamic import to trigger core init
     const { EdinetProvider } = await import(
         "../src/providers/edinet_provider.ts"
     );
@@ -142,7 +125,6 @@ async function cmdList(date: string): Promise<void> {
         `\n📋 ${date} — ${response.metadata.resultset.count} documents\n`,
     );
 
-    // Summary by docTypeCode
     const byType = new Map<string, number>();
     for (const doc of response.results) {
         const key = doc.docTypeCode ?? "null";
@@ -162,7 +144,6 @@ async function cmdList(date: string): Promise<void> {
         console.log(`    ${code}: ${count} ${label}`);
     }
 
-    // Show first 20 with secCode
     const withCode = response.results.filter(
         (d) => d.secCode && d.secCode.trim().length > 0,
     );
@@ -184,16 +165,14 @@ async function cmdList(date: string): Promise<void> {
     console.log("");
 }
 
-async function cmdSearch(secCode: string, rangeDays: number = 30, endOffset: number = 0): Promise<void> {
+async function cmdSearch(secCode: string, rangeDays: number = 30): Promise<void> {
     const { EdinetProvider, bySecCode } = await import(
         "../src/providers/edinet_provider.ts"
     );
     const edinet = new EdinetProvider();
-
-    // Normalize to 5-digit
     const code5 = secCode.length === 4 ? `${secCode}0` : secCode;
 
-    console.log(`\n🔍 Searching for secCode=${code5} (${rangeDays} days, endOffset=${endOffset})...\n`);
+    console.log(`\n🔍 Searching for secCode=${code5} (${rangeDays} days)...\n`);
 
     const results: Array<{
         date: string;
@@ -203,12 +182,9 @@ async function cmdSearch(secCode: string, rangeDays: number = 30, endOffset: num
     }> = [];
 
     const today = new Date();
-    const endDate = new Date(today.getTime() - endOffset * 24 * 60 * 60 * 1000);
-
     for (let i = 0; i < rangeDays; i++) {
-        const d = new Date(endDate.getTime() - i * 24 * 60 * 60 * 1000);
-        const dateStr = d.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
-
+        const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+        const dateStr = d.toISOString().slice(0, 10);
         try {
             const docs = await edinet.getFilteredDocuments(dateStr, bySecCode(code5));
             for (const doc of docs) {
@@ -219,10 +195,7 @@ async function cmdSearch(secCode: string, rangeDays: number = 30, endOffset: num
                     desc: (doc.docDescription ?? "").slice(0, 40),
                 });
             }
-        } catch {
-            // skip
-        }
-        // Minimal delay if not hit cache? No, EdinetProvider handles it.
+        } catch { /* skip */ }
     }
 
     if (results.length === 0) {
@@ -238,30 +211,21 @@ async function cmdDownload(docID: string, type: number): Promise<void> {
         "../src/providers/edinet_provider.ts"
     );
     const edinet = new EdinetProvider();
-
     const validTypes = [1, 2, 3, 4, 5] as const;
     if (!validTypes.includes(type as (typeof validTypes)[number])) {
-        console.error(`❌ Invalid type: ${type}. Must be 1-5.`);
-        process.exit(1);
+        throw new Error(`Invalid type: ${type}. Must be 1-5.`);
     }
-
-    const path = await edinet.downloadDocument(
-        docID,
-        type as (typeof validTypes)[number],
-    );
+    const path = await edinet.downloadDocument(docID, type as (typeof validTypes)[number]);
     if (path) {
         console.log(`\n✅ Downloaded: ${path}\n`);
     } else {
-        console.error(`\n❌ Download failed for ${docID} type=${type}\n`);
-        process.exit(1);
+        throw new Error(`Download failed for ${docID} type=${type}`);
     }
 }
 
 function cmdFixTtl(): void {
     const db = ensureDb();
     const today = jstToday();
-
-    // Count rows that need fixing (not today + short TTL)
     const { count } = db
         .query(
             `SELECT COUNT(*) as count FROM http_cache
@@ -276,8 +240,6 @@ function cmdFixTtl(): void {
         return;
     }
 
-    console.log(`\n🔧 Fixing ${count} rows with short TTL → permanent...`);
-
     const result = db
         .query(
             `UPDATE http_cache
@@ -288,43 +250,14 @@ function cmdFixTtl(): void {
         .run();
 
     console.log(`✅ Updated ${result.changes} rows.`);
-
-    // Verify
-    const { perm, short } = db
-        .query(
-            `SELECT
-        SUM(CASE WHEN (expires_at - created_at) > 86400000 THEN 1 ELSE 0 END) as perm,
-        SUM(CASE WHEN (expires_at - created_at) <= 86400000 THEN 1 ELSE 0 END) as short
-      FROM http_cache`,
-        )
-        .get() as { perm: number; short: number };
-
-    console.log(`  TTL permanent: ${perm}  short: ${short}\n`);
     db.close();
 }
 
 function cmdVacuum(): void {
     const db = ensureDb();
-    const countRow = db
-        .query("PRAGMA page_count")
-        .get() as { page_count: number } | null;
-    const sizeRow = db
-        .query("PRAGMA page_size")
-        .get() as { page_size: number } | null;
-    const before = (countRow?.page_count ?? 0) * (sizeRow?.page_size ?? 4096);
-
-    console.log(`\n🗜  Before: ${fmt(before)}`);
     console.log("  Running VACUUM...");
     db.exec("VACUUM");
-
-    const afterRow = db
-        .query("PRAGMA page_count")
-        .get() as { page_count: number } | null;
-    const after = (afterRow?.page_count ?? 0) * (sizeRow?.page_size ?? 4096);
-    console.log(`  After:  ${fmt(after)}`);
-    console.log(
-        `  Saved:  ${fmt(before - after)} (${(((before - after) / before) * 100).toFixed(1)}%)\n`,
-    );
+    console.log("✅ Vacuum complete.\n");
     db.close();
 }
 
@@ -334,54 +267,54 @@ EDINET CLI — 📡 金融庁電子開示システム
 
 Usage:
   bun run edinet stats                 DB統計
-  bun run edinet list <YYYY-MM-DD>     指定日の書類一覧
-  bun run edinet search <code>         銘柄コード検索 (直近30日)
-  bun run edinet download <docID> [t]  書類ダウンロード (type 1-5, default: 5)
+  bun run edinet list --date YYYY-MM-DD 指定日の書類一覧
+  bun run edinet search --code TICKER  銘柄コード検索 (直近30日)
+  bun run edinet download --id DOCID   書類ダウンロード
   bun run edinet fix-ttl               過去日付のTTLを永久に修正
   bun run edinet vacuum                DB最適化 (VACUUM)
-
-Examples:
-  bun run edinet list 2026-02-27
-  bun run edinet search 6501            # 日立
-  bun run edinet download S100XL1J 5    # CSV
 `);
 }
 
 // ─── Main ────────────────────────────────────────────────────────────────
-const [cmd, ...args] = process.argv.slice(2);
+async function runCli() {
+    const parsed = parseCliArgs(process.argv.slice(2));
+    const cmd = parsed.positional[0];
 
-switch (cmd) {
-    case "stats":
-        await cmdStats();
-        break;
-    case "list":
-        if (!args[0]) {
-            console.error("❌ Usage: bun run edinet list <YYYY-MM-DD>");
-            process.exit(1);
+    switch (cmd) {
+        case "stats":
+            await cmdStats();
+            break;
+        case "list": {
+            const date = getStringArg(parsed, "--date") || parsed.positional[1];
+            if (!date) throw new Error("Usage: edinet list --date <YYYY-MM-DD>");
+            await cmdList(toIsoDate(date)!);
+            break;
         }
-        await cmdList(args[0]);
-        break;
-    case "search":
-        if (!args[0]) {
-            console.error("❌ Usage: bun run edinet search <secCode>");
-            process.exit(1);
+        case "search": {
+            const code = getStringArg(parsed, "--code") || parsed.positional[1];
+            if (!code) throw new Error("Usage: edinet search --code <secCode>");
+            await cmdSearch(code, getNumberArg(parsed, "--range-days", 30));
+            break;
         }
-        await cmdSearch(args[0]);
-        break;
-    case "download":
-        if (!args[0]) {
-            console.error("❌ Usage: bun run edinet download <docID> [type]");
-            process.exit(1);
+        case "download": {
+            const id = getStringArg(parsed, "--id") || parsed.positional[1];
+            if (!id) throw new Error("Usage: edinet download --id <docID>");
+            await cmdDownload(id, getNumberArg(parsed, "--type", 5));
+            break;
         }
-        await cmdDownload(args[0], Number(args[1] ?? 5));
-        break;
-    case "fix-ttl":
-        cmdFixTtl();
-        break;
-    case "vacuum":
-        cmdVacuum();
-        break;
-    default:
-        printUsage();
-        break;
+        case "fix-ttl":
+            cmdFixTtl();
+            break;
+        case "vacuum":
+            cmdVacuum();
+            break;
+        default:
+            printUsage();
+            break;
+    }
 }
+
+runCli().catch((e) => {
+    console.error(`❌ Error: ${e.message}`);
+    process.exit(1);
+});

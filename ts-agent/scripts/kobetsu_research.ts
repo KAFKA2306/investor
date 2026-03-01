@@ -5,21 +5,24 @@
  */
 import { join } from "node:path";
 import { execSync } from "node:child_process";
-import { existsSync, rmSync, mkdirSync } from "node:fs";
+import { existsSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { EdinetProvider, bySecCode } from "../src/providers/edinet_provider.ts";
 import { EdinetItemizer } from "../src/providers/edinet_itemizer.ts";
+import { parseCliArgs, getNumberArg, getStringArg } from "../src/providers/cli_args.ts";
+import { toSymbol4 } from "../src/providers/value_normalizers.ts";
 
 async function main() {
-    const args = process.argv.slice(2);
-    const ticker = args[0];
+    const parsedArgs = parseCliArgs(process.argv.slice(2));
+    const rawTicker = parsedArgs.positional[0] ?? getStringArg(parsedArgs, "--ticker");
 
-    if (!ticker) {
-        console.error("❌ Usage: bun scripts/kobetsu_research.ts <ticker> [date_range_days]");
+    if (!rawTicker) {
+        console.error("❌ Usage: bun scripts/kobetsu_research.ts <ticker> [--range-days N]");
         process.exit(1);
     }
 
-    const rangeDays = Number(args[1] ?? 730); // Search last 2 years by default
-    const secCode5 = ticker.length === 4 ? `${ticker}0` : ticker;
+    const ticker = toSymbol4(rawTicker);
+    const rangeDays = Math.max(1, getNumberArg(parsedArgs, "--range-days", 730));
+    const secCode5 = `${ticker}0`;
 
     console.log(`\n🔍 [Research] Starting research for ${ticker} (secCode=${secCode5}) over last ${rangeDays} days...`);
 
@@ -28,8 +31,8 @@ async function main() {
 
     const today = new Date();
     const fromDate = new Date(today.getTime() - rangeDays * 24 * 60 * 60 * 1000);
-    const startDate = fromDate.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
-    const endDate = today.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+    const startDate = fromDate.toISOString().slice(0, 10);
+    const endDate = today.toISOString().slice(0, 10);
 
     console.log(`📡 [Research] Scanning for reports from ${startDate} to ${endDate}...`);
 
@@ -46,8 +49,6 @@ async function main() {
         process.exit(1);
     }
 
-    // Sort by date descending and pick the best one
-    // Prioritize "有価証券報告書" over "届出書" or other things if they share docTypeCode 030
     console.log(`📊 [Research] Found ${docs.length} candidate documents. Evaluating...`);
     for (const d of docs) {
         console.log(`   - ${d.docID} | ${d.submitDateTime} | ${d.docDescription}`);
@@ -64,14 +65,12 @@ async function main() {
     console.log(`✅ [Research] Selected best report: ${latestDoc.docID} (${latestDoc.submitDateTime})`);
     console.log(`📄 Description: ${latestDoc.docDescription}`);
 
-    // 2. Download XBRL (type 1)
     const zipPath = await edinet.downloadDocument(latestDoc.docID, 1);
     if (!zipPath) {
         console.error(`❌ [Research] Failed to download XBRL for ${latestDoc.docID}`);
         process.exit(1);
     }
 
-    // 3. Unzip and extract content
     const tmpDir = join(import.meta.dir, "../tmp", `research_${latestDoc.docID}`);
     if (existsSync(tmpDir)) rmSync(tmpDir, { recursive: true });
     mkdirSync(tmpDir, { recursive: true });
@@ -79,11 +78,8 @@ async function main() {
     console.log(`🔓 [Research] Unzipping and extracting HTML content...`);
 
     try {
-        // Extract PublicDoc HTML files from the ZIP
-        // We use unzip -p to stream content of all .htm files in PublicDoc
         const stdout = execSync(`unzip -p "${zipPath}" "XBRL/PublicDoc/*.htm"`, { maxBuffer: 50 * 1024 * 1024 }).toString();
 
-        // Simple HTML stripping and normalization
         const content = stdout
             .replace(/<[^>]*>?/gm, " ")
             .replace(/\s+/g, " ")
@@ -96,18 +92,12 @@ async function main() {
 
         console.log(`📊 [Research] Extracted ${content.length} characters of raw text.`);
 
-        // DEBUG: Save sample to inspect
         const debugPath = join(import.meta.dir, "../tmp", "debug_raw_text.txt");
-        require("node:fs").writeFileSync(debugPath, content.slice(0, 50000));
+        writeFileSync(debugPath, content.slice(0, 50000));
         console.log(`🔍 [Research] Debug sample saved to ${debugPath}`);
-        console.log(`👀 [Research] Sample: ${content.slice(0, 500)}...`);
 
-        // 4. Segment and Summarize
         const segments = itemizer.segment(content);
         console.log(`🧩 [Research] Found ${segments.length} total segments.`);
-        if (segments.length > 0) {
-            console.log(`👀 [Research] Segments found: ${segments.map(s => s.title).join(", ")}`);
-        }
 
         const targetSections = [
             "【事業の内容】",
@@ -126,7 +116,6 @@ async function main() {
             console.log(`${title}`);
             console.log(`────────────────────────────────────────────────────────────────────────────────`);
             if (seg) {
-                // Print first 1000 chars of the section
                 const text = seg.content.length > 1500 ? seg.content.slice(0, 1500) + "..." : seg.content;
                 console.log(text);
             } else {
@@ -141,9 +130,6 @@ async function main() {
     } catch (e) {
         console.error(`❌ [Research] Extraction failed: ${e}`);
         process.exit(1);
-    } finally {
-        // console.log(`🧹 [Research] Cleaning up temporary files...`);
-        // rmSync(tmpDir, { recursive: true, force: true });
     }
 }
 

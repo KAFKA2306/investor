@@ -2,6 +2,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { SqliteHttpCache } from "../src/providers/cache_providers.ts";
 import { core } from "../src/system/app_runtime_core.ts";
+import {
+  getNumberArg,
+  getStringArg,
+  hasFlag,
+  parseCliArgs,
+} from "../src/providers/cli_args.ts";
+import { toSymbol4 } from "../src/providers/value_normalizers.ts";
 
 type CliArgs = {
   mode: "date" | "symbol";
@@ -25,15 +32,6 @@ type FetchResult = {
   cached: boolean;
 };
 
-const pickArg = (args: readonly string[], key: string): string | undefined => {
-  const prefix = `${key}=`;
-  const found = args.find((v) => v.startsWith(prefix));
-  return found ? found.slice(prefix.length) : undefined;
-};
-
-const hasFlag = (args: readonly string[], flag: string): boolean =>
-  args.includes(flag);
-
 const toIsoDate = (value: string): string | null => {
   const v = value.trim();
   if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
@@ -55,12 +53,8 @@ const getDefaultFromDate = (years: number): string => {
 };
 
 const normalizeSymbol = (raw: string): string | null => {
-  const cleaned = raw.trim().replace(".T", "");
-  if (/^\d{4}$/.test(cleaned)) return cleaned;
-  if (/^\d{5}$/.test(cleaned) && cleaned.endsWith("0")) {
-    return cleaned.slice(0, 4);
-  }
-  return null;
+  const s = toSymbol4(raw);
+  return /^\d{4}$/.test(s) ? s : null;
 };
 
 const toApiCode = (symbol4: string): string =>
@@ -70,65 +64,57 @@ const uniqueSymbols = (symbols: readonly string[]): string[] => [
   ...new Set(
     symbols
       .map(normalizeSymbol)
-      .filter((s): s is string => s !== null && /^\d{4}$/.test(s)),
+      .filter((s): s is string => s !== null),
   ),
 ];
 
 const parseArgs = (): CliArgs => {
-  const args = process.argv.slice(2);
-  const modeRaw = pickArg(args, "--mode")?.toLowerCase();
+  const parsed = parseCliArgs(process.argv.slice(2));
+  const modeRaw = getStringArg(parsed, "--mode", "date")?.toLowerCase();
   const mode: "date" | "symbol" = modeRaw === "symbol" ? "symbol" : "date";
-  const years = Math.max(1, Number(pickArg(args, "--years") ?? 5));
-  const rawSymbols = pickArg(args, "--symbols");
+  const years = Math.max(1, getNumberArg(parsed, "--years", 5));
+  const rawSymbols = getStringArg(parsed, "--symbols");
   const symbols = rawSymbols
     ? uniqueSymbols(rawSymbols.split(",").map((s) => s.trim()))
     : [];
-  const from = pickArg(args, "--from");
-  const to = pickArg(args, "--to");
-  const symbolsFile = pickArg(args, "--symbols-file");
-  const maxSymbolsRaw = pickArg(args, "--max-symbols");
-  const maxSymbols =
-    maxSymbolsRaw && Number(maxSymbolsRaw) > 0 ? Number(maxSymbolsRaw) : undefined;
-  const maxUnitsRaw = pickArg(args, "--max-units");
-  const maxUnits =
-    maxUnitsRaw && Number(maxUnitsRaw) > 0 ? Number(maxUnitsRaw) : undefined;
-  const dateOrderRaw = pickArg(args, "--date-order")?.toLowerCase();
+  const from = getStringArg(parsed, "--from");
+  const to = getStringArg(parsed, "--to");
+  const symbolsFile = getStringArg(parsed, "--symbols-file");
+  const maxSymbols = getNumberArg(parsed, "--max-symbols", 0);
+  const maxUnits = getNumberArg(parsed, "--max-units", 0);
+  const dateOrderRaw = getStringArg(parsed, "--date-order", "desc")?.toLowerCase();
   const dateOrder: "asc" | "desc" = dateOrderRaw === "asc" ? "asc" : "desc";
-  const ttlHours = Math.max(1, Number(pickArg(args, "--ttl-hours") ?? 24 * 365));
-  const reqPer30SecRaw = pickArg(args, "--req-per-30sec");
-  const reqPer30Sec =
-    reqPer30SecRaw && Number(reqPer30SecRaw) > 0
-      ? Number(reqPer30SecRaw)
-      : undefined;
+  const ttlHours = Math.max(1, getNumberArg(parsed, "--ttl-hours", 24 * 365));
+  const reqPer30Sec = getNumberArg(parsed, "--req-per-30sec", 0);
   const sleepMsFromRate =
-    reqPer30Sec !== undefined
+    reqPer30Sec > 0
       ? Math.ceil(30000 / reqPer30Sec)
       : undefined;
   const sleepMs = Math.max(
     0,
-    Number(pickArg(args, "--sleep-ms") ?? sleepMsFromRate ?? 1200),
+    getNumberArg(parsed, "--sleep-ms", sleepMsFromRate ?? 1200),
   );
   const maxRateLimitErrors = Math.max(
     1,
-    Number(pickArg(args, "--max-rate-limit-errors") ?? 5),
+    getNumberArg(parsed, "--max-rate-limit-errors", 5),
   );
-  const parsed: CliArgs = {
+  const res: CliArgs = {
     mode,
     years,
     symbols,
-    allListed: hasFlag(args, "--all-listed"),
+    allListed: hasFlag(parsed, "--all-listed"),
     dateOrder,
     ttlHours,
     sleepMs,
-    reqPer30Sec,
+    reqPer30Sec: reqPer30Sec > 0 ? reqPer30Sec : undefined,
     maxRateLimitErrors,
   };
-  if (from) parsed.from = from;
-  if (to) parsed.to = to;
-  if (symbolsFile) parsed.symbolsFile = symbolsFile;
-  if (maxSymbols !== undefined) parsed.maxSymbols = maxSymbols;
-  if (maxUnits !== undefined) parsed.maxUnits = maxUnits;
-  return parsed;
+  if (from) res.from = from;
+  if (to) res.to = to;
+  if (symbolsFile) res.symbolsFile = symbolsFile;
+  if (maxSymbols > 0) res.maxSymbols = maxSymbols;
+  if (maxUnits > 0) res.maxUnits = maxUnits;
+  return res;
 };
 
 const loadSymbolsFromFile = (filePath: string): string[] => {
@@ -576,5 +562,8 @@ async function run(): Promise<void> {
 }
 
 if (import.meta.main) {
-  await run();
+  run().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
 }
