@@ -367,12 +367,16 @@ export const ExecutionCostsSchema = z.object({
 });
 
 export const QuantitativeVerificationSchema = z.object({
-  schemaVersion: z.string().default("1.1.0"),
+  schemaVersion: z.string().default("1.1.8"),
   strategyId: z.string(),
   strategyName: z.string(),
   description: z.string(),
   generatedAt: z.string().datetime(),
-  audit: z.object({ commitHash: z.string(), environment: z.string() }),
+  audit: z.object({
+    commitHash: z.string().length(40), // Full hash required for audit
+    environment: z.string(),
+    schemaVersion: z.literal("1.1.8"),
+  }),
   evaluationWindow: z.object({
     from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
     to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

@@ -11,19 +11,31 @@
     "verify:api": "bun src/system/app_runtime_core.ts",
     "experiments:alpha-discovery": "bun src/experiments/alpha_mining_experiments.ts",
     "experiments:alpha-timeseries": "bun src/experiments/generate_standardized_alpha_timeseries.ts",
+    "experiments:kb-build": "bun src/experiments/build_alpha_knowledgebase.ts",
+    "experiments:kb-backtest": "bun src/experiments/run_kb_signal_backtest.ts",
+    "experiments:kb-plot": "python3 src/experiments/plot_kb_signal_backtest.py",
+    "experiments:10k-features": "bun src/experiments/generate_10k_features.ts",
     "experiments:model-analysis": "bun src/experiments/model_experiments_core.ts",
     "experiments:verification-json": "bun src/experiments/quantitative_performance_proof.ts",
     "experiments:verification-check": "bun src/experiments/verification_consistency_check.ts",
     "experiments:verification-plot": "python3 src/experiments/plot_generator.py",
     "pipeline:mine": "bun src/pipeline/factor_mining/mining_core.ts",
-    "pipeline:backtest": "bun src/pipeline/evaluate/backtest_core.ts"
+    "pipeline:backtest": "bun src/pipeline/evaluate/backtest_core.ts",
+    "edinet": "bun scripts/edinet_cli.ts",
+    "edinet:tickers": "bun scripts/edinet_tickers.ts",
+    "jquants:warm-cache": "bun scripts/jquants_cache_warm.ts"
   },
   "private": true,
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@tsconfig/strictest": "^2.0.8",
     "@types/bun": "latest",
+    "@types/express": "^5.0.6",
     "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.3.2",
+    "express": "^5.2.1",
+    "tsx": "^4.21.0",
     "vite": "^7.3.1"
   },
   "peerDependencies": {
