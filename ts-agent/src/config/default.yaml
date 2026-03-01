@@ -123,7 +123,7 @@ logging:
 
 database:
   canonicalDb:
-    enabled: true
+    enabled: false
     dualWriteEnabled: false
     host: localhost
     port: 5432
