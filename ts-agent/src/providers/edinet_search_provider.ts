@@ -69,7 +69,7 @@ export class EdinetSearchProvider {
           exec(
             `unzip -p "${zipPath}" "XBRL/PublicDoc/*.htm"`,
             { maxBuffer: 50 * 1024 * 1024 },
-            (err: any, stdout: string) => {
+            (err: Error | null, stdout: string) => {
               if (err) reject(err);
               else resolve(stdout);
             },
@@ -137,7 +137,17 @@ export class EdinetSearchProvider {
   /**
    * Perform BM25 search
    */
-  public search(query: string, limit: number = 10): any[] {
+  public search(
+    query: string,
+    limit: number = 10,
+  ): {
+    docID: string;
+    secCode: string | null;
+    filerName: string | null;
+    docDescription: string | null;
+    sectionName: string;
+    rank: number;
+  }[] {
     const stmt = this.db.prepare(`
             SELECT docID, secCode, filerName, docDescription, sectionName, bm25(edinet_search) as rank
             FROM edinet_search
@@ -145,7 +155,14 @@ export class EdinetSearchProvider {
             ORDER BY rank
             LIMIT ?
         `);
-    return stmt.all(query, limit);
+    return stmt.all(query, limit) as {
+      docID: string;
+      secCode: string | null;
+      filerName: string | null;
+      docDescription: string | null;
+      sectionName: string;
+      rank: number;
+    }[];
   }
 
   public close(): void {

@@ -5,15 +5,18 @@ import { core } from "../src/system/app_runtime_core.ts";
 
 type CliArgs = {
   mode: "date" | "symbol";
-  from?: string;
-  to?: string;
+  from?: string | undefined;
+  to?: string | undefined;
   years: number;
   symbols: string[];
-  symbolsFile?: string;
+  symbolsFile?: string | undefined;
   allListed: boolean;
-  maxSymbols?: number;
+  maxSymbols?: number | undefined;
+  maxUnits?: number | undefined;
+  dateOrder: "asc" | "desc";
   ttlHours: number;
   sleepMs: number;
+  reqPer30Sec?: number | undefined;
   maxRateLimitErrors: number;
 };
 
@@ -86,8 +89,25 @@ const parseArgs = (): CliArgs => {
   const maxSymbolsRaw = pickArg(args, "--max-symbols");
   const maxSymbols =
     maxSymbolsRaw && Number(maxSymbolsRaw) > 0 ? Number(maxSymbolsRaw) : undefined;
+  const maxUnitsRaw = pickArg(args, "--max-units");
+  const maxUnits =
+    maxUnitsRaw && Number(maxUnitsRaw) > 0 ? Number(maxUnitsRaw) : undefined;
+  const dateOrderRaw = pickArg(args, "--date-order")?.toLowerCase();
+  const dateOrder: "asc" | "desc" = dateOrderRaw === "asc" ? "asc" : "desc";
   const ttlHours = Math.max(1, Number(pickArg(args, "--ttl-hours") ?? 24 * 365));
-  const sleepMs = Math.max(0, Number(pickArg(args, "--sleep-ms") ?? 1200));
+  const reqPer30SecRaw = pickArg(args, "--req-per-30sec");
+  const reqPer30Sec =
+    reqPer30SecRaw && Number(reqPer30SecRaw) > 0
+      ? Number(reqPer30SecRaw)
+      : undefined;
+  const sleepMsFromRate =
+    reqPer30Sec !== undefined
+      ? Math.ceil(30000 / reqPer30Sec)
+      : undefined;
+  const sleepMs = Math.max(
+    0,
+    Number(pickArg(args, "--sleep-ms") ?? sleepMsFromRate ?? 1200),
+  );
   const maxRateLimitErrors = Math.max(
     1,
     Number(pickArg(args, "--max-rate-limit-errors") ?? 5),
@@ -97,14 +117,17 @@ const parseArgs = (): CliArgs => {
     years,
     symbols,
     allListed: hasFlag(args, "--all-listed"),
+    dateOrder,
     ttlHours,
     sleepMs,
+    reqPer30Sec,
     maxRateLimitErrors,
   };
   if (from) parsed.from = from;
   if (to) parsed.to = to;
   if (symbolsFile) parsed.symbolsFile = symbolsFile;
   if (maxSymbols !== undefined) parsed.maxSymbols = maxSymbols;
+  if (maxUnits !== undefined) parsed.maxUnits = maxUnits;
   return parsed;
 };
 
@@ -367,9 +390,15 @@ async function run(): Promise<void> {
     );
   }
 
-  const weekdays = args.mode === "date"
+  const weekdaysBase = args.mode === "date"
     ? enumerateWeekdays(effectiveFrom, effectiveTo)
     : [];
+  const orderedWeekdays =
+    args.dateOrder === "desc" ? [...weekdaysBase].reverse() : weekdaysBase;
+  const weekdays =
+    args.maxUnits !== undefined
+      ? orderedWeekdays.slice(0, args.maxUnits)
+      : orderedWeekdays;
 
   console.log(
     args.mode === "date"
@@ -525,6 +554,8 @@ async function run(): Promise<void> {
     JSON.stringify(
       {
         mode: args.mode,
+        dateOrder: args.dateOrder,
+        maxUnits: args.maxUnits ?? null,
         from: effectiveFrom,
         to: effectiveTo,
         unitCount: args.mode === "date" ? weekdays.length : symbols.length,

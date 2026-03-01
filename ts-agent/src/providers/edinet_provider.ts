@@ -158,7 +158,11 @@ export class EdinetProvider {
     }
 
     // Be resilient: parse each item individually so one bad record doesn't skip the whole day
-    const rawResults = (payload as any)?.results ?? [];
+    interface RawPayload {
+      results?: unknown[];
+      metadata?: unknown;
+    }
+    const rawResults = (payload as RawPayload)?.results ?? [];
     const validResults: EdinetDocument[] = [];
     let errorCount = 0;
 
@@ -182,7 +186,8 @@ export class EdinetProvider {
       );
     }
 
-    const metadata = (payload as any)?.metadata ?? {
+    const metadata = ((payload as RawPayload)
+      ?.metadata as EdinetDocumentListResponse["metadata"]) ?? {
       title: "EDINET API",
       parameter: { date, type: String(type) },
       resultset: { count: validResults.length },

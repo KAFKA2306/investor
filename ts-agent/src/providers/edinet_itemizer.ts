@@ -50,7 +50,8 @@ export class EdinetItemizer {
         "g",
       );
 
-      let match;
+      let match: RegExpExecArray | null;
+      // biome-ignore lint/suspicious/noAssignInExpressions: standard regex exec pattern
       while ((match = regex.exec(text)) !== null) {
         matches.push({
           title: pattern,

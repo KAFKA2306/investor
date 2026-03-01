@@ -30,7 +30,7 @@ export class QuantResearchRuntime {
     return {
       dataRoot: paths.dataRoot,
       verificationRoot: paths.verificationRoot,
-      playbookPath: paths.verificationRoot + "/playbook.json",
+      playbookPath: `${paths.verificationRoot}/playbook.json`,
       symbols,
       asOfDate,
       qualityScore,

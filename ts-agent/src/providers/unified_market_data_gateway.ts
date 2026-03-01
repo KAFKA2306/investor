@@ -135,7 +135,8 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
       {},
       24 * 60 * 60 * 1000,
     );
-    const result = (payload as unknown as YahooChartPayload).chart.result[0];
+    const result = (payload.payload as unknown as YahooChartPayload).chart
+      .result[0];
     if (!result) throw new Error("No chart result");
     const closes = (result.indicators.quote[0]?.close ?? []).filter(
       (v: number | null): v is number => v !== null,

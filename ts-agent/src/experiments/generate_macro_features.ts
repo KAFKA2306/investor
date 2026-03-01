@@ -14,22 +14,37 @@ async function main() {
   const IIP_ID = "0003435161"; // Production Indices
   const CPI_ID = "0003427107"; // Consumer Price Index
 
-  const macroMap: Record<string, any> = existsSync(outPath)
+  interface EstatValue {
+    "@time": string;
+    $: string;
+  }
+
+  interface EstatResponse {
+    GET_STATS_DATA?: {
+      STATISTICAL_DATA?: {
+        DATA_INF?: {
+          VALUE?: EstatValue[];
+        };
+      };
+    };
+  }
+
+  const macroMap: Record<string, Record<string, number>> = existsSync(outPath)
     ? JSON.parse(readFileSync(outPath, "utf8"))
     : {};
 
   console.log("🚀 Fetching Macro Data from e-Stat...");
 
   try {
-    const iipData = (await estat.getStats(IIP_ID)) as any;
+    const iipData = (await estat.getStats(IIP_ID)) as EstatResponse;
     console.log("✅ Fetched IIP data.");
 
-    const cpiData = (await estat.getStats(CPI_ID)) as any;
+    const cpiData = (await estat.getStats(CPI_ID)) as EstatResponse;
     console.log("✅ Fetched CPI data.");
 
     // Parse Logic for e-Stat JSON structure (simplified)
     // Note: Real e-Stat JSON is deeply nested in VALUE array.
-    const extractValues = (data: any, key: string) => {
+    const extractValues = (data: EstatResponse, key: string) => {
       const values =
         data.GET_STATS_DATA?.STATISTICAL_DATA?.DATA_INF?.VALUE || [];
       for (const v of values) {
@@ -40,7 +55,7 @@ async function main() {
           const month = timeCode.slice(4, 6);
           const date = `${year}-${month}-01`; // Store as 1st of month
           if (!macroMap[date]) macroMap[date] = {};
-          macroMap[date][key] = Number(v["$"]) || 0;
+          macroMap[date][key] = Number(v.$) || 0;
         }
       }
     };

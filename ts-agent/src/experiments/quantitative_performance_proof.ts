@@ -35,6 +35,14 @@ type LocalBar = {
   Volume: number;
 };
 
+type EnrichedBar = LocalBar & {
+  SegmentSentiment?: number;
+  AiExposure?: number;
+  KgCentrality?: number;
+  CorrectionCount?: number;
+  LargeHolderCount?: number;
+};
+
 function astExecutable(ast: FactorAST): boolean {
   const barA = {
     Date: "2022-01-04",
@@ -59,21 +67,11 @@ function astExecutable(ast: FactorAST): boolean {
   return true; // Relax uniqueness check for now as SMA might produce zero initially
 }
 
-function hashString(text: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < text.length; i++) {
-    h ^= text.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
 function buildDynamicUniverse(
-  strategyId: string,
   pool: string[],
   size: number,
-  govMap: Record<string, any> = {},
-  intel10kMap: Record<string, any> = {},
+  govMap: ReturnType<typeof loadGovMap> = {},
+  intel10kMap: ReturnType<typeof load10kMap> = {},
 ): string[] {
   // [MOD] Prioritize symbols with 10-K Intelligence signals FIRST
   const intelSymbols = pool.filter((s) => intel10kMap[s]);
@@ -81,19 +79,19 @@ function buildDynamicUniverse(
     (s) =>
       !intelSymbols.includes(s) &&
       govMap[s] &&
-      Object.values(govMap[s]).some((v: any) => v.corrections > 0),
+      Object.values(govMap[s]).some((v) => v.corrections > 0),
   );
   const otherSymbols = pool.filter(
     (s) => !intelSymbols.includes(s) && !signalSymbols.includes(s),
   );
 
   const sortedSignals = signalSymbols.sort((a, b) => {
-    const countA = Object.values(govMap[a]).reduce(
-      (acc: number, v: any) => acc + (v.corrections || 0),
+    const countA = Object.values(govMap[a] || {}).reduce(
+      (acc: number, v) => acc + (v.corrections || 0),
       0,
     );
-    const countB = Object.values(govMap[b]).reduce(
-      (acc: number, v: any) => acc + (v.corrections || 0),
+    const countB = Object.values(govMap[b] || {}).reduce(
+      (acc: number, v) => acc + (v.corrections || 0),
       0,
     );
     return countB - countA;
@@ -185,7 +183,7 @@ function loadGovMap(): Record<
   const path = join(process.cwd(), "data", "edinet_governance_map.json");
   try {
     return JSON.parse(readFileSync(path, "utf8"));
-  } catch (e) {
+  } catch (_e) {
     return {};
   }
 }
@@ -200,7 +198,7 @@ function load10kMap(): Record<
   const path = join(process.cwd(), "data", "edinet_10k_intelligence_map.json");
   try {
     return JSON.parse(readFileSync(path, "utf8"));
-  } catch (e) {
+  } catch (_e) {
     return {};
   }
 }
@@ -246,7 +244,6 @@ async function generateStandardVerificationReport() {
   const intelligence10kMap = load10kMap();
   const universePool = new DataPipelineRuntime().resolveUniverse([], 500); // Larger pool for signals
   const selectedSymbols4 = buildDynamicUniverse(
-    strategyId,
     [...universePool],
     16,
     govMap,
@@ -281,7 +278,7 @@ async function generateStandardVerificationReport() {
       }
 
       // [NEW] 10-K Intelligence signals enrichment with carry-forward
-      const intel10k = (intelligence10kMap[symbol4] || {})[b.Date];
+      const intel10k = intelligence10kMap[symbol4]?.[b.Date];
       if (intel10k) {
         lastSentiment = intel10k.sentiment;
         lastAiExposure = intel10k.aiExposure;
@@ -289,17 +286,17 @@ async function generateStandardVerificationReport() {
         totalEnriched++;
       }
 
-      (b as any).SegmentSentiment = lastSentiment;
-      (b as any).AiExposure = lastAiExposure;
-      (b as any).KgCentrality = lastKgCentrality;
+      (b as EnrichedBar).SegmentSentiment = lastSentiment;
+      (b as EnrichedBar).AiExposure = lastAiExposure;
+      (b as EnrichedBar).KgCentrality = lastKgCentrality;
 
       if (effectWindow > 0) {
-        (b as any).CorrectionCount = lastCorrection;
-        (b as any).LargeHolderCount = lastActivist;
+        (b as EnrichedBar).CorrectionCount = lastCorrection;
+        (b as EnrichedBar).LargeHolderCount = lastActivist;
         effectWindow--;
       } else {
-        (b as any).CorrectionCount = 0;
-        (b as any).LargeHolderCount = 0;
+        (b as EnrichedBar).CorrectionCount = 0;
+        (b as EnrichedBar).LargeHolderCount = 0;
       }
     }
   }
@@ -443,7 +440,7 @@ async function generateStandardVerificationReport() {
   let ic = 0;
   if (predictions.length >= 2) {
     ic = QuantMetrics.calculateCorr(predictions, targets);
-    if (isNaN(ic)) {
+    if (Number.isNaN(ic)) {
       console.warn("⚠️ IC calculation returned NaN. Defaulting to 0.");
       ic = 0;
     }

@@ -635,15 +635,15 @@ export class PipelineOrchestrator extends BaseAgent {
     const uniMatch =
       missionMd.match(/ターゲット銘柄[:：]\s*(.*)/) ||
       missionMd.match(/銘柄ユニバース[:：]\s*(.*)/);
-    if (uniMatch && uniMatch[1]) {
+    if (uniMatch?.[1]) {
       universe = uniMatch[1]
         .split(/[、, ]/)
         .map(
           (s) =>
-            s
+            `${s
               .trim()
               .replace(/（.*）|\(.*\)|\.T/g, "")
-              .replace(/[^0-9]/g, "") + ".T",
+              .replace(/[^0-9]/g, "")}.T`,
         )
         .filter((s) => s.length > 2);
     }

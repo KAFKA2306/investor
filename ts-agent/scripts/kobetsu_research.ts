@@ -6,7 +6,7 @@
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { existsSync, rmSync, mkdirSync } from "node:fs";
-import { EdinetProvider, bySecCode, isAnnualReport } from "../src/providers/edinet_provider.ts";
+import { EdinetProvider, bySecCode } from "../src/providers/edinet_provider.ts";
 import { EdinetItemizer } from "../src/providers/edinet_itemizer.ts";
 
 async function main() {

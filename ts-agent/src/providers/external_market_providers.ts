@@ -170,7 +170,7 @@ export class YahooFinanceGateway {
       24 * 60 * 60 * 1000,
     );
     const resRaw = (
-      payload as {
+      payload.payload as {
         chart: {
           result: {
             timestamp: number[];
