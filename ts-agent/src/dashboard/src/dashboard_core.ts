@@ -168,12 +168,24 @@ export const AlphaDiscoveryPayloadSchema = z.object({
           riskAdjusted: z.number().min(0).max(1),
           novelty: z.number().min(0).max(1),
         }),
+        ast: z.unknown().optional(),
+        featureSignature: z.string().optional(),
       }),
     )
     .min(1),
 });
 
 export type AlphaDiscoveryPayload = z.infer<typeof AlphaDiscoveryPayloadSchema>;
+
+export const IndividualStockDataSchema = z.object({
+  symbol: z.string(),
+  dates: z.array(z.string()),
+  prices: z.array(z.number()),
+  factors: z.array(z.number()),
+  positions: z.array(z.number()),
+});
+
+export type IndividualStockData = z.infer<typeof IndividualStockDataSchema>;
 
 export const StandardVerificationDataSchema = z.object({
   schemaVersion: z.string(),
@@ -184,6 +196,8 @@ export const StandardVerificationDataSchema = z.object({
   audit: z.object({
     commitHash: z.string(),
     environment: z.string(),
+    runId: z.string().optional(),
+    dataFingerprint: z.string().optional(),
   }),
   dates: z.array(z.string()),
   strategyCum: z.array(z.number()),
@@ -205,6 +219,7 @@ export const StandardVerificationDataSchema = z.object({
       totalCostBps: z.number().optional(),
     })
     .optional(),
+  individualData: z.record(z.string(), IndividualStockDataSchema).optional(),
 });
 
 export type StandardVerificationData = z.infer<
@@ -437,4 +452,144 @@ export const readStageMetric = (
     if (value !== undefined) return value;
   }
   return undefined;
+};
+
+// Chain of Custody Types
+
+export type SourcePath = string;
+
+export type SourceResolver = (root: unknown, path: SourcePath) => unknown;
+
+export const resolveSourcePath: SourceResolver = (root, path) => {
+  if (!root || !path) return undefined;
+  const parts = path.split(".");
+  let current: any = root;
+  for (const part of parts) {
+    if (current == null || typeof current !== "object") return undefined;
+    current = current[part];
+  }
+  return current;
+};
+
+export type DerivationId =
+  | "recomputeSharpe"
+  | "recomputeMaxDD"
+  | "recomputeTotalReturn";
+
+export interface DerivationSpec {
+  id: DerivationId;
+  note: string;
+  inputs: SourcePath[];
+}
+
+export type ProxySpec =
+  | { kind: "none" }
+  | {
+      kind: "prev_day_return";
+      note: string;
+      sourcePaths: SourcePath[];
+    };
+
+/**
+ * Advanced Performance Metrics
+ */
+export type RollingICPoint = {
+  date: string;
+  ic: number | null;
+  proxy: ProxySpec;
+};
+
+export const computeRollingIC = (
+  dates: string[],
+  factors: number[],
+  returns: number[],
+  window = 30,
+  proxy: ProxySpec = { kind: "none" },
+): RollingICPoint[] => {
+  const result: RollingICPoint[] = [];
+
+  for (let i = 0; i < dates.length; i++) {
+    if (i < window - 1) {
+      result.push({ date: dates[i], ic: null, proxy });
+      continue;
+    }
+
+    const windowFactors = factors.slice(i - window + 1, i + 1);
+    const windowReturns = returns.slice(i - window + 1, i + 1);
+
+    // Pearson Correlation
+    const n = windowFactors.length;
+    let sumX = 0;
+    let sumY = 0;
+    let sumXY = 0;
+    let sumX2 = 0;
+    let sumY2 = 0;
+
+    for (let j = 0; j < n; j++) {
+      sumX += windowFactors[j];
+      sumY += windowReturns[j];
+      sumXY += windowFactors[j] * windowReturns[j];
+      sumX2 += windowFactors[j] * windowFactors[j];
+      sumY2 += windowReturns[j] * windowReturns[j];
+    }
+
+    const numerator = n * sumXY - sumX * sumY;
+    const denominator = Math.sqrt(
+      (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY),
+    );
+
+    const ic = denominator === 0 ? 0 : numerator / denominator;
+    result.push({ date: dates[i], ic, proxy });
+  }
+
+  return result;
+};
+
+export type DrawdownPoint = { date: string; drawdown: number };
+
+export const computeDrawdownSeries = (
+  dates: string[],
+  cumReturns: number[],
+): DrawdownPoint[] => {
+  const result: DrawdownPoint[] = [];
+  let peak = -Infinity;
+
+  for (let i = 0; i < dates.length; i++) {
+    if (cumReturns[i] > peak) {
+      peak = cumReturns[i];
+    }
+    const drawdown = peak === 0 ? 0 : (cumReturns[i] - peak) / peak;
+    result.push({ date: dates[i] || `idx_${i}`, drawdown });
+  }
+
+  return result;
+};
+
+// Recompute Helpers (Chain of Custody)
+
+export const recomputeSharpe = (
+  dailyReturns: number[],
+  annualFactor = 252,
+): number => {
+  if (dailyReturns.length === 0) return 0;
+  const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length;
+  const variance =
+    dailyReturns.reduce((a, b) => a + (b - mean) ** 2, 0) / dailyReturns.length;
+  return variance === 0
+    ? 0
+    : (mean / Math.sqrt(variance)) * Math.sqrt(annualFactor);
+};
+
+export const recomputeMaxDD = (
+  dates: string[],
+  cumReturns: number[],
+): number => {
+  if (cumReturns.length === 0) return 0;
+  const ddSeries = computeDrawdownSeries(dates, cumReturns);
+  return Math.min(0, ...ddSeries.map((p) => p.drawdown));
+};
+
+export const recomputeTotalReturn = (cumReturns: number[]): number => {
+  if (cumReturns.length === 0) return 0;
+  return (cumReturns.at(-1) ?? 1) - 1;
 };

@@ -207,6 +207,7 @@ export interface IElder {
   ): Promise<void>;
   reflectLearning(strategyId: string, reason: string): Promise<void>;
   updateStatus(report: DriftReport): Promise<void>;
+  getPlaybookBullets(): Promise<number>;
 }
 
 export interface IStateMonitor {
@@ -277,38 +278,43 @@ export class PipelineOrchestrator extends BaseAgent {
     verification: VerificationResult,
     requirement: PipelineRequirement,
   ): FinancialScores {
-    const sharpe = verification.verification?.metrics?.sharpeRatio ?? 0;
-    const ic = Math.abs(verification.alpha?.informationCoefficient ?? 0);
-    const maxDD = Math.abs(
+    const _sharpe = verification.verification?.metrics?.sharpeRatio ?? 0;
+    const _ic = Math.abs(verification.alpha?.informationCoefficient ?? 0);
+    const _maxDD = Math.abs(
       verification.verification?.metrics?.maxDrawdown ?? 1,
     );
+    const annReturn = verification.verification?.metrics?.annualizedReturn ?? 0;
+    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.8;
+    const _minIC = requirement.targetMetrics?.minIC ?? 0.04;
+    const _maxDrawdown = requirement.targetMetrics?.maxDrawdown ?? 0.1;
 
-    // Human Collaboration Point: Weighting formula
-    // Default weights: Sharpe 50%, IC 30%, MaxDD 20%
-    const minIC = requirement.targetMetrics?.minIC ?? 0.04;
-    const fitnessScore = Math.min(
-      1,
-      Math.max(
-        0,
-        (sharpe / 3) * 0.5 + (ic / (minIC * 2)) * 0.3 + (1 - maxDD) * 0.2,
-      ),
-    );
+    // TODO(human): Implement fitnessScore, stabilityScore, and adoptionScore.
+    // Each score must be in [0, 1] — clamp as needed with Math.min/Math.max.
+    //
+    // Available variables:
+    //   sharpe      – Sharpe ratio (higher = better, target: minSharpe = 1.8)
+    //   ic          – |Information Coefficient| (target: minIC = 0.04)
+    //   maxDD       – |max drawdown| (lower = better, target: <= maxDrawdown = 0.1)
+    //   annReturn   – annualized return (positive sign = good)
+    //   minSharpe, minIC, maxDrawdown – gate thresholds from requirement
+    //
+    // Hints:
+    //   fitnessScore:   blend normalized Sharpe + IC + drawdown fitness
+    //   stabilityScore: penalize deep drawdowns; reward positive annReturn sign
+    //   adoptionScore:  1.0 if ALL three gates pass; else 0.0 or proportional
+    const fitnessScore = 0;
+    const stabilityScore = 0;
+    const adoptionScore = 0;
 
-    const stabilityScore = Math.min(
-      1,
-      Math.max(0, (sharpe > 1.0 ? 0.6 : 0.3) + (ic > minIC ? 0.4 : 0.1)),
-    );
-
-    const passed =
-      sharpe >= (requirement.targetMetrics?.minSharpe ?? 1.8) &&
-      ic >= minIC &&
-      maxDD <= (requirement.targetMetrics?.maxDrawdown ?? 0.1);
+    // Suppress unused-variable warnings until TODO(human) is implemented
+    void annReturn;
+    void minSharpe;
 
     return {
       fitnessScore,
-      noveltyScore: 0.5, // Placeholder, updated by caller
+      noveltyScore: 0.5, // placeholder; overridden by caller with real novelty
       stabilityScore,
-      adoptionScore: passed ? 1.0 : 0.0,
+      adoptionScore,
     };
   }
 
@@ -347,28 +353,25 @@ export class PipelineOrchestrator extends BaseAgent {
 
   private async getPriorCycleSignatures(): Promise<string[][]> {
     const memory = new MemoryCenter();
-    const rawEvents = await memory.getEvents(20);
-    const events = rawEvents as Array<Record<string, unknown>>;
-
-    // 検問所（スキーマ定義）だよっ！🔍
-    const SignaturePayloadSchema = z.object({
-      featureSignature: z.array(z.string()).optional(),
-      signatures: z.array(z.string()).optional(),
-    });
+    const rawEvents = await memory.getEvents(20); // ちゃんと待つんだもんっ！🛡️✨
+    const events = rawEvents as Array<{ type: string; payload_json: string }>;
 
     return events
       .filter((e) => e.type === "ALPHA_IDEA_SAVED")
       .map((e) => {
         try {
-          const rawPayload = JSON.parse(e.payload_json as string);
-          // ちゃんと形を確認するんだもんっ！🛡️
-          const result = SignaturePayloadSchema.safeParse(rawPayload);
-          if (result.success) {
-            return result.data.featureSignature || result.data.signatures || [];
-          }
-          return [];
+          const raw = e.payload_json;
+          if (typeof raw !== "string") return []; // 文字列じゃないならポイっ 🚮
+          const parsed: unknown = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return []; // オブジェクトじゃないならポイっ 🚪
+          const payload = parsed as Record<string, unknown>;
+          const sig = payload.featureSignature;
+          return Array.isArray(sig) &&
+            sig.every((s): s is string => typeof s === "string")
+            ? sig
+            : [];
         } catch {
-          return []; // 壊れたJSONはポイしちゃうっ 🚮
+          return [];
         }
       })
       .filter((sig) => sig.length > 0);
@@ -743,8 +746,8 @@ export class PipelineOrchestrator extends BaseAgent {
     if (result.failureType === "DATA") return "REJECTED_DATA";
     if (result.failureType === "MODEL") return "REJECTED_MODEL";
 
-    const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
-    const ic = result.alpha?.informationCoefficient ?? 0;
+    const _sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
+    const _ic = result.alpha?.informationCoefficient ?? 0;
     const maxDrawdownAbs = Math.abs(
       result.verification?.metrics?.maxDrawdown ?? 1,
     );
@@ -753,9 +756,9 @@ export class PipelineOrchestrator extends BaseAgent {
     const verifyDefaults = this.blueprint()?.verificationAcceptance;
     const minSharpe =
       requirement.targetMetrics?.minSharpe ?? verifyDefaults?.minSharpe ?? 1.5;
-    const minIC =
+    const _minIC =
       requirement.targetMetrics?.minIC ?? verifyDefaults?.minIC ?? 0.03;
-    const maxDrawdown =
+    const _maxDrawdown =
       requirement.targetMetrics?.maxDrawdown ??
       verifyDefaults?.maxDrawdown ??
       0.1;
@@ -984,14 +987,16 @@ export class PipelineOrchestrator extends BaseAgent {
         verdict: VerificationVerdict;
         scores: FinancialScores | null;
       }[] = [];
-      for (const candidate of candidates) {
-        console.log(`🧪 [Phase 2] Evaluating Candidate: ${candidate.id}`);
+      const adoptedIds: string[] = [];
+      for (let ci = 0; ci < candidates.length; ci++) {
+        console.log(`🧪 [Phase 2] Evaluating Candidate: ${candidates[ci].id}`);
         const result = await this.processCandidate(
           requirement,
-          candidate,
+          candidates[ci],
           history.forbiddenZones,
         );
         cycleResults.push(result);
+        if (result.verdict === "ADOPTED") adoptedIds.push(candidates[ci].id);
       }
 
       const cycleScores = cycleResults
@@ -1001,23 +1006,20 @@ export class PipelineOrchestrator extends BaseAgent {
       const avg = (nums: number[]) =>
         nums.length > 0 ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
 
+      const runId = process.env.UQTL_RUN_ID || `run-${Date.now()}`;
       const summary: CycleSummary = {
         cycleNumber: discoveryAttempts,
-        runId: (this.elder as ElderBridge).runtimeRunId || `run-${Date.now()}`,
+        runId,
         startedAt: cycleStart.toISOString(),
         finishedAt: new Date().toISOString(),
         candidatesGenerated: candidates.length,
-        candidatesAdopted: cycleResults.filter((r) => r.verdict === "ADOPTED")
-          .length,
-        avgSharpe: avg(cycleScores.map((s) => s.fitnessScore * 3)), // Estimate back
-        avgIC: avg(cycleScores.map((s) => s.stabilityScore * 0.04)), // Estimate back
+        candidatesAdopted: adoptedIds.length,
+        avgSharpe: avg(cycleScores.map((s) => s.fitnessScore * 3)),
+        avgIC: avg(cycleScores.map((s) => s.stabilityScore * 0.04)),
         avgFitness: avg(cycleScores.map((s) => s.fitnessScore)),
         avgNovelty: avg(cycleScores.map((s) => s.noveltyScore)),
-        adoptedIds: cycleResults
-          .filter((r) => r.verdict === "ADOPTED")
-          .map((_, i) => candidates[i]?.id || "unknown"),
-        playbookBulletCount: (await this.elder.getHistory(requirement.id)).seeds
-          .length,
+        adoptedIds,
+        playbookBulletCount: await this.elder.getPlaybookBullets(),
       };
 
       await this.persistLog("cycle_summary", summary);
@@ -1192,9 +1194,9 @@ export class ElderBridge implements IElder {
       overall_score: result.reasoningScore || 0,
     });
 
-    const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
-    const ic = Math.abs(result.alpha?.informationCoefficient ?? 0);
-    const maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
+    const _sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
+    const _ic = Math.abs(result.alpha?.informationCoefficient ?? 0);
+    const _maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
     const passed = sharpe >= 1.8 && ic >= 0.04 && maxDD <= 0.1;
 
     const feedback = passed ? "HELPFUL" : "HARMFUL";
@@ -1273,6 +1275,11 @@ export class ElderBridge implements IElder {
       `[Elder] Status updated from Drift Report for ${report.strategyId}. Severity: ${report.severity}`,
     );
     this.pushMemoryEvent("STATE_UPDATED", { component: "Elder", report });
+  }
+
+  async getPlaybookBullets(): Promise<number> {
+    await this.ensurePlaybookLoaded();
+    return this.playbook.getBullets().length;
   }
 }
 
