@@ -374,3 +374,27 @@ export const QuantitativeVerificationSchema = z.object({
 export type QuantitativeVerification = z.infer<
   typeof QuantitativeVerificationSchema
 >;
+
+export const FinancialScoresSchema = z.object({
+  fitnessScore: z.number().min(0).max(1),
+  noveltyScore: z.number().min(0).max(1),
+  stabilityScore: z.number().min(0).max(1),
+  adoptionScore: z.number().min(0).max(1),
+});
+export type FinancialScores = z.infer<typeof FinancialScoresSchema>;
+
+export const CycleSummarySchema = z.object({
+  cycleNumber: z.number().int().positive(),
+  runId: z.string(),
+  startedAt: z.string().datetime(),
+  finishedAt: z.string().datetime(),
+  candidatesGenerated: z.number().int().nonnegative(),
+  candidatesAdopted: z.number().int().nonnegative(),
+  avgSharpe: z.number(),
+  avgIC: z.number(),
+  avgFitness: z.number(),
+  avgNovelty: z.number(),
+  adoptedIds: z.array(z.string()),
+  playbookBulletCount: z.number().int().nonnegative(),
+});
+export type CycleSummary = z.infer<typeof CycleSummarySchema>;

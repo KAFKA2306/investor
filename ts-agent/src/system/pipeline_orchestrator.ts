@@ -10,13 +10,15 @@ import {
 } from "../context/unified_context_services.ts";
 import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
-import type {
-  AceBullet,
-  Metrics,
-  QuantitativeVerification,
-  StandardOutcome,
+import {
+  type AceBullet,
+  type CycleSummary,
+  type FinancialScores,
+  type Metrics,
+  type QuantitativeVerification,
+  QuantitativeVerificationSchema,
+  type StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
-import { QuantitativeVerificationSchema } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent, core } from "./app_runtime_core.ts";
 import {
   DataPipelineRuntime,
@@ -188,7 +190,10 @@ export interface IElder {
     preprocessingConditions: PITDataset["preprocessingConditions"],
   ): Promise<void>;
   saveModelConfiguration(config: ModelConfiguration): Promise<void>;
-  saveVerificationResult(result: VerificationResult): Promise<void>;
+  saveVerificationResult(
+    result: VerificationResult,
+    scores?: FinancialScores,
+  ): Promise<void>;
   saveOrderPlan(plan: OrderPlan): Promise<void>;
   saveExecutionResult(
     result: ExecutionResult,
@@ -268,12 +273,113 @@ export class PipelineOrchestrator extends BaseAgent {
     super();
   }
 
+  private computeFinancialScores(
+    verification: VerificationResult,
+    requirement: PipelineRequirement,
+  ): FinancialScores {
+    const sharpe = verification.verification?.metrics?.sharpeRatio ?? 0;
+    const ic = Math.abs(verification.alpha?.informationCoefficient ?? 0);
+    const maxDD = Math.abs(
+      verification.verification?.metrics?.maxDrawdown ?? 1,
+    );
+
+    // Human Collaboration Point: Weighting formula
+    // Default weights: Sharpe 50%, IC 30%, MaxDD 20%
+    const minIC = requirement.targetMetrics?.minIC ?? 0.04;
+    const fitnessScore = Math.min(
+      1,
+      Math.max(
+        0,
+        (sharpe / 3) * 0.5 + (ic / (minIC * 2)) * 0.3 + (1 - maxDD) * 0.2,
+      ),
+    );
+
+    const stabilityScore = Math.min(
+      1,
+      Math.max(0, (sharpe > 1.0 ? 0.6 : 0.3) + (ic > minIC ? 0.4 : 0.1)),
+    );
+
+    const passed =
+      sharpe >= (requirement.targetMetrics?.minSharpe ?? 1.8) &&
+      ic >= minIC &&
+      maxDD <= (requirement.targetMetrics?.maxDrawdown ?? 0.1);
+
+    return {
+      fitnessScore,
+      noveltyScore: 0.5, // Placeholder, updated by caller
+      stabilityScore,
+      adoptionScore: passed ? 1.0 : 0.0,
+    };
+  }
+
+  private computeNovelty(sig: string[], others: string[][]): number {
+    if (others.length === 0) return 1.0;
+
+    let maxJaccard = 0;
+    const setA = new Set(sig);
+
+    for (const other of others) {
+      const setB = new Set(other);
+      const intersection = new Set([...setA].filter((x) => setB.has(x)));
+      const union = new Set([...setA, ...setB]);
+      const jaccard = intersection.size / union.size;
+      if (jaccard > maxJaccard) maxJaccard = jaccard;
+    }
+
+    return 1.0 - maxJaccard;
+  }
+
+  private extractAstVariables(ast: Record<string, unknown>): string[] {
+    const vars: string[] = [];
+    const walk = (node: unknown) => {
+      if (!node || typeof node !== "object") return;
+      const n = node as Record<string, unknown>;
+      if (n.type === "variable" && typeof n.name === "string") {
+        vars.push(n.name);
+      }
+      for (const key of Object.keys(n)) {
+        walk(n[key]);
+      }
+    };
+    walk(ast);
+    return [...new Set(vars)];
+  }
+
+  private async getPriorCycleSignatures(): Promise<string[][]> {
+    const memory = new MemoryCenter();
+    const rawEvents = await memory.getEvents(20);
+    const events = rawEvents as Array<Record<string, unknown>>;
+    return events
+      .filter((e) => e.type === "ALPHA_IDEA_SAVED")
+      .map((e) => {
+        try {
+          const payload = JSON.parse(e.payload_json as string) as Record<
+            string,
+            unknown
+          >;
+          return (payload.featureSignature as string[]) || [];
+        } catch {
+          return [];
+        }
+      })
+      .filter((sig) => sig.length > 0);
+  }
+
   private blueprint() {
     return core.config.pipelineBlueprint;
   }
 
   private logPhase(phase: string, detail: string): void {
     console.log(`📌 [${phase}] ${detail}`);
+  }
+
+  private async persistLog(name: string, data: unknown): Promise<void> {
+    const { writeCanonicalEnvelope } = await import("./app_runtime_core.ts");
+    writeCanonicalEnvelope({
+      kind: name as "quality_gate",
+      payload: data as Record<string, unknown>,
+      producerComponent: `PipelineOrchestrator.${name}`,
+    });
   }
 
   private evaluateExecutionQuality(execution: ExecutionResult): {
@@ -334,22 +440,30 @@ export class PipelineOrchestrator extends BaseAgent {
       state,
     );
 
+    const results: {
+      verdict: VerificationVerdict;
+      scores: FinancialScores | null;
+    }[] = [];
     for (const candidate of candidates) {
-      await this.processCandidate(
+      const result = await this.processCandidate(
         requirement,
         candidate,
         history.forbiddenZones,
       );
+      results.push(result);
     }
 
-    this.emitEvent("PIPELINE_COMPLETED", { requirementId: requirement.id });
+    this.emitEvent("PIPELINE_COMPLETED", {
+      requirementId: requirement.id,
+      adoptedCount: results.filter((r) => r.verdict === "ADOPTED").length,
+    });
   }
 
   private async processCandidate(
     requirement: PipelineRequirement,
     candidate: IdeaCandidate,
     forbiddenZones: string[],
-  ): Promise<void> {
+  ): Promise<{ verdict: VerificationVerdict; scores: FinancialScores | null }> {
     this.logPhase("入力と探索", `候補 ${candidate.id} を記憶保存し評価開始`);
     await this.elder.saveIdeaCandidate(candidate);
 
@@ -366,7 +480,7 @@ export class PipelineOrchestrator extends BaseAgent {
         candidate.id,
         "Data delivery unmet after retries",
       );
-      return;
+      return { verdict: "REJECTED_GENERAL", scores: null };
     }
 
     let dataset = acceptedData.dataset;
@@ -403,7 +517,10 @@ export class PipelineOrchestrator extends BaseAgent {
         retryMode,
         forbiddenZones,
       );
-      await this.elder.saveVerificationResult(verification);
+
+      const scores = this.computeFinancialScores(verification, requirement);
+      scores.noveltyScore = candidate.noveltyScore;
+      await this.elder.saveVerificationResult(verification, scores);
 
       const verdict = this.judgeVerification(verification, requirement);
 
@@ -413,7 +530,7 @@ export class PipelineOrchestrator extends BaseAgent {
           verification,
           dataset.context,
         );
-        return;
+        return { verdict, scores };
       }
 
       if (verdict === "REJECTED_GENERAL") {
@@ -426,7 +543,7 @@ export class PipelineOrchestrator extends BaseAgent {
           candidate.id,
           "General gate rejected candidate",
         );
-        return;
+        return { verdict, scores };
       }
 
       if (verdict === "REJECTED_MODEL") {
@@ -459,7 +576,7 @@ export class PipelineOrchestrator extends BaseAgent {
             candidate.id,
             "DATA_RETRY_EXHAUSTED",
           );
-          return;
+          return { verdict, scores };
         }
         dataset = nextData.dataset;
         dataAttempt = nextData.nextAttempt;
@@ -467,8 +584,8 @@ export class PipelineOrchestrator extends BaseAgent {
         await this.persistDataset(dataset, requirement);
       }
     }
+    return { verdict: "REJECTED_GENERAL", scores: null };
   }
-
   private async handleAdoptedCandidate(
     candidateId: string,
     verification: VerificationResult,
@@ -731,13 +848,34 @@ export class PipelineOrchestrator extends BaseAgent {
 
     const ideas = await les.generateAlphaFactors(contextBullets, { count: 3 });
 
+    const priorSigs = await this.getPriorCycleSignatures();
+
     return ideas
-      .map((idea) => ({
-        ...idea,
-        requirementId: requirement.id,
-        noveltyScore: 0.9,
-        priority: 0.9,
-      }))
+      .map((idea, idx) => {
+        const sig =
+          idea.featureSignature && idea.featureSignature.length > 0
+            ? idea.featureSignature
+            : this.extractAstVariables(idea.ast);
+
+        const otherSigsInThisBatch = ideas.slice(0, idx).map((i) => {
+          return i.featureSignature && i.featureSignature.length > 0
+            ? i.featureSignature
+            : this.extractAstVariables(i.ast);
+        });
+
+        const noveltyScore = this.computeNovelty(sig, [
+          ...priorSigs,
+          ...otherSigsInThisBatch,
+        ]);
+
+        return {
+          ...idea,
+          requirementId: requirement.id,
+          noveltyScore,
+          priority: idea.priority ?? 0.9,
+        };
+      })
+      .filter((idea) => idea.noveltyScore >= 0.15)
       .filter(
         (idea) =>
           !history.forbiddenZones.some((zone: string) =>
@@ -821,6 +959,7 @@ export class PipelineOrchestrator extends BaseAgent {
       console.log(`🎯 [Phase 5] Dynamic Mission: ${requirement.id}`);
 
       this.logPhase("研究検証フェーズ", "候補生成と適応戦略設計を開始");
+      const cycleStart = new Date();
       const candidates = await this.generateHighLevelIdeas(
         requirement,
         history,
@@ -832,14 +971,47 @@ export class PipelineOrchestrator extends BaseAgent {
         continue;
       }
 
+      const cycleResults: {
+        verdict: VerificationVerdict;
+        scores: FinancialScores | null;
+      }[] = [];
       for (const candidate of candidates) {
         console.log(`🧪 [Phase 2] Evaluating Candidate: ${candidate.id}`);
-        await this.processCandidate(
+        const result = await this.processCandidate(
           requirement,
           candidate,
           history.forbiddenZones,
         );
+        cycleResults.push(result);
       }
+
+      const cycleScores = cycleResults
+        .map((r) => r.scores)
+        .filter((s): s is FinancialScores => s !== null);
+
+      const avg = (nums: number[]) =>
+        nums.length > 0 ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
+
+      const summary: CycleSummary = {
+        cycleNumber: discoveryAttempts,
+        runId: (this.elder as ElderBridge).runtimeRunId || `run-${Date.now()}`,
+        startedAt: cycleStart.toISOString(),
+        finishedAt: new Date().toISOString(),
+        candidatesGenerated: candidates.length,
+        candidatesAdopted: cycleResults.filter((r) => r.verdict === "ADOPTED")
+          .length,
+        avgSharpe: avg(cycleScores.map((s) => s.fitnessScore * 3)), // Estimate back
+        avgIC: avg(cycleScores.map((s) => s.stabilityScore * 0.04)), // Estimate back
+        avgFitness: avg(cycleScores.map((s) => s.fitnessScore)),
+        avgNovelty: avg(cycleScores.map((s) => s.noveltyScore)),
+        adoptedIds: cycleResults
+          .filter((r) => r.verdict === "ADOPTED")
+          .map((_, i) => candidates[i]?.id || "unknown"),
+        playbookBulletCount: (await this.elder.getHistory(requirement.id)).seeds
+          .length,
+      };
+
+      await this.persistLog("cycle_summary", summary);
 
       console.log(`🏁 [Loop] Iteration ${discoveryAttempts} finished.`);
     }
@@ -852,7 +1024,7 @@ export class ElderBridge implements IElder {
   private memory = new MemoryCenter();
   private playbook = new ContextPlaybook();
   private playbookLoaded = false;
-  private readonly runtimeRunId =
+  public readonly runtimeRunId =
     process.env.UQTL_RUN_ID ||
     `run_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   private readonly runtimeLoopIteration = Number.parseInt(
@@ -954,11 +1126,32 @@ export class ElderBridge implements IElder {
       reasoning: candidate.reasoning,
       created_at: new Date().toISOString(),
     });
+
+    await this.ensurePlaybookLoaded();
+    const sig =
+      candidate.featureSignature && candidate.featureSignature.length > 0
+        ? candidate.featureSignature.join(",")
+        : "unknown";
+    const content = `${candidate.description} (sig=[${sig}])`;
+    this.playbook.addBullet({
+      content,
+      section: "evidence",
+      metadata: {
+        id: candidate.id,
+        requirementId: candidate.requirementId,
+        noveltyScore: candidate.noveltyScore,
+        priority: candidate.priority,
+        status: "PENDING",
+      },
+    });
+    await this.playbook.save();
+
     this.pushMemoryEvent("ALPHA_IDEA_SAVED", {
       strategyId: candidate.id,
       requirementId: candidate.requirementId,
       noveltyScore: candidate.noveltyScore,
       priority: candidate.priority,
+      featureSignature: candidate.featureSignature || [],
     });
   }
 
@@ -978,7 +1171,10 @@ export class ElderBridge implements IElder {
     this.pushMemoryEvent("MODEL_CONFIG_SAVED", { config });
   }
 
-  async saveVerificationResult(result: VerificationResult): Promise<void> {
+  async saveVerificationResult(
+    result: VerificationResult,
+    scores?: FinancialScores,
+  ): Promise<void> {
     this.memory.recordEvaluation({
       id: crypto.randomUUID(),
       alpha_id: result.strategyId,
@@ -986,17 +1182,37 @@ export class ElderBridge implements IElder {
       metrics_json: JSON.stringify(result.verification?.metrics),
       overall_score: result.reasoningScore || 0,
     });
-    const reasoningScore = result.reasoningScore ?? 0;
-    const feedback = reasoningScore >= 0.65 ? "HELPFUL" : "HARMFUL";
-    await this.applyAceFeedback(
-      result.strategyId,
-      feedback,
-      `Verification reasoningScore=${reasoningScore.toFixed(4)}`,
-    );
+
+    const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
+    const ic = Math.abs(result.alpha?.informationCoefficient ?? 0);
+    const maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
+    const passed = sharpe >= 1.8 && ic >= 0.04 && maxDD <= 0.1;
+
+    const feedback = passed ? "HELPFUL" : "HARMFUL";
+    const reason = passed
+      ? `Gates passed: Sharpe=${sharpe.toFixed(2)}, IC=${ic.toFixed(3)}, MaxDD=${(maxDD * 100).toFixed(1)}%`
+      : `Gates failed: Sharpe=${sharpe.toFixed(2)}, IC=${ic.toFixed(3)}, MaxDD=${(maxDD * 100).toFixed(1)}%`;
+
+    await this.applyAceFeedback(result.strategyId, feedback, reason);
+
+    if (scores) {
+      await this.ensurePlaybookLoaded();
+      this.playbook.updateBulletMetadata(result.strategyId, {
+        status: passed ? "SELECTED" : "REJECTED",
+        fitnessScore: scores.fitnessScore,
+        stabilityScore: scores.stabilityScore,
+        sharpe,
+        ic,
+        maxDD,
+      });
+      await this.playbook.save();
+    }
+
     this.pushMemoryEvent("VERIFICATION_RECORDED", {
       strategyId: result.strategyId,
-      reasoningScore,
+      reasoningScore: result.reasoningScore || 0,
       feedback,
+      scores,
     });
   }
 

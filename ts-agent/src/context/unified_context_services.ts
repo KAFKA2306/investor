@@ -129,6 +129,18 @@ export class ContextPlaybook {
     }
     return updated;
   }
+
+  updateBulletMetadata(
+    metadataId: string,
+    patch: Record<string, unknown>,
+  ): void {
+    const bullet = this.playbook.bullets.find(
+      (b) => b.metadata?.id === metadataId,
+    );
+    if (!bullet) return;
+    bullet.metadata = { ...(bullet.metadata ?? {}), ...patch };
+    bullet.updated_at = new Date().toISOString();
+  }
 }
 
 export interface ExperimentRecord {
