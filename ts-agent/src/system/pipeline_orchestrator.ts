@@ -349,17 +349,26 @@ export class PipelineOrchestrator extends BaseAgent {
     const memory = new MemoryCenter();
     const rawEvents = await memory.getEvents(20);
     const events = rawEvents as Array<Record<string, unknown>>;
+
+    // 検問所（スキーマ定義）だよっ！🔍
+    const SignaturePayloadSchema = z.object({
+      featureSignature: z.array(z.string()).optional(),
+      signatures: z.array(z.string()).optional(),
+    });
+
     return events
       .filter((e) => e.type === "ALPHA_IDEA_SAVED")
       .map((e) => {
         try {
-          const payload = JSON.parse(e.payload_json as string) as Record<
-            string,
-            unknown
-          >;
-          return (payload.featureSignature as string[]) || [];
-        } catch {
+          const rawPayload = JSON.parse(e.payload_json as string);
+          // ちゃんと形を確認するんだもんっ！🛡️
+          const result = SignaturePayloadSchema.safeParse(rawPayload);
+          if (result.success) {
+            return result.data.featureSignature || result.data.signatures || [];
+          }
           return [];
+        } catch {
+          return []; // 壊れたJSONはポイしちゃうっ 🚮
         }
       })
       .filter((sig) => sig.length > 0);
