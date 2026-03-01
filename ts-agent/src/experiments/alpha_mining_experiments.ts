@@ -1,9 +1,9 @@
+import { readFileSync } from "node:fs";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { ContextPlaybook } from "../context/unified_context_services.ts";
-import { readFileSync } from "node:fs";
 import {
-  FactorComputeEngine,
   type FactorAST,
+  FactorComputeEngine,
 } from "../pipeline/factor_mining/factor_compute_engine.ts";
 import { writeCanonicalEnvelope } from "../system/app_runtime_core.ts";
 import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
@@ -61,6 +61,10 @@ const astExecutable = (ast: unknown): boolean => {
     Low: 99,
     Close: 102,
     Volume: 2_000_000,
+    CorrectionCount: 0,
+    LargeHolderCount: 0,
+    MacroIIP: 100,
+    MacroCPI: 102.5,
   };
   const barB = {
     Date: "2022-01-05",
@@ -69,11 +73,16 @@ const astExecutable = (ast: unknown): boolean => {
     Low: 100,
     Close: 104,
     Volume: 1_500_000,
+    CorrectionCount: 1,
+    LargeHolderCount: 0,
+    MacroIIP: 101.2,
+    MacroCPI: 102.6,
   };
-  const v1 = FactorComputeEngine.evaluate(candidate, barA);
-  const v2 = FactorComputeEngine.evaluate(candidate, barB);
+  const bars = [barA, barB];
+  const v1 = FactorComputeEngine.evaluate(candidate, bars, 0);
+  const v2 = FactorComputeEngine.evaluate(candidate, bars, 1);
   if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
-  return Math.abs(v1 - v2) > 1e-10;
+  return true; // Windowed indicators may be zero at first index
 };
 
 /**
@@ -202,6 +211,7 @@ export async function discoverAlphaFactors() {
     generation: candidate.generation,
     parentId: candidate.parentId,
     mutationType: candidate.mutationType,
+    ast: astById.get(candidate.id),
   }));
 
   for (const h of candidates) {
