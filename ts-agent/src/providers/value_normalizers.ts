@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
+import { mathUtils } from "../utils/math_utils.ts";
 
-// ── 数値ユーティリティ ──────────────────────────────────────────────────────
+// ── シンボル・日付ユーティリティ ────────────────────────────────────────────────
 export function toSymbol4(value: string): string {
   return value.replace(".T", "").trim().slice(0, 4);
 }
@@ -11,27 +12,7 @@ export function toIsoDate(value: string): string | null {
   if (/^\d{8}$/.test(v)) {
     return `${v.slice(0, 4)}-${v.slice(4, 6)}-${v.slice(6, 8)}`;
   }
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
-    return v;
-  }
-  return null;
-}
-
-export function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-
-export function mean(values: readonly number[]): number {
-  if (values.length === 0) return 0;
-  return values.reduce((a, b) => a + b, 0) / values.length;
-}
-
-export function std(values: readonly number[]): number {
-  if (values.length <= 1) return 0;
-  const m = mean(values);
-  const variance =
-    values.reduce((sum, value) => sum + (value - m) ** 2, 0) / values.length;
-  return Math.sqrt(Math.max(variance, 0));
+  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : null;
 }
 
 export const toFiniteNumber = (value: unknown, defaultValue = 0): number => {
@@ -81,12 +62,13 @@ export function parseIntelligenceMap(filePath: string): IntelligenceMap {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) continue;
       if (!result[symbol]) result[symbol] = {};
       result[symbol][isoDate] = {
-        sentiment: clamp(toFiniteNumber(point.sentiment, 0.5), 0, 1),
+        sentiment: mathUtils.clamp(toFiniteNumber(point.sentiment, 0.5), 0, 1),
         aiExposure: Math.max(0, toFiniteNumber(point.aiExposure, 0)),
         kgCentrality: Math.max(0, toFiniteNumber(point.kgCentrality, 0)),
-        correctionFlag: Math.max(
+        correctionFlag: mathUtils.clamp(
+          Math.floor(toFiniteNumber(point.correctionFlag, 0)),
           0,
-          Math.min(1, Math.floor(toFiniteNumber(point.correctionFlag, 0))),
+          1,
         ),
         correctionCount90d: Math.max(
           0,
