@@ -37,7 +37,10 @@ export class QuantResearchRuntime {
     };
   }
 
-  public selectFoundationModelId(context: string, qualityScore: number): string {
+  public selectFoundationModelId(
+    context: string,
+    qualityScore: number,
+  ): string {
     if (context.includes("Bullish") && qualityScore >= 0.75)
       return "les-forecast-v2-momentum";
     if (qualityScore < 0.65) return "les-forecast-v1-robust";

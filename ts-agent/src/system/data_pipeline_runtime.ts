@@ -48,7 +48,9 @@ export class DataPipelineRuntime {
     requestedUniverse: string[],
     maxSymbols: number,
   ): string[] {
-    const requested = [...new Set(requestedUniverse.map((s) => normalizeSymbol(s)))];
+    const requested = [
+      ...new Set(requestedUniverse.map((s) => normalizeSymbol(s))),
+    ];
     if (requested.length > 0) return requested;
     return this.loadUniverseFromStockList(maxSymbols);
   }
@@ -69,10 +71,10 @@ export class DataPipelineRuntime {
     const selected: string[] = [];
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i]?.split(",") ?? [];
-      const code = (cols[codeIdx] ?? "").replaceAll("\"", "").trim().slice(0, 4);
+      const code = (cols[codeIdx] ?? "").replaceAll('"', "").trim().slice(0, 4);
       if (!/^\d{4}$/.test(code)) continue;
-      const pred = (cols[predIdx] ?? "").replaceAll("\"", "").trim();
-      const uni = (cols[uniIdx] ?? "").replaceAll("\"", "").trim();
+      const pred = (cols[predIdx] ?? "").replaceAll('"', "").trim();
+      const uni = (cols[uniIdx] ?? "").replaceAll('"', "").trim();
       if (predIdx >= 0 && !parseBoolLike(pred)) continue;
       if (uniIdx >= 0 && !parseBoolLike(uni)) continue;
       selected.push(code);

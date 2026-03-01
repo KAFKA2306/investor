@@ -8,6 +8,7 @@ import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import { QuantitativeVerificationSchema } from "../schemas/financial_domain_schemas.ts";
 import type {
+  AceBullet,
   Metrics,
   QuantitativeVerification,
   StandardOutcome,
@@ -17,6 +18,7 @@ import { DataPipelineRuntime } from "./data_pipeline_runtime.ts";
 import { paths } from "./path_registry.ts";
 import { QuantResearchRuntime } from "./quant_research_runtime.ts";
 import { logIO, logMetric } from "./telemetry_logger.ts";
+import { MissionAgent } from "../agents/mission_agent.ts";
 
 type VerificationVerdict =
   | "ADOPTED"
@@ -248,6 +250,7 @@ export interface IExecutionAgent {
 
 export class PipelineOrchestrator extends BaseAgent {
   private cqo = new CqoAgent();
+  private missionAgent = new MissionAgent();
 
   constructor(
     private readonly elder: IElder,
@@ -287,12 +290,15 @@ export class PipelineOrchestrator extends BaseAgent {
     forbiddenZones: string[],
   ): Promise<void> {
     await this.elder.saveIdeaCandidate(candidate);
-    const phaseOne = await this.acquireAcceptedDataset(
+
+    let dataAttempt = 1;
+    let acceptedData = await this.acquireAcceptedDataset(
       requirement,
       candidate.id,
-      1,
+      dataAttempt,
     );
-    if (phaseOne.accepted === "NO") {
+
+    if (acceptedData.accepted === "NO") {
       await this.elder.saveRejectionReason(candidate.id, "DATA_DELIVERY_UNMET");
       await this.elder.reflectLearning(
         candidate.id,
@@ -301,12 +307,17 @@ export class PipelineOrchestrator extends BaseAgent {
       return;
     }
 
-    let dataset = phaseOne.dataset;
-    let dataAttempt = phaseOne.nextAttempt;
-    let retryMode: "MODEL" | "NONE" = "NONE";
+    let dataset = acceptedData.dataset;
+    dataAttempt = acceptedData.nextAttempt;
     await this.persistDataset(dataset, requirement);
 
-    for (let attempt = 1; attempt <= 8; attempt += 1) {
+    let retryMode: "MODEL" | "NONE" = "NONE";
+
+    for (let attempt = 1; attempt <= 10; attempt++) {
+      console.log(
+        `🔄 [Orchestrator] Attempt ${attempt}: Processing ${candidate.id}`,
+      );
+
       const modelConfig = await this.quantResearcher.selectFoundationModel(
         candidate,
         dataset.context,
@@ -332,6 +343,7 @@ export class PipelineOrchestrator extends BaseAgent {
       await this.elder.saveVerificationResult(verification);
 
       const verdict = this.judgeVerification(verification, requirement);
+
       if (verdict === "ADOPTED") {
         await this.handleAdoptedCandidate(
           candidate.id,
@@ -340,6 +352,7 @@ export class PipelineOrchestrator extends BaseAgent {
         );
         return;
       }
+
       if (verdict === "REJECTED_GENERAL") {
         await this.elder.saveRejectionReason(
           candidate.id,
@@ -352,7 +365,11 @@ export class PipelineOrchestrator extends BaseAgent {
         );
         return;
       }
+
       if (verdict === "REJECTED_MODEL") {
+        console.log(
+          `🔄 [Return Path] Model-cause rejection. Retrying model selection...`,
+        );
         await this.elder.reflectLearning(
           candidate.id,
           "Verification rejected by model",
@@ -360,30 +377,33 @@ export class PipelineOrchestrator extends BaseAgent {
         retryMode = "MODEL";
         continue;
       }
-      await this.elder.reflectLearning(
-        candidate.id,
-        "Verification rejected by data",
-      );
-      const nextData = await this.acquireAcceptedDataset(
-        requirement,
-        candidate.id,
-        dataAttempt,
-      );
-      if (nextData.accepted === "NO") {
-        await this.elder.saveRejectionReason(
-          candidate.id,
-          "DATA_DELIVERY_UNMET",
+
+      if (verdict === "REJECTED_DATA") {
+        console.log(
+          `🔄 [Return Path] Data-cause rejection. Returning to data creation...`,
         );
         await this.elder.reflectLearning(
           candidate.id,
-          "Data retry exhausted after data-cause rejection",
+          "Verification rejected by data",
         );
-        return;
+        const nextData = await this.acquireAcceptedDataset(
+          requirement,
+          candidate.id,
+          dataAttempt,
+        );
+        if (nextData.accepted === "NO") {
+          await this.elder.saveRejectionReason(
+            candidate.id,
+            "DATA_RETRY_EXHAUSTED",
+          );
+          return;
+        }
+        dataset = nextData.dataset;
+        dataAttempt = nextData.nextAttempt;
+        retryMode = "NONE";
+        await this.persistDataset(dataset, requirement);
+        continue;
       }
-      dataset = nextData.dataset;
-      dataAttempt = nextData.nextAttempt;
-      retryMode = "NONE";
-      await this.persistDataset(dataset, requirement);
     }
   }
 
@@ -422,7 +442,7 @@ export class PipelineOrchestrator extends BaseAgent {
     await this.elder.saveAuditRecord(audit);
 
     const drift = await this.executionAgent.analyzeDrift(audit);
-    await this.elder.updateStatus(drift);
+    await this.updateStatus(drift);
     await this.stateMonitor.recordDrift(drift);
   }
 
@@ -492,11 +512,15 @@ export class PipelineOrchestrator extends BaseAgent {
 
     const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
     const ic = result.alpha?.informationCoefficient ?? 0;
-    const maxDrawdownAbs = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
-    const annualizedReturn = result.verification?.metrics?.annualizedReturn ?? 0;
-    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.0;
-    const minIC = requirement.targetMetrics?.minIC ?? 0.02;
+    const maxDrawdownAbs = Math.abs(
+      result.verification?.metrics?.maxDrawdown ?? 1,
+    );
+    const annualizedReturn =
+      result.verification?.metrics?.annualizedReturn ?? 0;
+    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.5;
+    const minIC = requirement.targetMetrics?.minIC ?? 0.03;
     const maxDrawdown = requirement.targetMetrics?.maxDrawdown ?? 0.1;
+
     if (
       sharpe >= minSharpe &&
       ic >= minIC &&
@@ -540,40 +564,50 @@ export class PipelineOrchestrator extends BaseAgent {
     };
   }
 
+  private async updateStatus(report: DriftReport): Promise<void> {
+    await this.elder.updateStatus(report);
+  }
+
   private async generateHighLevelIdeas(
     requirement: PipelineRequirement,
     history: { forbiddenZones: string[]; knowledge: string[] },
     currentState: SystemStateSnapshot,
   ): Promise<IdeaCandidate[]> {
-    const sharedReasoning = [
-      `Requirement=${requirement.description}`,
-      `Regime=${currentState.regime}`,
-      `Volatility=${currentState.volatility}`,
-      `Knowledge=${history.knowledge.join(" | ")}`,
-    ].join("; ");
-
-    const ideas: IdeaCandidate[] = [
+    const les = new LesAgent();
+    // Incorporate current state into the generation context
+    const contextBullets: AceBullet[] = [
+      ...history.knowledge.map((k) => ({
+        id: `know-${crypto.randomUUID().slice(0, 8)}`,
+        content: k,
+        section: "strategies_and_hard_rules" as const,
+        helpful_count: 0,
+        harmful_count: 0,
+      })),
       {
-        id: `ID-${crypto.randomUUID().slice(0, 8)}`,
-        requirementId: requirement.id,
-        ast: {},
-        description: "Mean Reversion Core",
-        reasoning: sharedReasoning,
-        noveltyScore: 0.9,
-        priority: 0.9,
+        id: "market-context",
+        content: `Current Market Regime: ${currentState.regime}, Volatility: ${currentState.volatility}`,
+        section: "insights" as const,
+        helpful_count: 0,
+        harmful_count: 0,
       },
       {
-        id: `ID-${crypto.randomUUID().slice(0, 8)}`,
-        requirementId: requirement.id,
-        ast: {},
-        description: "Momentum Core",
-        reasoning: sharedReasoning,
-        noveltyScore: 0.7,
-        priority: 0.85,
+        id: "mission-mission",
+        content: `Mission Context: ${requirement.description}`,
+        section: "insights" as const,
+        helpful_count: 0,
+        harmful_count: 0,
       },
     ];
 
+    const ideas = await les.generateAlphaFactors(contextBullets, { count: 3 });
+
     return ideas
+      .map((idea) => ({
+        ...idea,
+        requirementId: requirement.id,
+        noveltyScore: 0.9,
+        priority: 0.9,
+      }))
       .filter(
         (idea) =>
           !history.forbiddenZones.some((zone: string) =>
@@ -583,10 +617,107 @@ export class PipelineOrchestrator extends BaseAgent {
       .sort((a, b) => b.priority - a.priority);
   }
 
+  private async generateDynamicRequirement(
+    state: SystemStateSnapshot,
+    history: { seeds: string[]; forbiddenZones: string[] },
+  ): Promise<PipelineRequirement> {
+    const missionPrompt = `Market Regime: ${state.regime}, Volatility: ${state.volatility}. Existing Seeds: ${history.seeds.join(", ")}. Forbidden: ${history.forbiddenZones.join(", ")}.`;
+
+    // Use MissionAgent to generate the mission doc
+    const missionMd = await this.missionAgent.generateNextMission({
+      currentRequirement: missionPrompt,
+      historySeeds: history.seeds,
+      forbiddenZones: history.forbiddenZones,
+      constraints: ["6501.T", "9501.T", "6701.T"],
+      evaluationCriteria: { minSharpe: 1.8, minIC: 0.04 },
+    });
+
+    let universe = ["6501.T", "9501.T", "6701.T"];
+    const uniMatch =
+      missionMd.match(/ターゲット銘柄[:：]\s*(.*)/) ||
+      missionMd.match(/銘柄ユニバース[:：]\s*(.*)/);
+    if (uniMatch && uniMatch[1]) {
+      universe = uniMatch[1]
+        .split(/[、, ]/)
+        .map(
+          (s) =>
+            s
+              .trim()
+              .replace(/（.*）|\(.*\)|\.T/g, "")
+              .replace(/[^0-9]/g, "") + ".T",
+        )
+        .filter((s) => s.length > 2);
+    }
+
+    return {
+      id: `req-agentic-${crypto.randomUUID().slice(0, 8)}`,
+      description: missionMd.slice(0, 1000),
+      targetMetrics: {
+        minSharpe: 1.8,
+        minIC: 0.04,
+        maxDrawdown: 0.1,
+      },
+      universe,
+    };
+  }
+
   public async run(): Promise<void> {
-    return;
+    console.log(
+      "🚀 [PipelineOrchestrator] Starting Autonomous Alpha Evolution Loop...",
+    );
+
+    let discoveryAttempts = 0;
+    const maxDiscoveryAttempts = 3;
+
+    while (discoveryAttempts < maxDiscoveryAttempts) {
+      discoveryAttempts++;
+      console.log(
+        `🔍 [Loop] Pulse Iteration ${discoveryAttempts}/${maxDiscoveryAttempts}`,
+      );
+
+      const state = await this.stateMonitor.getCurrentState();
+      console.log(
+        `📊 [Current State] Regime: ${state.regime}, Volatility: ${state.volatility}`,
+      );
+
+      const tempReqId = "initial-req";
+      const history = await this.elder.getHistory(tempReqId);
+
+      const requirement = await this.generateDynamicRequirement(state, history);
+      console.log(`🎯 [Phase 5] Dynamic Mission: ${requirement.id}`);
+
+      console.log("🔍 [Phase 1] Generating Alpha Hypotheses...");
+      const candidates = await this.generateHighLevelIdeas(
+        requirement,
+        history,
+        state,
+      );
+
+      if (candidates.length === 0) {
+        console.log("⚠️ No candidates generated. Retrying...");
+        continue;
+      }
+
+      for (const candidate of candidates) {
+        try {
+          console.log(`🧪 [Phase 2] Evaluating Candidate: ${candidate.id}`);
+          await this.processCandidate(
+            requirement,
+            candidate,
+            history.forbiddenZones,
+          );
+        } catch (error) {
+          console.error(`💥 Error in loop for ${candidate.id}:`, error);
+        }
+      }
+
+      console.log(`🏁 [Loop] Iteration ${discoveryAttempts} finished.`);
+    }
+
+    console.log("🏁 [PipelineOrchestrator] Autonomous Loop Cycle Complete.");
   }
 }
+
 export class ElderBridge implements IElder {
   private memory = new MemoryCenter();
 
@@ -595,16 +726,46 @@ export class ElderBridge implements IElder {
     forbiddenZones: string[];
     knowledge: string[];
   }> {
-    const successes = this.memory.getRecentSuccesses(5) as {
+    const successes = this.memory.getRecentSuccesses(10) as {
       description: string;
+      overall_score: number;
     }[];
+
+    const failures = this.memory.getRecentFailures(10) as {
+      description: string;
+      overall_score: number;
+    }[];
+
+    const events = this.memory.getEvents(50) as {
+      type: string;
+      payload_json: string;
+    }[];
+
+    const knowledge = events
+      .filter((e) => e.type === "SYSTEM_LOG")
+      .map((e) => {
+        try {
+          const payload = JSON.parse(e.payload_json);
+          if (payload.message === "Learning Reflection") {
+            return `[Reasoning] ${payload.strategyId}: ${payload.reason}`;
+          }
+        } catch {
+          /* ignore */
+        }
+        return "";
+      })
+      .filter(Boolean);
+
     return {
       seeds: successes.map((s) => s.description),
-      forbiddenZones: ["Random Noise Strategy", "High Leverage Martingale"],
-      knowledge: [
-        "Volatility spikes often lead to mean reversion.",
-        "PEAD is stronger in small-cap.",
-      ],
+      forbiddenZones: failures.map((f) => f.description),
+      knowledge:
+        knowledge.length > 0
+          ? knowledge
+          : [
+              "Volatility spikes often lead to mean reversion.",
+              "PEAD is stronger in small-cap.",
+            ],
     };
   }
 
@@ -764,9 +925,12 @@ export class DataEngineerBridge implements IDataEngineer {
   private async getGateway(
     symbols: readonly string[],
   ): Promise<MarketdataLocalGateway> {
-    const normalized = [...new Set(symbols.map((s) => this.normalizeSymbol(s)))];
+    const normalized = [
+      ...new Set(symbols.map((s) => this.normalizeSymbol(s))),
+    ];
     const key = normalized.join(",");
-    if (this.gatewayPromise && key === this.gatewayKey) return this.gatewayPromise;
+    if (this.gatewayPromise && key === this.gatewayKey)
+      return this.gatewayPromise;
     this.gatewayKey = key;
     this.gatewayPromise = MarketdataLocalGateway.create(normalized);
     return this.gatewayPromise;
@@ -778,11 +942,15 @@ export class DataEngineerBridge implements IDataEngineer {
     asOfDate: string,
   ): DataSourceRow {
     const mergedBars = barsPerSymbol.flat();
-    const expectedRows = this.runtimeSymbols.length * DataEngineerBridge.LOOKBACK_DAYS;
+    const expectedRows =
+      this.runtimeSymbols.length * DataEngineerBridge.LOOKBACK_DAYS;
     const rows = mergedBars.length;
-    const invalidRows = mergedBars.filter((row) => !this.hasValidPriceRow(row)).length;
+    const invalidRows = mergedBars.filter(
+      (row) => !this.hasValidPriceRow(row),
+    ).length;
     const leakRows = mergedBars.filter(
-      (row) => this.getDateKey(row as Record<string, string | number>) > asOfDate,
+      (row) =>
+        this.getDateKey(row as Record<string, string | number>) > asOfDate,
     ).length;
     const missingRate = Math.max(0, 1 - this.safeDivide(rows, expectedRows));
     const schemaMatch = rows > 0 ? 1 - this.safeDivide(invalidRows, rows) : 0;
@@ -805,9 +973,12 @@ export class DataEngineerBridge implements IDataEngineer {
     const merged = finsPerSymbol.flat();
     const expectedRows = this.runtimeSymbols.length;
     const rows = merged.length;
-    const invalidRows = merged.filter((row) => !this.hasValidFundamentalRow(row)).length;
+    const invalidRows = merged.filter(
+      (row) => !this.hasValidFundamentalRow(row),
+    ).length;
     const leakRows = merged.filter(
-      (row) => this.getDateKey(row as Record<string, string | number>) > asOfDate,
+      (row) =>
+        this.getDateKey(row as Record<string, string | number>) > asOfDate,
     ).length;
     const missingRate = Math.max(0, 1 - this.safeDivide(rows, expectedRows));
     const schemaMatch = rows > 0 ? 1 - this.safeDivide(invalidRows, rows) : 0;
@@ -838,11 +1009,16 @@ export class DataEngineerBridge implements IDataEngineer {
     this.runtimeAsOfDate = asOfDate;
     const barsPerSymbol = await Promise.all(
       this.runtimeSymbols.map((s) =>
-        gateway.getBars(this.normalizeSymbol(s), DataEngineerBridge.LOOKBACK_DAYS),
+        gateway.getBars(
+          this.normalizeSymbol(s),
+          DataEngineerBridge.LOOKBACK_DAYS,
+        ),
       ),
     );
     const finsPerSymbol = await Promise.all(
-      this.runtimeSymbols.map((s) => gateway.getStatements(this.normalizeSymbol(s))),
+      this.runtimeSymbols.map((s) =>
+        gateway.getStatements(this.normalizeSymbol(s)),
+      ),
     );
 
     const rows: DataSourceRow[] = [];
@@ -850,9 +1026,12 @@ export class DataEngineerBridge implements IDataEngineer {
     const includeFundamental = normalizedSources.includes("financials");
     const includeContext = normalizedSources.includes("context");
 
-    includePrice && rows.push(this.buildPriceRow("finance", barsPerSymbol, asOfDate));
+    includePrice &&
+      rows.push(this.buildPriceRow("finance", barsPerSymbol, asOfDate));
     includeFundamental &&
-      rows.push(this.buildFundamentalRow("financials", finsPerSymbol, asOfDate));
+      rows.push(
+        this.buildFundamentalRow("financials", finsPerSymbol, asOfDate),
+      );
     includeContext &&
       rows.push({
         source: "context",
@@ -865,7 +1044,10 @@ export class DataEngineerBridge implements IDataEngineer {
       });
 
     const totalRows = rows.reduce((sum, row) => sum + row.rows, 0);
-    const totalExpectedRows = rows.reduce((sum, row) => sum + row.expectedRows, 0);
+    const totalExpectedRows = rows.reduce(
+      (sum, row) => sum + row.expectedRows,
+      0,
+    );
     const weightedMissing = this.safeDivide(
       rows.reduce((sum, row) => sum + row.missingRate * row.expectedRows, 0),
       totalExpectedRows,
@@ -1060,7 +1242,8 @@ export class QuantResearcherBridge implements IQuantResearcher {
       feeBps: report.costs.feeBps,
       slippageBps: report.costs.slippageBps,
       totalCostBps: report.costs.totalCostBps,
-      grossReturn: report.metrics.totalReturn / 100 + report.costs.totalCostBps / 10000,
+      grossReturn:
+        report.metrics.totalReturn / 100 + report.costs.totalCostBps / 10000,
       netReturn: report.metrics.totalReturn / 100,
       pnlPerUnit: report.metrics.totalReturn / 100,
       history,
@@ -1101,7 +1284,10 @@ export class QuantResearcherBridge implements IQuantResearcher {
     console.log(
       `[QuantResearcher] Selecting Foundation Model based on context`,
     );
-    const foundationModelId = this.runtime.selectFoundationModelId(context, 0.75);
+    const foundationModelId = this.runtime.selectFoundationModelId(
+      context,
+      0.75,
+    );
     return {
       foundationModelId,
       adaptationPolicy: "",
@@ -1141,12 +1327,17 @@ export class QuantResearcherBridge implements IQuantResearcher {
     forbiddenZones: string[] = [],
   ): Promise<VerificationResult> {
     console.log(`[QuantResearcher] Co-optimizing factor, model, and backtest`);
-    const manifest = this.runtime.buildManifest(dataset.symbols, dataset.asOfDate, dataset.qualityScore);
+    const manifest = this.runtime.buildManifest(
+      dataset.symbols,
+      dataset.asOfDate,
+      dataset.qualityScore,
+    );
 
     forbiddenZones.some((fz) => candidate.description.includes(fz)) &&
       console.log(`[QuantResearcher] Candidate overlaps with forbidden zone`);
 
-    modelConfig.parameters.learningRate = this.runtime.selectLearningRate(retryMode);
+    modelConfig.parameters.learningRate =
+      this.runtime.selectLearningRate(retryMode);
     const report = this.loadVerificationReport();
     const backtest = this.buildBacktestFromVerification(report);
     const { predictions, targets } = this.buildPredictionTargetPairs(report);
