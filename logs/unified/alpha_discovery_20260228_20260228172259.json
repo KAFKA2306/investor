@@ -1,0 +1,247 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "6980e56f-9210-4b85-8c1c-f5c477d3363a",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260228",
+  "generatedAt": "2026-02-28T17:22:59.086Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260228",
+    "generatedAt": "2026-02-28T17:22:59.086Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-QUANT-DE6B8B13"
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-QUANT-DE6B8B13",
+        "description": "Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst)",
+        "reasoning": "CLAIM: High-precision industrial forecasting using Macro-Socio Divergence (e-Stat). [REASONING] A labor model that uses demographic to filter noise during household periods. Proposed by Quant Analyst.",
+        "status": "SELECTED",
+        "recency": "2026-02-28T17:22:59.086Z",
+        "scores": {
+          "priority": 0.6197058823529412,
+          "plausibility": 0.55,
+          "riskAdjusted": 0.6,
+          "novelty": 0.8235294117647058
+        },
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "variable",
+            "name": "macro_iip"
+          },
+          "right": {
+            "type": "constant",
+            "value": 3.43
+          }
+        }
+      },
+      {
+        "id": "ALPHA-HFT-FF39B407",
+        "description": "[EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v2]",
+        "reasoning": "[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-QUANT-8D7EA1F9. Focusing on explorative diversity.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-02-28T17:22:59.086Z",
+        "scores": {
+          "priority": 0.5647058823529412,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.5,
+          "novelty": 0.8235294117647058
+        },
+        "generation": 2,
+        "parentId": "ALPHA-QUANT-8D7EA1F9",
+        "mutationType": "STRUCTURAL_SHIFT",
+        "ast": {
+          "type": "operator",
+          "name": "MUL",
+          "left": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "high"
+            },
+            "right": {
+              "type": "operator",
+              "name": "SMA",
+              "left": {
+                "type": "variable",
+                "name": "kg_centrality"
+              },
+              "right": {
+                "type": "constant",
+                "value": 4
+              }
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "constant",
+              "value": 1.96
+            },
+            "right": {
+              "type": "operator",
+              "name": "SUB",
+              "left": {
+                "type": "variable",
+                "name": "macro_cpi"
+              },
+              "right": {
+                "type": "constant",
+                "value": 0.39
+              }
+            }
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-02-28T17:22:59.066Z"
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}
