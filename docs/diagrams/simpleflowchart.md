@@ -87,3 +87,24 @@ flowchart TD
 2. **検証の合格ルール**（Sharpe/IC/MDD/コスト後収益）がふわふわしてるのぉ。もっと厳しくチェックしなきゃだめだもん！💢
 3. **わけかたのルール**（銘柄集中、セクター偏り、売買代金制約）をもっとカチッと決めなきゃっ。大事な資産を守るためだもんね🛡️✨
 4. **ずれちゃったときに「もういっかい！」ってなるきっかけ**（再学習トリガー）が決まってないんだよぉ〜。ずっとぴかぴか（最新）でいたいのにぃ！💧
+
+---
+
+## 🎀 自律探索ループの本質フロー（最小）
+> 中身の詳細は `docs/specs/alpha_discovery_runbook.md` にまとめてあるよっ！
+
+```mermaid
+flowchart TD
+    A[task run / run:newalphasearch] --> B[loop cycle start]
+    B --> C[gpt-5-nano で次テーマ生成]
+    C --> D[validate/backtest]
+    D --> E[score算出 fitness/novelty/stability/adoption]
+    E --> F{前回と異なるアイデア?}
+    F -- No --> C
+    F -- Yes --> G[memory/ACE 更新]
+    G --> H[unified log 追記]
+    H --> I[plot 保存 VERIF/novelty/failure]
+    I --> J{連続失敗 >= 閾値?}
+    J -- No --> B
+    J -- Yes --> K[auto stop]
+```

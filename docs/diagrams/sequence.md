@@ -92,3 +92,38 @@ sequenceDiagram
 2. **守りのルールっ！**: 売買のルール（これ以上持っちゃダメ！な上限や、市場の流動性のこととか）をもっとしっかりさせようね！
 3. **お勉強のスケジュールっ！**: 学習用（Train）とテスト用（Test）の期間をどう分けるか、もっと賢く決めなきゃっ！
 4. **結果のモノサシっ！**: 注文がどれくらい上手くいったかの評価（約定率やスリッページの影響とか！）を、もっと細かく計測したいなっ！
+
+---
+
+## 🎯 自律探索ループの本質シーケンス（実運用の最小形）
+> 詳細仕様は `docs/specs/alpha_discovery_runbook.md` と `docs/specs/automonous.md` を見てねっ！
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as antigravity/codex
+    participant T as Taskくん
+    participant L as Loop Supervisor
+    participant O as OpenAI(gpt-5-nano)
+    participant V as Validate/Backtest
+    participant M as memory/ACE
+    participant U as unified log
+    participant P as plot writer
+
+    A->>T: UQTL_INPUT_CHANNEL + UQTL_NL_INPUT を渡して起動
+    T->>L: run:newalphasearch:loop
+    L->>O: 次の探索テーマを生成してね
+    O-->>L: theme + feature_signature + idea_hash
+    L->>V: 検証して score を出してね
+    V-->>L: fitness/novelty/stability/adoption
+    L->>L: 前回との差分チェック（novelty + hash + signature）
+    alt 差分なし
+        L->>O: テーマ再生成してね
+    else 差分あり
+        L->>M: theme/progress/policy を更新
+        L->>U: alpha_discovery ログを追記
+        L->>P: cycle plot を保存
+        P-->>L: VERIF/novelty/failure の更新完了
+    end
+    L->>L: 連続失敗閾値を判定
+```
