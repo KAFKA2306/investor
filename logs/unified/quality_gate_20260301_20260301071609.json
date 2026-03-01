@@ -1,0 +1,47 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "4117c079-a7ad-4fac-9b63-24010ff225ef",
+  "runId": "uqtl_20260301T161559_2",
+  "kind": "quality_gate",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T07:16:09.273Z",
+  "producer": {
+    "component": "system.app_runtime_core.runAndPersistQualityGate"
+  },
+  "payload": {
+    "verdict": "READY",
+    "score": 90,
+    "components": {
+      "dataConnectivity": 100,
+      "dataAvailability": 100,
+      "executionObservability": 60,
+      "reproducibility": 70
+    },
+    "derivedFrom": [
+      "api_verification:jquants",
+      "api_verification:estat"
+    ],
+    "generatedAt": "2026-03-01T07:16:09.273Z",
+    "connectivity": {
+      "jquants": {
+        "status": "PASS",
+        "listedCount": 4429
+      },
+      "estat": {
+        "status": "PASS",
+        "hasStatsData": true
+      },
+      "kabucom": {
+        "status": "SKIP"
+      },
+      "edinet": {
+        "status": "PASS"
+      }
+    }
+  },
+  "derived": true,
+  "lineage": {
+    "sourceSchema": "investor.api-verification.v1",
+    "sourceBucket": "unified"
+  }
+}
