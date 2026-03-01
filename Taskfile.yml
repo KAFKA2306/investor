@@ -155,18 +155,127 @@ tasks:
       - bun -e 'import { DataPipelineRuntime } from "./src/system/data_pipeline_runtime.ts"; const r=new DataPipelineRuntime(); const u=r.resolveUniverse([],20); console.log(JSON.stringify({proof:"dynamic_universe", count:u.length, sample:u.slice(0,10)},null,2)); if(u.length===0) throw new Error("universe unresolved");'
       - bun -e 'import { QuantResearchRuntime } from "./src/system/data_pipeline_runtime.ts"; const q=new QuantResearchRuntime(); const m=q.buildManifest(["1301","1332"],"20220831",0.8); console.log(JSON.stringify({proof:"quant_manifest", manifest:m, window:q.deriveVerificationWindow("20220831")},null,2));'
 
-  run:
-    desc: 本番同等の全実行（型検査 + 管理レイヤー実証 + パイプライン）
+  run:newalphasearch:cycle:
+    desc: 自律アルファ探索の1サイクル（theme更新 + 探索 + 改善）
     cmds:
       - task: typecheck
       - task: pipeline:proof-layers
-      - task: pipeline:orchestrate
       - task: pipeline:verify
+      - task: pipeline:orchestrate
       - task: pipeline:discover
-      - task: pipeline:benchmark
       - task: pipeline:analyze
-      - task: pipeline:mine
       - task: pipeline:verification-plot
+      - task: pipeline:mine
+
+  run:newalphasearch:
+    desc: 自律アルファ探索（ループ必須。既定3サイクル）
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          cycles="${ALPHA_LOOP_MAX_CYCLES:-3}";
+          if [ "$cycles" -lt 1 ]; then
+            cycles=1;
+          fi;
+          ALPHA_LOOP_MAX_CYCLES="$cycles" task run:newalphasearch:loop'
+
+  run:newalphasearch:loop:
+    desc: 自律アルファ探索を連続ループ実行（自律探索/改善/テーマ更新を毎サイクル必須実行）
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          max_cycles="${ALPHA_LOOP_MAX_CYCLES:-3}";
+          sleep_sec="${ALPHA_LOOP_SLEEP_SEC:-0}";
+          max_failures="${ALPHA_LOOP_MAX_FAILURES:-3}";
+          seen_ids_file="/tmp/uqtl_seen_selected_alpha_ids.txt";
+          touch "$seen_ids_file";
+          if [ "$max_cycles" -lt 1 ]; then
+            max_cycles=1;
+          fi
+          cycle=0;
+          failures=0;
+          while true; do
+            cycle=$((cycle+1));
+            run_id="uqtl_$(date +%Y%m%dT%H%M%S)_${cycle}";
+            before_count=$(find logs/unified -maxdepth 1 -type f -name "alpha_discovery_*.json" 2>/dev/null | wc -l | tr -d " ");
+            before_plot_ts=$(bash -lc 'f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi');
+            echo "[loop] cycle=${cycle} run_id=${run_id} started_at=$(date -Is)";
+            if UQTL_RUN_ID="$run_id" UQTL_LOOP_ITERATION="$cycle" task run:newalphasearch:cycle; then
+              after_count=$(find logs/unified -maxdepth 1 -type f -name "alpha_discovery_*.json" 2>/dev/null | wc -l | tr -d " ");
+              after_plot_ts=$(bash -lc 'f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi');
+              if [ "$after_count" -le "$before_count" ]; then
+                echo "[loop] cycle=${cycle} status=fail reason=no_new_alpha_discovery_log before=${before_count} after=${after_count}";
+                failures=$((failures+1));
+                if [ "$failures" -ge "$max_failures" ]; then
+                  echo "[loop] termination_reason=max_failures_reached";
+                  exit 1;
+                fi
+              else
+                latest_file=$(ls -1t logs/unified/alpha_discovery_*.json | head -n1);
+                selected_count=$(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding='utf-8')); print(len((j.get('payload') or {}).get('selected', [])))" "$latest_file");
+                if [ "${selected_count}" -lt 1 ]; then
+                  echo "[loop] cycle=${cycle} status=fail reason=no_selected_alpha latest=${latest_file}";
+                  failures=$((failures+1));
+                  if [ "$failures" -ge "$max_failures" ]; then
+                    echo "[loop] termination_reason=max_failures_reached";
+                    exit 1;
+                  fi
+                else
+                  new_alpha_found=0;
+                  while IFS= read -r sid; do
+                    [ -z "$sid" ] && continue;
+                    if ! grep -Fxq "$sid" "$seen_ids_file"; then
+                      new_alpha_found=1;
+                    fi
+                    echo "$sid" >> "$seen_ids_file";
+                  done < <(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding='utf-8')); [print(str(x)) for x in ((j.get('payload') or {}).get('selected', []))]" "$latest_file")
+                  sort -u "$seen_ids_file" -o "$seen_ids_file";
+                  if [ "$new_alpha_found" -ne 1 ]; then
+                    echo "[loop] cycle=${cycle} status=fail reason=no_new_alpha_detected latest=${latest_file}";
+                    failures=$((failures+1));
+                    if [ "$failures" -ge "$max_failures" ]; then
+                      echo "[loop] termination_reason=max_failures_reached";
+                      exit 1;
+                    fi
+                  else
+                    if [ "${after_plot_ts}" -le "${before_plot_ts}" ]; then
+                      echo "[loop] cycle=${cycle} status=fail reason=no_new_plot before_ts=${before_plot_ts} after_ts=${after_plot_ts}";
+                      failures=$((failures+1));
+                      if [ "$failures" -ge "$max_failures" ]; then
+                        echo "[loop] termination_reason=max_failures_reached";
+                        exit 1;
+                      fi
+                    else
+                      echo "[loop] cycle=${cycle} evidence=new_log before=${before_count} after=${after_count} selected=${selected_count} plot_ts=${after_plot_ts}";
+                      failures=0;
+                      echo "[loop] cycle=${cycle} status=ok";
+                    fi
+                  fi
+                fi
+              fi
+            else
+              failures=$((failures+1));
+              echo "[loop] cycle=${cycle} status=fail failures=${failures}/${max_failures}";
+              if [ "$failures" -ge "$max_failures" ]; then
+                echo "[loop] termination_reason=max_failures_reached";
+                exit 1;
+              fi
+            fi
+            if [ "$max_cycles" -gt 0 ] && [ "$cycle" -ge "$max_cycles" ]; then
+              echo "[loop] termination_reason=max_cycles_reached";
+              break;
+            fi
+            if [ "$sleep_sec" -gt 0 ]; then
+              echo "[loop] sleeping=${sleep_sec}s";
+              sleep "$sleep_sec";
+            fi
+          done'
+
+  run:
+    desc: 本番同等の全実行（型検査 + 管理レイヤー実証 + パイプライン）
+    cmds:
+      - task: run:newalphasearch
+      - task: pipeline:orchestrate
+      - task: pipeline:benchmark
 
   run:quick:
     desc: 高速実行（型検査+実証+検証+探索+ベンチ+監査プロット）
