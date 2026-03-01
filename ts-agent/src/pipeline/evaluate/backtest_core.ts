@@ -9,9 +9,6 @@ import {
   QuantMetrics,
 } from "./evaluation_metrics_core.ts";
 
-/**
- * Backtest and Trading Types
- */
 export type PaperExecutionInput = {
   decision: { action: "LONG_BASKET" | "NO_TRADE" };
   results: { selectedSymbols: readonly string[] };
@@ -44,9 +41,6 @@ export const BacktestResultSchema = z.object({
 
 export type BacktestResult = z.infer<typeof BacktestResultSchema>;
 
-/**
- * Backtest Simulator
- */
 export function runSimpleBacktest(args: {
   config: BacktestConfig;
   selectedRows: readonly BacktestInputRow[];
@@ -78,9 +72,6 @@ export function runSimpleBacktest(args: {
   });
 }
 
-/**
- * Foundation Benchmark Pipeline
- */
 export async function runFoundationBenchmark() {
   const constants = JSON.parse(
     readFileSync(

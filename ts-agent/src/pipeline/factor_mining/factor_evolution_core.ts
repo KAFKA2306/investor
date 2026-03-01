@@ -11,9 +11,6 @@ import {
   PerformanceMetricsSchema,
 } from "../evaluate/evaluation_metrics_core.ts";
 
-/**
- * Factor Mining Schemas
- */
 export const FactorExpressionSchema = z.object({
   id: z.string().min(1),
   bias: z.number(),
@@ -42,9 +39,6 @@ export const EvaluatedFactorSchema = z.object({
 
 export type EvaluatedFactor = z.infer<typeof EvaluatedFactorSchema>;
 
-/**
- * Candidate Generation and Evolution
- */
 function lcg(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
@@ -101,9 +95,6 @@ export function mutateFromElite(
   });
 }
 
-/**
- * Feature Extraction and Loading
- */
 export function loadFeatureRows(logsBaseDir: string): FeatureRow[] {
   const logsDir = resolve(logsBaseDir, "unified");
   if (!existsSync(logsDir)) return [];
@@ -130,7 +121,7 @@ export function loadFeatureRows(logsBaseDir: string): FeatureRow[] {
         basketDailyReturn: report.results.basketDailyReturn,
         features: {
           vegetablePriceMomentum: report.market.vegetablePriceMomentum,
-          avgAlphaScore: 0 /* etc... */,
+          avgAlphaScore: 0,
         },
       }),
     );
@@ -138,9 +129,6 @@ export function loadFeatureRows(logsBaseDir: string): FeatureRow[] {
   return rows;
 }
 
-/**
- * Evaluation Logic
- */
 export function evaluateFactorCandidates(
   rows: readonly FeatureRow[],
   factors: readonly FactorExpression[],

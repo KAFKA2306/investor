@@ -67,9 +67,9 @@ const toIsoDate = (value: string): string | null => {
 const toSymbol4 = (value: string): string =>
   value.replace(".T", "").slice(0, 4);
 
-const toFiniteNumber = (value: unknown, fallback = 0): number => {
+const toFiniteNumber = (value: unknown, defaultValue = 0): number => {
   const num = Number(value);
-  return Number.isFinite(num) ? num : fallback;
+  return Number.isFinite(num) ? num : defaultValue;
 };
 
 const pickArg = (args: readonly string[], key: string): string | undefined => {

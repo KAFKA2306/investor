@@ -56,11 +56,24 @@ export class EdinetSearchProvider {
     let content = "";
 
     if (existsSync(zipPath)) {
-      const { stdout } = await exec(
-        `unzip -p "${zipPath}" "XBRL/PublicDoc/*.htm"`,
-        { maxBuffer: 100 * 1024 * 1024 },
-      );
-      content = stdout
+      const { stdout: listed } = await exec(`unzip -Z1 "${zipPath}"`, {
+        maxBuffer: 20 * 1024 * 1024,
+      });
+      const targets = listed
+        .split(/\r?\n/)
+        .map((v) => v.trim())
+        .filter(
+          (v) =>
+            v.startsWith("XBRL/PublicDoc/") && v.toLowerCase().endsWith(".htm"),
+        );
+      let merged = "";
+      for (const target of targets) {
+        const { stdout } = await exec(`unzip -p "${zipPath}" "${target}"`, {
+          maxBuffer: 100 * 1024 * 1024,
+        });
+        merged += ` ${stdout}`;
+      }
+      content = merged
         .replace(/<[^>]*>?/gm, " ")
         .replace(/\s+/g, " ")
         .trim();

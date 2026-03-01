@@ -10,19 +10,9 @@ export interface MissionContext {
   evaluationCriteria: Record<string, number>;
 }
 
-/**
- * MissionAgent
- *
- * Responsibile for Phase 1: Dynamic Input Generation.
- * Uses agentic reasoning to structure the next alpha discovery mission.
- */
 export class MissionAgent extends BaseAgent {
   public async generateNextMission(context: MissionContext): Promise<string> {
     console.log("🎯 [MissionAgent] Generating next autonomous mission...");
-
-    // In a real scenario, this would call Gemini 3 Flash.
-    // Since we are the "antigravity" agent, we will simulate the reasoning
-    // and produce a high-quality mission document.
 
     const mission = `# Alpha Discovery Mission: ${context.currentRequirement || "Autonomous Evolution"} (Cycle ${Date.now() % 100})
 
@@ -56,13 +46,8 @@ ${context.currentRequirement || "探索の継続的進化。マーケットの�
 - MODEL_CAUSE: モデル選定フェーズへ
 `;
 
-    // Persist to mission.md
-    try {
-      writeFileSync(paths.missionMd, mission, "utf-8");
-      console.log(`📝 [MissionAgent] Mission persisted to ${paths.missionMd}`);
-    } catch (e) {
-      console.error(`❌ [MissionAgent] Failed to persist mission: ${e}`);
-    }
+    writeFileSync(paths.missionMd, mission, "utf-8");
+    console.log(`📝 [MissionAgent] Mission persisted to ${paths.missionMd}`);
 
     return mission;
   }

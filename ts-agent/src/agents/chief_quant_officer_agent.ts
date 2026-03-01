@@ -15,16 +15,7 @@ export interface AuditReport {
   isProductionReady: boolean;
 }
 
-/**
- * CQO Agent (Chief Quantitative Officer)
- *
- * The ultimate "gatekeeper" of the quantitative research pipeline.
- * Performs rigorous critical auditing of strategy outcomes.
- */
 export class CqoAgent extends BaseAgent {
-  /**
-   * Performs a critical audit of a strategy outcome.
-   */
   public auditStrategy(outcome: StandardOutcome): AuditReport {
     console.log(
       `[CQO] Critical Audit starting for strategy: ${outcome.strategyId}...`,
@@ -36,7 +27,6 @@ export class CqoAgent extends BaseAgent {
 
     const critique: string[] = [];
 
-    // 1. Alpha Significance Check
     const tStat = a?.tStat ?? 0;
     const pValue = a?.pValue ?? 1.0;
     const ic = a?.informationCoefficient ?? 0;
@@ -57,7 +47,6 @@ export class CqoAgent extends BaseAgent {
       );
     }
 
-    // 2. Risk/Return Check
     const sharpe = m?.sharpeRatio ?? 0;
     const maxDD = m?.maxDrawdown ?? 1.0;
 
@@ -72,7 +61,6 @@ export class CqoAgent extends BaseAgent {
       );
     }
 
-    // 3. Reasoning quality (Alpha-R1 Integration)
     const reasoningScore = outcome.reasoningScore ?? 0;
     const r1 = outcome.strategicReasoning;
     const screening = outcome.alphaScreening;
@@ -138,9 +126,6 @@ export class CqoAgent extends BaseAgent {
     };
   }
 
-  /**
-   * Generates a formal audit report in Markdown format.
-   */
   public generateAuditMarkdown(audit: AuditReport): string {
     const statusIcon =
       audit.verdict === "APPROVED"

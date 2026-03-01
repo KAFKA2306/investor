@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-/**
- * Common Financial Data Structures
- */
 export const Ohlc6Schema = z.object({
   open: z.number(),
   high: z.number(),
@@ -45,9 +42,6 @@ export const MetricsSchema = z.object({
 
 export type Metrics = z.infer<typeof MetricsSchema>;
 
-/**
- * PEAD (Post-Earnings Announcement Drift) Domain Schemas
- */
 export const CalendarEntrySchema = z.object({
   code: z.string().length(4),
 });
@@ -73,10 +67,6 @@ export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;
 export type FinancialStatement = z.infer<typeof FinancialStatementSchema>;
 export type DailyQuote = z.infer<typeof DailyQuoteSchema>;
 
-/**
- * ACE (Agentic Context Engineering) Playbook Schema
- * Based on ArXiv 2510.04618 and JRay-Lin/ace-agents
- */
 export const AceBulletSchema = z.object({
   id: z.string(),
   content: z.string(),
@@ -100,10 +90,6 @@ export const AcePlaybookSchema = z.object({
 export type AceBullet = z.infer<typeof AceBulletSchema>;
 export type AcePlaybook = z.infer<typeof AcePlaybookSchema>;
 
-/**
- * Alpha-R1: Strategic Reasoning and Screening
- * Based on arXiv:2512.23515
- */
 export const StrategicReasoningSchema = z.object({
   rationale: z.string(),
   logicChecks: z.array(
@@ -127,9 +113,6 @@ export const AlphaScreeningSchema = z.object({
 export type StrategicReasoning = z.infer<typeof StrategicReasoningSchema>;
 export type AlphaScreening = z.infer<typeof AlphaScreeningSchema>;
 
-/**
- * Standard Outcome and Alpha Significance
- */
 export const AlphaSignificanceSchema = z.object({
   tStat: z.number().optional(),
   pValue: z.number().min(0).max(1).optional(),
@@ -190,10 +173,6 @@ export const StandardOutcomeSchema = z.object({
 });
 
 export type StandardOutcome = z.infer<typeof StandardOutcomeSchema>;
-
-/**
- * Unified Log Schemas
- */
 
 export const SymbolAnalysisLogSchema = z.object({
   symbol: z.string().length(4),
@@ -333,9 +312,6 @@ export const UnifiedLogSchema = z.object({
 
 export type UnifiedLog = z.infer<typeof UnifiedLogSchema>;
 
-/**
- * Quantitative Verification Reports
- */
 export const SymbolTimeSeriesSchema = z.object({
   prices: z.array(z.number()),
   factors: z.array(z.number()),
@@ -373,7 +349,7 @@ export const QuantitativeVerificationSchema = z.object({
   description: z.string(),
   generatedAt: z.string().datetime(),
   audit: z.object({
-    commitHash: z.string().length(40), // Full hash required for audit
+    commitHash: z.string().length(40),
     environment: z.string(),
     schemaVersion: z.literal("1.1.8"),
   }),

@@ -66,6 +66,64 @@ const ConfigSchema = z.object({
       slippageBps: z.number().min(0),
     }),
   }),
+  pipelineBlueprint: z
+    .object({
+      stateMonitor: z
+        .object({
+          regimeUpdateFrequencyMinutes: z.number().int().positive(),
+          volatilityLookbackDays: z.number().int().positive(),
+          regimeThreshold: z.number().min(0).max(1),
+          volatilityThreshold: z.number().min(0).max(1),
+        })
+        .optional(),
+      dataAcceptance: z
+        .object({
+          minQualityScore: z.number().min(0).max(1),
+          minCoverageRate: z.number().min(0),
+          maxMissingRate: z.number().min(0).max(1),
+          maxLatencyMinutes: z.number().min(0),
+          requireLeakFree: z.boolean(),
+          minSourceConsistency: z.number().min(0).max(1),
+        })
+        .optional(),
+      researchDesign: z
+        .object({
+          trainDays: z.number().int().positive(),
+          validationDays: z.number().int().positive(),
+          forwardDays: z.number().int().positive(),
+        })
+        .optional(),
+      verificationAcceptance: z
+        .object({
+          minSharpe: z.number(),
+          minIC: z.number(),
+          maxDrawdown: z.number().min(0),
+          minAnnualizedReturn: z.number(),
+        })
+        .optional(),
+      executionConstraints: z
+        .object({
+          maxPositionWeight: z.number().min(0).max(1),
+          maxTurnover: z.number().min(0),
+          minLiquidityJpy: z.number().min(0),
+        })
+        .optional(),
+      executionQuality: z
+        .object({
+          minFillRate: z.number().min(0).max(1),
+          maxSlippageBps: z.number().min(0),
+          maxExecutionLatencyMs: z.number().int().min(0),
+        })
+        .optional(),
+      driftRetraining: z
+        .object({
+          maxTrackingError: z.number().min(0),
+          maxRollingDrawdown: z.number().min(0),
+          minWinRate: z.number().min(0).max(1),
+        })
+        .optional(),
+    })
+    .optional(),
   alpha: z
     .object({
       edinet: z
@@ -202,11 +260,8 @@ export abstract class BaseAgent {
     core.eventStore.appendEvent(event);
 
     const memory = new MemoryCenter();
-    try {
-      memory.pushEvent(event);
-    } finally {
-      memory.close();
-    }
+    memory.pushEvent(event);
+    memory.close();
   }
 
   public abstract run(): Promise<void>;
@@ -465,23 +520,26 @@ export class Orchestrator {
       runId,
       agentCount: this.agentCount,
     });
-    try {
-      const agents = Array.from({ length: this.agentCount }, (_, i) =>
-        this.spawnAgent(i, task, runId),
-      );
-      await Promise.all(agents);
+    const agents = Array.from({ length: this.agentCount }, (_, i) =>
+      this.spawnAgent(i, task, runId),
+    );
+    const result = await Promise.allSettled(agents);
+    const rejected = result.find((r) => r.status === "rejected") as
+      | PromiseRejectedResult
+      | undefined;
+    if (!rejected) {
       await this.emitSystemEvent("RUN_FINISHED", {
         runId,
         agentCount: this.agentCount,
       });
       console.log("[Orchestrator] All parallel missions accomplished! ✨");
-    } catch (error) {
-      await this.emitSystemEvent("RUN_FAILED", {
-        runId,
-        agentCount: this.agentCount,
-      });
-      throw error;
+      return;
     }
+    await this.emitSystemEvent("RUN_FAILED", {
+      runId,
+      agentCount: this.agentCount,
+    });
+    throw rejected.reason;
   }
 
   private async spawnAgent(
@@ -491,19 +549,25 @@ export class Orchestrator {
   ) {
     console.log(`[Orchestrator] Agent ${id} is starting mission... ✨`);
     await this.emitSystemEvent("AGENT_STARTED", { runId, agentId: id });
-    try {
-      await task();
+    const result = await task().then(
+      () => ({ ok: true as const, error: null }),
+      (error) => ({ ok: false as const, error }),
+    );
+    if (result.ok) {
       await this.emitSystemEvent("AGENT_COMPLETED", { runId, agentId: id });
       console.log(`[Orchestrator] Agent ${id} completed mission! ✨`);
-    } catch (error) {
-      await this.emitSystemEvent("AGENT_FAILED", {
-        runId,
-        agentId: id,
-        reason: error instanceof Error ? error.message : String(error),
-      });
-      console.error(`[Orchestrator] Agent ${id} failed:`, error);
-      throw error;
+      return;
     }
+    await this.emitSystemEvent("AGENT_FAILED", {
+      runId,
+      agentId: id,
+      reason:
+        result.error instanceof Error
+          ? result.error.message
+          : String(result.error),
+    });
+    console.error(`[Orchestrator] Agent ${id} failed:`, result.error);
+    throw result.error;
   }
 
   private async emitSystemEvent(

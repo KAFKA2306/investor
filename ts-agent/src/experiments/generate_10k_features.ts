@@ -301,24 +301,20 @@ const loadDocumentListsFromCache = (
     .all() as Array<{ key: string; value: string }>;
   const byDate = new Map<string, EdinetDocument[]>();
   for (const row of rows) {
-    try {
-      const keyObj = JSON.parse(row.key) as { url?: string };
-      if (!keyObj.url) continue;
-      const url = new URL(keyObj.url);
-      const date = url.searchParams.get("date") ?? "";
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-      if (date < from || date > to) continue;
+    const keyObj = JSON.parse(row.key) as { url?: string };
+    if (!keyObj.url) continue;
+    const url = new URL(keyObj.url);
+    const date = url.searchParams.get("date") ?? "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    if (date < from || date > to) continue;
 
-      const payload = JSON.parse(row.value) as { results?: unknown[] };
-      const validDocs: EdinetDocument[] = [];
-      for (const item of payload.results ?? []) {
-        const parsed = EdinetDocumentSchema.safeParse(item);
-        if (parsed.success) validDocs.push(parsed.data);
-      }
-      byDate.set(date, validDocs);
-    } catch {
-      // ignore malformed cache rows
+    const payload = JSON.parse(row.value) as { results?: unknown[] };
+    const validDocs: EdinetDocument[] = [];
+    for (const item of payload.results ?? []) {
+      const parsed = EdinetDocumentSchema.safeParse(item);
+      if (parsed.success) validDocs.push(parsed.data);
     }
+    byDate.set(date, validDocs);
   }
   db.close();
   return byDate;
@@ -360,32 +356,28 @@ async function main(): Promise<void> {
   ) {
     const dateStr = d.toISOString().slice(0, 10);
     scannedDays += 1;
-    try {
-      const docs = cachedDocLists
-        ? (cachedDocLists.get(dateStr) ?? [])
-        : (await edinet.getDocumentList(dateStr, 2)).results;
-      scannedDocs += docs.length;
+    const docs = cachedDocLists
+      ? (cachedDocLists.get(dateStr) ?? [])
+      : (await edinet.getDocumentList(dateStr, 2)).results;
+    scannedDocs += docs.length;
 
-      for (const doc of docs) {
-        if (!doc.secCode || !universeSet.has(doc.secCode)) continue;
-        if (!doc.docTypeCode) continue;
-        if (!args.docTypes.has(doc.docTypeCode)) continue;
-        const symbol4 = doc.secCode.slice(0, 4);
-        if (!/^\d{4}$/.test(symbol4)) continue;
-        const submitDate = getSubmitDate(doc);
-        if (!submitDate) continue;
-        const key = `${symbol4}:${submitDate}`;
-        const previous = matchedByKey.get(key);
-        if (
-          !previous ||
-          (previous.submitDateTime ?? "") < (doc.submitDateTime ?? "")
-        ) {
-          matchedByKey.set(key, doc);
-        }
-        matchedDocs += 1;
+    for (const doc of docs) {
+      if (!doc.secCode || !universeSet.has(doc.secCode)) continue;
+      if (!doc.docTypeCode) continue;
+      if (!args.docTypes.has(doc.docTypeCode)) continue;
+      const symbol4 = doc.secCode.slice(0, 4);
+      if (!/^\d{4}$/.test(symbol4)) continue;
+      const submitDate = getSubmitDate(doc);
+      if (!submitDate) continue;
+      const key = `${symbol4}:${submitDate}`;
+      const previous = matchedByKey.get(key);
+      if (
+        !previous ||
+        (previous.submitDateTime ?? "") < (doc.submitDateTime ?? "")
+      ) {
+        matchedByKey.set(key, doc);
       }
-    } catch (e) {
-      console.warn(`⚠️ Skip ${dateStr}: ${e}`);
+      matchedDocs += 1;
     }
     await wait(args.sleepMs);
   }
@@ -421,94 +413,86 @@ async function main(): Promise<void> {
     const submitDate = getSubmitDate(doc);
     if (!/^\d{4}$/.test(symbol4) || !submitDate) continue;
 
-    try {
-      console.log(`🗂️ ${doc.docID} -> ${symbol4}@${submitDate}`);
-      const correctionFlag = isCorrectionDocument(doc) ? 1 : 0;
-      const existingSegments = sectionQuery.all(doc.docID) as SectionRow[];
-      if (existingSegments.length > 0) {
-        const indexedRiskSection =
-          existingSegments.find((s) => s.sectionName.includes("事業等のリスク"))
-            ?.content ?? existingSegments.map((s) => s.content).join(" ");
-        const text = indexedRiskSection.trim();
-        if (text.length === 0) {
-          failed += 1;
-          continue;
-        }
-        if (!featureMap[symbol4]) featureMap[symbol4] = {};
-        featureMap[symbol4][submitDate] = buildFeature(text, correctionFlag);
-        inserted += 1;
-        insertedFromIndexed += 1;
-        if (inserted % args.flushEvery === 0) {
-          saveMap(featureMap);
-          console.log(`💾 flush: inserted=${inserted}`);
-        }
-        continue;
-      }
-
-      if (args.metadataOnly) {
-        const fallbackText = metadataText(doc);
-        if (fallbackText.length === 0) {
-          failed += 1;
-          continue;
-        }
-        if (!featureMap[symbol4]) featureMap[symbol4] = {};
-        featureMap[symbol4][submitDate] = buildFeature(
-          fallbackText,
-          correctionFlag,
-        );
-        inserted += 1;
-        insertedFromMetadata += 1;
-        if (inserted % args.flushEvery === 0) {
-          saveMap(featureMap);
-          console.log(`💾 flush: inserted=${inserted}`);
-        }
-        continue;
-      }
-
-      const cacheZipPath = join(
-        process.cwd(),
-        "../logs/cache/edinet_docs",
-        `${doc.docID}_type1.zip`,
-      );
-      const zipPath = existsSync(cacheZipPath)
-        ? cacheZipPath
-        : args.cacheOnly
-          ? null
-          : await edinet.downloadDocument(doc.docID, 1);
-      if (!zipPath) {
+    console.log(`🗂️ ${doc.docID} -> ${symbol4}@${submitDate}`);
+    const correctionFlag = isCorrectionDocument(doc) ? 1 : 0;
+    const existingSegments = sectionQuery.all(doc.docID) as SectionRow[];
+    if (existingSegments.length > 0) {
+      const indexedRiskSection =
+        existingSegments.find((s) => s.sectionName.includes("事業等のリスク"))
+          ?.content ?? existingSegments.map((s) => s.content).join(" ");
+      const text = indexedRiskSection.trim();
+      if (text.length === 0) {
         failed += 1;
         continue;
       }
+      if (!featureMap[symbol4]) featureMap[symbol4] = {};
+      featureMap[symbol4][submitDate] = buildFeature(text, correctionFlag);
+      inserted += 1;
+      insertedFromIndexed += 1;
+      if (inserted % args.flushEvery === 0) {
+        saveMap(featureMap);
+        console.log(`💾 flush: inserted=${inserted}`);
+      }
+      continue;
+    }
 
-      await search.indexDocument(
-        doc.docID,
-        doc.secCode ?? undefined,
-        doc.filerName ?? undefined,
-        doc.docDescription ?? undefined,
-      );
-
-      const segments = sectionQuery.all(doc.docID) as SectionRow[];
-      const riskSection =
-        segments.find((s) => s.sectionName.includes("事業等のリスク"))
-          ?.content ?? segments.map((s) => s.content).join(" ");
-      if (!riskSection.trim()) {
+    if (args.metadataOnly) {
+      const metadataOnlyText = metadataText(doc);
+      if (metadataOnlyText.length === 0) {
         failed += 1;
         continue;
       }
       if (!featureMap[symbol4]) featureMap[symbol4] = {};
       featureMap[symbol4][submitDate] = buildFeature(
-        riskSection,
+        metadataOnlyText,
         correctionFlag,
       );
       inserted += 1;
-
+      insertedFromMetadata += 1;
       if (inserted % args.flushEvery === 0) {
         saveMap(featureMap);
         console.log(`💾 flush: inserted=${inserted}`);
       }
-    } catch (e) {
+      continue;
+    }
+
+    const cacheZipPath = join(
+      process.cwd(),
+      "../logs/cache/edinet_docs",
+      `${doc.docID}_type1.zip`,
+    );
+    const zipPath = existsSync(cacheZipPath)
+      ? cacheZipPath
+      : args.cacheOnly
+        ? null
+        : await edinet.downloadDocument(doc.docID, 1);
+    if (!zipPath) {
       failed += 1;
-      console.error(`❌ ${doc.docID} failed: ${e}`);
+      continue;
+    }
+
+    await search.indexDocument(
+      doc.docID,
+      doc.secCode ?? undefined,
+      doc.filerName ?? undefined,
+      doc.docDescription ?? undefined,
+    );
+
+    const segments = sectionQuery.all(doc.docID) as SectionRow[];
+    const riskSection =
+      segments.find((s) => s.sectionName.includes("事業等のリスク"))?.content ??
+      segments.map((s) => s.content).join(" ");
+    if (!riskSection.trim()) {
+      failed += 1;
+      continue;
+    }
+    if (!featureMap[symbol4]) featureMap[symbol4] = {};
+    featureMap[symbol4][submitDate] = buildFeature(riskSection, correctionFlag);
+    inserted += 1;
+
+    if (inserted % args.flushEvery === 0) {
+      saveMap(featureMap);
+      console.log(`💾 flush: inserted=${inserted}`);
     }
   }
 

@@ -92,7 +92,7 @@ const runShellCommand = async (
   command: string,
 ): Promise<WorkflowStepResult> => {
   const started = Date.now();
-  // Using 'bash -c' instead of '-lc' to reduce login shell overhead unless needed
+
   const proc = Bun.spawn(["bash", "-c", command], {
     cwd: repoRoot,
     stdout: "pipe",
@@ -206,133 +206,126 @@ serve({
       return new Response(null, { headers: jsonHeaders });
     }
 
-    try {
-      if (url.pathname === "/api/uqtl" && req.method === "GET") {
-        const limit = parseInt(url.searchParams.get("limit") || "50", 10);
-        const events = memory.getEvents(limit);
-        return new Response(JSON.stringify(events), { headers: jsonHeaders });
-      }
+    if (url.pathname === "/api/uqtl" && req.method === "GET") {
+      const limit = parseInt(url.searchParams.get("limit") || "50", 10);
+      const events = memory.getEvents(limit);
+      return new Response(JSON.stringify(events), { headers: jsonHeaders });
+    }
 
-      if (url.pathname === "/api/stats" && req.method === "GET") {
-        const successes = memory.getRecentSuccesses(10);
-        const failures = memory.getRecentFailures(10);
-        return new Response(JSON.stringify({ successes, failures }), {
-          headers: jsonHeaders,
-        });
-      }
-
-      if (url.pathname === "/api/workflows" && req.method === "GET") {
-        const workflows = await readWorkflowCatalog();
-        const summarized = workflows.map((workflow) => ({
-          id: workflow.id,
-          name: workflow.name,
-          file: workflow.file,
-          commandCount: workflow.commands.length,
-          commands: workflow.commands,
-        }));
-        return new Response(JSON.stringify(summarized), {
-          headers: jsonHeaders,
-        });
-      }
-
-      if (url.pathname === "/api/workflows/run" && req.method === "POST") {
-        const body = (await req.json()) as { workflowId?: string };
-        const workflowId = body.workflowId?.trim();
-        if (!workflowId) {
-          return new Response(
-            JSON.stringify({ error: "workflowId is required" }),
-            {
-              status: 400,
-              headers: jsonHeaders,
-            },
-          );
-        }
-        const result = await runWorkflow(workflowId);
-        return new Response(JSON.stringify(result.body), {
-          status: result.status,
-          headers: jsonHeaders,
-        });
-      }
-
-      if (url.pathname === "/api/timeseries/views" && req.method === "GET") {
-        const views = await listTimeSeriesViews();
-        return new Response(JSON.stringify(views), { headers: jsonHeaders });
-      }
-
-      if (
-        url.pathname.startsWith("/api/timeseries/plot/") &&
-        req.method === "GET"
-      ) {
-        const file = decodeURIComponent(
-          url.pathname.replace("/api/timeseries/plot/", ""),
-        );
-        if (!isSafeFileName(file, ".png")) {
-          return new Response(JSON.stringify({ error: "invalid file name" }), {
-            status: 400,
-            headers: jsonHeaders,
-          });
-        }
-        const fullPath = resolve(timeSeriesDir, file);
-        const payload = await readFile(fullPath);
-        return new Response(payload, {
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "image/png",
-            "Cache-Control": "no-store",
-          },
-        });
-      }
-
-      if (url.pathname === "/api/kill" && req.method === "POST") {
-        console.warn("[API] !!! KILL SWITCH ACTIVATED !!!");
-        const event = {
-          id: crypto.randomUUID(),
-          timestamp: new Date().toISOString(),
-          type: "SYSTEM_LOG",
-          payload: { message: "KILL SWITCH ACTIVATED via Dashboard" },
-        };
-        memory.pushEvent(event);
-        return new Response(
-          JSON.stringify({ ok: true, message: "Kill signal received" }),
-          {
-            headers: jsonHeaders,
-          },
-        );
-      }
-
-      if (
-        url.pathname.startsWith("/api/timeseries/csv/") &&
-        req.method === "GET"
-      ) {
-        const file = decodeURIComponent(
-          url.pathname.replace("/api/timeseries/csv/", ""),
-        );
-        if (!isSafeFileName(file, ".csv")) {
-          return new Response(JSON.stringify({ error: "invalid file name" }), {
-            status: 400,
-            headers: jsonHeaders,
-          });
-        }
-        const fullPath = resolve(timeSeriesDir, file);
-        const payload = await readFile(fullPath);
-        return new Response(payload, {
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Content-Type": "text/csv; charset=utf-8",
-            "Cache-Control": "no-store",
-          },
-        });
-      }
-
-      return new Response(JSON.stringify({ error: "Not Found" }), {
-        status: 404,
-        headers: jsonHeaders,
-      });
-    } catch (error) {
-      return new Response(JSON.stringify({ error: String(error) }), {
-        status: 500,
+    if (url.pathname === "/api/stats" && req.method === "GET") {
+      const successes = memory.getRecentSuccesses(10);
+      const failures = memory.getRecentFailures(10);
+      return new Response(JSON.stringify({ successes, failures }), {
         headers: jsonHeaders,
       });
     }
+
+    if (url.pathname === "/api/workflows" && req.method === "GET") {
+      const workflows = await readWorkflowCatalog();
+      const summarized = workflows.map((workflow) => ({
+        id: workflow.id,
+        name: workflow.name,
+        file: workflow.file,
+        commandCount: workflow.commands.length,
+        commands: workflow.commands,
+      }));
+      return new Response(JSON.stringify(summarized), {
+        headers: jsonHeaders,
+      });
+    }
+
+    if (url.pathname === "/api/workflows/run" && req.method === "POST") {
+      const body = (await req.json()) as { workflowId?: string };
+      const workflowId = body.workflowId?.trim();
+      if (!workflowId) {
+        return new Response(
+          JSON.stringify({ error: "workflowId is required" }),
+          {
+            status: 400,
+            headers: jsonHeaders,
+          },
+        );
+      }
+      const result = await runWorkflow(workflowId);
+      return new Response(JSON.stringify(result.body), {
+        status: result.status,
+        headers: jsonHeaders,
+      });
+    }
+
+    if (url.pathname === "/api/timeseries/views" && req.method === "GET") {
+      const views = await listTimeSeriesViews();
+      return new Response(JSON.stringify(views), { headers: jsonHeaders });
+    }
+
+    if (
+      url.pathname.startsWith("/api/timeseries/plot/") &&
+      req.method === "GET"
+    ) {
+      const file = decodeURIComponent(
+        url.pathname.replace("/api/timeseries/plot/", ""),
+      );
+      if (!isSafeFileName(file, ".png")) {
+        return new Response(JSON.stringify({ error: "invalid file name" }), {
+          status: 400,
+          headers: jsonHeaders,
+        });
+      }
+      const fullPath = resolve(timeSeriesDir, file);
+      const payload = await readFile(fullPath);
+      return new Response(payload, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "image/png",
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    if (url.pathname === "/api/kill" && req.method === "POST") {
+      console.warn("[API] !!! KILL SWITCH ACTIVATED !!!");
+      const event = {
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        type: "SYSTEM_LOG",
+        payload: { message: "KILL SWITCH ACTIVATED via Dashboard" },
+      };
+      memory.pushEvent(event);
+      return new Response(
+        JSON.stringify({ ok: true, message: "Kill signal received" }),
+        {
+          headers: jsonHeaders,
+        },
+      );
+    }
+
+    if (
+      url.pathname.startsWith("/api/timeseries/csv/") &&
+      req.method === "GET"
+    ) {
+      const file = decodeURIComponent(
+        url.pathname.replace("/api/timeseries/csv/", ""),
+      );
+      if (!isSafeFileName(file, ".csv")) {
+        return new Response(JSON.stringify({ error: "invalid file name" }), {
+          status: 400,
+          headers: jsonHeaders,
+        });
+      }
+      const fullPath = resolve(timeSeriesDir, file);
+      const payload = await readFile(fullPath);
+      return new Response(payload, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "text/csv; charset=utf-8",
+          "Cache-Control": "no-store",
+        },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Not Found" }), {
+      status: 404,
+      headers: jsonHeaders,
+    });
   },
 });

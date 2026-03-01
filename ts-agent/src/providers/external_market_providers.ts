@@ -3,9 +3,6 @@ import { z } from "zod";
 import { core } from "../system/app_runtime_core.ts";
 import { SqliteHttpCache } from "./cache_providers.ts";
 
-/**
- * e-Stat (Portal Site of Official Statistics of Japan) Provider
- */
 export class EstatProvider {
   private readonly baseUrl =
     "https://api.e-stat.go.jp/rest/3.0/app/json/getStatsData";
@@ -29,9 +26,6 @@ export class EstatProvider {
   }
 }
 
-/**
- * JQuants (Japan Exchange Group) Provider
- */
 const extractJQuantsRows = (payload: Record<string, unknown>): unknown[] => {
   const topLevel = Object.values(payload).find((v) => Array.isArray(v));
   const nested = Object.values(payload)
@@ -104,9 +98,6 @@ export class JQuantsProvider {
   }
 }
 
-/**
- * PEAD JQuants Gateway
- */
 export class PeadJquantsGateway {
   private readonly provider = new JQuantsProvider({
     cache: new SqliteHttpCache(
@@ -134,9 +125,6 @@ export class PeadJquantsGateway {
   }
 }
 
-/**
- * Yahoo Finance Gateway
- */
 export interface YahooBar {
   Date: string;
   Open: number;
@@ -144,13 +132,13 @@ export interface YahooBar {
   Low: number;
   Close: number;
   Volume: number;
-  CorrectionCount?: number; // [NEW] EDINET Signals
-  LargeHolderCount?: number; // [NEW] EDINET Signals
-  MacroIIP?: number; // [NEW] e-Stat Signals
-  MacroCPI?: number; // [NEW] e-Stat Signals
-  SegmentSentiment?: number; // [NEW] 10-K Intelligence 2.0
-  AiExposure?: number; // [NEW] 10-K Intelligence 2.0
-  KgCentrality?: number; // [NEW] 10-K Intelligence 2.0
+  CorrectionCount?: number;
+  LargeHolderCount?: number;
+  MacroIIP?: number;
+  MacroCPI?: number;
+  SegmentSentiment?: number;
+  AiExposure?: number;
+  KgCentrality?: number;
 }
 
 export class YahooFinanceGateway {

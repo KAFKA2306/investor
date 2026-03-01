@@ -29,7 +29,7 @@ export const SymbolAnalysisSchema = z.object({
   }),
   alphaScore: z.number(),
   signal: z.enum(["LONG", "HOLD"]),
-  targetReturn: z.number().optional(), // Realized return on day T
+  targetReturn: z.number().optional(),
 });
 
 export type SymbolAnalysis = z.infer<typeof SymbolAnalysisSchema>;
@@ -104,7 +104,6 @@ export const scoreDailyAlpha = (
   const liquidityPerShare = turnoverValue / Math.max(volume, eps);
   const profitMargin = operatingProfit / Math.max(Math.abs(netSales), eps);
 
-  // Weights (Audit Note: prevDailyReturn is now correctly a feature from T-1)
   const alphaScore =
     0.3 * macroMomentum +
     0.15 * prevDailyReturn +

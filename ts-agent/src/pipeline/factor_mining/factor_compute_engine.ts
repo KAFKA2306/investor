@@ -2,16 +2,12 @@ import type { YahooBar } from "../../providers/external_market_providers";
 
 export type FactorAST = {
   type: "variable" | "operator" | "constant";
-  name?: string; // For variable or operator
-  value?: number; // For constant
+  name?: string;
+  value?: number;
   left?: FactorAST;
   right?: FactorAST;
 };
 
-/**
- * Evaluates the factor AST for a window of bars.
- * index is the CURRENT bar index in the bars array.
- */
 export function evaluateFactor(
   ast: FactorAST,
   bars: YahooBar[],
@@ -58,7 +54,6 @@ export function evaluateFactor(
   if (ast.type === "operator") {
     const opName = ast.name?.toUpperCase();
 
-    // Time-series operators (Window-based)
     if (opName === "LAG") {
       const lag = ast.right?.type === "constant" ? (ast.right.value ?? 1) : 1;
       const targetIndex = index - lag;
@@ -77,7 +72,6 @@ export function evaluateFactor(
       return sum / window;
     }
 
-    // Arithmetic operators
     const leftVal = ast.left ? evaluateFactor(ast.left, bars, index) : 0;
     const rightVal = ast.right ? evaluateFactor(ast.right, bars, index) : 0;
 
@@ -98,9 +92,6 @@ export function evaluateFactor(
   return 0;
 }
 
-/**
- * Computes factor values for a series of bars.
- */
 export function computeFactorSeries(
   ast: FactorAST,
   bars: YahooBar[],

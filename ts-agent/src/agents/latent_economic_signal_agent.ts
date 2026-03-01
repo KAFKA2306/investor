@@ -30,18 +30,18 @@ const pickOne = <T>(items: readonly T[]): T => {
 
 export interface AlphaFactor {
   id: string;
-  ast: Record<string, unknown>; // [NEW] Use dynamic AST DSL instead of TS function
+  ast: Record<string, unknown>;
   description: string;
   reasoning: string;
-  // [NEW] DAG Metadata for AlphaPROBE/QuantaAlpha evolution
+
   parentId?: string | undefined;
-  generation: number; // [NEW] Mandatory for evolutionary trace
+  generation: number;
   mutationType:
     | "CROSSOVER"
     | "POINT_MUTATION"
     | "STRUCTURAL_SHIFT"
     | "NEW_SEED";
-  gender: "MALE" | "FEMALE"; // [NEW] GGA Subpopulation
+  gender: "MALE" | "FEMALE";
 }
 
 export interface FactorEvaluation {
@@ -52,7 +52,7 @@ export interface FactorEvaluation {
 }
 
 export interface FactorGenerationOptions {
-  count?: number; // [NEW] Number of candidates to generate for the Alpha Factory
+  count?: number;
   blindPlanning?: boolean;
   targetDiversity?: "HIGH" | "MEDIUM" | "LOW";
   feedback?: string[];
@@ -67,7 +67,6 @@ export class LesAgent extends BaseAgent {
     const lesModel = registry.models.find((m) => m.id === "les-forecast");
     const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
 
-    // [NEW] Load dynamic mission context if available
     let missionContext = "";
     if (
       fs.existsSync(
@@ -89,7 +88,6 @@ export class LesAgent extends BaseAgent {
       `🚀 LES: Seed Alpha Factory is requesting DSL generation from LLM${source}...`,
     );
 
-    // [NOVELTY ENFORCEMENT] Extract existing strategy names/IDs from playbook
     const existingThemes = new Set<string>();
     const forbiddenThemes = new Set<string>();
 
@@ -106,7 +104,6 @@ export class LesAgent extends BaseAgent {
           }
         }
 
-        // [CRITIQUE ANALYSIS] Extract failure keywords from Council Consensus
         if (bullet.content.includes("[REJECTED]")) {
           const critiqueKeywords = [
             "momentum",
@@ -123,8 +120,6 @@ export class LesAgent extends BaseAgent {
       }
     }
 
-    // [ULTRA-DIVERSITY GENERATOR]
-    // Fulfilling the mandate for "completely new" hypotheses by using personas and expanded themes.
     const ops = ["DIV", "MUL", "SUB", "ADD", "SMA", "LAG"] as const;
     const cols = [
       "close",
@@ -189,9 +184,6 @@ export class LesAgent extends BaseAgent {
       };
     };
 
-    /**
-     * [GGA] Arithmetic Crossover for parameters
-     */
     const arithmeticCrossover = (
       astX: FactorAST,
       astY: FactorAST,
@@ -208,7 +200,7 @@ export class LesAgent extends BaseAgent {
           ),
         };
       }
-      // If structures differ, return one or the other
+
       return Math.random() > 0.5 ? astX : astY;
     };
 
@@ -275,7 +267,7 @@ export class LesAgent extends BaseAgent {
         name: "Neuro-Symbolic Logic (NeuroSymbolic)",
         terms: ["symbolic", "neural", "explainable", "rule-based", "hybrid"],
       },
-      // [NEW] Dynamically injected mission seed
+
       ...(missionContext.trim().length > 0
         ? [
             {
@@ -304,7 +296,6 @@ export class LesAgent extends BaseAgent {
     const candidates: AlphaFactor[] = [];
     let attempts = 0;
 
-    // [AlphaPROBE] Retrieval logic: select "seeds" from the playbook to evolve
     const seeds = playbookBullets.filter(
       (b: AceBullet) => b.metadata?.status === "SELECTED",
     );
@@ -322,7 +313,6 @@ export class LesAgent extends BaseAgent {
       const themeIndex = Math.floor(Math.random() * themes.length);
       const theme = themes[themeIndex]!;
 
-      // If the theme is already in the playbook or has failed recently, skip or attempt evolution
       if (
         !isEvolution &&
         (existingThemes.has(theme.name.toLowerCase()) ||
@@ -373,7 +363,6 @@ export class LesAgent extends BaseAgent {
           description = `[EVOLVED] Crossover: ${seed.content.split(":")[0]} [v${generation}]`;
           reasoning = `[EVOLUTIONARY TRACE] Crossover mutation (GGA ${gender}) from ${parentId}. ${reasoning}`;
 
-          // GGA Crossover: If we have multiple seeds, crossover with another. Else point mutation.
           const partner = pickOne(seeds);
           ast = arithmeticCrossover(
             seed.metadata?.ast as FactorAST,
@@ -383,18 +372,17 @@ export class LesAgent extends BaseAgent {
           mutationType = "STRUCTURAL_SHIFT";
           description = `[EVOLVED] Shift (MALE): ${seed.content.split(":")[0]} [v${generation}]`;
           reasoning = `[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ${parentId}. Focusing on explorative diversity.`;
-          ast = generateRandomAST(depth, missionBias, 1.5); // Higher mutation strength
+          ast = generateRandomAST(depth, missionBias, 1.5);
         } else {
           mutationType = "POINT_MUTATION";
           description = `[EVOLVED] Fine-tune (FEMALE): ${seed.content.split(":")[0]} [v${generation}]`;
           reasoning = `[EVOLUTIONARY TRACE] Micro-mutation from ${parentId}. Focusing on exploititive stability.`;
-          ast = generateRandomAST(depth, missionBias, 0.5); // Lower mutation strength
+          ast = generateRandomAST(depth, missionBias, 0.5);
         }
       } else {
         ast = generateRandomAST(depth, missionBias);
       }
 
-      // Secondary check: description overlap
       if (existingThemes.has(description.toLowerCase())) continue;
 
       candidates.push({
@@ -410,7 +398,6 @@ export class LesAgent extends BaseAgent {
       existingThemes.add(description.toLowerCase());
     }
 
-    // Record the event for UQTL
     this.emitEvent("ALPHA_GENERATED", {
       count: candidates.length,
       generationModel: "Infinity-Combinatorial-V3",
@@ -431,16 +418,12 @@ export class LesAgent extends BaseAgent {
     return this.generateAlphaFactors(playbookBullets);
   }
 
-  /**
-   * [REFACTORED] Linguistic Reasoning Score (RS)
-   * This is now a "Linguistic Plausibility" score, not a substitute for quantitative proof.
-   */
   public async evaluateReliability(
     factor: AlphaFactor,
     evidence?: Record<string, number>,
   ): Promise<FactorEvaluation> {
     const text = `${factor.description} ${factor.reasoning}`.toLowerCase();
-    let rs = 0.4; // Base linguistic score
+    let rs = 0.4;
     if (
       /macro|supply|inflation|inventory|lead|structural|fundamental/.test(text)
     )
@@ -481,9 +464,6 @@ export class LesAgent extends BaseAgent {
     };
   }
 
-  /**
-   * [REFACTORED] Risk Reasoning Score
-   */
   public async evaluateRisk(factor: AlphaFactor): Promise<FactorEvaluation> {
     const text =
       `${factor.id} ${factor.description} ${factor.reasoning}`.toLowerCase();
@@ -554,12 +534,11 @@ export class LesAgent extends BaseAgent {
     if (backtest?.history && backtest.history.length > 0) {
       tStat = QuantMetrics.calculateTStat(backtest.history);
       pValue = QuantMetrics.calculatePValue(tStat, backtest.history.length);
-      // [NEW] Proper IC via correlation (Strict: No fallbacks)
       if (predictions && targets) {
         ic = QuantMetrics.calculateCorr(predictions, targets);
       } else {
         throw new Error(
-          `[AUDIT] Cannot calculate IC for ${strategyId} without predictions and targets. No fallbacks allowed.`,
+          `[AUDIT] Cannot calculate IC for ${strategyId} without predictions and targets.`,
         );
       }
       sharpeRatio = QuantMetrics.calculateSharpeRatio(backtest.history);
@@ -579,18 +558,16 @@ export class LesAgent extends BaseAgent {
       maxDrawdown = Math.abs(worst);
     }
 
-    // [NEW] Linguistic Plausibility (格下げ) vs Quantitative Proof
-    // If backtest exists, the reasoningScore should be dominated by P-Value/IC.
     const quantRS = backtest ? Math.max(0, 1 - pValue) : 0;
     const finalRS = backtest
-      ? quantRS * 0.8 + integratedRS * 0.2 // Backtest exists: 80% Quantitative, 20% Linguistic
-      : integratedRS * 0.5; // No backtest: 50% Linguistic (Discounted)
+      ? quantRS * 0.8 + integratedRS * 0.2
+      : integratedRS * 0.5;
 
     const outcome: StandardOutcome = {
       strategyId,
       strategyName: "LES-Multi-Agent-Forecasting",
       timestamp: ts,
-      experimentId, // [NEW] UQTL Bonding
+      experimentId,
       summary: backtest
         ? `LES Framework implementation. Verified against ${backtest.tradingDays} trading days with REAL backtest evidence.`
         : `LES Framework (HYPOTHETICAL). No backtest evidence provided.`,
@@ -615,7 +592,7 @@ export class LesAgent extends BaseAgent {
       stability: {
         trackingError: backtest?.history
           ? QuantMetrics.calculateTStat(backtest.history) * 0.001
-          : 0, // [NEW] Zero tolerance for hardcoded defaults
+          : 0,
         tradingDaysHorizon: backtest?.tradingDays ?? 0,
         isProductionReady: backtest ? backtest.netReturn > 0.05 : false,
       },

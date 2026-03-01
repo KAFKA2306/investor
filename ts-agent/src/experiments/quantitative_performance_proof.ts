@@ -64,7 +64,7 @@ function astExecutable(ast: FactorAST): boolean {
   const v1 = FactorComputeEngine.evaluate(ast, bars, 0);
   const v2 = FactorComputeEngine.evaluate(ast, bars, 1);
   if (!Number.isFinite(v1) || !Number.isFinite(v2)) return false;
-  return true; // Relax uniqueness check for now as SMA might produce zero initially
+  return true;
 }
 
 function buildDynamicUniverse(
@@ -73,7 +73,6 @@ function buildDynamicUniverse(
   govMap: ReturnType<typeof loadGovMap> = {},
   intel10kMap: ReturnType<typeof load10kMap> = {},
 ): string[] {
-  // [MOD] Prioritize symbols with 10-K Intelligence signals FIRST
   const intelSymbols = pool.filter((s) => intel10kMap[s]);
   const signalSymbols = pool.filter(
     (s) =>
@@ -181,11 +180,7 @@ function loadGovMap(): Record<
   Record<string, { corrections: number; activist: number }>
 > {
   const path = join(process.cwd(), "data", "edinet_governance_map.json");
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch (_e) {
-    return {};
-  }
+  return JSON.parse(readFileSync(path, "utf8"));
 }
 
 function load10kMap(): Record<
@@ -196,11 +191,7 @@ function load10kMap(): Record<
   >
 > {
   const path = join(process.cwd(), "data", "edinet_10k_intelligence_map.json");
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch (_e) {
-    return {};
-  }
+  return JSON.parse(readFileSync(path, "utf8"));
 }
 
 async function generateStandardVerificationReport() {
@@ -242,7 +233,7 @@ async function generateStandardVerificationReport() {
 
   const govMap = loadGovMap();
   const intelligence10kMap = load10kMap();
-  const universePool = new DataPipelineRuntime().resolveUniverse([], 500); // Larger pool for signals
+  const universePool = new DataPipelineRuntime().resolveUniverse([], 500);
   const selectedSymbols4 = buildDynamicUniverse(
     [...universePool],
     16,
@@ -255,7 +246,6 @@ async function generateStandardVerificationReport() {
     `📊 10-K Map has coverage for: ${Object.keys(intelligence10kMap).join(", ")}`,
   );
 
-  // [NEW] Enrich bars with governance signals (with 30-day persistence)
   let totalEnriched = 0;
   for (const h of localHistory) {
     const symbol4 = h.symbol.slice(0, 4);
@@ -264,7 +254,6 @@ async function generateStandardVerificationReport() {
     let lastActivist = 0;
     let effectWindow = 0;
 
-    // Carry-forward states for 10-K
     let lastSentiment = 0.5;
     let lastAiExposure = 0;
     let lastKgCentrality = 0;
@@ -274,10 +263,9 @@ async function generateStandardVerificationReport() {
       if (signal) {
         lastCorrection = signal.corrections || 0;
         lastActivist = signal.activist || 0;
-        effectWindow = 30; // Signal persists for 30 trading days
+        effectWindow = 30;
       }
 
-      // [NEW] 10-K Intelligence signals enrichment with carry-forward
       const intel10k = intelligence10kMap[symbol4]?.[b.Date];
       if (intel10k) {
         lastSentiment = intel10k.sentiment;
@@ -304,7 +292,6 @@ async function generateStandardVerificationReport() {
     `✅ Enrichment complete. Total bars with PIT 10-K signals: ${totalEnriched}`,
   );
 
-  // [MOD] Focus evaluation on the signal window (2021+)
   const EVAL_START = "2021-01-01";
   const filteredHistory = localHistory
     .map((h) => ({
@@ -317,7 +304,6 @@ async function generateStandardVerificationReport() {
     throw new Error("No market data available after 2021-01-01");
   }
 
-  // Factor Calculation & Backtest (using filtered history)
   const dateSet = filteredHistory.map(
     (h) => new Set(h.bars.map((b) => b.Date)),
   );

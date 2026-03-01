@@ -9,9 +9,6 @@ import { CanonicalLogEnvelopeSchema } from "../../schemas/system_event_schemas.t
 
 const EPS = 1e-12;
 
-/**
- * Basic Metrics and Evaluation
- */
 export const DailyLogSchema = z.object({
   date: z.string().regex(/^\d{8}$/),
   strategyReturn: z.number(),
@@ -153,9 +150,6 @@ export function calculatePerformanceMetricsFromLedger(
   return evaluate(logs);
 }
 
-/**
- * Performance Ledger Loading
- */
 export const PerformanceLedgerRowSchema = z.object({
   date: z.string().regex(/^\d{8}$/),
   strategyId: z.string(),
@@ -179,41 +173,35 @@ export function loadPerformanceLedgerRows(
   const files = fs.readdirSync(logsDir).filter((f) => f.endsWith(".json"));
   const rows: PerformanceLedgerRow[] = [];
   for (const file of files) {
-    try {
-      const raw = JSON.parse(fs.readFileSync(path.join(logsDir, file), "utf8"));
-      const envelope = CanonicalLogEnvelopeSchema.safeParse(raw);
-      if (!envelope.success || envelope.data.kind !== "daily_decision")
-        continue;
+    const raw = JSON.parse(fs.readFileSync(path.join(logsDir, file), "utf8"));
+    const envelope = CanonicalLogEnvelopeSchema.safeParse(raw);
+    if (!envelope.success || envelope.data.kind !== "daily_decision") continue;
 
-      const payload = UnifiedLogSchema.safeParse(envelope.data.payload);
-      if (!payload.success || payload.data.schema !== "investor.daily-log.v1")
-        continue;
+    const payload = UnifiedLogSchema.safeParse(envelope.data.payload);
+    if (!payload.success || payload.data.schema !== "investor.daily-log.v1")
+      continue;
 
-      const report = payload.data.report as z.infer<
-        typeof DailyScenarioLogSchema
-      >;
-      if (report.scenarioId && report.results?.backtest) {
-        const b = report.results.backtest;
-        rows.push({
-          date: envelope.data.asOfDate || report.date,
-          strategyId: report.scenarioId,
-          grossReturn: b.grossReturn,
-          netReturn: b.netReturn,
-          feeBps: b.feeBps,
-          slippageBps: b.slippageBps,
-          totalCostBps: b.totalCostBps,
-          grossExposure: 1.0,
-          metadata: { file, runId: envelope.data.runId },
-        });
-      }
-    } catch (_e) {}
+    const report = payload.data.report as z.infer<
+      typeof DailyScenarioLogSchema
+    >;
+    if (report.scenarioId && report.results?.backtest) {
+      const b = report.results.backtest;
+      rows.push({
+        date: envelope.data.asOfDate || report.date,
+        strategyId: report.scenarioId,
+        grossReturn: b.grossReturn,
+        netReturn: b.netReturn,
+        feeBps: b.feeBps,
+        slippageBps: b.slippageBps,
+        totalCostBps: b.totalCostBps,
+        grossExposure: 1.0,
+        metadata: { file, runId: envelope.data.runId },
+      });
+    }
   }
   return rows.sort((a, b) => a.date.localeCompare(b.date));
 }
 
-/**
- * Quantitative Factor Metrics
- */
 export namespace QuantMetrics {
   function normalCdf(x: number): number {
     const t = 1 / (1 + 0.2316419 * Math.abs(x));

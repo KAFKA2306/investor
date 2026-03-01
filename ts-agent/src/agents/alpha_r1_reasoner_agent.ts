@@ -5,17 +5,7 @@ import type {
 } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
 
-/**
- * StrategicReasonerAgent (Alpha-R1)
- *
- * Implements "Alpha Screening with LLM Reasoning" (arXiv:2512.23515).
- * Acts as a 8B-class strategic thinker that checks the logical validity
- * of alphas against current market context.
- */
 export class StrategicReasonerAgent extends BaseAgent {
-  /**
-   * Performs strategic reasoning with a Multi-Agent Council.
-   */
   public async reasonAboutAlpha(
     outcome: StandardOutcome,
     marketContext: string,
@@ -29,19 +19,16 @@ export class StrategicReasonerAgent extends BaseAgent {
       rawReasoning.match(/CLAIM:\s*(.*?)(?=\[REASONING\]|$)/)?.[1]?.trim() ||
       "General Alpha";
 
-    // Persona 1: Risk Manager
     const riskVerdict =
       (outcome.verification?.metrics?.maxDrawdown ?? 0 < -0.2)
         ? "INVALID"
         : "VALID";
     const riskEvidence = `MaxDrawdown check: ${outcome.verification?.metrics?.maxDrawdown}.`;
 
-    // Persona 2: Alpha Hunter
     const hunterVerdict =
       (outcome.alpha?.pValue ?? 1) < 0.05 ? "VALID" : "UNCERTAIN";
     const hunterEvidence = `P-Value: ${outcome.alpha?.pValue}.`;
 
-    // Persona 3: Regime Specialist
     const regimeVerdict =
       marketContext.includes("BULL") &&
       extractedClaim.toLowerCase().includes("momentum")
@@ -82,10 +69,6 @@ export class StrategicReasonerAgent extends BaseAgent {
     };
   }
 
-  /**
-   * Performs Context-Aware Screening.
-   * Decisions whether to keep an alpha ACTIVE or switch it to INACTIVE/DECAYED.
-   */
   public async screenAlpha(
     outcome: StandardOutcome,
     reasoning: StrategicReasoning,

@@ -1,9 +1,10 @@
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import {
   AlphaKnowledgebase,
   type MacroRegimeInput,
 } from "../context/alpha_knowledgebase.ts";
+import { EstatProvider } from "../providers/external_market_providers.ts";
 import { paths } from "../system/path_registry.ts";
 
 type CliArgs = {
@@ -93,12 +94,56 @@ const determineRegime = (
   return "NEUTRAL";
 };
 
+const generateMacroSourceFile = async (sourcePath: string): Promise<void> => {
+  const estat = new EstatProvider();
+  const IIP_ID = "0003435161";
+  const CPI_ID = "0003427107";
+
+  type EstatValue = { "@time": string; $: string };
+  type EstatResponse = {
+    GET_STATS_DATA?: {
+      STATISTICAL_DATA?: {
+        DATA_INF?: {
+          VALUE?: EstatValue[];
+        };
+      };
+    };
+  };
+
+  const extract = (
+    data: EstatResponse,
+    key: "MacroIIP" | "MacroCPI",
+    out: Record<string, MacroPoint>,
+  ) => {
+    const values = data.GET_STATS_DATA?.STATISTICAL_DATA?.DATA_INF?.VALUE ?? [];
+    for (const v of values) {
+      const timeCode = v["@time"];
+      if (typeof timeCode !== "string" || timeCode.length < 6) continue;
+      const year = timeCode.slice(0, 4);
+      const month = timeCode.slice(4, 6);
+      const date = `${year}-${month}-01`;
+      const row = out[date] ?? {};
+      row[key] = Number(v.$) || 0;
+      out[date] = row;
+    }
+  };
+
+  const macroMap: Record<string, MacroPoint> = {};
+  const iipData = (await estat.getStats(IIP_ID)) as EstatResponse;
+  const cpiData = (await estat.getStats(CPI_ID)) as EstatResponse;
+  extract(iipData, "MacroIIP", macroMap);
+  extract(cpiData, "MacroCPI", macroMap);
+  mkdirSync(dirname(sourcePath), { recursive: true });
+  writeFileSync(sourcePath, JSON.stringify(macroMap, null, 2));
+};
+
 async function run(): Promise<void> {
   const args = parseArgs();
   if (!existsSync(args.sourcePath)) {
-    throw new Error(
-      `macro source not found: ${args.sourcePath}. run generate_macro_features.ts first.`,
+    console.log(
+      `macro source not found: ${args.sourcePath}. generating source from e-Stat...`,
     );
+    await generateMacroSourceFile(args.sourcePath);
   }
 
   const raw = JSON.parse(readFileSync(args.sourcePath, "utf8")) as Record<

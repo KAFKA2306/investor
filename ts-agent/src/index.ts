@@ -18,7 +18,6 @@ async function main() {
     new StateMonitorBridge(),
   );
 
-  // Use the continuous agentic loop (Phase 4)
   await orchestrator.run();
   console.log("Autonomous Alpha Evolution Loop cycle completed");
 }

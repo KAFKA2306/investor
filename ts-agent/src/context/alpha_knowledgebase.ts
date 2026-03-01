@@ -400,7 +400,7 @@ export class AlphaKnowledgebase {
           volume = excluded.volume,
           earnings_flag = excluded.earnings_flag
       `);
-      for (const row of rows) {
+      for (const row of txRows) {
         stmt.run(
           row.symbol,
           row.date,

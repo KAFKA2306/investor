@@ -49,30 +49,21 @@ export interface ComputeResponse {
   results?: FactorComputeResult[];
 }
 
-/**
- * Client for the Python/Polars Compute Engine.
- * Replaces pure TS loops with vectorized operations via uv-managed python.
- */
 export class ComputeEngineClient {
   private readonly enginePath: string;
   private readonly venvPython: string;
 
   constructor() {
-    // Determine the path to the python script
     this.enginePath = join(import.meta.dir, "..", "compute", "engine.py");
-    // Use venv from core
+
     this.venvPython = core.getVenvPythonPath();
   }
 
-  /**
-   * Evaluates factors using the Python Polars engine.
-   */
   public async evaluateFactors(
     request: ComputeRequest,
   ): Promise<ComputeResponse> {
     const inputJson = JSON.stringify(request);
 
-    // Using Bun.spawn to call the python engine safely
     const proc = spawn({
       cmd: [this.venvPython, this.enginePath],
       stdin: "pipe",
@@ -80,36 +71,31 @@ export class ComputeEngineClient {
       stderr: "pipe",
     });
 
-    try {
-      proc.stdin.write(inputJson);
-      proc.stdin.end();
+    proc.stdin.write(inputJson);
+    proc.stdin.end();
 
-      const output = await new Response(proc.stdout).text();
-      const errorOutput = await new Response(proc.stderr).text();
+    const output = await new Response(proc.stdout).text();
+    const errorOutput = await new Response(proc.stderr).text();
+    const exitCode = await proc.exited;
 
-      const exitCode = await proc.exited;
-
-      if (exitCode !== 0) {
-        throw new Error(
-          `Compute Engine Failed (Exit ${exitCode}): ${errorOutput}`,
-        );
-      }
-
-      if (!output.trim()) {
-        throw new Error("Compute Engine returned empty output.");
-      }
-
-      const parsed = JSON.parse(output) as ComputeResponse;
-      if (parsed.status === "fatal_error") {
-        throw new Error(`Compute Engine Fatal Error: ${parsed.message}`);
-      }
-
-      return parsed;
-    } catch (e) {
-      console.error("[ComputeEngineClient] Fatal evaluation error:");
-      console.error(e);
+    if (exitCode !== 0) {
       proc.kill();
-      throw e;
+      throw new Error(
+        `Compute Engine Failed (Exit ${exitCode}): ${errorOutput}`,
+      );
     }
+
+    if (!output.trim()) {
+      proc.kill();
+      throw new Error("Compute Engine returned empty output.");
+    }
+
+    const parsed = JSON.parse(output) as ComputeResponse;
+    if (parsed.status === "fatal_error") {
+      proc.kill();
+      throw new Error(`Compute Engine Fatal Error: ${parsed.message}`);
+    }
+
+    return parsed;
   }
 }

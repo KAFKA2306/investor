@@ -63,6 +63,41 @@ execution:
     feeBps: 1.0
     slippageBps: 0.5
 
+pipelineBlueprint:
+  stateMonitor:
+    regimeUpdateFrequencyMinutes: 60
+    volatilityLookbackDays: 20
+    regimeThreshold: 0.55
+    volatilityThreshold: 0.5
+  dataAcceptance:
+    minQualityScore: 0.82
+    minCoverageRate: 0.8
+    maxMissingRate: 0.08
+    maxLatencyMinutes: 40
+    requireLeakFree: true
+    minSourceConsistency: 0.9
+  researchDesign:
+    trainDays: 252
+    validationDays: 63
+    forwardDays: 63
+  verificationAcceptance:
+    minSharpe: 1.8
+    minIC: 0.04
+    maxDrawdown: 0.1
+    minAnnualizedReturn: 0.0
+  executionConstraints:
+    maxPositionWeight: 0.12
+    maxTurnover: 0.9
+    minLiquidityJpy: 100000000
+  executionQuality:
+    minFillRate: 0.95
+    maxSlippageBps: 2.0
+    maxExecutionLatencyMs: 3000
+  driftRetraining:
+    maxTrackingError: 0.03
+    maxRollingDrawdown: 0.12
+    minWinRate: 0.48
+
 alpha:
   edinet:
     gates:
