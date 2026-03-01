@@ -1,0 +1,27 @@
+{
+  "experiment": {
+    "missionId": "mining-1772349757297",
+    "status": "STUB",
+    "setup": {
+      "generations": 5,
+      "populationSize": 20,
+      "targetSymbols": "AUTO"
+    },
+    "knowledgebase": {
+      "dbPath": "logs/cache/alpha_knowledgebase.sqlite",
+      "counts": {
+        "documents": 1842,
+        "sections": 1841,
+        "market_daily": 843394,
+        "signals": 855,
+        "edinet_event_features": 0,
+        "macro_regime_daily": 0,
+        "signal_gate_decisions": 0,
+        "backtest_runs": 7,
+        "feature_versions": 4,
+        "signal_lineage": 855
+      }
+    },
+    "message": "This is a refactored stub for alpha mining experiments using the common providers."
+  }
+}
