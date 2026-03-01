@@ -1,5 +1,4 @@
 import type React from "react";
-import { SourceBadge } from "../components/SourceBadge";
 
 interface StatusBarProps {
   status: "active" | "emergency";
@@ -8,7 +7,6 @@ interface StatusBarProps {
   dataFingerprint?: string;
   runId?: string;
   environment?: string;
-  generatedAt?: string;
   activeTab: string;
   onTabChange: (tab: string) => void;
   onRefresh: () => void;
@@ -22,7 +20,6 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   dataFingerprint,
   runId,
   environment,
-  generatedAt,
   activeTab,
   onTabChange,
   onRefresh,
@@ -66,24 +63,15 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           updated:{lastUpdated}
         </span>
 
-        {/* TODO(human): 3指紋セット（code/data/run）をトップバーの限られたスペースにどう配置するか？
-            以下の hasFingerprints ブロックを実装してください。
-            選択肢:
-            A) SourceBadge をそのままインライン表示（幅を取るがデータ豊富）
-            B) commit hashのみpillで表示 + hoverでツールチップに残り2指紋
-            C) "🔍 Fingerprints" ボタンで展開/折り畳み
-            考慮事項: スクリーン幅 < 1220px ではトップバーが縦積みになる。
-            実装場所: hasFingerprints ブロック内（下記）。 */}
+        {/* Option B: Compact with Tooltip for space efficiency in topbar */}
         {hasFingerprints && commitHash && (
-          <SourceBadge
-            codeFingerprint={commitHash}
-            dataFingerprint={dataFingerprint}
-            runFingerprint={{
-              runId: runId ?? "—",
-              startedAt: generatedAt ?? new Date().toISOString(),
-              environment: environment ?? "unknown",
-            }}
-          />
+          <span
+            className="pill mono"
+            style={{ fontSize: "0.65rem", cursor: "help" }}
+            title={`Code: ${commitHash}\nData: ${dataFingerprint || "—"}\nRun: ${runId || "—"}\nEnv: ${environment || "—"}`}
+          >
+            git:{commitHash.slice(0, 7)}
+          </span>
         )}
 
         <span className={`pill ${status === "emergency" ? "risk" : "ready"}`}>

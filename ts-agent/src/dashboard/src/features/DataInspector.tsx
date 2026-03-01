@@ -15,12 +15,10 @@ import type { StandardVerificationData } from "../dashboard_core";
 
 interface DataInspectorProps {
   verificationData: StandardVerificationData | null;
-  onNavigate?: (page: string) => void;
 }
 
 export const DataInspector: React.FC<DataInspectorProps> = ({
   verificationData,
-  onNavigate,
 }) => {
   const [mode, setMode] = useState<"single" | "cross_section">("single");
   const [selectedSymbol, setSelectedSymbol] = useState<string>("");

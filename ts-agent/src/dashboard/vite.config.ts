@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const repoLogsDir = resolve(__dirname, "../../../logs");
+const dataDir = resolve(__dirname, "../../data");
 
 const json = (value: unknown) => JSON.stringify(value, null, 2);
 
@@ -19,8 +20,8 @@ const contentType = (path: string): string => {
 const normalizePath = (value: string): string =>
   value.replace(/^\/+/, "").replaceAll("\\", "/");
 
-const isSafePath = (fullPath: string): boolean => {
-  const normalizedRoot = resolve(repoLogsDir);
+const isSafePath = (root: string, fullPath: string): boolean => {
+  const normalizedRoot = resolve(root);
   const normalizedTarget = resolve(fullPath);
   return normalizedTarget.startsWith(normalizedRoot);
 };
@@ -48,7 +49,7 @@ const createLogsMiddleware =
       }
 
       const targetDir = resolve(repoLogsDir, normalizePath(bucket));
-      if (!isSafePath(targetDir)) {
+      if (!isSafePath(repoLogsDir, targetDir)) {
         res.statusCode = 403;
         res.end("forbidden");
         return;
@@ -72,7 +73,7 @@ const createLogsMiddleware =
 
     const relPath = normalizePath(url.pathname);
     const targetFile = resolve(repoLogsDir, relPath);
-    if (!isSafePath(targetFile)) {
+    if (!isSafePath(repoLogsDir, targetFile)) {
       res.statusCode = 403;
       res.end("forbidden");
       return;
@@ -90,18 +91,70 @@ const createLogsMiddleware =
     return;
   };
 
+const createVerificationMiddleware =
+  () =>
+  async (
+    req: IncomingMessage,
+    res: ServerResponse<IncomingMessage>,
+    next: () => void,
+  ) => {
+    if (!req.url || req.method !== "GET") {
+      next();
+      return;
+    }
+
+    const url = new URL(req.url, "http://localhost");
+    const relPath = normalizePath(url.pathname);
+    if (!relPath.endsWith(".json")) {
+      next();
+      return;
+    }
+
+    const fullPath = resolve(dataDir, relPath);
+    if (!isSafePath(dataDir, fullPath)) {
+      res.statusCode = 403;
+      res.end("forbidden");
+      return;
+    }
+
+    try {
+      const fileStat = await stat(fullPath);
+      if (!fileStat.isFile()) {
+        next();
+        return;
+      }
+      const data = await readFile(fullPath);
+      res.statusCode = 200;
+      res.setHeader("content-type", "application/json; charset=utf-8");
+      res.setHeader("cache-control", "no-store");
+      res.end(data);
+    } catch {
+      next();
+    }
+  };
+
 export default defineConfig({
   // GitHub Pages project site: https://<user>.github.io/investor/
   base: "/investor/",
   plugins: [
     react(),
     {
-      name: "serve-repo-logs",
+      name: "serve-repo-data",
       configureServer(server) {
-        server.middlewares.use("/logs", createLogsMiddleware());
+        const base = server.config.base.replace(/\/$/, "");
+        server.middlewares.use(`${base}/logs`, createLogsMiddleware());
+        server.middlewares.use(
+          `${base}/verification`,
+          createVerificationMiddleware(),
+        );
       },
       configurePreviewServer(server) {
-        server.middlewares.use("/logs", createLogsMiddleware());
+        const base = server.config.base.replace(/\/$/, "");
+        server.middlewares.use(`${base}/logs`, createLogsMiddleware());
+        server.middlewares.use(
+          `${base}/verification`,
+          createVerificationMiddleware(),
+        );
       },
     },
   ],

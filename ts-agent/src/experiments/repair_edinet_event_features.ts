@@ -1,11 +1,5 @@
 import { Database } from "bun:sqlite";
-import {
-  appendFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
   AlphaKnowledgebase,
@@ -17,7 +11,10 @@ import {
   parseCliArgs,
   requireIsoDate,
 } from "../providers/cli_args.ts";
-import { toSymbol4 } from "../providers/value_normalizers.ts";
+import {
+  parseIntelligenceMap,
+  toSymbol4,
+} from "../providers/value_normalizers.ts";
 import {
   type EdinetIoRepairReport,
   EdinetIoRepairReportSchema,
@@ -39,16 +36,6 @@ type CliArgs = {
   toDate?: string;
   symbols: Set<string>;
 };
-
-type IntelligencePoint = {
-  sentiment: number;
-  aiExposure: number;
-  kgCentrality: number;
-  correctionFlag: number;
-  correctionCount90d: number;
-};
-
-type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
 
 type MissingSignalRow = {
   signalId: string;
@@ -132,39 +119,6 @@ const parseArgs = (): CliArgs => {
   if (fromDate) args.fromDate = fromDate;
   if (toDate) args.toDate = toDate;
   return args;
-};
-
-const parseIntelligenceMap = (filePath: string): IntelligenceMap => {
-  const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<
-    string,
-    Record<string, Partial<IntelligencePoint>>
-  >;
-  const out: IntelligenceMap = {};
-  for (const [symbolRaw, byDate] of Object.entries(raw)) {
-    const symbol = toSymbol4(symbolRaw);
-    if (!/^\d{4}$/.test(symbol)) continue;
-    for (const [date, point] of Object.entries(byDate ?? {})) {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
-      if (!out[symbol]) out[symbol] = {};
-      out[symbol][date] = {
-        sentiment: Number.isFinite(Number(point.sentiment))
-          ? Number(point.sentiment)
-          : 0.5,
-        aiExposure: Number.isFinite(Number(point.aiExposure))
-          ? Math.max(0, Number(point.aiExposure))
-          : 0,
-        kgCentrality: Number.isFinite(Number(point.kgCentrality))
-          ? Math.max(0, Number(point.kgCentrality))
-          : 0,
-        correctionFlag: Number(point.correctionFlag ?? 0) > 0 ? 1 : 0,
-        correctionCount90d: Math.max(
-          0,
-          Math.floor(Number(point.correctionCount90d ?? 0)),
-        ),
-      };
-    }
-  }
-  return out;
 };
 
 const toDocId = (symbol: string, date: string): string =>

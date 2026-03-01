@@ -91,9 +91,10 @@ export const ScatterChart: React.FC<ScatterChartProps> = ({
             fill="var(--brand)"
             fillOpacity={0.6}
             shape="circle"
-            onClick={(e: any) => {
-              if (onClick && e?.symbol) {
-                onClick(e.symbol);
+            onClick={(e: unknown) => {
+              const event = e as { symbol: string };
+              if (onClick && event?.symbol) {
+                onClick(event.symbol);
               }
             }}
             style={{ cursor: onClick ? "pointer" : "default" }}

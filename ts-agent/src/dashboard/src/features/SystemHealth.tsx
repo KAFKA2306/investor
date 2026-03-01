@@ -83,14 +83,17 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
         <div className="panel section">
           <h3 className="quick-title">Provider Connectivity</h3>
           <div className="main" style={{ marginTop: "1rem" }}>
-            {providers.map(([name, data]: [string, any]) => (
-              <div key={name} className="health-row">
-                <span style={{ fontWeight: 600 }}>{name.toUpperCase()}</span>
-                <span className={`chip ${chipClass(data.status)}`}>
-                  {data.status}
-                </span>
-              </div>
-            ))}
+            {providers.map(([name, data]) => {
+              const d = data as { status: string };
+              return (
+                <div key={name} className="health-row">
+                  <span style={{ fontWeight: 600 }}>{name.toUpperCase()}</span>
+                  <span className={`chip ${chipClass(d.status)}`}>
+                    {d.status}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 

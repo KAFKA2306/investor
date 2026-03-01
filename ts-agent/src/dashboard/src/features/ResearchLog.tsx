@@ -16,6 +16,11 @@ interface ResearchLogProps {
   alphaDiscovery: Map<string, AlphaDiscoveryPayload[]>;
 }
 
+type CandidateLogEntry = AlphaDiscoveryPayload["candidates"][number] & {
+  date: string;
+  generatedAt: string;
+};
+
 export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
   const [filterStatus, setFilterStatus] = useState<
     "ALL" | "SELECTED" | "REJECTED"
@@ -24,7 +29,7 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
   const [showCompare, setShowCompare] = useState(false);
 
   const allCandidates = useMemo(() => {
-    const list: any[] = [];
+    const list: CandidateLogEntry[] = [];
     for (const [date, payloads] of alphaDiscovery.entries()) {
       for (const payload of payloads) {
         for (const candidate of payload.candidates) {
@@ -157,7 +162,9 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({ alphaDiscovery }) => {
               key={status}
               type="button"
               className={`tab-btn ${filterStatus === status ? "active" : ""}`}
-              onClick={() => setFilterStatus(status as any)}
+              onClick={() =>
+                setFilterStatus(status as "ALL" | "SELECTED" | "REJECTED")
+              }
             >
               {status}
             </button>

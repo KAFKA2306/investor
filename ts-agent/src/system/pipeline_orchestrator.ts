@@ -278,37 +278,32 @@ export class PipelineOrchestrator extends BaseAgent {
     verification: VerificationResult,
     requirement: PipelineRequirement,
   ): FinancialScores {
-    const _sharpe = verification.verification?.metrics?.sharpeRatio ?? 0;
-    const _ic = Math.abs(verification.alpha?.informationCoefficient ?? 0);
-    const _maxDD = Math.abs(
+    const sharpe = verification.verification?.metrics?.sharpeRatio ?? 0;
+    const ic = Math.abs(verification.alpha?.informationCoefficient ?? 0);
+    const maxDD = Math.abs(
       verification.verification?.metrics?.maxDrawdown ?? 1,
     );
     const annReturn = verification.verification?.metrics?.annualizedReturn ?? 0;
     const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.8;
-    const _minIC = requirement.targetMetrics?.minIC ?? 0.04;
-    const _maxDrawdown = requirement.targetMetrics?.maxDrawdown ?? 0.1;
+    const minIC = requirement.targetMetrics?.minIC ?? 0.04;
+    const maxDrawdownLimit = requirement.targetMetrics?.maxDrawdown ?? 0.1;
 
-    // TODO(human): Implement fitnessScore, stabilityScore, and adoptionScore.
-    // Each score must be in [0, 1] — clamp as needed with Math.min/Math.max.
-    //
-    // Available variables:
-    //   sharpe      – Sharpe ratio (higher = better, target: minSharpe = 1.8)
-    //   ic          – |Information Coefficient| (target: minIC = 0.04)
-    //   maxDD       – |max drawdown| (lower = better, target: <= maxDrawdown = 0.1)
-    //   annReturn   – annualized return (positive sign = good)
-    //   minSharpe, minIC, maxDrawdown – gate thresholds from requirement
-    //
-    // Hints:
-    //   fitnessScore:   blend normalized Sharpe + IC + drawdown fitness
-    //   stabilityScore: penalize deep drawdowns; reward positive annReturn sign
-    //   adoptionScore:  1.0 if ALL three gates pass; else 0.0 or proportional
-    const fitnessScore = 0;
-    const stabilityScore = 0;
-    const adoptionScore = 0;
+    // fitnessScore: blend normalized Sharpe + IC + drawdown fitness
+    // Sharpe: normalized by target (1.8), IC: normalized by target (0.04), DD: penalized if > 0.1
+    const sharpeFitness = Math.min(1.0, Math.max(0, sharpe / minSharpe));
+    const icFitness = Math.min(1.0, Math.max(0, ic / minIC));
+    const ddFitness = Math.max(0, 1.0 - maxDD / (maxDrawdownLimit * 2));
+    const fitnessScore =
+      sharpeFitness * 0.5 + icFitness * 0.3 + ddFitness * 0.2;
 
-    // Suppress unused-variable warnings until TODO(human) is implemented
-    void annReturn;
-    void minSharpe;
+    // stabilityScore: penalize deep drawdowns; reward positive annReturn sign
+    const stabilityScore =
+      Math.max(0, 1.0 - maxDD * 2) * (annReturn > 0 ? 1.0 : 0.5);
+
+    // adoptionScore: 1.0 if ALL three gates pass; else 0.0 or proportional
+    const passed =
+      sharpe >= minSharpe && ic >= minIC && maxDD <= maxDrawdownLimit;
+    const adoptionScore = passed ? 1.0 : 0.0;
 
     return {
       fitnessScore,
@@ -746,8 +741,8 @@ export class PipelineOrchestrator extends BaseAgent {
     if (result.failureType === "DATA") return "REJECTED_DATA";
     if (result.failureType === "MODEL") return "REJECTED_MODEL";
 
-    const _sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
-    const _ic = result.alpha?.informationCoefficient ?? 0;
+    const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
+    const ic = result.alpha?.informationCoefficient ?? 0;
     const maxDrawdownAbs = Math.abs(
       result.verification?.metrics?.maxDrawdown ?? 1,
     );
@@ -756,9 +751,9 @@ export class PipelineOrchestrator extends BaseAgent {
     const verifyDefaults = this.blueprint()?.verificationAcceptance;
     const minSharpe =
       requirement.targetMetrics?.minSharpe ?? verifyDefaults?.minSharpe ?? 1.5;
-    const _minIC =
+    const minIC =
       requirement.targetMetrics?.minIC ?? verifyDefaults?.minIC ?? 0.03;
-    const _maxDrawdown =
+    const maxDrawdownLimit =
       requirement.targetMetrics?.maxDrawdown ??
       verifyDefaults?.maxDrawdown ??
       0.1;
@@ -767,7 +762,7 @@ export class PipelineOrchestrator extends BaseAgent {
     if (
       sharpe >= minSharpe &&
       ic >= minIC &&
-      maxDrawdownAbs <= maxDrawdown &&
+      maxDrawdownAbs <= maxDrawdownLimit &&
       annualizedReturn >= minAnnualizedReturn
     ) {
       return "ADOPTED";
@@ -1024,6 +1019,43 @@ export class PipelineOrchestrator extends BaseAgent {
 
       await this.persistLog("cycle_summary", summary);
 
+      // Emit alpha_discovery log for loop script compatibility
+      const discoveryLog = {
+        schema: "investor.alpha-discovery.v3",
+        date: new Date().toISOString().slice(0, 10).replace(/-/g, ""),
+        generatedAt: new Date().toISOString(),
+        stage: "DISCOVERY_LOOP",
+        selected: adoptedIds,
+        selectedDetails: candidates
+          .filter((_, idx) => cycleResults[idx].verdict === "ADOPTED")
+          .map((c) => {
+            const resultIdx = candidates.indexOf(c);
+            const s = cycleResults[resultIdx].scores;
+            return {
+              id: c.id,
+              ideaHash: c.ideaHash,
+              featureSignature: c.featureSignature,
+              noveltyScore: s?.noveltyScore ?? 0.5,
+              adoptionScore: s?.adoptionScore ?? 0,
+            };
+          }),
+        candidates: candidates.map((c, idx) => ({
+          ...c,
+          status:
+            cycleResults[idx].verdict === "ADOPTED" ? "SELECTED" : "REJECTED",
+          scores: cycleResults[idx].scores
+            ? {
+                fitness: cycleResults[idx].scores!.fitnessScore,
+                stability: cycleResults[idx].scores!.stabilityScore,
+                novelty: cycleResults[idx].scores!.noveltyScore,
+                adoption: cycleResults[idx].scores!.adoptionScore,
+              }
+            : undefined,
+        })),
+        universe: requirement.universe,
+      };
+      await this.persistLog("alpha_discovery", discoveryLog);
+
       console.log(`🏁 [Loop] Iteration ${discoveryAttempts} finished.`);
     }
 
@@ -1194,9 +1226,9 @@ export class ElderBridge implements IElder {
       overall_score: result.reasoningScore || 0,
     });
 
-    const _sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
-    const _ic = Math.abs(result.alpha?.informationCoefficient ?? 0);
-    const _maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
+    const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
+    const ic = Math.abs(result.alpha?.informationCoefficient ?? 0);
+    const maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
     const passed = sharpe >= 1.8 && ic >= 0.04 && maxDD <= 0.1;
 
     const feedback = passed ? "HELPFUL" : "HARMFUL";
@@ -1255,7 +1287,6 @@ export class ElderBridge implements IElder {
     reason: string,
     metrics?: Metrics,
   ): Promise<void> {
-    await this.applyAceFeedback(strategyId, "HARMFUL", reason);
     this.pushMemoryEvent("STRATEGY_REJECTED", { strategyId, reason, metrics });
   }
 

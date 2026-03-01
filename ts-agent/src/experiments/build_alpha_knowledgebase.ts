@@ -1,4 +1,3 @@
-import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import {
   AlphaKnowledgebase,
@@ -9,6 +8,7 @@ import {
   type SignalInput,
   type SignalLineageInput,
 } from "../context/alpha_knowledgebase.ts";
+import { computeMaxDrawdown } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
   getNumberArg,
   getStringArg,
@@ -17,9 +17,13 @@ import {
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
   clamp,
+  type IntelligenceMap,
+  type IntelligencePoint,
   mean,
+  type NormalizedBar,
+  normalizeBars,
+  parseIntelligenceMap,
   std,
-  toIsoDate,
   toSymbol4,
 } from "../providers/value_normalizers.ts";
 import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
@@ -30,30 +34,6 @@ type CliArgs = {
   symbols: string[];
   alphaVersion: "v1" | "v2";
   dbPath?: string;
-};
-
-type IntelligencePoint = {
-  sentiment: number;
-  aiExposure: number;
-  kgCentrality: number;
-  correctionFlag: number;
-  correctionCount90d: number;
-};
-
-type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
-
-type NormalizedBar = {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
-};
-
-const toFiniteNumber = (value: unknown, defaultValue = 0): number => {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : defaultValue;
 };
 
 const parseArgs = (): CliArgs => {
@@ -83,59 +63,8 @@ const parseArgs = (): CliArgs => {
 const intelligenceMapPath = (): string =>
   join(paths.verificationRoot, "edinet_10k_intelligence_map.json");
 
-const loadIntelligenceMap = (): IntelligenceMap => {
-  const filePath = intelligenceMapPath();
-  if (!existsSync(filePath)) {
-    return {};
-  }
-  const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<
-    string,
-    Record<string, Partial<IntelligencePoint>>
-  >;
-  const result: IntelligenceMap = {};
-  for (const [symbolRaw, datedValues] of Object.entries(raw)) {
-    const symbol = toSymbol4(symbolRaw);
-    if (!/^\d{4}$/.test(symbol)) continue;
-    for (const [dateRaw, point] of Object.entries(datedValues)) {
-      const isoDate = toIsoDate(dateRaw);
-      if (!isoDate) continue;
-      if (!result[symbol]) result[symbol] = {};
-      result[symbol][isoDate] = {
-        sentiment: clamp(toFiniteNumber(point.sentiment, 0.5), 0, 1),
-        aiExposure: Math.max(0, toFiniteNumber(point.aiExposure, 0)),
-        kgCentrality: Math.max(0, toFiniteNumber(point.kgCentrality, 0)),
-        correctionFlag: Math.max(
-          0,
-          Math.min(1, Math.floor(toFiniteNumber(point.correctionFlag, 0))),
-        ),
-        correctionCount90d: Math.max(
-          0,
-          Math.floor(toFiniteNumber(point.correctionCount90d, 0)),
-        ),
-      };
-    }
-  }
-  return result;
-};
-
-const normalizeBars = (
-  rows: readonly Record<string, unknown>[],
-): NormalizedBar[] =>
-  rows
-    .map((row) => {
-      const dateRaw = String(row.Date ?? row.date ?? "");
-      const date = toIsoDate(dateRaw);
-      if (!date) return null;
-      const open = toFiniteNumber(row.Open, 0);
-      const high = toFiniteNumber(row.High, 0);
-      const low = toFiniteNumber(row.Low, 0);
-      const close = toFiniteNumber(row.Close, 0);
-      const volume = Math.max(0, toFiniteNumber(row.Volume, 0));
-      if (open <= 0 || high <= 0 || low <= 0 || close <= 0) return null;
-      return { date, open, high, low, close, volume };
-    })
-    .filter((row): row is NormalizedBar => row !== null)
-    .sort((left, right) => left.date.localeCompare(right.date));
+const loadIntelligenceMap = (): IntelligenceMap =>
+  parseIntelligenceMap(intelligenceMapPath());
 
 const computeRiskScore = (point: IntelligencePoint): number => {
   const sentimentRisk = 1 - clamp(point.sentiment, 0, 1);
@@ -153,19 +82,6 @@ const computeForwardReturn = (
   const target = bars[index + horizon]?.close ?? 0;
   if (base <= 0 || target <= 0) return 0;
   return target / base - 1;
-};
-
-const computeMaxDrawdown = (returns: readonly number[]): number => {
-  let cumulative = 1;
-  let runningPeak = 1;
-  let worstDrawdown = 0;
-  for (const r of returns) {
-    cumulative *= 1 + r;
-    runningPeak = Math.max(runningPeak, cumulative);
-    const drawdown = cumulative / runningPeak - 1;
-    worstDrawdown = Math.min(worstDrawdown, drawdown);
-  }
-  return worstDrawdown;
 };
 
 const featureDefinitions: readonly FeatureVersionInput[] = [

@@ -43,7 +43,7 @@ interface AlphaPassportCardProps {
   status: string;
   rejectReason?: string;
   featureSignature?: string;
-  ast?: any;
+  ast?: unknown;
 }
 
 export const AlphaPassportCard: React.FC<AlphaPassportCardProps> = ({

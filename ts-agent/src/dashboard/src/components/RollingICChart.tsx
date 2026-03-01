@@ -60,11 +60,14 @@ export const RollingICChart: React.FC<RollingICChartProps> = ({ data }) => {
               boxShadow: "var(--shadow)",
               fontSize: "12px",
             }}
-            formatter={(value: number, name: string, props: any) => {
+            formatter={(value: number, name: string, props: unknown) => {
               const valStr = value.toFixed(4);
-              const proxy = props.payload.proxy;
+              const p = props as {
+                payload: { proxy: { kind: string; note?: string } };
+              };
+              const proxy = p.payload.proxy;
               if (proxy && proxy.kind !== "none") {
-                return [`${valStr} (PROXY: ${proxy.note})`, name];
+                return [`${valStr} (PROXY: ${proxy.note || "N/A"})`, name];
               }
               return [valStr, name];
             }}

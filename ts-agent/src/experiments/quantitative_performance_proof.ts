@@ -1,4 +1,3 @@
-import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { calculatePerformanceMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
@@ -8,9 +7,10 @@ import {
 } from "../providers/cli_args.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
-  clamp,
+  type IntelligenceMap,
   mean,
-  toIsoDate,
+  normalizeBars,
+  parseIntelligenceMap,
   toSymbol4,
 } from "../providers/value_normalizers.ts";
 import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
@@ -22,25 +22,6 @@ type CliArgs = {
   dbPath?: string;
   from?: string;
   to?: string;
-};
-
-type IntelligencePoint = {
-  sentiment: number;
-  aiExposure: number;
-  kgCentrality: number;
-  correctionFlag: number;
-  correctionCount90d: number;
-};
-
-type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
-
-type NormalizedBar = {
-  date: string;
-  open: number;
-  high: number;
-  low: number;
-  close: number;
-  volume: number;
 };
 
 const parseArgs = (): CliArgs => {
@@ -69,57 +50,8 @@ const parseArgs = (): CliArgs => {
 const intelligenceMapPath = (): string =>
   join(paths.verificationRoot, "edinet_10k_intelligence_map.json");
 
-const loadIntelligenceMap = (): IntelligenceMap => {
-  const filePath = intelligenceMapPath();
-  if (!existsSync(filePath)) return {};
-  const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<
-    string,
-    Record<string, Partial<IntelligencePoint>>
-  >;
-  const result: IntelligenceMap = {};
-  for (const [symbolRaw, datedValues] of Object.entries(raw)) {
-    const symbol = toSymbol4(symbolRaw);
-    if (!/^\d{4}$/.test(symbol)) continue;
-    for (const [dateRaw, point] of Object.entries(datedValues)) {
-      const isoDate = toIsoDate(dateRaw);
-      if (!isoDate) continue;
-      if (!result[symbol]) result[symbol] = {};
-      result[symbol][isoDate] = {
-        sentiment: clamp(Number(point.sentiment ?? 0.5), 0, 1),
-        aiExposure: Math.max(0, Number(point.aiExposure ?? 0)),
-        kgCentrality: Math.max(0, Number(point.kgCentrality ?? 0)),
-        correctionFlag: Number(point.correctionFlag ?? 0) > 0 ? 1 : 0,
-        correctionCount90d: Math.max(
-          0,
-          Math.floor(Number(point.correctionCount90d ?? 0)),
-        ),
-      };
-    }
-  }
-  return result;
-};
-
-const normalizeBars = (
-  rows: readonly Record<string, unknown>[],
-): NormalizedBar[] =>
-  rows
-    .map((row) => {
-      const date = toIsoDate(String(row.Date ?? row.date ?? ""));
-      if (!date) return null;
-      const open = Number(row.Open ?? row.open ?? 0);
-      const close = Number(row.Close ?? row.close ?? 0);
-      if (open <= 0 || close <= 0) return null;
-      return {
-        date,
-        open,
-        high: Number(row.High ?? row.high ?? close),
-        low: Number(row.Low ?? row.low ?? close),
-        close,
-        volume: Number(row.Volume ?? row.volume ?? 0),
-      };
-    })
-    .filter((row): row is NormalizedBar => row !== null)
-    .sort((a, b) => a.date.localeCompare(b.date));
+const loadIntelligenceMap = (): IntelligenceMap =>
+  parseIntelligenceMap(intelligenceMapPath());
 
 async function run(): Promise<void> {
   const args = parseArgs();
@@ -183,7 +115,13 @@ async function run(): Promise<void> {
 
   const individualData: Record<
     string,
-    { prices: number[]; factors: number[]; positions: number[] }
+    {
+      symbol: string;
+      dates: string[];
+      prices: number[];
+      factors: number[];
+      positions: number[];
+    }
   > = {};
 
   // 最初の数銘柄だけでいいから、詳細データを詰め込むよっ！
@@ -193,6 +131,8 @@ async function run(): Promise<void> {
     if (bars.length < 2) continue;
 
     individualData[symbol] = {
+      symbol: symbol,
+      dates: bars.map((b) => String(b.date)),
       prices: bars.map((b) => b.close),
       factors: new Array(bars.length).fill(0.01), // ダミーの正の相関
       positions: new Array(bars.length).fill(1),

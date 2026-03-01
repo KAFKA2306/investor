@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from "node:fs";
+
+// ── 数値ユーティリティ ──────────────────────────────────────────────────────
 export function toSymbol4(value: string): string {
   return value.replace(".T", "").trim().slice(0, 4);
 }
@@ -29,4 +32,97 @@ export function std(values: readonly number[]): number {
   const variance =
     values.reduce((sum, value) => sum + (value - m) ** 2, 0) / values.length;
   return Math.sqrt(Math.max(variance, 0));
+}
+
+export const toFiniteNumber = (value: unknown, defaultValue = 0): number => {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : defaultValue;
+};
+
+// ── IntelligenceMap ──────────────────────────────────────────────────────────
+export type IntelligencePoint = {
+  sentiment: number;
+  aiExposure: number;
+  kgCentrality: number;
+  correctionFlag: number;
+  correctionCount90d: number;
+};
+
+export type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
+
+/**
+ * edinet_10k_intelligence_map.json を読み込んでパースするよ。
+ * ファイルが存在しない場合は空のマップを返すよっ。
+ */
+export function parseIntelligenceMap(filePath: string): IntelligenceMap {
+  if (!existsSync(filePath)) return {};
+  const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<
+    string,
+    Record<string, Partial<IntelligencePoint>>
+  >;
+  const result: IntelligenceMap = {};
+  for (const [symbolRaw, datedValues] of Object.entries(raw)) {
+    const symbol = toSymbol4(symbolRaw);
+    if (!/^\d{4}$/.test(symbol)) continue;
+    for (const [dateRaw, point] of Object.entries(datedValues ?? {})) {
+      const isoDate = toIsoDate(dateRaw) ?? dateRaw;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) continue;
+      if (!result[symbol]) result[symbol] = {};
+      result[symbol][isoDate] = {
+        sentiment: clamp(toFiniteNumber(point.sentiment, 0.5), 0, 1),
+        aiExposure: Math.max(0, toFiniteNumber(point.aiExposure, 0)),
+        kgCentrality: Math.max(0, toFiniteNumber(point.kgCentrality, 0)),
+        correctionFlag: Math.max(
+          0,
+          Math.min(1, Math.floor(toFiniteNumber(point.correctionFlag, 0))),
+        ),
+        correctionCount90d: Math.max(
+          0,
+          Math.floor(toFiniteNumber(point.correctionCount90d, 0)),
+        ),
+      };
+    }
+  }
+  return result;
+}
+
+// ── NormalizedBar ────────────────────────────────────────────────────────────
+export type NormalizedBar = {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+};
+
+/**
+ * マーケットデータの生行をNormalizedBarに変換して日付順にソートするよ。
+ * open/close が 0 以下の行は除外するよっ。
+ */
+export function normalizeBars(
+  rows: readonly Record<string, unknown>[],
+): NormalizedBar[] {
+  return rows
+    .map((row) => {
+      const dateRaw = String(row.Date ?? row.date ?? "");
+      const date = toIsoDate(dateRaw);
+      if (!date) return null;
+      const open = toFiniteNumber(row.Open ?? row.open, 0);
+      const high = toFiniteNumber(row.High ?? row.high, 0);
+      const low = toFiniteNumber(row.Low ?? row.low, 0);
+      const close = toFiniteNumber(row.Close ?? row.close, 0);
+      const volume = Math.max(0, toFiniteNumber(row.Volume ?? row.volume, 0));
+      if (open <= 0 || close <= 0) return null;
+      return {
+        date,
+        open,
+        high: high > 0 ? high : close,
+        low: low > 0 ? low : close,
+        close,
+        volume,
+      };
+    })
+    .filter((row): row is NormalizedBar => row !== null)
+    .sort((a, b) => a.date.localeCompare(b.date));
 }

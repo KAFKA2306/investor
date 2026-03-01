@@ -463,10 +463,10 @@ export type SourceResolver = (root: unknown, path: SourcePath) => unknown;
 export const resolveSourcePath: SourceResolver = (root, path) => {
   if (!root || !path) return undefined;
   const parts = path.split(".");
-  let current: any = root;
+  let current: unknown = root;
   for (const part of parts) {
     if (current == null || typeof current !== "object") return undefined;
-    current = current[part];
+    current = (current as Record<string, unknown>)[part];
   }
   return current;
 };
