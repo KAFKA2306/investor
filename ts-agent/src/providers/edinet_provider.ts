@@ -84,7 +84,11 @@ export class EdinetProvider {
     if (!core.config.providers.edinet.enabled) {
       throw new Error("[EDINET] Provider is disabled in config.");
     }
-    this.apiKey = core.getEnv("EDINET_API_KEY");
+    this.apiKey = core.getProviderCredential(
+      "edinet",
+      "apiKey",
+      "EDINET_API_KEY",
+    );
     this.cache = new SqliteHttpCache(
       join(core.config.paths.logs, "cache", "edinet_cache.sqlite"),
     );

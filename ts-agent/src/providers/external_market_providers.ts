@@ -12,7 +12,7 @@ export class EstatProvider {
     if (!core.config.providers.estat.enabled) {
       process.exit(1);
     }
-    this.appId = core.getEnv("ESTAT_APP_ID");
+    this.appId = core.getProviderCredential("estat", "appId", "ESTAT_APP_ID");
   }
 
   public async getStats(statsDataId: string): Promise<unknown> {
@@ -46,7 +46,11 @@ export class JQuantsProvider {
 
   constructor(options?: { cache?: SqliteHttpCache; cacheTtlMs?: number }) {
     if (!core.config.providers.jquants.enabled) process.exit(1);
-    this.apiKey = core.getEnv("JQUANTS_API_KEY");
+    this.apiKey = core.getProviderCredential(
+      "jquants",
+      "apiKey",
+      "JQUANTS_API_KEY",
+    );
     this.cache = options?.cache;
     this.cacheTtlMs = options?.cacheTtlMs ?? 5 * 60 * 1000;
   }

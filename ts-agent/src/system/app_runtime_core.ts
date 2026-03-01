@@ -39,9 +39,18 @@ const ConfigSchema = z.object({
     jquants: z.object({
       enabled: z.boolean(),
       apiKey: z.string().optional(),
+      apiKeyEnv: z.string().optional(),
     }),
-    edinet: z.object({ enabled: z.boolean() }),
-    estat: z.object({ enabled: z.boolean() }),
+    edinet: z.object({
+      enabled: z.boolean(),
+      apiKey: z.string().optional(),
+      apiKeyEnv: z.string().optional(),
+    }),
+    estat: z.object({
+      enabled: z.boolean(),
+      appId: z.string().optional(),
+      appIdEnv: z.string().optional(),
+    }),
     ai: z.object({ enabled: z.boolean() }),
     python: z
       .object({
@@ -171,6 +180,7 @@ class Core {
   public readonly eventStore: EventStore;
 
   constructor() {
+    this.loadEnvFromFiles();
     this.config = this.loadConfig();
     this.cache = new SqliteHttpCache(
       join(this.config.paths.logs, "cache", "http_cache.sqlite"),
@@ -182,6 +192,40 @@ class Core {
     this.eventStore = new EventStore(
       join(this.config.paths.logs, "cache", "uqtl.sqlite"),
     );
+  }
+
+  private loadEnvFromFiles(): void {
+    const envCandidates = [
+      resolve(import.meta.dir, "..", "..", "..", ".env"), // repo root
+      resolve(import.meta.dir, "..", "..", ".env"), // ts-agent/.env (legacy)
+    ];
+
+    for (const envPath of envCandidates) {
+      try {
+        const raw = readFileSync(envPath, "utf8");
+        for (const line of raw.split(/\r?\n/)) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith("#")) continue;
+          const m = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+          if (!m) continue;
+          const key = m[1];
+          if (!key) continue;
+          let value = m[2];
+          if (value === undefined) continue;
+          if (
+            (value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))
+          ) {
+            value = value.slice(1, -1);
+          }
+          if (process.env[key] === undefined) {
+            process.env[key] = value;
+          }
+        }
+      } catch {
+        // Optional env files: ignore missing/unreadable candidates.
+      }
+    }
   }
 
   private loadConfig(): Config {
@@ -219,6 +263,28 @@ class Core {
       throw new Error(`Environment variable ${key} is required but not found.`);
     }
     return value;
+  }
+
+  public getProviderCredential(
+    provider: "jquants" | "edinet" | "estat",
+    valueKey: "apiKey" | "appId",
+    defaultEnvKey: string,
+  ): string {
+    const providerConfig = this.config.providers[provider] as Record<
+      string,
+      unknown
+    >;
+    const configuredValue = providerConfig[valueKey];
+    if (typeof configuredValue === "string" && configuredValue.length > 0) {
+      return configuredValue;
+    }
+
+    const configuredEnvKey = providerConfig[`${valueKey}Env`];
+    const envKey =
+      typeof configuredEnvKey === "string" && configuredEnvKey.length > 0
+        ? configuredEnvKey
+        : defaultEnvKey;
+    return this.getEnv(envKey);
   }
 
   public getVenvPythonPath(): string {
