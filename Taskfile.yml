@@ -21,6 +21,12 @@ tasks:
       - cmd: npm install
         dir: "{{.DASHBOARD_DIR}}"
 
+  python:uv:sync:
+    desc: uv 環境同期
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - uv sync
+
   qa:
     desc: format + lint + typecheck
     dir: "{{.TS_DIR}}"
@@ -129,12 +135,12 @@ tasks:
       - bun run pipeline:mine
 
   pipeline:verification-plot:
-    desc: 監査プロット生成（JSON+4パネルPNG）
+    desc: バックテスト結果を可視化 (Python)
     dir: "{{.TS_DIR}}"
     cmds:
       - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); rm -f "$v/standard_verification_data.json"'
       - bun run experiments:verification-json
-      - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); VERIFICATION_DIR="$v" bun run experiments:verification-plot'
+      - bash -lc 'set -euo pipefail; v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); cache_root="${TMPDIR:-/tmp}/ts-agent-cache"; uv_cache_dir="$cache_root/uv"; mkdir -p "$cache_root" "$uv_cache_dir"; VERIFICATION_DIR="$v" UV_CACHE_DIR="$uv_cache_dir" XDG_CACHE_HOME="$cache_root" bun run experiments:verification-plot'
       - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); test -f "$v/standard_verification_data.json"'
       - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); f=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))[\"fileName\"])" "$v/standard_verification_data.json"); test -n "$f" && test -f "$v/$f"'
 
@@ -211,8 +217,13 @@ tasks:
           if [ -z "$nl_input" ] && [ -n "$nl_input_file" ] && [ -f "$nl_input_file" ]; then
             nl_input="$(cat "$nl_input_file")";
           fi;
-          seen_signatures_file="/tmp/uqtl_seen_selected_alpha_signatures.txt";
-          touch "$seen_signatures_file";
+          run_scope="$(date +%Y%m%dT%H%M%S)_$$";
+          seen_signatures_file="${UQTL_SEEN_SIGNATURES_FILE:-/tmp/uqtl_seen_selected_alpha_signatures_${run_scope}.txt}";
+          if [ -n "${UQTL_SEEN_SIGNATURES_FILE:-}" ]; then
+            touch "$seen_signatures_file";
+          else
+            : > "$seen_signatures_file";
+          fi;
           if [ "$max_cycles" -lt 1 ]; then
             max_cycles=1;
           fi;
