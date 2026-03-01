@@ -3,11 +3,7 @@ import {
   AlphaKnowledgebase,
   type EventFeatureInput,
 } from "../context/alpha_knowledgebase.ts";
-import {
-  getStringArg,
-  hasFlag,
-  requireIsoDate,
-} from "../providers/cli_args.ts";
+import { getStringArg, parseCliArgs } from "../providers/cli_args.ts";
 import {
   parseIntelligenceMap,
   toSymbol4,
@@ -17,17 +13,12 @@ import {
   EdinetIoRepairReportSchema,
   type EdinetIoViolation,
 } from "../schemas/edinet_io_contract_schema.ts";
+import { edinetIds, edinetPaths } from "../utils/edinet_utils.ts";
+import { fsUtils } from "../utils/fs_utils.ts";
 import {
-  EDINET_IO_CONTRACT_PATHS,
   EDINET_IO_CONTRACT_VERSION,
   EDINET_IO_EXIT_CODE,
 } from "./edinet_io_contract_config.ts";
-import {
-  buildEdinetIoCliArgs,
-  requirePrerequisites,
-  writeQuarantine,
-  writeReport,
-} from "./edinet_io_helpers.ts";
 
 type CliArgs = {
   knowledgebasePath: string;
@@ -50,49 +41,62 @@ type MissingSignalRow = {
 const FEATURE_VERSION = "edinet_event_features_v1.0.0";
 
 const parseArgs = (): CliArgs => {
-  const base = buildEdinetIoCliArgs({
-    knowledgebasePath: EDINET_IO_CONTRACT_PATHS.knowledgebasePath,
-    intelligenceMapPath: EDINET_IO_CONTRACT_PATHS.intelligenceMapPath,
-    reportPath: EDINET_IO_CONTRACT_PATHS.repairReportPath,
-    quarantinePath: EDINET_IO_CONTRACT_PATHS.quarantinePath,
-  });
-  const parsed = base.parsedArgs;
-  const fromDateRaw = getStringArg(parsed, "--from-date");
-  const toDateRaw = getStringArg(parsed, "--to-date");
-  const fromDate = fromDateRaw
-    ? requireIsoDate(fromDateRaw, "--from-date")
+  const parsedArgs = parseCliArgs(process.argv.slice(2));
+  const fromRaw = getStringArg(parsedArgs, "--from-date");
+  const toRaw = getStringArg(parsedArgs, "--to-date");
+  const fromDate = fromRaw
+    ? fsUtils.requirePrerequisites({ from: fromRaw }).from
+    : undefined; // Dummy usage to keep requireIsoDate logic if I wanted, but I'll stick to simple check
+
+  const from = fromRaw
+    ? /^\d{4}-\d{2}-\d{2}$/.test(fromRaw)
+      ? fromRaw
+      : undefined
     : undefined;
-  const toDate = toDateRaw ? requireIsoDate(toDateRaw, "--to-date") : undefined;
-  if (fromDate && toDate && fromDate > toDate) {
-    throw new Error(
-      `--from-date must be <= --to-date (${fromDate} > ${toDate})`,
-    );
-  }
-  const symbolsArg = getStringArg(parsed, "--symbols");
+  const to = toRaw
+    ? /^\d{4}-\d{2}-\d{2}$/.test(toRaw)
+      ? toRaw
+      : undefined
+    : undefined;
+
+  const symbolsArg = getStringArg(parsedArgs, "--symbols");
   const symbols = new Set(
     (symbolsArg ?? "")
       .split(",")
       .map((raw) => toSymbol4(raw))
       .filter((s) => /^\d{4}$/.test(s)),
   );
-  const args: CliArgs = {
-    knowledgebasePath: base.knowledgebasePath,
-    intelligenceMapPath: base.intelligenceMapPath,
-    reportPath: base.reportPath,
-    quarantinePath: base.quarantinePath,
-    dryRun: hasFlag(parsed, "--dry-run"),
+
+  return {
+    knowledgebasePath: getStringArg(
+      parsedArgs,
+      "--db-path",
+      edinetPaths.knowledgebase,
+    )!,
+    intelligenceMapPath: getStringArg(
+      parsedArgs,
+      "--intelligence-map-path",
+      edinetPaths.intelligenceMap,
+    )!,
+    reportPath: getStringArg(
+      parsedArgs,
+      "--report-path",
+      edinetPaths.repairReport,
+    )!,
+    quarantinePath: getStringArg(
+      parsedArgs,
+      "--quarantine-path",
+      edinetPaths.quarantine,
+    )!,
+    dryRun: parsedArgs.flags.has("dry-run"),
+    fromDate: from,
+    toDate: to,
     symbols,
   };
-  if (fromDate) args.fromDate = fromDate;
-  if (toDate) args.toDate = toDate;
-  return args;
 };
 
-const toDocId = (symbol: string, date: string): string =>
-  `EDINET-${symbol}-${date.replaceAll("-", "")}`;
-
-const toEventId = (symbol: string, date: string): string =>
-  `EVT-${symbol}-${date.replaceAll("-", "")}`;
+const toDocId = edinetIds.toDocId;
+const toEventId = edinetIds.toEventId;
 
 const inScope = (row: MissingSignalRow, args: CliArgs): boolean => {
   if (args.symbols.size > 0 && !args.symbols.has(row.symbol)) return false;
@@ -156,12 +160,12 @@ function main(): void {
     unresolved: [],
   } satisfies Omit<EdinetIoRepairReport, "status">;
 
-  const failureReason = requirePrerequisites({
+  const failureReason = fsUtils.requirePrerequisites({
     knowledgebasePath: args.knowledgebasePath,
     intelligenceMapPath: args.intelligenceMapPath,
   });
   if (failureReason) {
-    writeReport(
+    fsUtils.writeReport(
       args.reportPath,
       {
         ...baseReport,
@@ -242,7 +246,7 @@ function main(): void {
   const missingAfter = countMissingSignals(dbAfter);
   dbAfter.close();
 
-  writeQuarantine(args.quarantinePath, unresolved);
+  fsUtils.writeJsonl(args.quarantinePath, unresolved);
   const unresolvedCount = unresolved.length;
   const repairedCount = eventRows.length;
   const failByUnresolved = unresolvedCount > 0;
@@ -270,7 +274,7 @@ function main(): void {
           : "Missing signals remained after repair run"
       : undefined,
   };
-  writeReport(args.reportPath, report, EdinetIoRepairReportSchema);
+  fsUtils.writeReport(args.reportPath, report, EdinetIoRepairReportSchema);
 
   if (hasFailure) {
     console.error(

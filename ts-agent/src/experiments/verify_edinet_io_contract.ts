@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite";
-import { hasFlag } from "../providers/cli_args.ts";
+import { getStringArg, parseCliArgs } from "../providers/cli_args.ts";
 import { parseIntelligenceMap } from "../providers/value_normalizers.ts";
 import {
   type EdinetIoReport,
@@ -7,20 +7,14 @@ import {
   type EdinetIoViolation,
   type EdinetIoViolationCode,
 } from "../schemas/edinet_io_contract_schema.ts";
-import { readJsonl } from "../utils/fs_utils.ts";
+import { dbUtils } from "../utils/db_utils.ts";
+import { edinetPaths } from "../utils/edinet_utils.ts";
+import { fsUtils } from "../utils/fs_utils.ts";
 import {
-  EDINET_IO_CONTRACT_PATHS,
   EDINET_IO_CONTRACT_VERSION,
   EDINET_IO_EXIT_CODE,
   EDINET_IO_THRESHOLD_BY_CODE,
 } from "./edinet_io_contract_config.ts";
-import {
-  buildEdinetIoCliArgs,
-  countRows,
-  requirePrerequisites,
-  writeQuarantine,
-  writeReport,
-} from "./edinet_io_helpers.ts";
 
 type CliArgs = {
   knowledgebasePath: string;
@@ -38,18 +32,25 @@ type IntelligencePoint = {
 type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
 
 const parseArgs = (): CliArgs => {
-  const base = buildEdinetIoCliArgs({
-    knowledgebasePath: EDINET_IO_CONTRACT_PATHS.knowledgebasePath,
-    intelligenceMapPath: EDINET_IO_CONTRACT_PATHS.intelligenceMapPath,
-    reportPath: EDINET_IO_CONTRACT_PATHS.reportPath,
-    quarantinePath: EDINET_IO_CONTRACT_PATHS.quarantinePath,
-  });
+  const parsedArgs = parseCliArgs(process.argv.slice(2));
   return {
-    knowledgebasePath: base.knowledgebasePath,
-    intelligenceMapPath: base.intelligenceMapPath,
-    reportPath: base.reportPath,
-    quarantinePath: base.quarantinePath,
-    quarantineOnly: hasFlag(base.parsedArgs, "--quarantine-only"),
+    knowledgebasePath: getStringArg(
+      parsedArgs,
+      "--db-path",
+      edinetPaths.knowledgebase,
+    )!,
+    intelligenceMapPath: getStringArg(
+      parsedArgs,
+      "--intelligence-map-path",
+      edinetPaths.intelligenceMap,
+    )!,
+    reportPath: getStringArg(parsedArgs, "--report-path", edinetPaths.report)!,
+    quarantinePath: getStringArg(
+      parsedArgs,
+      "--quarantine-path",
+      edinetPaths.quarantine,
+    )!,
+    quarantineOnly: parsedArgs.flags.has("quarantine-only"),
   };
 };
 
@@ -72,7 +73,9 @@ const scopedViolationFilter = (
 ): EdinetIoViolation[] => {
   if (!quarantineOnly) return [...violations];
   const keys = new Set<string>();
-  for (const v of readJsonl<Partial<EdinetIoViolation>>(quarantinePath)) {
+  for (const v of fsUtils.readJsonl<Partial<EdinetIoViolation>>(
+    quarantinePath,
+  )) {
     if (v.signalId) keys.add(`signal:${v.signalId}`);
     if (v.eventId) keys.add(`event:${v.eventId}`);
     if (v.symbol && v.date) keys.add(`symdate:${v.symbol}:${v.date}`);
@@ -109,7 +112,7 @@ function main(): void {
     violations: [],
   } satisfies Omit<EdinetIoReport, "status">;
 
-  const missingReason = requirePrerequisites({
+  const missingReason = fsUtils.requirePrerequisites({
     knowledgebasePath: args.knowledgebasePath,
     intelligenceMapPath: args.intelligenceMapPath,
   });
@@ -119,7 +122,7 @@ function main(): void {
       status: "missing_prerequisite",
       failureReason: missingReason,
     };
-    writeReport(args.reportPath, report, EdinetIoReportSchema);
+    fsUtils.writeReport(args.reportPath, report, EdinetIoReportSchema);
     console.error(
       `❌ EDINET I/O verify prerequisite missing: ${missingReason}`,
     );
@@ -329,25 +332,25 @@ function main(): void {
     ...baseReport,
     status: hasBlockingViolation ? "fail" : "pass",
     totals: {
-      signals: countRows(db, "signals"),
-      eventFeatures: countRows(db, "edinet_event_features"),
-      lineageRows: countRows(db, "signal_lineage"),
-      documents: countRows(db, "documents"),
+      signals: dbUtils.count(db, "signals"),
+      eventFeatures: dbUtils.count(db, "edinet_event_features"),
+      lineageRows: dbUtils.count(db, "signal_lineage"),
+      documents: dbUtils.count(db, "documents"),
     },
     violationCountByCode,
     violations: scopedViolations,
   };
   db.close();
 
-  writeReport(args.reportPath, report, EdinetIoReportSchema);
+  fsUtils.writeReport(args.reportPath, report, EdinetIoReportSchema);
   if (hasBlockingViolation) {
-    writeQuarantine(args.quarantinePath, scopedViolations);
+    fsUtils.writeJsonl(args.quarantinePath, scopedViolations);
     console.error(
       `❌ EDINET I/O contract failed: violations=${scopedViolations.length}, report=${args.reportPath}`,
     );
     process.exit(EDINET_IO_EXIT_CODE.VIOLATION);
   }
-  writeQuarantine(args.quarantinePath, []);
+  fsUtils.writeJsonl(args.quarantinePath, []);
   console.log(
     `✅ EDINET I/O contract passed: violations=0, report=${args.reportPath}`,
   );

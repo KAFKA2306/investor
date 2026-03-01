@@ -59,6 +59,17 @@ export function requirePrerequisites(
 }
 
 /**
+ * バリデーション済みのレポートを、指定のパスにかわいく保存するよっ！📊✨
+ */
+export function writeReport<T>(
+  targetPath: string,
+  report: T,
+  schema?: z.Schema<T>,
+): void {
+  writeValidatedJson(targetPath, report, schema);
+}
+
+/**
  * ファイル操作の可愛い相棒、fsUtilsだよっ！📁💖
  */
 export const fsUtils = {
@@ -68,4 +79,5 @@ export const fsUtils = {
   writeValidatedJson,
   readJsonFile,
   requirePrerequisites,
+  writeReport,
 };
