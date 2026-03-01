@@ -1,0 +1,318 @@
+{
+  "schema": "investor.log-envelope.v2",
+  "id": "31dd0ebc-652d-4fa0-a163-ae73ea192b1b",
+  "runId": "uqtl_20260301T154101_3",
+  "kind": "alpha_discovery",
+  "asOfDate": "20260301",
+  "generatedAt": "2026-03-01T06:41:05.256Z",
+  "producer": {
+    "component": "experiments.alpha_mining_experiments.discoverAlphaFactors"
+  },
+  "payload": {
+    "schema": "investor.alpha-discovery.v3",
+    "date": "20260301",
+    "generatedAt": "2026-03-01T06:41:05.256Z",
+    "stage": "DISCOVERY_PRECHECK",
+    "scoreType": "LINGUISTIC_PRECHECK",
+    "evidence": {
+      "sampleSize": 2,
+      "selectedCount": 1,
+      "selectionRate": 0.5,
+      "selectedNovelCount": 1,
+      "openAIThemeUsage": 0
+    },
+    "quality": {
+      "completeness": "COMPLETE",
+      "missingFields": []
+    },
+    "selected": [
+      "ALPHA-HFT-6216235B"
+    ],
+    "selectedDetails": [
+      {
+        "id": "ALPHA-HFT-6216235B",
+        "ideaHash": "72b8af00bb413a75ea0215d0",
+        "featureSignature": [
+          "low",
+          "segment_sentiment",
+          "volume"
+        ],
+        "noveltyScore": 0.8461538461538461,
+        "adoptionScore": 0.6246153846153846,
+        "themeSource": "LOCAL",
+        "llmModel": ""
+      }
+    ],
+    "candidates": [
+      {
+        "id": "ALPHA-HFT-141AD43E",
+        "description": "Information Asymmetry Hypothesis (HFT Engineer)",
+        "reasoning": "CLAIM: High-precision latency forecasting using Information Asymmetry. [REASONING] A leakage model that uses insider to filter noise during skewness periods. Proposed by HFT Engineer.",
+        "status": "REJECTED",
+        "rejectReason": "FRA: Linguistic plausibility too low. Hypothesis lacks clear economic anchoring.",
+        "recency": "2026-03-01T06:41:05.256Z",
+        "scores": {
+          "priority": 0.5442307692307693,
+          "plausibility": 0.45,
+          "riskAdjusted": 0.5,
+          "novelty": 0.8461538461538461,
+          "fitness": 0.475,
+          "stability": 0.4875,
+          "adoption": 0.6046153846153848
+        },
+        "ideaHash": "d035f6dd7bd29b14ac00872b",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "close",
+          "open"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 1,
+        "mutationType": "NEW_SEED",
+        "ast": {
+          "type": "operator",
+          "name": "DIV",
+          "left": {
+            "type": "operator",
+            "name": "SMA",
+            "left": {
+              "type": "variable",
+              "name": "close"
+            },
+            "right": {
+              "type": "constant",
+              "value": 7
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "DIV",
+            "left": {
+              "type": "variable",
+              "name": "open"
+            },
+            "right": {
+              "type": "variable",
+              "name": "close"
+            }
+          }
+        }
+      },
+      {
+        "id": "ALPHA-HFT-6216235B",
+        "description": "[EVOLVED] Shift (MALE): [EVOLVED] Crossover [v3]",
+        "reasoning": "[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-FUNDAMENTAL-D4E5221B. Focusing on explorative diversity.",
+        "status": "SELECTED",
+        "recency": "2026-03-01T06:41:05.256Z",
+        "scores": {
+          "priority": 0.5692307692307692,
+          "plausibility": 0.5,
+          "riskAdjusted": 0.5,
+          "novelty": 0.8461538461538461,
+          "fitness": 0.5,
+          "stability": 0.5,
+          "adoption": 0.6246153846153846
+        },
+        "ideaHash": "72b8af00bb413a75ea0215d0",
+        "isNovelAgainstHistory": true,
+        "featureSignature": [
+          "low",
+          "segment_sentiment",
+          "volume"
+        ],
+        "themeSource": "LOCAL",
+        "llmModel": "",
+        "generation": 3,
+        "parentId": "ALPHA-FUNDAMENTAL-D4E5221B",
+        "mutationType": "STRUCTURAL_SHIFT",
+        "ast": {
+          "type": "operator",
+          "name": "ADD",
+          "left": {
+            "type": "operator",
+            "name": "LAG",
+            "left": {
+              "type": "operator",
+              "name": "MUL",
+              "left": {
+                "type": "variable",
+                "name": "segment_sentiment"
+              },
+              "right": {
+                "type": "variable",
+                "name": "low"
+              }
+            },
+            "right": {
+              "type": "constant",
+              "value": 1
+            }
+          },
+          "right": {
+            "type": "operator",
+            "name": "ADD",
+            "left": {
+              "type": "operator",
+              "name": "LAG",
+              "left": {
+                "type": "variable",
+                "name": "volume"
+              },
+              "right": {
+                "type": "constant",
+                "value": 7
+              }
+            },
+            "right": {
+              "type": "operator",
+              "name": "SMA",
+              "left": {
+                "type": "variable",
+                "name": "volume"
+              },
+              "right": {
+                "type": "constant",
+                "value": 5
+              }
+            }
+          }
+        }
+      }
+    ],
+    "universe": [
+      "1333",
+      "1377",
+      "1379",
+      "1407",
+      "1417",
+      "1605",
+      "1663",
+      "1719",
+      "1721",
+      "1766",
+      "1786",
+      "1801",
+      "1802",
+      "1803",
+      "1805",
+      "1808",
+      "1812",
+      "1813",
+      "1815",
+      "1822",
+      "1833",
+      "1852",
+      "1860",
+      "1879",
+      "1882",
+      "1885",
+      "1887",
+      "1899",
+      "1934",
+      "1941",
+      "1944",
+      "1945",
+      "1959",
+      "1963",
+      "1973",
+      "1979",
+      "2001",
+      "2002",
+      "2127",
+      "2148",
+      "2153",
+      "2154",
+      "2160",
+      "2168",
+      "2170",
+      "2193",
+      "2217",
+      "2282",
+      "2292",
+      "2296",
+      "2317",
+      "2326",
+      "2327",
+      "2337",
+      "2379",
+      "2412",
+      "2427",
+      "2433",
+      "2489",
+      "2492",
+      "2501",
+      "2531",
+      "2579",
+      "2587",
+      "2594",
+      "2607",
+      "2664",
+      "2678",
+      "2681",
+      "2715",
+      "2730",
+      "2733",
+      "2734",
+      "2737",
+      "2752",
+      "2760",
+      "2767",
+      "2768",
+      "2784",
+      "2801",
+      "2809",
+      "2810",
+      "2871",
+      "2914",
+      "2930",
+      "2933",
+      "2980",
+      "3002",
+      "3036",
+      "3040",
+      "3046",
+      "3048",
+      "3076",
+      "3088",
+      "3097",
+      "3099",
+      "3105",
+      "3106",
+      "3116",
+      "3134",
+      "3156",
+      "3167",
+      "3180",
+      "3182",
+      "3222",
+      "3254",
+      "3289",
+      "3319",
+      "3328",
+      "3349",
+      "3371",
+      "3377",
+      "3387",
+      "3391",
+      "3397",
+      "3401",
+      "3407",
+      "3436",
+      "3479",
+      "3482"
+    ],
+    "startedAt": "2026-03-01T06:41:05.194Z",
+    "input": {
+      "channel": "task",
+      "nlInputProvided": false,
+      "nlInputHash": "",
+      "nlInputPreview": ""
+    }
+  },
+  "derived": false,
+  "lineage": {
+    "sourceSchema": "investor.alpha-discovery.v3",
+    "sourceBucket": "unified"
+  }
+}
