@@ -4,8 +4,10 @@
 **お誕生日**: 2026年2月（arXiv:2602.14670）  
 **解決したい困りごと**: AIが「なぜダメだったか」をすぐ忘れちゃって、同じ失敗を繰り返すのを直したいんだよっ 💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [FactorMiner: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2602.14670?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2602.14670](https://arxiv.org/abs/2602.14670) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2602.14670?lang=ja](https://www.alphaxiv.org/abs/2602.14670?lang=ja) ✨
+
 
 ---
 

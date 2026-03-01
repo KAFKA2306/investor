@@ -4,8 +4,10 @@
 **お誕生日**: 2025年10月（arXiv:2510.08068）  
 **解決したい困りごと**: 一度作った戦略が相場変化ですぐ弱くなる問題に、継続適応で立ち向かいたいんだよっ ⚙️₿
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [Adaptive Multi Agent Bitcoin: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2510.08068?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2510.08068](https://arxiv.org/abs/2510.08068) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2510.08068?lang=ja](https://www.alphaxiv.org/abs/2510.08068?lang=ja) ✨
+
 
 ---
 

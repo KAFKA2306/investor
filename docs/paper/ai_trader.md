@@ -4,8 +4,10 @@
 **お誕生日**: 2025年12月（arXiv:2512.10971）  
 **解決したい困りごと**: 学習データ混入で「見かけの高成績」が出る問題を減らして、本当に使えるトレーディングAIを作りたいんだよっ 🧯📉
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [AI-Trader: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2512.10971?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2512.10971](https://arxiv.org/abs/2512.10971) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2512.10971?lang=ja](https://www.alphaxiv.org/abs/2512.10971?lang=ja) ✨
+
 
 ---
 

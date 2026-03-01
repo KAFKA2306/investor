@@ -1,12 +1,12 @@
 # 🎀 エグゼクティブサマリー：ALPHAAGENTEVO ✨
 
 **フルネーム**: *ALPHAAGENTEVO: Evolution-Oriented Alpha Mining via Self-Evolving Agentic Reinforce*  
-**お誕生日**: 2025年後半（ICLR 2026 投稿中っ！）  
+**お誕生日**: 2025年3月（arXiv:2503.09516）  
 **解決したい困りごと**: 一度作ったアルファをそのままにするんじゃなくて、市場のフィードバックを受けて「もっと強く！」って自分で成長してほしいんだよっ 📈⚡
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [ALPHAAGENTEVO: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2512.30007?lang=ja) ✨
-*(※注：URLは例示だよっ！最新の「自己進化」トレンドに基づいているよっ 🎀)*
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2503.09516](https://arxiv.org/abs/2503.09516) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2503.09516?lang=ja](https://www.alphaxiv.org/abs/2503.09516?lang=ja) ✨
 
 ---
 

@@ -4,8 +4,10 @@
 **お誕生日**: 2023年-2025年（arXiv:2308.00016）  
 **解決したい困りごと**: AIだけに任せるのは少し不安だし、人間の「勘」も上手にミックスして最強になりたいんだよっ 🤝✨
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [Alpha-GPT: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2308.00016?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2308.00016](https://arxiv.org/abs/2308.00016) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2308.00016?lang=ja](https://www.alphaxiv.org/abs/2308.00016?lang=ja) ✨
+
 
 ---
 

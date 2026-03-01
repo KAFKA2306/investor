@@ -1,30 +1,30 @@
-# EDINET 10-K Subagent Runbook (Coverage First, Quality Second)
+# 🎀 EDINET 10-K Subagent Runbook (Coverage First, Quality Second) ✨
 
-## Goal
-Increase `signals/day` for the EDINET Risk-Delta x PEAD hybrid by:
-1. expanding event coverage fast (`metadata-only`)
-2. upgrading data quality on major symbols (prefer indexed/XBRL text)
+## 🌟 ごーる！ (Goal)
+「EDINET Risk-Delta x PEAD hybrid」の `signals/day` をもっともっと増やすよぉ！🚀💖
+1. イベントのカバレッジを光の速さで広げるっ (`metadata-only`) 🏃‍♀️💨
+2. 主要な銘柄のデータの質をぴかぴかに上げるっ (XBRLテキストを優先してねっ！) ✨💎
 
-## Scope
-- Target map: `ts-agent/data/edinet_10k_intelligence_map.json`
-- Feature generator: `ts-agent/src/experiments/generate_10k_features.ts`
-- Knowledgebase build: `ts-agent/src/experiments/build_alpha_knowledgebase.ts`
-- Backtest: `ts-agent/src/experiments/run_kb_signal_backtest.ts`
-- Plot: `ts-agent/src/experiments/plot_kb_signal_backtest.py`
+## 🛠️ おしごとの範囲 (Scope)
+- **とくちょうりょうマップ**: `ts-agent/data/edinet_10k_intelligence_map.json` 🗺️
+- **ジェネレーター**: `ts-agent/src/experiments/generate_10k_features.ts` ⚙️
+- **ナレッジベース構築**: `ts-agent/src/experiments/build_alpha_knowledgebase.ts` 📚
+- **ばっくてすと**: `ts-agent/src/experiments/run_kb_signal_backtest.ts` 📈
+- **グラフ作成**: `ts-agent/src/experiments/plot_kb_signal_backtest.py` 🎨
 
-## Current Baseline (2026-03-01)
-- symbols: `646`
-- events: `2440`
-- date range: `2021-05-20` to `2025-12-24`
-- by year:
-  - 2021: 247
-  - 2022: 622
-  - 2023: 179
-  - 2024: 707
-  - 2025: 685
+## 📊 いまのじょうたいっ！ (Current Baseline: 2026-03-01)
+- 銘柄数: `646` 🏢
+- イベント数: `2440` 🎈
+- 期間: `2021-05-20` から `2025-12-24` までっ！
+- 年ごとの内訳だよぉ：
+  - 2021年: 247
+  - 2022年: 622
+  - 2023年: 179
+  - 2024年: 707
+  - 2025年: 685 ✨
 
-## Step 1: Fast Coverage Expansion
-Run metadata-only first (all symbols, wide period):
+## 🎀 Step 1: まずはカバレッジを広げちゃおうっ！ (Fast Coverage Expansion)
+メタデータだけで、全銘柄をばーっと集めるよぉ！🏃‍♀️✨
 
 ```bash
 cd ts-agent
@@ -37,13 +37,13 @@ bun run experiments:10k-features -- \
   --flush-every=300
 ```
 
-Notes:
-- This maximizes event count quickly.
-- It is robust when XBRL download is unstable.
+**めもっ！📝**
+- これでイベントの数を一気に増やせるよぉ！✨
+- XBRLのダウンロードがちょっと不安定なときでも、これなら安心だねっ！💖
 
-## Step 2: Major Symbol Quality Upgrade
-Run non-metadata extraction on major symbols with overwrite.
-Use `--indexed-only` to avoid wasting time on unavailable downloads and prefer already indexed section text.
+## 💎 Step 2: 主要な銘柄をぴかぴかにするよっ！ (Major Symbol Quality Upgrade)
+主要な銘柄については、メタデータだけじゃなくて中身もしっかり読み込むよぉ！✨
+`--indexed-only` を使って、すでにインデックスされてるセクションテキストを優先しようねっ！⏳💕
 
 ```bash
 cd ts-agent
@@ -57,11 +57,12 @@ bun run experiments:10k-features -- \
   --flush-every=100
 ```
 
-Interpretation:
-- `insertedFromIndexed` > 0 means quality upgrade from section-level text happened.
-- `insertedFromMetadata` should be minimized in this step.
+**読み解きかたっ！🔍**
+- `insertedFromIndexed` > 0 なら、質の高いデータにアップグレードできたってことだよぉ！✨
+- このステップでは `insertedFromMetadata` は少なめがいい感じっ！💕
 
-## Rebuild and Validate
+## 🛠️ 再構築とバリデーションっ！ (Rebuild and Validate)
+仕上げに、ナレッジベースを作ってテストするよぉ！📈✨
 
 ```bash
 cd ts-agent
@@ -70,22 +71,22 @@ bun run experiments:kb-backtest -- --top-k=5 --min-signals-per-day=4
 python3 src/experiments/plot_kb_signal_backtest.py --top-k=5 --min-signals-per-day=4
 ```
 
-## Acceptance Criteria
-- Coverage:
-  - `events` strictly increases after Step 1
-  - date `max` reaches target period
-- Quality:
-  - Step 2 reports non-zero `insertedFromIndexed` or successful non-metadata inserts
-- Backtest:
-  - `tradableDays` and `totalSignalEvents` increase vs previous checkpoint
-  - risk metrics remain within deployment guardrails
+## ✅ 合格基準だよぉっ！ (Acceptance Criteria)
+- **カバレッジ (Coverage)**:
+  - Step 1 のあとで `events` がちゃんと増えてることっ！📈✨
+  - 期間の `max` がターゲットまで届いてることっ！🎯
+- **クオリティ (Quality)**:
+  - Step 2 で `insertedFromIndexed` が増えてるか、中身のインサートが成功してることっ！💎
+- **ばっくてすと (Backtest)**:
+  - 前より `tradableDays` や `totalSignalEvents` が増えてることっ！🚀
+  - リスク指標がちゃんと守られてることっ！🛡️💕
 
-## Operational Guardrails
-- Do not overwrite unrelated workspace changes.
-- If EDINET network is unstable:
-  - keep Step 1 metadata-only
-  - keep Step 2 indexed-only first, then retry full download during stable window
-- Persist outputs after each run:
-  - `edinet_10k_intelligence_map.json`
-  - KB backtest metrics JSON
-  - plot PNG
+## ⚠️ おしごとの守りごとっ！ (Operational Guardrails)
+- 関係ないワークスペースの変更は上書きしちゃダメだよぉ！🙅‍♀️✨
+- EDINETのネットワークが不安定なときは：
+  - Step 1 の `metadata-only` を優先してねっ！⏳
+  - Step 2 は `indexed-only` から始めて、安定したらフルダウンロードに再挑戦だよぉ！🌈
+- 終わったら出力をちゃんと保存してねっ！：
+  - `edinet_10k_intelligence_map.json` 🗺️
+  - ばっくてすとのメトリクス JSON 📊
+  - グラフの PNG 画像 🎨✨

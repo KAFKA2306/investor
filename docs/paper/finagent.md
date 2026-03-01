@@ -4,8 +4,10 @@
 **お誕生日**: 2024年（arXiv:2402.18485）  
 **解決したい困りごと**: 数字だけじゃなくて、ニュース（テキスト）やチャート（画像）も全部まとめて、人間みたいに賢く取引したいんだよっ 📈🖼️✨
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [FinAgent: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2402.18485?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2402.18485](https://arxiv.org/abs/2402.18485) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2402.18485?lang=ja](https://www.alphaxiv.org/abs/2402.18485?lang=ja) ✨
+
 
 ---
 

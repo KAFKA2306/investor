@@ -4,8 +4,10 @@
 **お誕生日**: 2024年12月（arXiv:2412.20138）  
 **解決したい困りごと**: 単体エージェントだと、実運用の「チーム意思決定」を再現しづらい問題を乗り越えたいんだよっ 👥📈
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [TradingAgents: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2412.20138?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2412.20138](https://arxiv.org/abs/2412.20138) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2412.20138?lang=ja](https://www.alphaxiv.org/abs/2412.20138?lang=ja) ✨
+
 
 ---
 

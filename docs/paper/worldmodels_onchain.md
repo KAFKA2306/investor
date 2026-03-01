@@ -4,8 +4,10 @@
 **お誕生日**: 2025年-2026年（次元を超えたリサーチっ！）  
 **解決した困りごと**: 株価だけ見ててもダメ！世界全体のつながりや、ブロックチェーン上の「影の動き」も全部可視化したいんだよっ 🌍🔗💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [LWM Finance: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2511.05158?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2511.05158](https://arxiv.org/abs/2511.05158) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2511.05158?lang=ja](https://www.alphaxiv.org/abs/2511.05158?lang=ja) ✨
+
 *(※注：URLは PINNs と関連した Lang-PINN LWM 論文の例示だよっ 🎀)*
 
 ---

@@ -4,8 +4,10 @@
 **お誕生日**: 2025年12月（arXiv:2512.23515）  
 **解決したい困りごと**: 「アルファの数式はいっぱいあるけど、どれが今本当に効くの？」という、数式の「善し悪し」を判断する審査員がほしいんだよっ ⚖️💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [Alpha-R1: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2512.23515?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2512.23515](https://arxiv.org/abs/2512.23515) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2512.23515?lang=ja](https://www.alphaxiv.org/abs/2512.23515?lang=ja) ✨
+
 
 ---
 

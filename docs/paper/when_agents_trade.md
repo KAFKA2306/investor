@@ -4,8 +4,10 @@
 **お誕生日**: 2025年10月（arXiv:2510.11695）  
 **解決したい困りごと**: ベンチマーク上では強いのに、実際の市場に近い環境だと再現しない問題を解きたいんだよっ 🧪💹
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [When Agents Trade: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2510.11695?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2510.11695](https://arxiv.org/abs/2510.11695) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2510.11695?lang=ja](https://www.alphaxiv.org/abs/2510.11695?lang=ja) ✨
+
 
 ---
 

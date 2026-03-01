@@ -6,8 +6,10 @@
 
 ---
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [EDINET Governance Alpha: 日本語解説ページはこちらっ！](file:///home/kafka/finance/investor/docs/research/governance_vulnerability_alpha_paper.md) ✨
+## 📖 関連論文・資料を詳しく読むっ！
+✨ **EDINET-Bench**: [arXiv:2506.08762](https://arxiv.org/abs/2506.08762) / [alphaXiv](https://www.alphaxiv.org/abs/2506.08762?lang=ja) ✨  
+✨ **Alpha-R1**: [arXiv:2512.23515](https://arxiv.org/abs/2512.23515) / [alphaXiv](https://www.alphaxiv.org/abs/2512.23515?lang=ja) ✨  
+✨ **詳細解説**: [Governance Vulnerability Alpha Paper](../research/governance_vulnerability_alpha_paper.md) ✨
 
 ---
 

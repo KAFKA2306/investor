@@ -4,8 +4,10 @@
 **お誕生日**: 2025年9月（arXiv:2509.09995）  
 **解決したい困りごと**: LLMは「考えるのが遅い」から HFT（高頻度取引）には向かない…という常識をぶち破りたいんだよっ ⚡🏃‍♀️💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [QuantAgent: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2509.09995?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2509.09995](https://arxiv.org/abs/2509.09995) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2509.09995?lang=ja](https://www.alphaxiv.org/abs/2509.09995?lang=ja) ✨
+
 
 ---
 

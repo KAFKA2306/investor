@@ -4,8 +4,10 @@
 **お誕生日**: 2025年（最新トレンドっ！）  
 **解決したい困りごと**: 「たまたま一緒に動いてるだけ」のニセモノの相関にだまされたくない！「これが起きたから、こうなるっ！」っていう本当の理由（因果）を知りたいんだよっ 💡💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [CAMEF: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2502.04592?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2502.04592](https://arxiv.org/abs/2502.04592) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2502.04592?lang=ja](https://www.alphaxiv.org/abs/2502.04592?lang=ja) ✨
+
 *(※注：URLは例示だよっ！最新のリサーチ結果を反映してるよっ 🎀)*
 
 ---

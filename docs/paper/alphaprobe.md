@@ -4,8 +4,10 @@
 **お誕生日**: 2026年2月（arXiv:2602.11917）  
 **解決したい困りごと**: 「似たようなアルファばかり見つかって、ちっとも儲からない！」という「相関の赤海」状態をなんとかしたいんだよっ 🌊💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [AlphaPROBE: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2602.11917?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2602.11917](https://arxiv.org/abs/2602.11917) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2602.11917?lang=ja](https://www.alphaxiv.org/abs/2602.11917?lang=ja) ✨
+
 
 ---
 

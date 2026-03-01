@@ -4,8 +4,10 @@
 **お誕生日**: 2025年1月（arXiv:2502.00029）  
 **解決したい困りごと**: 人間が思いつかないような、複雑で巧妙な「儲かるアルゴリズム」を、AIにゼロから発明してほしいんだよっ 🤖🧪✨
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [AlphaSharpe: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2502.00029?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2502.00029](https://arxiv.org/abs/2502.00029) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2502.00029?lang=ja](https://www.alphaxiv.org/abs/2502.00029?lang=ja) ✨
+
 
 ---
 

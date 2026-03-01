@@ -4,8 +4,10 @@
 **お誕生日**: 2025年（最新！）  
 **解決したい困りごと**: アルファがすぐ使い物にならなくなっちゃう（アルファ減衰）のを防いで、ずっとピカピカの成績を出したいんだよっ 💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [AlphaAgent: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2501.00004?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2501.00004](https://arxiv.org/abs/2501.00004) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2501.00004?lang=ja](https://www.alphaxiv.org/abs/2501.00004?lang=ja) ✨
+
 *(※注：URLは例示だよっ！正しいリンクをチェックしてねっ 🎀)*
 
 ---

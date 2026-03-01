@@ -4,8 +4,10 @@
 **お誕生日**: 2025年-2026年（最新アップデート版！）  
 **解決したい困りごと**: 「アルファ」は一度作ったら終わりじゃない！市場に合わせて、自分自身をアップデートし続ける「生きている知能」が必要なんだよっ 📚✨
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [Alpha Evolution: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2505.14727?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2505.14727](https://arxiv.org/abs/2505.14727) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2505.14727?lang=ja](https://www.alphaxiv.org/abs/2505.14727?lang=ja) ✨
+
 ✨ [ALPHAAGENTEVO (自己進化の極意): 解説ページ！](https://www.alphaxiv.org/abs/2512.30007?lang=ja) ✨
 
 ---

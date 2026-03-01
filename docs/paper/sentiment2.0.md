@@ -4,8 +4,10 @@
 **お誕生日**: 2025年4月（arXiv:2504.10078）  
 **解決したい困りごと**: 「ポジティブ」か「ネガティブ」かだけじゃ足りない！もっと人間の「熱狂」や「パニック」の細かい感情を捉えて、市場の波に乗りたいんだよっ 💬📈💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [Sentiment 2.0: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2504.10078?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2504.10078](https://arxiv.org/abs/2504.10078) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2504.10078?lang=ja](https://www.alphaxiv.org/abs/2504.10078?lang=ja) ✨
+
 
 ---
 

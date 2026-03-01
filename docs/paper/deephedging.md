@@ -4,8 +4,10 @@
 **お誕生日**: 2025年12月（arXiv:2512.12420）  
 **解決した困りごと**: 理論上のブラックショールズ式じゃ、本物の市場の「コスト」や「ゆがみ」には勝てない！泥臭く、それでいて完璧に資産を守りたいんだよっ 🛡️💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [Deep Hedging (RL): 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2512.12420?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2512.12420](https://arxiv.org/abs/2512.12420) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2512.12420?lang=ja](https://www.alphaxiv.org/abs/2512.12420?lang=ja) ✨
+
 
 ---
 

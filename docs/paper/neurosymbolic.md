@@ -4,8 +4,10 @@
 **お誕生日**: 2025年7月（arXiv:2507.08584）  
 **解決したい困りごと**: AIが「なんでそう判断したの？」って聞いても答えてくれない…。直感（NN）と論理性（記号・ルール）を両立させたいんだよっ 🧠⚖️💦
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [Neuro-Symbolic Alpha: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2507.08584?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2507.08584](https://arxiv.org/abs/2507.08584) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2507.08584?lang=ja](https://www.alphaxiv.org/abs/2507.08584?lang=ja) ✨
+
 
 ---
 

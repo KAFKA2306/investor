@@ -4,8 +4,10 @@
 **お誕生日**: 2026年2月（arXiv:2602.07085）  
 **解決したい困りごと**: 一つの道だけだと行き詰まっちゃうけど、バラバラのヒントを合体させて、もっとすごい発見がしたいんだよっ！⚡✨
 
-## 📖 alphaXiv (JA) で詳しく読むっ！
-✨ [QuantaAlpha: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2602.07085?lang=ja) ✨
+## 📖 論文を詳しく読むっ！
+✨ **arXiv**: [https://arxiv.org/abs/2602.07085](https://arxiv.org/abs/2602.07085) ✨  
+✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2602.07085?lang=ja](https://www.alphaxiv.org/abs/2602.07085?lang=ja) ✨
+
 
 ---
 
