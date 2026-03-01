@@ -26,3 +26,8 @@ edinet2dataset/.env
 !ts-agent/vendor/wheels/
 !ts-agent/vendor/wheels/README.md
 !ts-agent/vendor/wheels/*.whl
+
+# Logs and agent outputs
+logs/
+.agent/logs/
+/root/.gemini/antigravity/brain/
