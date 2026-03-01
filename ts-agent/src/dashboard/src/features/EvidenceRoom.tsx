@@ -32,7 +32,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
   if (!verificationData) {
     return (
       <div className="empty">
-        No verification data available. Run backtest first.
+        検証データが見つからないよぉ…バックテストを先にやってみてねっ！🎀
       </div>
     );
   }
@@ -51,10 +51,10 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
   let factorSeries = dailyReturns.map((_, i) =>
     i === 0 ? 0 : dailyReturns[i - 1],
   );
-  let factorSource = "Lagged Return (Proxy)";
+  let factorSource = "遅延リターン（プロキシだよっ！✨）";
   let proxySpec: ProxySpec = {
     kind: "prev_day_return",
-    note: "True factor series unavailable; using lagged daily return as proxy",
+    note: "本物のファクターが見つからないから、昨日のリターンを代わりにするねっ！💖",
     sourcePaths: ["strategyCum"],
   };
 
@@ -62,7 +62,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
     const firstStock = Object.values(verificationData.individualData)[0];
     if (firstStock?.factors) {
       factorSeries = firstStock.factors;
-      factorSource = `Factor from ${firstStock.symbol}`;
+      factorSource = `${firstStock.symbol} からのファクターだよっ！`;
       proxySpec = { kind: "none" };
     }
   }
@@ -89,7 +89,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
   return (
     <div className="main">
       <div className="section-head">
-        <h2>Evidence Room</h2>
+        <h2>証拠のお部屋✨</h2>
         <SourceBadge
           codeFingerprint={verificationData.audit.commitHash}
           dataFingerprint={verificationData.audit.dataFingerprint}
@@ -100,39 +100,45 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
       <div className="hero panel hero-uqtl">
         <div className="hero-content">
           <div className="hero-meta">
-            <span className="pill">
-              Strategy: {verificationData.strategyName}
-            </span>
+            <span className="pill">戦略：{verificationData.strategyName}</span>
           </div>
           <h1 className="hero-title">{verificationData.strategyId}</h1>
           <p className="hero-subtitle">{verificationData.description}</p>
 
           <div className="uqtl-grid" style={{ marginTop: "1.5rem" }}>
             <MetricCard
-              label="Sharpe Ratio"
+              label="シャープレシオ✨"
               value={verificationData.metrics?.sharpe}
               sourcePath="metrics.sharpe"
               rootData={verificationData}
               resolve={resolveSourcePath}
               derivation={{
                 id: "recomputeSharpe",
-                note: "Annualized Sharpe Ratio",
+                note: "年率換算のシャープレシオだよっ！",
                 inputs: ["strategyCum"],
               }}
               recomputed={recomputeSharpe(dailyReturns)}
-              threshold={{ direction: "gt", value: 1.8, label: "Min Sharpe" }}
+              threshold={{
+                direction: "gt",
+                value: 1.8,
+                label: "最低ラインっ！",
+              }}
               onClick={() => onNavigate?.("backtest")}
             />
             <MetricCard
-              label="Information Coef."
+              label="情報係数（IC）🔍"
               value={verificationData.metrics?.ic}
               sourcePath="metrics.ic"
               rootData={verificationData}
               resolve={resolveSourcePath}
-              threshold={{ direction: "gt", value: 0.04, label: "Min IC" }}
+              threshold={{
+                direction: "gt",
+                value: 0.04,
+                label: "これくらいは欲しいなっ！",
+              }}
             />
             <MetricCard
-              label="Max Drawdown"
+              label="最大ドローダウン📉"
               value={verificationData.metrics?.maxDD}
               unit="%"
               sourcePath="metrics.maxDD"
@@ -140,7 +146,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
               resolve={resolveSourcePath}
               derivation={{
                 id: "recomputeMaxDD",
-                note: "Maximum peak-to-trough decline",
+                note: "いちばん凹んだところだよぉ…",
                 inputs: ["strategyCum", "dates"],
               }}
               recomputed={recomputeMaxDD(
@@ -150,7 +156,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
               threshold={{
                 direction: "lt",
                 value: -0.1,
-                label: "Max DD Limit",
+                label: "ここが限界っ！",
               }}
               onClick={() => onNavigate?.("backtest")}
             />
@@ -162,21 +168,21 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             className="panel section"
             style={{ background: "rgba(255,255,255,0.5)" }}
           >
-            <h3 className="quick-title">Cost Breakdown</h3>
+            <h3 className="quick-title">コストの内訳だよっ！💸</h3>
             <div className="health-row">
-              <span>Trading Fee</span>
+              <span>お取引の手数料✨</span>
               <span className="pill">
                 {formatBpsNullable(verificationData.costs?.feeBps)}
               </span>
             </div>
             <div className="health-row">
-              <span>Slippage</span>
+              <span>スリッページ💦</span>
               <span className="pill">
                 {formatBpsNullable(verificationData.costs?.slippageBps)}
               </span>
             </div>
             <div className="health-row">
-              <span>Total Cost</span>
+              <span>全部でこれくらいっ！</span>
               <span className="pill" style={{ fontWeight: 700 }}>
                 {formatBpsNullable(verificationData.costs?.totalCostBps)}
               </span>
@@ -187,7 +193,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
 
       <div className="split">
         <div className="panel section">
-          <h3 className="quick-title">Cumulative Performance</h3>
+          <h3 className="quick-title">これまでの成績っ！📈</h3>
           <CumulativeReturnChart
             dates={verificationData.dates}
             strategyCum={verificationData.strategyCum}
@@ -203,13 +209,13 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             }}
           >
             <h3 className="quick-title">
-              Rolling IC (30D){" "}
+              移動IC (30日) 📐{" "}
               {proxySpec.kind !== "none" && (
                 <span style={{ color: "var(--danger)" }}>📐 PROXY</span>
               )}
             </h3>
             <span style={{ fontSize: "0.6rem", color: "var(--ink-soft)" }}>
-              Source: {factorSource}
+              出典：{factorSource}
             </span>
           </div>
           <RollingICChart data={rollingICPoints} />
@@ -217,7 +223,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
       </div>
 
       <div className="section-head" style={{ marginTop: "1rem" }}>
-        <h3>Alpha Passport Proof</h3>
+        <h3>アルファ・パスポートの証明書っ！🎫</h3>
         {selectedAlpha && (
           <button
             type="button"
@@ -232,7 +238,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             }}
             onClick={() => onNavigate?.("research")}
           >
-            → View Full Discovery History
+            → これまでの発見の歴史を見るっ！📜
           </button>
         )}
       </div>
@@ -249,12 +255,12 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
         />
       ) : (
         <div className="panel section empty">
-          No selected alpha candidate found in recent logs.
+          最近のログに選ばれたアルファ君がいないみたい…😢
         </div>
       )}
 
       <div className="panel section">
-        <h3 className="quick-title">Performance Drawdown</h3>
+        <h3 className="quick-title">ドローダウンの推移だよっ！📉</h3>
         <DrawdownChart data={drawdownPoints} />
       </div>
 

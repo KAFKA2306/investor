@@ -44,6 +44,7 @@ export const CanonicalLogKindSchema = z.enum([
   "alpha_discovery",
   "quality_gate",
   "system_event",
+  "cycle_summary",
 ]);
 
 export type CanonicalLogKind = z.infer<typeof CanonicalLogKindSchema>;

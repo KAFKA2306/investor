@@ -26,11 +26,11 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onKill,
 }) => {
   const tabs = [
-    { id: "evidence", label: "Evidence Room" },
-    { id: "inspector", label: "Data Inspector" },
-    { id: "research", label: "Research Log" },
-    { id: "health", label: "System Health" },
-    { id: "backtest", label: "Analysis" },
+    { id: "evidence", label: "証拠のお部屋✨" },
+    { id: "inspector", label: "データ調査しちゃうもんっ！🔍" },
+    { id: "research", label: "研究のきろくっ！📝" },
+    { id: "health", label: "システムの健康診断🏥" },
+    { id: "backtest", label: "解析するよっ！📊" },
   ];
 
   const hasFingerprints = Boolean(commitHash);
@@ -42,7 +42,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     >
       <div className="brand">
         <h1>Hypothesis Evolution</h1>
-        <p>Visual Proof + Immutable Evidence</p>
+        <p>視覚的な証明 ＋ 改ざんできない証拠だよっ！✨</p>
       </div>
 
       <nav className="tab-nav">
@@ -60,7 +60,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
 
       <div className="topbar-right">
         <span className="pill mono" style={{ fontSize: "0.65rem" }}>
-          updated:{lastUpdated}
+          アップデート：{lastUpdated}
         </span>
 
         {/* Option B: Compact with Tooltip for space efficiency in topbar */}
@@ -75,10 +75,10 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         )}
 
         <span className={`pill ${status === "emergency" ? "risk" : "ready"}`}>
-          {status === "active" ? "RUNNING" : "EMERGENCY"}
+          {status === "active" ? "動いてるよっ！✨" : "たいへんっ！🚨"}
         </span>
         <button className="button" type="button" onClick={onRefresh}>
-          Refresh
+          更新するっ！🔃
         </button>
         <button
           className="button"
@@ -88,7 +88,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             background: "linear-gradient(110deg, #b91c35, #d86024)",
           }}
         >
-          KILL
+          緊急停止っ！💥
         </button>
       </div>
     </header>
