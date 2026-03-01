@@ -215,12 +215,22 @@ sequenceDiagram
 task setup
 ```
 
-環境変数は `ts-agent/.env` に設定します。
+環境変数はルートの `.env` に設定します（`ts-agent/.env` はレガシー互換のみ）。
+secret を `default.yaml` などの config に直接書く運用は禁止です。
 
 ```env
 JQUANTS_API_KEY=your_jquants_api_key
+EDINET_API_KEY=your_edinet_api_key
 ESTAT_APP_ID=your_estat_app_id
-VERIFY_TARGETS=jquants,estat
+OPENAI_API_KEY=your_openai_api_key
+VERIFY_TARGETS=jquants,kabucom,edinet,estat
+```
+
+初回は `.env.example` をコピーして値を設定し、依存関係はルートで一元同期します。
+
+```bash
+cp .env.example .env
+uv sync
 ```
 
 ## 実行コマンド
