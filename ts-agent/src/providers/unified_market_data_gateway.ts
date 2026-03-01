@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { core } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
 import { MarketdataDbCache } from "./cache_providers.ts";
@@ -7,6 +6,7 @@ import {
   JQuantsProvider,
   PeadJquantsGateway,
 } from "./external_market_providers.ts";
+import { requestJson } from "./http_json_client.ts";
 
 export interface MarketDataGateway {
   getDailyBars(
@@ -40,12 +40,7 @@ abstract class BaseMarketDataGateway implements MarketDataGateway {
   private readonly estat = new EstatProvider();
 
   public async getEstatStats(dataId: string): Promise<Record<string, unknown>> {
-    return z
-      .record(
-        z.string(),
-        z.union([z.number(), z.string(), z.boolean(), z.null(), z.unknown()]),
-      )
-      .parse(await this.estat.getStats(dataId));
+    return await this.estat.getStats(dataId);
   }
 
   public abstract getDailyBars(
@@ -124,19 +119,15 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
   }
 
   public async getHistory(symbol: string, limit: number): Promise<number[]> {
-    const url = new URL(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.T`,
-    );
-    url.searchParams.append("interval", "1d");
-    url.searchParams.append("range", "2y");
+    const res = await requestJson({
+      url: `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.T`,
+      query: { interval: "1d", range: "2y" },
+      cache: this.cache,
+      ttlMs: 24 * 60 * 60 * 1000,
+    });
 
-    const payload = await this.cache.fetchJson(
-      url.toString(),
-      {},
-      24 * 60 * 60 * 1000,
-    );
-    const result = (payload.payload as unknown as YahooChartPayload).chart
-      .result[0];
+    const result = (res.payload as unknown as YahooChartPayload).chart
+      .result?.[0];
     if (!result) throw new Error("No chart result");
     const closes = (result.indicators.quote[0]?.close ?? []).filter(
       (v: number | null): v is number => v !== null,
@@ -227,17 +218,12 @@ export class ApiVerifyGateway {
   private readonly estat = new EstatProvider();
 
   public async getJquantsListedInfo(): Promise<Record<string, unknown>[]> {
-    return z
-      .array(z.record(z.string(), z.unknown()))
-      .catch([])
-      .parse(await this.jquants.getListedInfo());
+    return (await this.jquants.getListedInfo()) as Record<string, unknown>[];
   }
 
   public async getEstatStatsData(
     statsDataId: string,
   ): Promise<Record<string, unknown>> {
-    return z
-      .record(z.string(), z.unknown())
-      .parse(await this.estat.getStats(statsDataId));
+    return await this.estat.getStats(statsDataId);
   }
 }

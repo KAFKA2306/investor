@@ -1,7 +1,8 @@
 import { join } from "node:path";
-import { z } from "zod";
 import { core } from "../system/app_runtime_core.ts";
 import { SqliteHttpCache } from "./cache_providers.ts";
+import { requestJson, requestRows } from "./http_json_client.ts";
+import { ProviderConfigError } from "./provider_errors.ts";
 
 export class EstatProvider {
   private readonly baseUrl =
@@ -10,33 +11,23 @@ export class EstatProvider {
 
   constructor() {
     if (!core.config.providers.estat.enabled) {
-      process.exit(1);
+      throw new ProviderConfigError("e-Stat provider is disabled");
     }
     this.appId = core.getProviderCredential("estat", "appId", "ESTAT_APP_ID");
   }
 
-  public async getStats(statsDataId: string): Promise<unknown> {
-    const url = new URL(this.baseUrl);
-    url.searchParams.set("appId", this.appId);
-    url.searchParams.set("statsDataId", statsDataId);
-    url.searchParams.set("lang", "J");
-    const response = await fetch(url.toString());
-    if (!response.ok) process.exit(1);
-    return z.record(z.string(), z.unknown()).parse(await response.json());
+  public async getStats(statsDataId: string): Promise<Record<string, unknown>> {
+    const res = await requestJson({
+      baseUrl: this.baseUrl,
+      query: {
+        appId: this.appId,
+        statsDataId,
+        lang: "J",
+      },
+    });
+    return res.payload;
   }
 }
-
-const extractJQuantsRows = (payload: Record<string, unknown>): unknown[] => {
-  const topLevel = Object.values(payload).find((v) => Array.isArray(v));
-  const nested = Object.values(payload)
-    .filter((v) => typeof v === "object" && v !== null && !Array.isArray(v))
-    .flatMap((v) => Object.values(v as Record<string, unknown>))
-    .find((v) => Array.isArray(v));
-  return z
-    .array(z.unknown())
-    .catch([])
-    .parse(topLevel || nested || []);
-};
 
 export class JQuantsProvider {
   private readonly baseUrl = "https://api.jquants.com/v2";
@@ -45,7 +36,9 @@ export class JQuantsProvider {
   private readonly cacheTtlMs: number;
 
   constructor(options?: { cache?: SqliteHttpCache; cacheTtlMs?: number }) {
-    if (!core.config.providers.jquants.enabled) process.exit(1);
+    if (!core.config.providers.jquants.enabled) {
+      throw new ProviderConfigError("J-Quants provider is disabled");
+    }
     this.apiKey = core.getProviderCredential(
       "jquants",
       "apiKey",
@@ -59,27 +52,37 @@ export class JQuantsProvider {
     endpoint: string,
     params: Record<string, string> = {},
   ): Promise<Record<string, unknown>> {
-    const url = new URL(`${this.baseUrl}${endpoint}`);
-    for (const [k, v] of Object.entries(params)) url.searchParams.append(k, v);
-    if (this.cache)
-      return this.cache.fetchJson(
-        url.toString(),
-        { "x-api-key": this.apiKey },
-        this.cacheTtlMs,
-      );
-    const response = await fetch(url.toString(), {
+    const res = await requestJson({
+      baseUrl: this.baseUrl,
+      endpoint,
+      query: params,
       headers: { "x-api-key": this.apiKey },
+      ...(this.cache
+        ? {
+            cache: this.cache,
+            ttlMs: this.cacheTtlMs,
+          }
+        : {}),
     });
-    if (!response.ok) process.exit(1);
-    return z.record(z.string(), z.unknown()).parse(await response.json());
+    return res.payload;
   }
 
   public async requestRows(
     endpoint: string,
     params: Record<string, string> = {},
   ): Promise<unknown[]> {
-    const payload = await this.request(endpoint, params);
-    return extractJQuantsRows(payload);
+    return requestRows({
+      baseUrl: this.baseUrl,
+      endpoint,
+      query: params,
+      headers: { "x-api-key": this.apiKey },
+      ...(this.cache
+        ? {
+            cache: this.cache,
+            ttlMs: this.cacheTtlMs,
+          }
+        : {}),
+    });
   }
 
   public async getListedInfo(): Promise<unknown[]> {
@@ -151,43 +154,43 @@ export class YahooFinanceGateway {
   );
 
   public async getChart(symbol: string, range = "2y"): Promise<YahooBar[]> {
-    const url = new URL(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
-    );
-    url.searchParams.set("interval", "1d");
-    url.searchParams.set("range", range);
-    const payload = await this.cache.fetchJson(
-      url.toString(),
-      {},
-      24 * 60 * 60 * 1000,
-    );
+    const res = await requestJson({
+      url: `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+      query: { interval: "1d", range },
+      cache: this.cache,
+      ttlMs: 24 * 60 * 60 * 1000,
+    });
+
     const resRaw = (
-      payload.payload as {
+      res.payload as {
         chart: {
           result: {
             timestamp: number[];
             indicators: {
               quote: {
-                open: number[];
-                high: number[];
-                low: number[];
-                close: number[];
-                volume: number[];
+                open: (number | null)[];
+                high: (number | null)[];
+                low: (number | null)[];
+                close: (number | null)[];
+                volume: (number | null)[];
               }[];
             };
           }[];
         };
       }
-    ).chart.result[0];
+    ).chart.result?.[0];
+
     if (!resRaw) throw new Error(`No data for ${symbol}`);
-    const timestamps = z.array(z.number().nullable()).parse(resRaw.timestamp);
+    const timestamps = resRaw.timestamp || [];
     const quote = resRaw.indicators.quote[0];
     if (!quote) throw new Error(`No quote data for ${symbol}`);
-    const opens = z.array(z.number().nullable()).parse(quote.open);
-    const highs = z.array(z.number().nullable()).parse(quote.high);
-    const lows = z.array(z.number().nullable()).parse(quote.low);
-    const closes = z.array(z.number().nullable()).parse(quote.close);
-    const volumes = z.array(z.number().nullable()).parse(quote.volume);
+
+    const opens = quote.open || [];
+    const highs = quote.high || [];
+    const lows = quote.low || [];
+    const closes = quote.close || [];
+    const volumes = quote.volume || [];
+
     const bars: YahooBar[] = [];
     for (let i = 0; i < timestamps.length; i++) {
       const ts = timestamps[i];

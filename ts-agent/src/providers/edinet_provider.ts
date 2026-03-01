@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { z } from "zod";
 import { core } from "../system/app_runtime_core.ts";
 import { SqliteHttpCache } from "./cache_providers.ts";
+import { requestJson } from "./http_json_client.ts";
+import { ProviderConfigError, ProviderHttpError } from "./provider_errors.ts";
 
 export const EdinetDocumentSchema = z.object({
   docID: z.string(),
@@ -82,7 +84,7 @@ export class EdinetProvider {
 
   constructor(options?: { downloadDir?: string }) {
     if (!core.config.providers.edinet.enabled) {
-      throw new Error("[EDINET] Provider is disabled in config.");
+      throw new ProviderConfigError("EDINET provider is disabled");
     }
     this.apiKey = core.getProviderCredential(
       "edinet",
@@ -102,13 +104,6 @@ export class EdinetProvider {
     date: string,
     type: 1 | 2 = 2,
   ): Promise<EdinetDocumentListResponse> {
-    const url = new URL(`${this.baseUrl}/documents.json`);
-    url.searchParams.set("date", date);
-    url.searchParams.set("type", String(type));
-    url.searchParams.set("Subscription-Key", this.apiKey);
-
-    console.log(`📡 [EDINET] Fetching document list for ${date}...`);
-
     const todayStr = new Date().toLocaleDateString("sv-SE", {
       timeZone: "Asia/Tokyo",
     });
@@ -117,22 +112,24 @@ export class EdinetProvider {
       ? 6 * 60 * 60 * 1000
       : 100 * 365 * 24 * 60 * 60 * 1000;
 
-    const { payload, cached } = await this.cache.fetchJson(
-      url.toString(),
-      {},
-      cacheTtlMs,
-    );
+    const res = await requestJson({
+      baseUrl: this.baseUrl,
+      endpoint: "/documents.json",
+      query: {
+        date,
+        type: String(type),
+        "Subscription-Key": this.apiKey,
+      },
+      cache: this.cache,
+      ttlMs: cacheTtlMs,
+    });
 
-    if (cached) {
-    } else {
+    if (!res.cached) {
       await new Promise((r) => setTimeout(r, 200));
     }
 
-    interface RawPayload {
-      results?: unknown[];
-      metadata?: unknown;
-    }
-    const rawResults = (payload as RawPayload)?.results ?? [];
+    const payload = res.payload;
+    const rawResults = Array.isArray(payload.results) ? payload.results : [];
     const validResults: EdinetDocument[] = [];
     let errorCount = 0;
 
@@ -142,11 +139,6 @@ export class EdinetProvider {
         validResults.push(parsedItem.data);
       } else {
         errorCount++;
-        if (errorCount === 1) {
-          console.warn(
-            `⚠️ [EDINET] Item validation failed: ${parsedItem.error.message}`,
-          );
-        }
       }
     }
 
@@ -156,27 +148,21 @@ export class EdinetProvider {
       );
     }
 
-    const metadata = ((payload as RawPayload)
-      ?.metadata as EdinetDocumentListResponse["metadata"]) ?? {
-      title: "EDINET API",
-      parameter: { date, type: String(type) },
-      resultset: { count: validResults.length },
-      processDateTime: new Date().toISOString(),
-      status: "200",
-      message: "OK",
-    };
+    const metadataCandidate = payload.metadata;
+    const metadata =
+      metadataCandidate &&
+      typeof metadataCandidate === "object" &&
+      !Array.isArray(metadataCandidate)
+        ? (metadataCandidate as EdinetDocumentListResponse["metadata"])
+        : {
+            title: "EDINET API",
+            parameter: { date, type: String(type) },
+            resultset: { count: validResults.length },
+            processDateTime: new Date().toISOString(),
+            status: "200",
+            message: "OK",
+          };
 
-    console.log(
-      `✅ [EDINET] Found ${validResults.length} valid documents for ${date}`,
-    );
-    if (validResults.length > 0) {
-      const sample = validResults
-        .slice(0, 3)
-        .map(
-          (d) => `${d.docID}:${d.secCode}:${d.docDescription?.slice(0, 10)}`,
-        );
-      console.log(`🔍 [EDINET] Sample docs for ${date}: ${sample.join(", ")}`);
-    }
     return { metadata, results: validResults };
   }
 
@@ -214,10 +200,6 @@ export class EdinetProvider {
       const docs = filter ? response.results.filter(filter) : response.results;
       allDocs.push(...docs);
     }
-
-    console.log(
-      `📊 [EDINET] Total ${allDocs.length} documents found in ${from}~${to}`,
-    );
     return allDocs;
   }
 
@@ -225,12 +207,10 @@ export class EdinetProvider {
     docID: string,
     type: EdinetDocumentType = 1,
   ): Promise<string | null> {
-    const typeLabel = EdinetDocumentTypeLabel[type];
     const fileName = `${docID}_type${type}.zip`;
     const filePath = join(this.downloadDir, fileName);
 
     if (existsSync(filePath)) {
-      console.log(`📁 [EDINET] Cache hit: ${fileName}`);
       return filePath;
     }
 
@@ -238,15 +218,14 @@ export class EdinetProvider {
     url.searchParams.set("type", String(type));
     url.searchParams.set("Subscription-Key", this.apiKey);
 
-    console.log(`📥 [EDINET] Downloading ${typeLabel} for docID=${docID}...`);
-
     const response = await fetch(url.toString());
 
     if (!response.ok) {
-      console.error(
-        `❌ [EDINET] HTTP ${response.status}: ${response.statusText}`,
+      throw new ProviderHttpError(
+        response.status,
+        url.toString(),
+        response.statusText,
       );
-      return null;
     }
 
     const contentType = response.headers.get("content-type") ?? "";
@@ -263,13 +242,9 @@ export class EdinetProvider {
     ) {
       const buffer = Buffer.from(await response.arrayBuffer());
       writeFileSync(filePath, buffer);
-      console.log(
-        `✅ [EDINET] Saved ${typeLabel}: ${filePath} (${buffer.length} bytes)`,
-      );
       return filePath;
     }
 
-    console.warn(`⚠️ [EDINET] Unexpected Content-Type: ${contentType}`);
     return null;
   }
 
