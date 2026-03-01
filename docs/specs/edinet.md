@@ -296,6 +296,9 @@ bun src/experiments/macro_lead_lag_verification.ts
 - `experiments:build-edinet-event-features`
 - `experiments:build-macro-regime`
 - `experiments:run-edinet-regime-backtest`
+- `experiments:audit-signal`
+
+> 2026-03-01 時点で上記4コマンドは `ts-agent/package.json` に実装済みだよっ。
 
 > 未実装の間は、既存の `10k-features / kb-build / kb-backtest` にオプション追加して同等機能を実現するよっ。
 
@@ -377,8 +380,8 @@ bun src/experiments/macro_lead_lag_verification.ts
 | マクロレジーム保存 | 実装済み | なし | `ts-agent/src/experiments/build_macro_regime.ts` | High |
 | ゲート判定保存 | 実装済み | なし | `ts-agent/src/experiments/run_kb_signal_backtest.ts` | High |
 | `kb-backtest` でのゲート運用 | 実装済み（`--with-gates`） | ドキュメント例の充実 | `ts-agent/src/experiments/run_kb_signal_backtest.ts` | High |
-| 日次ジョブの定時オーケストレーション | 部分実装 | cron/task化の明文化 | `Taskfile.yml`（拡張予定） | Medium |
-| 監査逆引きの自動レポート | 未実装 | 監査CLI追加 | `ts-agent/src/experiments/*`（追加予定） | Medium |
+| 日次ジョブの定時オーケストレーション | 実装済み（Task） | cron連携の追加のみ | `Taskfile.yml` (`pipeline:edinet-daily`) | Medium |
+| 監査逆引きの自動レポート | 実装済み（CLI） | dashboard連携の追加 | `ts-agent/src/experiments/audit_signal_trace.ts` | Medium |
 | 回帰テスト自動化（v1 vs v2） | 部分実装 | CI組み込み | GitHub Actions（追加予定） | Medium |
 
 ---

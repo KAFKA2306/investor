@@ -6,7 +6,7 @@ export type KnowledgeDocumentInput = {
   docId: string;
   symbol: string;
   source: "EDINET" | "JQUANTS" | "MANUAL" | "ALPHA_DISCOVERY";
-  filedAt: string; // YYYY-MM-DD
+  filedAt: string;
   title: string;
 };
 
@@ -21,7 +21,7 @@ export type KnowledgeSectionInput = {
 
 export type MarketDailyInput = {
   symbol: string;
-  date: string; // YYYY-MM-DD
+  date: string;
   open: number;
   high: number;
   low: number;
@@ -33,7 +33,7 @@ export type MarketDailyInput = {
 export type SignalInput = {
   signalId: string;
   symbol: string;
-  date: string; // YYYY-MM-DD
+  date: string;
   riskDelta: number;
   pead1d: number;
   pead5d: number;
@@ -43,7 +43,7 @@ export type SignalInput = {
 export type EventFeatureInput = {
   eventId: string;
   symbol: string;
-  filedAt: string; // YYYY-MM-DD
+  filedAt: string;
   docId: string;
   riskDelta: number;
   sentiment: number;
@@ -55,7 +55,7 @@ export type EventFeatureInput = {
 };
 
 export type MacroRegimeInput = {
-  date: string; // YYYY-MM-DD
+  date: string;
   regimeId: string;
   inflationZ: number;
   iipZ: number;
@@ -65,7 +65,7 @@ export type MacroRegimeInput = {
 
 export type GateDecisionInput = {
   signalId: string;
-  date: string; // YYYY-MM-DD
+  date: string;
   gateName: string;
   passed: boolean;
   threshold: string;
@@ -121,6 +121,52 @@ export type TradableSignalEvent = {
   regimeId: string | null;
   entryClose: number;
   entryVolume: number;
+};
+
+export type SignalAuditTrace = {
+  signal: {
+    signalId: string;
+    symbol: string;
+    date: string;
+    combinedAlpha: number;
+    riskDelta: number;
+    pead1d: number;
+    pead5d: number;
+  } | null;
+  lineage: Array<{
+    sourceDocId: string;
+    sourceSection: string;
+    modelVersion: string;
+  }>;
+  sourceDocument: {
+    docId: string;
+    source: string;
+    filedAt: string;
+    title: string;
+  } | null;
+  eventFeature: {
+    eventId: string;
+    featureVersion: string;
+    correctionFlag: boolean;
+    correctionCount90d: number;
+  } | null;
+  gateDecisions: Array<{
+    gateName: string;
+    passed: boolean;
+    threshold: string;
+    actualValue: number | null;
+    reason: string;
+  }>;
+  backtestRuns: Array<{
+    runId: string;
+    strategyId: string;
+    fromDate: string;
+    toDate: string;
+    sharpe: number;
+    totalReturn: number;
+    maxDrawdown: number;
+    createdAt: string;
+  }>;
 };
 
 export class AlphaKnowledgebase {
@@ -300,8 +346,7 @@ export class AlphaKnowledgebase {
 
   public upsertSection(input: KnowledgeSectionInput): void {
     const sectionId = `${input.docId}:${input.sectionName}`;
-    this.db.exec("BEGIN;");
-    try {
+    const tx = this.db.transaction(() => {
       this.db
         .query(`
           INSERT INTO sections (
@@ -335,17 +380,13 @@ export class AlphaKnowledgebase {
           VALUES (?, ?, ?, ?)
         `)
         .run(sectionId, input.docId, input.sectionName, input.content);
-      this.db.exec("COMMIT;");
-    } catch (error) {
-      this.db.exec("ROLLBACK;");
-      throw error;
-    }
+    });
+    tx();
   }
 
   public upsertMarketRows(rows: readonly MarketDailyInput[]): void {
     if (rows.length === 0) return;
-    this.db.exec("BEGIN;");
-    try {
+    const tx = this.db.transaction((txRows: readonly MarketDailyInput[]) => {
       const stmt = this.db.query(`
         INSERT INTO market_daily (
           symbol, date, open, high, low, close, volume, earnings_flag
@@ -371,17 +412,13 @@ export class AlphaKnowledgebase {
           row.earningsFlag ? 1 : 0,
         );
       }
-      this.db.exec("COMMIT;");
-    } catch (error) {
-      this.db.exec("ROLLBACK;");
-      throw error;
-    }
+    });
+    tx(rows);
   }
 
   public upsertSignals(rows: readonly SignalInput[]): void {
     if (rows.length === 0) return;
-    this.db.exec("BEGIN;");
-    try {
+    const tx = this.db.transaction((txRows: readonly SignalInput[]) => {
       const stmt = this.db.query(`
         INSERT INTO signals (
           signal_id, symbol, date, risk_delta, pead_1d, pead_5d, combined_alpha
@@ -395,7 +432,7 @@ export class AlphaKnowledgebase {
           pead_5d = excluded.pead_5d,
           combined_alpha = excluded.combined_alpha
       `);
-      for (const row of rows) {
+      for (const row of txRows) {
         stmt.run(
           row.signalId,
           row.symbol,
@@ -406,17 +443,13 @@ export class AlphaKnowledgebase {
           row.combinedAlpha,
         );
       }
-      this.db.exec("COMMIT;");
-    } catch (error) {
-      this.db.exec("ROLLBACK;");
-      throw error;
-    }
+    });
+    tx(rows);
   }
 
   public upsertEventFeatures(rows: readonly EventFeatureInput[]): void {
     if (rows.length === 0) return;
-    this.db.exec("BEGIN;");
-    try {
+    const tx = this.db.transaction((txRows: readonly EventFeatureInput[]) => {
       const stmt = this.db.query(`
         INSERT INTO edinet_event_features (
           event_id, symbol, filed_at, doc_id, risk_delta, sentiment,
@@ -436,7 +469,7 @@ export class AlphaKnowledgebase {
           correction_count_90d = excluded.correction_count_90d,
           feature_version = excluded.feature_version
       `);
-      for (const row of rows) {
+      for (const row of txRows) {
         stmt.run(
           row.eventId,
           row.symbol,
@@ -451,17 +484,13 @@ export class AlphaKnowledgebase {
           row.featureVersion,
         );
       }
-      this.db.exec("COMMIT;");
-    } catch (error) {
-      this.db.exec("ROLLBACK;");
-      throw error;
-    }
+    });
+    tx(rows);
   }
 
   public upsertMacroRegimes(rows: readonly MacroRegimeInput[]): void {
     if (rows.length === 0) return;
-    this.db.exec("BEGIN;");
-    try {
+    const tx = this.db.transaction((txRows: readonly MacroRegimeInput[]) => {
       const stmt = this.db.query(`
         INSERT INTO macro_regime_daily (
           date, regime_id, inflation_z, iip_z, yield_slope_z, risk_on_score
@@ -474,7 +503,7 @@ export class AlphaKnowledgebase {
           yield_slope_z = excluded.yield_slope_z,
           risk_on_score = excluded.risk_on_score
       `);
-      for (const row of rows) {
+      for (const row of txRows) {
         stmt.run(
           row.date,
           row.regimeId,
@@ -484,17 +513,13 @@ export class AlphaKnowledgebase {
           row.riskOnScore,
         );
       }
-      this.db.exec("COMMIT;");
-    } catch (error) {
-      this.db.exec("ROLLBACK;");
-      throw error;
-    }
+    });
+    tx(rows);
   }
 
   public upsertGateDecisions(rows: readonly GateDecisionInput[]): void {
     if (rows.length === 0) return;
-    this.db.exec("BEGIN;");
-    try {
+    const tx = this.db.transaction((txRows: readonly GateDecisionInput[]) => {
       const stmt = this.db.query(`
         INSERT INTO signal_gate_decisions (
           signal_id, date, gate_name, passed, threshold, actual_value, reason
@@ -507,7 +532,7 @@ export class AlphaKnowledgebase {
           actual_value = excluded.actual_value,
           reason = excluded.reason
       `);
-      for (const row of rows) {
+      for (const row of txRows) {
         stmt.run(
           row.signalId,
           row.date,
@@ -518,11 +543,8 @@ export class AlphaKnowledgebase {
           row.reason,
         );
       }
-      this.db.exec("COMMIT;");
-    } catch (error) {
-      this.db.exec("ROLLBACK;");
-      throw error;
-    }
+    });
+    tx(rows);
   }
 
   public upsertFeatureVersion(input: FeatureVersionInput): void {
@@ -538,8 +560,7 @@ export class AlphaKnowledgebase {
 
   public upsertSignalLineage(rows: readonly SignalLineageInput[]): void {
     if (rows.length === 0) return;
-    this.db.exec("BEGIN;");
-    try {
+    const tx = this.db.transaction((txRows: readonly SignalLineageInput[]) => {
       const stmt = this.db.query(`
         INSERT INTO signal_lineage (
           signal_id, source_doc_id, source_section, model_version
@@ -548,7 +569,7 @@ export class AlphaKnowledgebase {
         ON CONFLICT(signal_id, source_doc_id, source_section) DO UPDATE SET
           model_version = excluded.model_version
       `);
-      for (const row of rows) {
+      for (const row of txRows) {
         stmt.run(
           row.signalId,
           row.sourceDocId,
@@ -556,11 +577,8 @@ export class AlphaKnowledgebase {
           row.modelVersion,
         );
       }
-      this.db.exec("COMMIT;");
-    } catch (error) {
-      this.db.exec("ROLLBACK;");
-      throw error;
-    }
+    });
+    tx(rows);
   }
 
   public recordBacktestRun(input: BacktestRunInput): void {
@@ -819,6 +837,183 @@ export class AlphaKnowledgebase {
           Number.isFinite(row.entryClose) &&
           Number.isFinite(row.entryVolume),
       );
+  }
+
+  public getSignalAuditTrace(signalId: string): SignalAuditTrace {
+    const signal = this.db
+      .query(`
+        SELECT
+          signal_id AS signalId,
+          symbol,
+          date,
+          combined_alpha AS combinedAlpha,
+          risk_delta AS riskDelta,
+          pead_1d AS pead1d,
+          pead_5d AS pead5d
+        FROM signals
+        WHERE signal_id = ?
+      `)
+      .get(signalId) as {
+      signalId: string;
+      symbol: string;
+      date: string;
+      combinedAlpha: number | null;
+      riskDelta: number | null;
+      pead1d: number | null;
+      pead5d: number | null;
+    } | null;
+
+    const lineage = this.db
+      .query(`
+        SELECT
+          source_doc_id AS sourceDocId,
+          source_section AS sourceSection,
+          model_version AS modelVersion
+        FROM signal_lineage
+        WHERE signal_id = ?
+        ORDER BY source_doc_id ASC, source_section ASC
+      `)
+      .all(signalId) as Array<{
+      sourceDocId: string;
+      sourceSection: string;
+      modelVersion: string;
+    }>;
+
+    const primaryDocId = lineage[0]?.sourceDocId ?? null;
+
+    const sourceDocument =
+      primaryDocId === null
+        ? null
+        : (this.db
+            .query(`
+              SELECT
+                doc_id AS docId,
+                source,
+                filed_at AS filedAt,
+                title
+              FROM documents
+              WHERE doc_id = ?
+            `)
+            .get(primaryDocId) as {
+            docId: string;
+            source: string;
+            filedAt: string;
+            title: string;
+          } | null);
+
+    const eventFeature =
+      primaryDocId === null
+        ? null
+        : (this.db
+            .query(`
+              SELECT
+                event_id AS eventId,
+                feature_version AS featureVersion,
+                correction_flag AS correctionFlag,
+                correction_count_90d AS correctionCount90d
+              FROM edinet_event_features
+              WHERE doc_id = ?
+              ORDER BY filed_at DESC
+              LIMIT 1
+            `)
+            .get(primaryDocId) as {
+            eventId: string;
+            featureVersion: string;
+            correctionFlag: number;
+            correctionCount90d: number | null;
+          } | null);
+
+    const gateDecisions = this.db
+      .query(`
+        SELECT
+          gate_name AS gateName,
+          passed,
+          threshold,
+          actual_value AS actualValue,
+          reason
+        FROM signal_gate_decisions
+        WHERE signal_id = ?
+        ORDER BY gate_name ASC
+      `)
+      .all(signalId) as Array<{
+      gateName: string;
+      passed: number;
+      threshold: string;
+      actualValue: number | null;
+      reason: string;
+    }>;
+
+    const backtestRuns = this.db
+      .query(`
+        SELECT
+          b.run_id AS runId,
+          b.strategy_id AS strategyId,
+          b.from_date AS fromDate,
+          b.to_date AS toDate,
+          b.sharpe,
+          b.total_return AS totalReturn,
+          b.max_dd AS maxDrawdown,
+          b.created_at AS createdAt
+        FROM backtest_runs b
+        WHERE b.strategy_id IN (
+          SELECT DISTINCT model_version
+          FROM signal_lineage
+          WHERE signal_id = ?
+        )
+        ORDER BY b.created_at DESC
+        LIMIT 20
+      `)
+      .all(signalId) as Array<{
+      runId: string;
+      strategyId: string;
+      fromDate: string;
+      toDate: string;
+      sharpe: number | null;
+      totalReturn: number | null;
+      maxDrawdown: number | null;
+      createdAt: string;
+    }>;
+
+    return {
+      signal: signal
+        ? {
+            signalId: signal.signalId,
+            symbol: signal.symbol,
+            date: signal.date,
+            combinedAlpha: Number(signal.combinedAlpha ?? 0),
+            riskDelta: Number(signal.riskDelta ?? 0),
+            pead1d: Number(signal.pead1d ?? 0),
+            pead5d: Number(signal.pead5d ?? 0),
+          }
+        : null,
+      lineage,
+      sourceDocument,
+      eventFeature: eventFeature
+        ? {
+            eventId: eventFeature.eventId,
+            featureVersion: eventFeature.featureVersion,
+            correctionFlag: eventFeature.correctionFlag > 0,
+            correctionCount90d: Number(eventFeature.correctionCount90d ?? 0),
+          }
+        : null,
+      gateDecisions: gateDecisions.map((row) => ({
+        gateName: row.gateName,
+        passed: row.passed > 0,
+        threshold: row.threshold,
+        actualValue: row.actualValue,
+        reason: row.reason,
+      })),
+      backtestRuns: backtestRuns.map((row) => ({
+        runId: row.runId,
+        strategyId: row.strategyId,
+        fromDate: row.fromDate,
+        toDate: row.toDate,
+        sharpe: Number(row.sharpe ?? 0),
+        totalReturn: Number(row.totalReturn ?? 0),
+        maxDrawdown: Number(row.maxDrawdown ?? 0),
+        createdAt: row.createdAt,
+      })),
+    };
   }
 
   public close(): void {
