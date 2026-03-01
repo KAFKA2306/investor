@@ -18,7 +18,7 @@
     "experiments:build-macro-regime": "bun src/experiments/build_macro_regime.ts",
     "experiments:run-edinet-regime-backtest": "bun src/experiments/run_kb_signal_backtest.ts --with-gates",
     "experiments:verification-json": "bun src/experiments/quantitative_performance_proof.ts",
-    "experiments:verification-plot": "python3 src/experiments/plot_generator.py",
+    "experiments:verification-plot": "uv run --script src/experiments/plot_generator.py",
     "pipeline:ab": "bun src/pipeline/evaluate/backtest_core.ts",
     "pipeline:mine": "bun src/pipeline/factor_mining/mining_core.ts",
     "pipeline:backtest": "bun src/pipeline/evaluate/backtest_core.ts",

@@ -323,6 +323,9 @@ export const VerificationMetricsSchema = z.object({
   maxDD: z.number(),
   totalReturn: z.number(),
   universe: z.array(z.string()),
+  winRate: z.number().optional(),
+  volatility: z.number().optional(),
+  cagr: z.number().optional(),
 });
 export const VerificationLayoutSchema = z.object({
   mainTitle: z.string(),

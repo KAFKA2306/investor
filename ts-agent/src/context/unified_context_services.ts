@@ -2,6 +2,7 @@ import { Database } from "bun:sqlite";
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path, { join } from "node:path";
+import yaml from "js-yaml";
 import {
   type AceBullet,
   type AcePlaybook,
@@ -19,7 +20,7 @@ export class ContextPlaybook {
 
   constructor(filePath?: string) {
     this.filePath =
-      filePath || path.join(process.cwd(), "data", "playbook.json");
+      filePath || path.join(process.cwd(), "data", "playbook.yaml");
   }
 
   async load(): Promise<void> {
@@ -29,8 +30,8 @@ export class ContextPlaybook {
       return;
     }
     const data = await fs.readFile(this.filePath, "utf-8");
-    const json = JSON.parse(data);
-    this.playbook = AcePlaybookSchema.parse(json);
+    const parsed = yaml.load(data);
+    this.playbook = AcePlaybookSchema.parse(parsed);
   }
 
   async save(): Promise<void> {
@@ -39,7 +40,11 @@ export class ContextPlaybook {
     const tempPath = `${this.filePath}.tmp.${Date.now()}`;
     await fs.writeFile(
       tempPath,
-      JSON.stringify(this.playbook, null, 2),
+      yaml.dump(this.playbook, {
+        lineWidth: 120,
+        noRefs: true,
+        sortKeys: false,
+      }),
       "utf-8",
     );
     await fs.rename(tempPath, this.filePath);

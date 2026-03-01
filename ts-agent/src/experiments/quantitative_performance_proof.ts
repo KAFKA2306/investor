@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import yaml from "js-yaml";
 import { QuantMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
   type FactorAST,
@@ -146,9 +147,9 @@ function getLatestSelectedStrategyFromPlaybook(): {
   description: string;
   ast: Record<string, unknown> | null;
 } | null {
-  const playbookPath = join(process.cwd(), "data", "playbook.json");
+  const playbookPath = join(process.cwd(), "data", "playbook.yaml");
   const raw = readFileSync(playbookPath, "utf8");
-  const data = JSON.parse(raw) as PlaybookData;
+  const data = yaml.load(raw) as PlaybookData;
   const selected = data.bullets
     .filter(
       (b) =>
@@ -468,6 +469,27 @@ async function generateStandardVerificationReport() {
         ),
         totalReturn: Number((strategyCum[n - 1] ?? 0).toFixed(2)),
         universe: activeSymbols,
+        winRate: Number(
+          (
+            strategyDailyReturns.filter((r) => r > 0).length / Math.max(n, 1)
+          ).toFixed(4),
+        ),
+        volatility: Number(
+          (
+            Math.sqrt(
+              strategyDailyReturns.reduce((acc, r) => {
+                const mu = QuantMetrics.mean(strategyDailyReturns);
+                return acc + (r - mu) ** 2;
+              }, 0) / Math.max(strategyDailyReturns.length, 1),
+            ) * Math.sqrt(252)
+          ).toFixed(4),
+        ),
+        cagr: Number(
+          QuantMetrics.calculateAnnualizedReturn(
+            (strategyCum[n - 1] ?? 0) / 100,
+            n,
+          ).toFixed(4),
+        ),
       },
       costs: {
         feeBps,
@@ -478,8 +500,8 @@ async function generateStandardVerificationReport() {
         mainTitle: `Alpha Verification [Audit Ready]: ${strategyMetadata.name}`,
         subTitle: `Strategy: ${strategyMetadata.id} | Commit: ${commitHash.substring(0, 7)} | Costs: ${feeBps + slippageBps}bps`,
         panel1Title: "Universe Asset Performance",
-        panel2Title: `Alpha Intensity: ${strategyMetadata.id}`,
-        panel3Title: "Execution Timings (Positions Heatmap)",
+        panel2Title: `Rolling IC (30d): ${strategyMetadata.id}`,
+        panel3Title: "Strategy Drawdown",
         panel4Title: "Cumulative Performance (Net of Costs)",
         yAxisReturn: "Net Return (%)",
         yAxisSignal: "Signal Intensity",
@@ -511,6 +533,9 @@ async function generateStandardVerificationReport() {
           totalReturnPct: report.metrics.totalReturn,
           maxDrawdownPct: report.metrics.maxDD,
           annualizedReturn: Number(annualizedReturn.toFixed(6)),
+          winRate: report.metrics.winRate,
+          volatility: report.metrics.volatility,
+          cagr: report.metrics.cagr,
         },
       },
       null,

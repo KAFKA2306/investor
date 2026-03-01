@@ -18,7 +18,7 @@ paths:
   outputsRoot: ../../../ts-agent/data
   outputsVerificationJson: ../../../ts-agent/data/standard_verification_data.json
   outputsVerificationPlotDir: ../../../ts-agent/data
-  outputsPlaybook: ../../../ts-agent/data/playbook.json
+  outputsPlaybook: ../../../ts-agent/data/playbook.yaml
   cacheDir: ../../../logs/cache
   cacheMarketSqlite: ../../../logs/cache/market_cache.sqlite
   cacheMarketdataSqlite: ../../../logs/cache/marketdata.sqlite
