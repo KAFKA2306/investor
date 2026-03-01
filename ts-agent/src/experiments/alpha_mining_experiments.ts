@@ -1,5 +1,9 @@
-import { readFileSync } from "node:fs";
-import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
+import { createHash } from "node:crypto";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import {
+  LesAgent,
+  readNaturalLanguageInput,
+} from "../agents/latent_economic_signal_agent.ts";
 import { ContextPlaybook } from "../context/unified_context_services.ts";
 import {
   type FactorAST,
@@ -23,6 +27,65 @@ const jaccardSimilarity = (left: Set<string>, right: Set<string>): number => {
   const union = new Set([...left, ...right]).size;
   if (union === 0) return 0;
   return intersection / union;
+};
+
+const sha256hex = (value: string, length: number): string =>
+  createHash("sha256").update(value).digest("hex").slice(0, length);
+
+const collectAstVariables = (node: unknown, bucket: Set<string>): void => {
+  if (!node || typeof node !== "object") return;
+  const record = node as Record<string, unknown>;
+  const type = String(record.type || "");
+  if (type === "variable") {
+    const name = String(record.name || "")
+      .trim()
+      .toLowerCase();
+    name && bucket.add(name);
+  }
+  record.left && collectAstVariables(record.left, bucket);
+  record.right && collectAstVariables(record.right, bucket);
+};
+
+const buildFeatureSignature = (ast: unknown): string[] => {
+  const bucket = new Set<string>();
+  collectAstVariables(ast, bucket);
+  return [...bucket].sort();
+};
+
+const loadSeenIdeaHashes = (): Set<string> => {
+  if (!existsSync(paths.unifiedLogDir)) return new Set<string>();
+  const files = readdirSync(paths.unifiedLogDir)
+    .filter((f) => /^alpha_discovery_\d{8}_\d{14}\.json$/.test(f))
+    .sort()
+    .slice(-80);
+  const seen = new Set<string>();
+  for (const file of files) {
+    try {
+      const raw = readFileSync(`${paths.unifiedLogDir}/${file}`, "utf8");
+      const parsed = JSON.parse(raw) as {
+        payload?: {
+          selectedDetails?: { ideaHash?: string }[];
+          candidates?: {
+            status?: string;
+            ideaHash?: string;
+          }[];
+        };
+      };
+      const details = parsed.payload?.selectedDetails ?? [];
+      for (const detail of details) {
+        const hash = String(detail.ideaHash || "");
+        hash && seen.add(hash);
+      }
+      if (details.length === 0) {
+        for (const candidate of parsed.payload?.candidates ?? []) {
+          if (candidate.status !== "SELECTED") continue;
+          const hash = String(candidate.ideaHash || "");
+          hash && seen.add(hash);
+        }
+      }
+    } catch {}
+  }
+  return seen;
 };
 
 const buildNoveltyScoreMap = (
@@ -133,6 +196,9 @@ export async function discoverAlphaFactors() {
     process.env.UQTL_LOOP_ITERATION ?? "0",
     10,
   );
+  const nlInput = readNaturalLanguageInput();
+  const rawNaturalLanguageInput = nlInput.text;
+  const inputChannel = (process.env.UQTL_INPUT_CHANNEL || "task").trim();
   await playbook.load();
   console.log(`🚀 Starting Discovery over Universe: ${Universe.join(", ")}`);
   const hypotheses = await agent.generateHypotheses(playbook.getBullets());
@@ -146,6 +212,7 @@ export async function discoverAlphaFactors() {
   const generatedAt = new Date().toISOString();
   const asOfDate = generatedAt.slice(0, 10).replaceAll("-", "");
 
+  const seenIdeaHashes = loadSeenIdeaHashes();
   const scoredCandidates = hypotheses.map((h, index) => {
     const plausibility = plausibilityChecks[index]!.rs;
     const riskAdjusted = riskChecks[index]!.rs;
@@ -157,6 +224,23 @@ export async function discoverAlphaFactors() {
       plausibilityChecks[index]!.rejectionReason ??
       riskChecks[index]!.rejectionReason;
 
+    const featureSignature = (
+      h.featureSignature && h.featureSignature.length > 0
+        ? h.featureSignature
+        : buildFeatureSignature(h.ast)
+    ).slice(0, 12);
+    const ideaHash = sha256hex(
+      JSON.stringify({
+        desc: h.description,
+        reasoning: h.reasoning,
+        ast: h.ast,
+        featureSignature,
+      }),
+      24,
+    );
+    const adoptionScore = clamp01(priority * 0.8 + novelty * 0.2);
+    const isNovelAgainstHistory = !seenIdeaHashes.has(ideaHash);
+
     return {
       id: h.id,
       description: h.description,
@@ -166,34 +250,52 @@ export async function discoverAlphaFactors() {
       mutationType: h.mutationType,
       recency: generatedAt,
       rejectionFromReasoning,
+      ideaHash,
+      isNovelAgainstHistory,
+      featureSignature,
+      themeSource: h.themeSource ?? "LOCAL",
+      llmModel: h.llmModel ?? "",
       scores: {
         priority,
         plausibility,
         riskAdjusted,
         novelty,
+        fitness: clamp01((plausibility + riskAdjusted) / 2),
+        stability: clamp01(0.5 + (plausibility - riskAdjusted) * 0.25),
+        adoption: adoptionScore,
       },
     };
   });
   const sortedCandidates = [...scoredCandidates].sort(
     (left, right) => right.scores.priority - left.scores.priority,
   );
+  const executableById = new Map(
+    scoredCandidates.map((c) => [c.id, astExecutable(astById.get(c.id))]),
+  );
   const thresholdSelections = sortedCandidates
     .filter(
       (candidate) =>
         candidate.scores.priority >= DISCOVERY_SELECTION_THRESHOLD &&
+        candidate.isNovelAgainstHistory &&
         !candidate.rejectionFromReasoning &&
-        astExecutable(astById.get(candidate.id)),
+        executableById.get(candidate.id),
     )
     .map((candidate) => candidate.id);
   const forcedSelection =
     thresholdSelections.length > 0
       ? thresholdSelections
       : sortedCandidates
-          .filter((candidate) => astExecutable(astById.get(candidate.id)))
+          .filter(
+            (candidate) =>
+              candidate.isNovelAgainstHistory &&
+              executableById.get(candidate.id),
+          )
           .slice(0, 1)
           .map((candidate) => candidate.id);
   if (forcedSelection.length === 0) {
-    throw new Error("No executable hypothesis AST available for selection");
+    throw new Error(
+      "No novel executable hypothesis AST available for selection in this cycle",
+    );
   }
   const selectedSet = new Set(forcedSelection);
   const candidates = scoredCandidates.map((candidate) => ({
@@ -209,6 +311,11 @@ export async function discoverAlphaFactors() {
         "Priority score was below top-ranked candidate."),
     recency: candidate.recency,
     scores: candidate.scores,
+    ideaHash: candidate.ideaHash,
+    isNovelAgainstHistory: candidate.isNovelAgainstHistory,
+    featureSignature: candidate.featureSignature,
+    themeSource: candidate.themeSource,
+    llmModel: candidate.llmModel,
     generation: candidate.generation,
     parentId: candidate.parentId,
     mutationType: candidate.mutationType,
@@ -232,6 +339,14 @@ export async function discoverAlphaFactors() {
         ast: astById.get(h.id),
         status: h.status,
         score: h.scores.priority,
+        fitnessScore: h.scores.fitness,
+        noveltyScore: h.scores.novelty,
+        stabilityScore: h.scores.stability,
+        adoptionScore: h.scores.adoption,
+        ideaHash: h.ideaHash,
+        featureSignature: h.featureSignature,
+        themeSource: h.themeSource,
+        llmModel: h.llmModel,
         generation: h.generation,
         parentId: h.parentId,
         mutationType: h.mutationType,
@@ -241,6 +356,17 @@ export async function discoverAlphaFactors() {
 
   await playbook.save();
   const selected = [...selectedSet];
+  const selectedDetails = candidates
+    .filter((c) => c.status === "SELECTED")
+    .map((c) => ({
+      id: c.id,
+      ideaHash: c.ideaHash,
+      featureSignature: c.featureSignature,
+      noveltyScore: c.scores.novelty,
+      adoptionScore: c.scores.adoption,
+      themeSource: c.themeSource,
+      llmModel: c.llmModel,
+    }));
 
   writeCanonicalEnvelope({
     kind: "alpha_discovery",
@@ -260,15 +386,31 @@ export async function discoverAlphaFactors() {
         sampleSize: candidates.length,
         selectedCount: selected.length,
         selectionRate: selected.length / Math.max(1, candidates.length),
+        selectedNovelCount: selectedDetails.length,
+        openAIThemeUsage: candidates.filter((c) => c.themeSource === "OPENAI")
+          .length,
       },
       quality: {
         completeness: "COMPLETE",
         missingFields: [],
       },
       selected,
+      selectedDetails,
       candidates,
       universe: Universe,
       startedAt,
+      input: {
+        channel: inputChannel || "task",
+        nlInputProvided: rawNaturalLanguageInput.length > 0,
+        nlInputHash:
+          rawNaturalLanguageInput.length > 0
+            ? sha256hex(rawNaturalLanguageInput, 16)
+            : "",
+        nlInputPreview:
+          rawNaturalLanguageInput.length > 0
+            ? rawNaturalLanguageInput.slice(0, 140)
+            : "",
+      },
     },
   });
   console.log("\n✅ Playbook updated with new hypotheses.");

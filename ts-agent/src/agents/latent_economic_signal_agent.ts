@@ -8,17 +8,14 @@ import type {
   ComputeMarketData,
   ComputeResponse,
 } from "../providers/factor_compute_engine_client.ts";
+import { OpenAIThemeProvider } from "../providers/openai_theme_provider.ts";
 import type {
   AceBullet,
   StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
 
-const clamp01 = (value: number): number => {
-  if (value < 0) return 0;
-  if (value > 1) return 1;
-  return value;
-};
+const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
 
 const pickOne = <T>(items: readonly T[]): T => {
   const value = items[Math.floor(Math.random() * items.length)];
@@ -26,6 +23,20 @@ const pickOne = <T>(items: readonly T[]): T => {
     throw new Error("random selection failed");
   }
   return value;
+};
+
+export const readNaturalLanguageInput = (): {
+  text: string;
+  source: "ENV" | "FILE" | "NONE";
+} => {
+  const fromEnv = (process.env.UQTL_NL_INPUT || "").trim();
+  if (fromEnv.length > 0) return { text: fromEnv, source: "ENV" };
+  const filePath = (process.env.UQTL_NL_INPUT_FILE || "").trim();
+  if (filePath.length > 0 && fs.existsSync(filePath)) {
+    const content = fs.readFileSync(filePath, "utf8").trim();
+    if (content.length > 0) return { text: content, source: "FILE" };
+  }
+  return { text: "", source: "NONE" };
 };
 
 export interface AlphaFactor {
@@ -42,6 +53,10 @@ export interface AlphaFactor {
     | "STRUCTURAL_SHIFT"
     | "NEW_SEED";
   gender: "MALE" | "FEMALE";
+  featureSignature?: string[] | undefined;
+  ideaHashHint?: string | undefined;
+  themeSource?: "OPENAI" | "LOCAL" | undefined;
+  llmModel?: string | undefined;
 }
 
 export interface FactorEvaluation {
@@ -59,6 +74,8 @@ export interface FactorGenerationOptions {
 }
 
 export class LesAgent extends BaseAgent {
+  private openAIThemeProvider = new OpenAIThemeProvider();
+
   public async generateAlphaFactors(
     playbookBullets: AceBullet[] = [],
     _options: FactorGenerationOptions = {},
@@ -68,20 +85,22 @@ export class LesAgent extends BaseAgent {
     const source = lesModel ? ` (Ref: ${lesModel.arxiv})` : "";
 
     let missionContext = "";
-    if (
-      fs.existsSync(
-        "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md",
-      )
-    ) {
-      missionContext = fs.readFileSync(
-        "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md",
-        "utf8",
-      );
+    const missionPath =
+      "/home/kafka/finance/investor/ts-agent/alpha_discovery_mission.md";
+    if (fs.existsSync(missionPath)) {
+      missionContext = fs.readFileSync(missionPath, "utf8");
       if (missionContext.trim().length > 0) {
         const titleMatch = missionContext.match(/# (.*)/);
-        const title = titleMatch ? titleMatch[1] : "Custom Mission";
-        console.log(`🎯 MISSION LOADED: Focusing on ${title}...`);
+        console.log(
+          `🎯 MISSION LOADED: Focusing on ${titleMatch ? titleMatch[1] : "Custom Mission"}...`,
+        );
       }
+    }
+    const naturalLanguageInput = readNaturalLanguageInput();
+    if (naturalLanguageInput.source !== "NONE") {
+      console.log(
+        `🗣️ NL INPUT LOADED (${naturalLanguageInput.source}): ${naturalLanguageInput.text.slice(0, 80)}...`,
+      );
     }
 
     console.log(
@@ -142,6 +161,16 @@ export class LesAgent extends BaseAgent {
       "HFT Engineer",
       "Fundamental Researcher",
     ];
+    const recentSuccesses: string[] = [];
+    const recentFailures: string[] = [];
+    for (const b of playbookBullets) {
+      const helpful = b.helpful_count || 0;
+      const harmful = b.harmful_count || 0;
+      if (helpful > harmful && recentSuccesses.length < 8)
+        recentSuccesses.push(b.content);
+      else if (harmful > helpful && recentFailures.length < 8)
+        recentFailures.push(b.content);
+    }
 
     const generateRandomAST = (
       depth: number,
@@ -283,6 +312,29 @@ export class LesAgent extends BaseAgent {
           ]
         : []),
     ];
+    const openAIProposal = await this.openAIThemeProvider.propose({
+      missionContext:
+        missionContext.trim().length > 0
+          ? missionContext.slice(0, 1500)
+          : "General autonomous alpha discovery for JP equities",
+      marketContext:
+        playbookBullets.find((b) => b.id === "market-context")?.content || "",
+      existingThemes: [...existingThemes],
+      forbiddenThemes: [...forbiddenThemes],
+      recentSuccesses,
+      recentFailures,
+      userIntent: naturalLanguageInput.text.slice(0, 1200),
+      inputChannel: process.env.UQTL_INPUT_CHANNEL || "task",
+    });
+    const openAIThemeName = `${openAIProposal.theme} (${openAIProposal.model})`;
+    const openAITerms =
+      openAIProposal.featureSignature.length > 0
+        ? openAIProposal.featureSignature
+        : ["volume", "close", "macro_iip", "macro_cpi", "sentiment"];
+    themes.unshift({
+      name: openAIThemeName,
+      terms: openAITerms,
+    });
 
     const reasoningTemplates = [
       "CLAIM: Alpha captures {1} patterns in {0} via {2} logic. [REASONING] Leveraging {3} signals in {4} markets ensures robustness. Persona: {5}.",
@@ -351,6 +403,12 @@ export class LesAgent extends BaseAgent {
       const missionBias = theme.name.includes("(Mission)")
         ? theme.terms.filter((t) => cols.includes(t))
         : undefined;
+      const openAIBias =
+        theme.name === openAIThemeName
+          ? theme.terms.filter((t) => cols.includes(t))
+          : undefined;
+      const bias =
+        openAIBias && openAIBias.length > 0 ? openAIBias : missionBias;
 
       if (isEvolution && seed) {
         parentId = seed.metadata?.id as string | undefined;
@@ -372,15 +430,15 @@ export class LesAgent extends BaseAgent {
           mutationType = "STRUCTURAL_SHIFT";
           description = `[EVOLVED] Shift (MALE): ${seed.content.split(":")[0]} [v${generation}]`;
           reasoning = `[EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ${parentId}. Focusing on explorative diversity.`;
-          ast = generateRandomAST(depth, missionBias, 1.5);
+          ast = generateRandomAST(depth, bias, 1.5);
         } else {
           mutationType = "POINT_MUTATION";
           description = `[EVOLVED] Fine-tune (FEMALE): ${seed.content.split(":")[0]} [v${generation}]`;
           reasoning = `[EVOLUTIONARY TRACE] Micro-mutation from ${parentId}. Focusing on exploititive stability.`;
-          ast = generateRandomAST(depth, missionBias, 0.5);
+          ast = generateRandomAST(depth, bias, 0.5);
         }
       } else {
-        ast = generateRandomAST(depth, missionBias);
+        ast = generateRandomAST(depth, bias);
       }
 
       if (existingThemes.has(description.toLowerCase())) continue;
@@ -389,11 +447,21 @@ export class LesAgent extends BaseAgent {
         id,
         ast,
         description,
-        reasoning,
+        reasoning:
+          theme.name === openAIThemeName
+            ? `[LLM_THEME] ${openAIProposal.hypothesis} | ${openAIProposal.noveltyRationale} | ${reasoning}`
+            : reasoning,
         parentId,
         generation,
         mutationType,
         gender,
+        featureSignature:
+          theme.name === openAIThemeName ? openAIProposal.featureSignature : [],
+        ideaHashHint:
+          theme.name === openAIThemeName ? openAIProposal.ideaHashHint : "",
+        themeSource: theme.name === openAIThemeName ? "OPENAI" : "LOCAL",
+        llmModel:
+          theme.name === openAIThemeName ? openAIProposal.model : undefined,
       });
       existingThemes.add(description.toLowerCase());
     }
@@ -406,12 +474,6 @@ export class LesAgent extends BaseAgent {
 
     return candidates;
   }
-  public async generate(
-    playbookBullets: AceBullet[] = [],
-  ): Promise<AlphaFactor[]> {
-    return this.generateAlphaFactors(playbookBullets);
-  }
-
   public async generateHypotheses(
     playbookBullets: AceBullet[] = [],
   ): Promise<AlphaFactor[]> {
@@ -656,10 +718,6 @@ export class LesAgent extends BaseAgent {
     );
   }
 
-  public async analyzeSentiment(_text: string): Promise<number> {
-    return 0.5;
-  }
-
   public generateArXivReport(outcome: StandardOutcome): string {
     const m = outcome.verification?.metrics;
     const a = outcome.alpha;
@@ -706,9 +764,7 @@ ${outcome.reasoning || "特記事項なし。"}
       : process.cwd();
     const targetDir = path.join(baseDir, "docs", "arxiv");
 
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
-    }
+    fs.mkdirSync(targetDir, { recursive: true });
 
     const filePath = path.join(targetDir, filename);
     fs.writeFileSync(filePath, report);
