@@ -44,3 +44,52 @@ export function logMetric(args: {
     values: args.values,
   });
 }
+
+/**
+ * エラーを標準的な形式でかわいく記録するよっ！🛡️
+ */
+export function logError(args: {
+  stage: string;
+  name: string;
+  error: unknown;
+  context?: Record<string, number | string | boolean>;
+}): void {
+  const message =
+    args.error instanceof Error ? args.error.message : String(args.error);
+  emit({
+    ts: new Date().toISOString(),
+    level: "METRIC",
+    stage: args.stage,
+    direction: "INTERNAL",
+    name: `${args.name}.error`,
+    values: {
+      message,
+      ...(args.context ?? {}),
+    },
+  });
+}
+
+/**
+ * 処理の実行時間を測って記録するよっ！⏱️✨
+ */
+export async function withTelemetry<T>(
+  stage: string,
+  name: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  const start = performance.now();
+  try {
+    const result = await fn();
+    const duration = performance.now() - start;
+    logMetric({
+      stage,
+      name: `${name}.duration`,
+      values: { ms: duration },
+    });
+    return result;
+  } catch (error) {
+    const duration = performance.now() - start;
+    logError({ stage, name, error, context: { ms: duration } });
+    throw error;
+  }
+}

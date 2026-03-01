@@ -76,6 +76,20 @@ export const bySecCode = (secCode: string) => (doc: EdinetDocument) =>
 export const byEdinetCode = (edinetCode: string) => (doc: EdinetDocument) =>
   doc.edinetCode === edinetCode;
 
+/**
+ * 訂正書類かどうかを判定するよっ！🔍
+ */
+export const isCorrectionDocument = (doc: EdinetDocument): boolean => {
+  const text = [
+    doc.docDescription ?? "",
+    doc.filerName ?? "",
+    doc.currentReportReason ?? "",
+  ]
+    .join(" ")
+    .trim();
+  return /訂正|修正/.test(text);
+};
+
 export class EdinetProvider {
   private readonly baseUrl = "https://api.edinet-fsa.go.jp/api/v2";
   private readonly apiKey: string;

@@ -84,6 +84,15 @@ export function requireIsoDate(value: string, keyName: string): string {
   return value;
 }
 
+/**
+ * 文字列をブール値っぽく解釈するよっ！✅
+ */
+export function parseBoolLike(value: string | undefined): boolean {
+  if (value === undefined) return false;
+  const v = value.toLowerCase();
+  return v === "true" || v === "1" || v === "on" || v === "yes" || v === "t";
+}
+
 export function parseUniverseArgs(parsed: ParsedCliArgs): {
   symbols: string[];
   limit: number;
@@ -91,9 +100,9 @@ export function parseUniverseArgs(parsed: ParsedCliArgs): {
   const symbolsRaw = getStringArg(parsed, "--symbols", "");
   const symbols = symbolsRaw
     ? symbolsRaw
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0)
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
     : [];
   const limit = getNumberArg(parsed, "--limit", 100);
   return { symbols, limit };
@@ -119,6 +128,7 @@ export const cliArgs = {
   getString: getStringArg,
   getNumber: getNumberArg,
   hasFlag,
+  parseBool: parseBoolLike,
   requireIsoDate,
   parseUniverseArgs,
   parseDateRangeArgs,

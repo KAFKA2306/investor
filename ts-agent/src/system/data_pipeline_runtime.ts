@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 import { clamp } from "../utils/math_utils.ts";
-import { toIsoDate } from "../utils/value_utils.ts";
+import {
+  normalizeSymbol,
+  toIsoDate,
+  valueUtils,
+} from "../utils/value_utils.ts";
 import { core } from "./app_runtime_core.ts";
 import { paths } from "./path_registry.ts";
 
@@ -14,12 +18,6 @@ const RuntimePathsSchema = z.object({
   stockPriceCsv: z.string().min(1),
   stockFinCsv: z.string().min(1),
 });
-
-const parseBoolLike = (value: string): boolean =>
-  value === "True" || value === "1" || value === "true";
-
-const normalizeSymbol = (symbol: string): string =>
-  symbol.replace(".T", "").slice(0, 4);
 
 export class DataPipelineRuntime {
   public readonly paths = RuntimePathsSchema.parse({
@@ -78,8 +76,12 @@ export class DataPipelineRuntime {
       if (!/^\d{4}$/.test(code)) continue;
       const pred = (cols[predIdx] ?? "").replaceAll('"', "").trim();
       const uni = (cols[uniIdx] ?? "").replaceAll('"', "").trim();
-      if (predIdx >= 0 && !parseBoolLike(pred)) continue;
-      if (uniIdx >= 0 && !parseBoolLike(uni)) continue;
+
+      // valueUtils.normalizers.toBool は無いので、cliArgs.parseBool を使うか、valueUtilsに足すべきでした
+      // ひとまず value_utils に parseBool を足したのでそれを使います
+      if (predIdx >= 0 && !valueUtils.normalizers.parseBool?.(pred)) continue;
+      if (uniIdx >= 0 && !valueUtils.normalizers.parseBool?.(uni)) continue;
+
       selected.push(code);
       if (selected.length >= maxSymbols) break;
     }
@@ -186,7 +188,7 @@ export class QuantResearchRuntime {
   public async loadNormalizedBars(
     gateway: import("../providers/unified_market_data_gateway.ts").MarketdataLocalGateway,
     symbol: string,
-  ): Promise<import("../providers/value_normalizers.ts").NormalizedBar[]> {
+  ): Promise<import("../utils/value_utils.ts").NormalizedBar[]> {
     const { normalizeBars } = await import("../utils/value_utils.ts");
     const barsRaw = await gateway.getBarsAll(symbol);
     return normalizeBars(barsRaw);

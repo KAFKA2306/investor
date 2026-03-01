@@ -17,6 +17,8 @@ export type RequestJsonOptions = {
   timeoutMs?: number;
 };
 
+const DEFAULT_TIMEOUT_MS = 60_000;
+
 export type RequestJsonResult = {
   payload: JsonMap;
   cached: boolean;
@@ -71,7 +73,7 @@ export async function requestJson(
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
-    options.timeoutMs ?? 30000,
+    options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   );
 
   const response = await fetch(urlStr, {
