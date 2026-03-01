@@ -1,25 +1,23 @@
-# 🎀 エグゼクティブサマリー：World Models & On-chain Alpha ✨
+# 🎀 エグゼクティブサマリー：Long-Context World Models & On-chain ✨
 
-**代表的な手法**: *Large World Models (LWM) & Agentic On-chain Analytics*  
-**お誕生日**: 2025年-2026年（次元を超えたリサーチっ！）  
-**解決した困りごと**: 株価だけ見ててもダメ！世界全体のつながりや、ブロックチェーン上の「影の動き」も全部可視化したいんだよっ 🌍🔗💦
+**代表的な論文**: *LongFinanceQA: Facilitating Long Context Understanding via Supervised Chain-of-Thought Reasoning* (arXiv:2502.13127)  
+**代表的な手法**: *CryptoTrade: A Reflective LLM-based Agent for Cryptocurrency Trading* (arXiv:2407.09546)  
+**解決した困りごと**: 10-K みたいに長〜い書類だと、AI が途中で内容を忘れちゃう（Lost-in-the-middle）！オンチェーンの生の動きと合わせて、世界全体を正しく理解したいんだよっ 🌍🔗💦
 
 ## 📖 論文を詳しく読むっ！
-✨ **arXiv**: [https://arxiv.org/abs/2511.05158](https://arxiv.org/abs/2511.05158) ✨  
-✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2511.05158?lang=ja](https://www.alphaxiv.org/abs/2511.05158?lang=ja) ✨
-
-*(※注：URLは PINNs と関連した Lang-PINN LWM 論文の例示だよっ 🎀)*
+✨ **LongFinanceQA**: [https://arxiv.org/abs/2502.13127](https://arxiv.org/abs/2502.13127) ✨  
+✨ **CryptoTrade**: [https://arxiv.org/abs/2407.09546](https://arxiv.org/abs/2407.09546) ✨
 
 ---
 
 ## 💖 魔法のような考え方の変化
-市場をただの「数字の列」じゃなくて、**「一つの大きな世界（World Model）」**として丸ごとAIの中に再現して、そこで未来を何度も予行演習させるんだよっ！🌟✨
+市場をただの「数字の列」じゃなくて、**「一つの大きな世界（World Model）」**として丸ごと捉えて、長文読解とオンチェーン分析を合体させるんだよっ！🌟✨
 
 ## ✨ ここがすごいっ！3つのヒミツ
-1. **Large World Models (LWM)**: 言葉、画像、動画、そして財務データを統合して、世界がどう動くかの「物理法則」をAIが直感的に理解するんだよっ 🌍🧠
-2. **Smart Money Tracking (On-chain)**: ブロックチェーン上の「クジラ（大口）」の動きをリアルタイムで監視して、市場が動く前の「予兆」を掴むんだよっ 🐳✨
-3. **Agentic Simulation**: 何千人もの「AI投資家」を仮想世界に放流して、パニックや熱狂がどう広がるかを実験しちゃうんだよっ 🧪🎀
+1. **Long-Context Understanding**: 20万トークンを超える膨大な財務報告書も、Chain-of-Thought の魔法で隅々まで理解しちゃうんだよっ 📚🧠
+2. **On-chain Reflection**: ブロックチェーン上の透明なデータを使って、自分の取引を「本当に正しかったかな？」って振り返る、とってもお利口な仕組みだよっ 🐳✨
+3. **Multi-Modality Fusion**: テキストだけじゃなく、ネットワークの繋がりや資産の流れを「視る」ように直感的に捉えるんだよっ 🧪🎀
 
 ## 🌟 Gen 4 への嬉しい効果
-- **未来予報士**: 世界情勢やオンチェーンの変化から、明日の市場がどうなるか、まるでお天気予報みたいに教えてくれるよっ ✨
-- **リスクパトロール**: 見えないところで起きている危ない予兆をいち早く見つけて、私たちを助けてくれるよっ 🎀🌟
+- **情報の取りこぼしゼロ**: 長い報告書の端っこに隠れたリスクも、LWM の力で見逃さずにキャッチできるよっ ✨
+- **透明性の高い運用**: オンチェーンデータに基づいているから、エビデンスがハッキリした信頼できる判断ができるよっ 🎀🌟

@@ -1,24 +1,22 @@
 # 🎀 エグゼクティブサマリー：Trading-R1 ✨
 
-**フルネーム**: *Trading-R1: Financial Trading with Multi-Step LLM Reasoning*  
-**お誕生日**: 2025年9月（arXiv:2509.14000）  
+**フルネーム**: *Trading-R1: Financial Trading with LLM Reasoning via Reinforcement Learning*  
+**お誕生日**: 2025年9月（arXiv:2509.11420）  
 **解決したい困りごと**: 「買いますっ！」「売りますっ！」の結論だけじゃなくて、どうしてそうなったかの「プロセス」も大事にしたいんだよっ 🧠⏳💦
 
-## 📖 論文を詳しく読むっ！
-✨ **arXiv**: [https://arxiv.org/abs/2509.14000](https://arxiv.org/abs/2509.14000) ✨  
-✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2509.14000?lang=ja](https://www.alphaxiv.org/abs/2509.14000?lang=ja) ✨
-
+## 📖 alphaXiv (JA) で詳しく読むっ！
+✨ [Trading-R1: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2509.11420?lang=ja) ✨
 
 ---
 
 ## 💖 魔法のような考え方の変化
-強化学習で鍛えられた **Reasoning（推論）能力** を使って、EDGAR の難しい書類を一歩一歩、丁寧に読み解いていくんだよっ！🌟✨
+強化学習で鍛えられた **Reasoning（推論）能力** を使って、一歩一歩、丁寧に投資判断を読み解いていくんだよっ！🌟✨
 
 ## ✨ ここがすごいっ！3つのヒミツ
-1. **Multi-Step Deductive Reasoning**: 「売上が増えたねっ」→「でも利益率が下がってる…」→「つまり効率が悪くなってるっ！」みたいに、段階を踏んで考えるよっ 🪜🧠
-2. **Tag-Driven Extraction**: 10-K などの膨大なテキストから、一番キラキラしてる「売上」や「EPS」をピンポイントで見つけるよっ 🔍💎
-3. **RL-Based Strategy Optimization**: 自分の考えが「正しかったか」を何度も反省して、どんどん賢いトレーダーになっていくよっ 🎀⚡
+1. **Three-Stage Curriculum**: 「形式を覚える」→「データに裏付ける」→「利益を最大化する」という3ステップで、エリートトレーダーに育つんだよっ 🪜🧠
+2. **Reverse Reasoning Distillation**: o1 などの賢いモデルの「考え方」を真似して、高精度な推論プロセスを身につけるよっ 🔍💎
+3. **GRPO Strategy Optimization**: 運任せじゃなくて、論理的な一貫性とリスク調整後リターンを追い求める、とっても真面目な子なんだよっ 🎀⚡
 
 ## 🌟 Gen 4 への嬉しい効果
 - **深い納得感**: 結論までの「考えた足跡」が見えるから、安心して AI の提案に乗れるよっ ✨
-- **複雑な状況への対応**: 単純なルールじゃ対応できないような、入り組んだ決算内容もバッチリ理解できるよっ 🎀🌟
+- **複雑な状況への対応**: 単純なルールじゃ対応できないような、入り組んだ市場の変化もバッチリ理解できるよっ 🎀🌟

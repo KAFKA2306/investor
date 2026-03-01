@@ -163,6 +163,62 @@ tasks:
       - task: pipeline:benchmark
       - task: pipeline:verification-plot
 
+  jquants:warm-all:start:
+    desc: J-Quants日次バーを最小リクエストで全期間キャッシュ（完了までループ）
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          cat > /tmp/jquants_warm_until_finish.sh << "SH"
+          #!/usr/bin/env bash
+          set -u
+          cd /home/kafka/finance/investor/ts-agent || exit 1
+          set -a
+          source .env
+          set +a
+          LOG=/tmp/jquants_warm_until_finish.log
+          echo "[start] $(date -Is)" >> "$LOG"
+          while true; do
+            echo "[run] $(date -Is)" >> "$LOG"
+            OUT=$(bun run jquants:warm-cache --mode=date --from=2021-03-01 --to=2026-03-01 --date-order=desc --req-per-30sec=1 --max-rate-limit-errors=2 2>&1)
+            CODE=$?
+            printf "%s\n" "$OUT" >> "$LOG"
+            if [ $CODE -ne 0 ]; then
+              echo "[warn] $(date -Is) exit=$CODE sleep60" >> "$LOG"
+              sleep 60
+              continue
+            fi
+            if printf "%s" "$OUT" | grep -q "abortedByRateLimit\": true"; then
+              echo "[cooldown] $(date -Is) sleep310" >> "$LOG"
+              sleep 310
+              continue
+            fi
+            if printf "%s" "$OUT" | grep -q "abortedByRateLimit\": false"; then
+              echo "[done] $(date -Is)" >> "$LOG"
+              break
+            fi
+            echo "[warn] $(date -Is) no-marker sleep60" >> "$LOG"
+            sleep 60
+          done
+          SH
+          chmod +x /tmp/jquants_warm_until_finish.sh
+          nohup /tmp/jquants_warm_until_finish.sh >/tmp/jquants_warm_until_finish.nohup 2>&1 & echo $! > /tmp/jquants_warm_until_finish.pid
+          echo "PID=$(cat /tmp/jquants_warm_until_finish.pid)"'
+
+  jquants:warm-all:status:
+    desc: J-Quants全期間キャッシュジョブの状態確認
+    cmds:
+      - bash -lc 'if [ -f /tmp/jquants_warm_until_finish.pid ]; then PID=$(cat /tmp/jquants_warm_until_finish.pid); ps -fp "$PID" || true; else echo "PID file not found"; fi'
+
+  jquants:warm-all:log:
+    desc: J-Quants全期間キャッシュジョブのログ表示
+    cmds:
+      - bash -lc 'tail -n 120 /tmp/jquants_warm_until_finish.log'
+
+  jquants:warm-all:stop:
+    desc: J-Quants全期間キャッシュジョブを停止
+    cmds:
+      - bash -lc 'if [ -f /tmp/jquants_warm_until_finish.pid ]; then kill "$(cat /tmp/jquants_warm_until_finish.pid)" 2>/dev/null || true; rm -f /tmp/jquants_warm_until_finish.pid; echo "stopped"; else echo "PID file not found"; fi'
+
   clean:logs:
     desc: ログ掃除
     cmds:

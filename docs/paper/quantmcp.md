@@ -1,13 +1,11 @@
 # 🎀 エグゼクティブサマリー：QuantMCP ✨
 
 **フルネーム**: *QuantMCP: Grounding Large Language Models in Verifiable Financial Reality*  
-**お誕生日**: 2025年6月（arXiv:2506.12000）  
+**お誕生日**: 2025年6月（arXiv:2506.06622）  
 **解決したい困りごと**: AIが嘘（ハルシネーション）をついて、デタラメな投資アドバイスをしたら大変っ！嘘をつけない「検証可能な現実」に AI を繋ぎ止めたいんだよっ ⚓📉💦
 
-## 📖 論文を詳しく読むっ！
-✨ **arXiv**: [https://arxiv.org/abs/2506.12000](https://arxiv.org/abs/2506.12000) ✨  
-✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2506.12000?lang=ja](https://www.alphaxiv.org/abs/2506.12000?lang=ja) ✨
-
+## 📖 alphaXiv (JA) で詳しく読むっ！
+✨ [QuantMCP: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2506.06622?lang=ja) ✨
 
 ---
 

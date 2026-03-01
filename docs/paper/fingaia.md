@@ -1,13 +1,11 @@
 # 🎀 エグゼクティブサマリー：FinGAIA ✨
 
 **フルネーム**: *FinGAIA: An End-to-End Benchmark for Evaluating AI Agents in Finance*  
-**お誕生日**: 2025年7月（arXiv:2507.03456）  
+**お誕生日**: 2025年7月（arXiv:2507.17186）  
 **解決したい困りごと**: 「テストの点数はいいのに、実際に取引させるとダメ…」という、AIの「お勉強と実務のギャップ」を埋めたいんだよっ 💦
 
-## 📖 論文を詳しく読むっ！
-✨ **arXiv**: [https://arxiv.org/abs/2507.03456](https://arxiv.org/abs/2507.03456) ✨  
-✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2507.03456?lang=ja](https://www.alphaxiv.org/abs/2507.03456?lang=ja) ✨
-
+## 📖 alphaXiv (JA) で詳しく読むっ！
+✨ [FinGAIA: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2507.17186?lang=ja) ✨
 
 ---
 
@@ -15,7 +13,7 @@
 単なる「クイズ形式」のテストを卒業して、**マルチステップ・マルチツール** を使いこなす「本物の仕事力」を測るんだよっ！🌟✨
 
 ## ✨ ここがすごいっ！3つのヒミツ
-1. **400+ Complex Tasks**: 銀行、保険、証券…金融のあらゆる分野の「超・難問」が 400 以上も詰まってるんだよっ 🏦⚖️
+1. **407 Complex Tasks**: 銀行、保険、証券…金融のあらゆる分野の「超・難問」が 400 以上も詰まってるんだよっ 🏦⚖️
 2. **Tool-Use Collaboration**: 検索したり、計算したり、グラフを描いたり…いろんな道具を使いこなす「手際の良さ」を見るんだよっ 🛠️💖
 3. **Human-Expert Alignment**: プロのクオンツやアナリストの思考回路と、どれくらい似ているかを厳しくチェックするよっ 🎀✨
 

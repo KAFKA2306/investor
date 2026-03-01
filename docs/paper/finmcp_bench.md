@@ -1,13 +1,11 @@
 # 🎀 エグゼクティブサマリー：FinMCP-Bench ✨
 
 **フルネーム**: *FinMCP-Bench: Benchmarking LLM Agents for Real-World Financial Tool Use under the Model Context Protocol*  
-**お誕生日**: 2025年5月（arXiv:2505.09388）  
+**お誕生日**: 2025年10月（arXiv:2510.05122）  
 **解決したい困りごと**: 金融のツールっていっぱいあるけど、AIが本当に正しく使いこなせているか不安…。MCP（Model Context Protocol）を通じて、実務レベルの「道具使い」をテストしたいんだよっ 🛠️📈💦
 
-## 📖 論文を詳しく読むっ！
-✨ **arXiv**: [https://arxiv.org/abs/2505.09388](https://arxiv.org/abs/2505.09388) ✨  
-✨ **alphaXiv (JA)**: [https://www.alphaxiv.org/abs/2505.09388?lang=ja](https://www.alphaxiv.org/abs/2505.09388?lang=ja) ✨
-
+## 📖 alphaXiv (JA) で詳しく読むっ！
+✨ [FinMCP-Bench: 日本語解説ページはこちらっ！](https://www.alphaxiv.org/abs/2510.05122?lang=ja) ✨
 
 ---
 
