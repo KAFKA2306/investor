@@ -1,9 +1,28 @@
 cache*
+.cache/
+*.sqlite
 build/
 dist/
 wheels/
 *info*
-*lock*
+*.lock
+!uv.lock
+!ts-agent/uv.lock
+!**/bun.lock
+
+# Secrets and local env files
+.env
+.env.*
+!.env.example
+ts-agent/.env
+edinet2dataset/.env
+
 # Virtual environments
-*env* 
+.venv/
 *module*
+
+# Verification plot offline wheelhouse/lock artifacts
+!ts-agent/vendor/
+!ts-agent/vendor/wheels/
+!ts-agent/vendor/wheels/README.md
+!ts-agent/vendor/wheels/*.whl
