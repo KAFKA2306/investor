@@ -74,8 +74,11 @@ def generate_schema_driven_plot():
 
     # Panel 1: Universe Spaghetti Plot
     ax0 = fig.add_subplot(gs[0])
+    n_dates = len(dates)
     for symbol, s_data in indiv_data.items():
-        ax0.plot(dates, s_data["prices"], label=symbol, alpha=0.7, linewidth=1.5)
+        # Ensure x and y have same dimensions
+        prices = s_data["prices"][:n_dates]
+        ax0.plot(dates, prices, label=symbol, alpha=0.7, linewidth=1.5)
     ax0.set_title(f"Panel 1: {ly['panel1Title']}", fontsize=14, fontweight="bold")
     ax0.set_ylabel("Price Index")
     ax0.grid(True, alpha=0.3)
@@ -83,7 +86,7 @@ def generate_schema_driven_plot():
 
     # Panel 2: Rolling IC (30-day window)
     ax1 = fig.add_subplot(gs[1], sharex=ax0)
-    ic_arr = np.array(rolling_ic)
+    ic_arr = np.array(rolling_ic)[:n_dates]
     ax1.plot(dates, ic_arr, color="purple", linewidth=1.5, label="Rolling IC (30d)")
     ax1.axhline(0, color="gray", linewidth=0.8, linestyle="--")
     ax1.fill_between(
@@ -101,7 +104,7 @@ def generate_schema_driven_plot():
 
     # Panel 3: Drawdown Chart
     ax2 = fig.add_subplot(gs[2], sharex=ax0)
-    dd_arr = np.array(drawdown)
+    dd_arr = np.array(drawdown)[:n_dates]
     ax2.fill_between(dates, dd_arr, 0, color="red", alpha=0.4, label="Drawdown")
     ax2.plot(dates, dd_arr, color="darkred", linewidth=1.0)
     ax2.set_title(f"Panel 3: {ly['panel3Title']}", fontsize=12)
@@ -111,16 +114,18 @@ def generate_schema_driven_plot():
 
     # Panel 4: Performance Proof vs Benchmark
     ax3 = fig.add_subplot(gs[3], sharex=ax0)
+    s_cum = np.array(strat_cum)[:n_dates]
+    b_cum = np.array(bench_cum)[:n_dates]
     ax3.plot(
-        dates, strat_cum, color="green", linewidth=3, label=ly["legendStrategy"]
+        dates, s_cum, color="green", linewidth=3, label=ly["legendStrategy"]
     )
     ax3.plot(
-        dates, bench_cum,
+        dates, b_cum,
         color="black", linestyle="--", alpha=0.6, label=ly["legendBenchmark"],
     )
     ax3.fill_between(
-        dates, strat_cum, bench_cum,
-        where=(np.array(strat_cum) >= np.array(bench_cum)),
+        dates, s_cum, b_cum,
+        where=(s_cum >= b_cum),
         color="green", alpha=0.1,
     )
     ax3.set_title(f"Panel 4: {ly['panel4Title']}", fontsize=14, fontweight="bold")
@@ -175,7 +180,14 @@ def generate_schema_driven_plot():
     plt.suptitle(ly["mainTitle"], fontsize=20, y=0.98, fontweight="bold")
     plt.figtext(0.5, 0.94, ly["subTitle"], ha="center", fontsize=12, color="gray")
 
-    out_path = os.path.join(verification_dir, data["fileName"])
+    # Ensure extension is .png
+    fname = data["fileName"]
+    if fname.endswith(".json"):
+        fname = fname.replace(".json", ".png")
+    if not fname.endswith(".png"):
+        fname += ".png"
+
+    out_path = os.path.join(verification_dir, fname)
     plt.savefig(out_path, bbox_inches="tight", dpi=120)
     print(f"✅ Schema-driven standard verification plot saved to: {out_path}")
 
