@@ -1,6 +1,9 @@
 project:
   name: investor-ts
 
+runtime:
+  envFile: ../../../.env
+
 paths:
   data: /mnt/d/marketdata
   logs: ../../../logs
