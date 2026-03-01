@@ -33,17 +33,20 @@ paths:
   docsDiagramsDir: ../../../docs/diagrams
   docsPaperDir: ../../../docs/paper
   docsNikkiDir: ../../../docs/nikki
-  workflowsDir: ../../../.agent/workflows
+  workflowsDir: ../../../logs/workflows
 
 providers:
   yfinance:
     enabled: true
   jquants:
     enabled: true
+    apiKeyEnv: JQUANTS_API_KEY
   edinet:
     enabled: true
+    apiKeyEnv: EDINET_API_KEY
   estat:
     enabled: true
+    appIdEnv: ESTAT_APP_ID
   ai:
     enabled: true
   python:

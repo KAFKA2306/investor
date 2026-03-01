@@ -5654,11 +5654,16 @@ bullets:
       llmModel: ''
       generation: 1
       mutationType: NEW_SEED
-  - content: >-
+  - id: ctx-63lkez3a
+    content: >-
       DAG-based Evolution (AlphaPROBE) Hypothesis (Macro Strategist): CLAIM: High-precision biased forecasting using
       DAG-based Evolution (AlphaPROBE). [REASONING] A retrieval model that uses graph to filter noise during evolution
       periods. Proposed by Macro Strategist.
     section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:00:00.516Z'
+    updated_at: '2026-03-01T06:00:00.516Z'
     metadata:
       source: AlphaDiscovery
       type: HYPOTHESIS
@@ -5680,16 +5685,16 @@ bullets:
       llmModel: ''
       generation: 1
       mutationType: NEW_SEED
-    id: ctx-63lkez3a
-    helpful_count: 0
-    harmful_count: 0
-    created_at: '2026-03-01T06:00:00.516Z'
-    updated_at: '2026-03-01T06:00:00.516Z'
-  - content: >-
+  - id: ctx-gikq8im2
+    content: >-
       Causal Mechanism (CAMEF) Hypothesis (Quant Analyst): CLAIM: High-precision intervention forecasting using Causal
       Mechanism (CAMEF). [REASONING] A counterfactual model that uses causality to filter noise during mechanism
       periods. Proposed by Quant Analyst.
     section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:00:00.516Z'
+    updated_at: '2026-03-01T06:00:00.516Z'
     metadata:
       source: AlphaDiscovery
       type: HYPOTHESIS
@@ -5743,8 +5748,2413 @@ bullets:
       llmModel: ''
       generation: 1
       mutationType: NEW_SEED
-    id: ctx-gikq8im2
+  - id: ctx-wdsh4om5
+    content: >-
+      [EVOLVED] Crossover: DAG-based Evolution (AlphaPROBE) Hypothesis (Macro Strategist) [v2]: [EVOLUTIONARY TRACE]
+      Crossover mutation (GGA MALE) from ALPHA-MACRO-F8018DC4. CLAIM: Autonomous hypothesis on DAG-based Evolution
+      (AlphaPROBE) using retrieval. [REASONING] This model identifies graph trajectories to extract biased edge in
+      evolution regimes. Reasoning trace by Fundamental Researcher.
+    section: strategies_and_hard_rules
     helpful_count: 0
     harmful_count: 0
-    created_at: '2026-03-01T06:00:00.516Z'
-    updated_at: '2026-03-01T06:00:00.516Z'
+    created_at: '2026-03-01T06:00:52.011Z'
+    updated_at: '2026-03-01T06:00:52.011Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-D4E5221B
+      runId: uqtl_20260301T150047_1
+      loopIteration: 1
+      ast:
+        type: constant
+        value: 1.55
+      status: SELECTED
+      score: 0.5470338983050848
+      fitnessScore: 0.525
+      noveltyScore: 0.6101694915254237
+      stabilityScore: 0.5125
+      adoptionScore: 0.5596610169491526
+      ideaHash: 6b53ce9b117d6da2c9cf71c0
+      featureSignature: []
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-MACRO-F8018DC4
+      mutationType: CROSSOVER
+  - id: ctx-l1u3mdh6
+    content: >-
+      Cross-Asset Retrieval (FactorMiner) Hypothesis (Macro Strategist): CLAIM: Autonomous hypothesis on Cross-Asset
+      Retrieval (FactorMiner) using skill. [REASONING] This model identifies memory trajectories to extract cross-asset
+      edge in experience regimes. Reasoning trace by Macro Strategist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:00:52.011Z'
+    updated_at: '2026-03-01T06:00:52.011Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-MACRO-8B07B7BB
+      runId: uqtl_20260301T150047_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: SMA
+        left:
+          type: operator
+          name: LAG
+          left:
+            type: variable
+            name: correction_freq
+          right:
+            type: constant
+            value: 6
+        right:
+          type: constant
+          value: 5
+      status: REJECTED
+      score: 0.5470338983050848
+      fitnessScore: 0.525
+      noveltyScore: 0.6101694915254237
+      stabilityScore: 0.5125
+      adoptionScore: 0.5596610169491526
+      ideaHash: 5b6979db91ef604ce97ea6b7
+      featureSignature:
+        - correction_freq
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-a3285oxy
+    content: >-
+      [EVOLVED] Shift (MALE): [EVOLVED] Crossover [v4]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from
+      ALPHA-QUANT-381379C3. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:15.812Z'
+    updated_at: '2026-03-01T06:01:15.812Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-FA6E6BF8
+      runId: uqtl_20260301T150112_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: operator
+          name: LAG
+          left:
+            type: operator
+            name: SMA
+            left:
+              type: variable
+              name: macro_cpi
+            right:
+              type: constant
+              value: 6
+          right:
+            type: constant
+            value: 2
+        right:
+          type: operator
+          name: SMA
+          left:
+            type: operator
+            name: SMA
+            left:
+              type: variable
+              name: macro_cpi
+            right:
+              type: constant
+              value: 5
+          right:
+            type: constant
+            value: 6
+      status: SELECTED
+      score: 0.576271186440678
+      fitnessScore: 0.5
+      noveltyScore: 0.8813559322033898
+      stabilityScore: 0.5
+      adoptionScore: 0.6372881355932204
+      ideaHash: 61b51ca679dda00236d1ae2e
+      featureSignature:
+        - macro_cpi
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 4
+      parentId: ALPHA-QUANT-381379C3
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-cye7j8kl
+    content: >-
+      Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist): CLAIM: Strategic Causal Mechanism (CAMEF) extraction
+      using counterfactual. [REASONING] Detects causality and exploits intervention in mechanism markets. Verified by
+      Behavioral Economist protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:15.812Z'
+    updated_at: '2026-03-01T06:01:15.812Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-4BC9FCF0
+      runId: uqtl_20260301T150112_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: ADD
+        left:
+          type: variable
+          name: close
+        right:
+          type: operator
+          name: SUB
+          left:
+            type: variable
+            name: kg_centrality
+          right:
+            type: variable
+            name: macro_iip
+      status: REJECTED
+      score: 0.551271186440678
+      fitnessScore: 0.475
+      noveltyScore: 0.8813559322033898
+      stabilityScore: 0.4875
+      adoptionScore: 0.6172881355932204
+      ideaHash: 3f6c79be11effd445a546c38
+      featureSignature:
+        - close
+        - kg_centrality
+        - macro_iip
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-qwyeh3ck
+    content: >-
+      [EVOLVED] Shift (MALE): Causal Mechanism (CAMEF) Hypothesis (Macro Strategist) [v2]: [EVOLUTIONARY TRACE]
+      Macro-mutation/Structural shift from ALPHA-MACRO-F77B94E2. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:20.752Z'
+    updated_at: '2026-03-01T06:01:20.752Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-10D14C84
+      runId: uqtl_20260301T150117_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: SMA
+        left:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: ai_exposure
+          right:
+            type: variable
+            name: macro_cpi
+        right:
+          type: constant
+          value: 2
+      status: REJECTED
+      score: 0.5827586206896552
+      fitnessScore: 0.5
+      noveltyScore: 0.9137931034482758
+      stabilityScore: 0.5
+      adoptionScore: 0.6489655172413794
+      ideaHash: 9ab025cfd9bfb5948e06bdb5
+      featureSignature:
+        - ai_exposure
+        - macro_cpi
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-MACRO-F77B94E2
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-ot5oairf
+    content: >-
+      Regime Transition Hypothesis (Fundamental Researcher): CLAIM: Structural drift identification via Regime
+      Transition and breakout. [REASONING] The Fundamental Researcher persona targets entropy using a stability
+      approach. Optimized for chaos regimes.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:20.752Z'
+    updated_at: '2026-03-01T06:01:20.752Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-C870119E
+      runId: uqtl_20260301T150117_2
+      loopIteration: 2
+      ast:
+        type: variable
+        name: high
+      status: SELECTED
+      score: 0.6077586206896552
+      fitnessScore: 0.525
+      noveltyScore: 0.9137931034482758
+      stabilityScore: 0.5125
+      adoptionScore: 0.6689655172413794
+      ideaHash: 7e8157bfe6189139d32a39f8
+      featureSignature:
+        - high
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-kixov0c7
+    content: >-
+      [EVOLVED] Crossover: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY
+      TRACE] Crossover mutation (GGA MALE) from ALPHA-FUNDAMENTAL-90284A54. CLAIM: Strategic DAG-based Evolution
+      (AlphaPROBE) extraction using retrieval. [REASONING] Detects graph and exploits biased in evolution markets.
+      Verified by HFT Engineer protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:25.950Z'
+    updated_at: '2026-03-01T06:01:25.950Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-4CC2A8E7
+      runId: uqtl_20260301T150122_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: DIV
+        left:
+          type: operator
+          name: LAG
+          left:
+            type: operator
+            name: ADD
+            left:
+              type: variable
+              name: macro_iip
+            right:
+              type: variable
+              name: close
+          right:
+            type: constant
+            value: 1
+        right:
+          type: operator
+          name: SUB
+          left:
+            type: constant
+            value: 1.78
+          right:
+            type: operator
+            name: LAG
+            left:
+              type: variable
+              name: low
+            right:
+              type: constant
+              value: 4
+      status: REJECTED
+      score: 0.5590909090909091
+      fitnessScore: 0.5
+      noveltyScore: 0.7954545454545454
+      stabilityScore: 0.5
+      adoptionScore: 0.6063636363636363
+      ideaHash: 24c2bb0674577fe8ec214004
+      featureSignature:
+        - close
+        - low
+        - macro_iip
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-FUNDAMENTAL-90284A54
+      mutationType: CROSSOVER
+  - id: ctx-8hz1vd3q
+    content: >-
+      [EVOLVED] Fine-tune (FEMALE): Volatility Regime Hypothesis (Behavioral Economist) [v2]: [LLM_THEME] Regime
+      transition and microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used
+      because remote proposal was unavailable. | [EVOLUTIONARY TRACE] Micro-mutation from ALPHA-BEHAVIORAL-DD3B26EC.
+      Focusing on exploititive stability.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:25.950Z'
+    updated_at: '2026-03-01T06:01:25.950Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-6229F5BB
+      runId: uqtl_20260301T150122_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: variable
+          name: close
+        right:
+          type: operator
+          name: DIV
+          left:
+            type: variable
+            name: close
+          right:
+            type: variable
+            name: ai_exposure
+      status: SELECTED
+      score: 0.619090909090909
+      fitnessScore: 0.6
+      noveltyScore: 0.7954545454545454
+      stabilityScore: 0.45
+      adoptionScore: 0.6543636363636364
+      ideaHash: ba315d2a7ce87261e5cc1d41
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 2
+      parentId: ALPHA-BEHAVIORAL-DD3B26EC
+      mutationType: POINT_MUTATION
+  - id: ctx-zalb6jtv
+    content: >-
+      [EVOLVED] Shift (MALE): Behavioral Momentum Hypothesis (Macro Strategist) [v2]: [LLM_THEME] Regime transition and
+      microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used because remote
+      proposal was unavailable. | [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-MACRO-6228161E.
+      Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:47.776Z'
+    updated_at: '2026-03-01T06:01:47.776Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-5FE4F457
+      runId: uqtl_20260301T150144_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: DIV
+          left:
+            type: constant
+            value: 2.61
+          right:
+            type: variable
+            name: macro_cpi
+        right:
+          type: constant
+          value: 5
+      status: SELECTED
+      score: 0.5678787878787879
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.43939393939393945
+      stabilityScore: 0.5
+      adoptionScore: 0.5421818181818182
+      ideaHash: 9c41c6261d5cb7e30c6dab6e
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 2
+      parentId: ALPHA-MACRO-6228161E
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-2oss6udp
+    content: >-
+      [EVOLVED] Fine-tune (FEMALE): [EVOLVED] Crossover [v5]: [LLM_THEME] Regime transition and microstructure
+      divergence jointly improve short-horizon alpha detection. | Fallback theme used because remote proposal was
+      unavailable. | [EVOLUTIONARY TRACE] Micro-mutation from ALPHA-MACRO-AEBF5672. Focusing on exploititive stability.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:47.776Z'
+    updated_at: '2026-03-01T06:01:47.776Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-D4EC321A
+      runId: uqtl_20260301T150144_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: open
+          right:
+            type: variable
+            name: segment_sentiment
+        right:
+          type: constant
+          value: 9
+      status: REJECTED
+      score: 0.5678787878787879
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.43939393939393945
+      stabilityScore: 0.5
+      adoptionScore: 0.5421818181818182
+      ideaHash: 72308212e424de9515898728
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 5
+      parentId: ALPHA-MACRO-AEBF5672
+      mutationType: POINT_MUTATION
+  - id: ctx-ohx4x4w0
+    content: >-
+      Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Quant Analyst): [LLM_THEME] Regime transition and
+      microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used because remote
+      proposal was unavailable. | CLAIM: Structural drift identification via Adaptive Regime Cross-Signal (gpt-5-nano)
+      and macro_iip. [REASONING] The Quant Analyst persona targets volume using a macro_cpi approach. Optimized for
+      close regimes.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:52.594Z'
+    updated_at: '2026-03-01T06:01:52.594Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-D702E363
+      runId: uqtl_20260301T150149_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: variable
+          name: macro_iip
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: correction_freq
+          right:
+            type: variable
+            name: macro_iip
+      status: SELECTED
+      score: 0.652340425531915
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.8617021276595744
+      stabilityScore: 0.5
+      adoptionScore: 0.6942127659574469
+      ideaHash: 4b583990e73c9d3963992d8d
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-yyf9saf7
+    content: >-
+      [EVOLVED] Crossover: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from
+      ALPHA-MACRO-18A7A916. CLAIM: Strategic 10-K Intelligence 2.0 (Mission) extraction using segment_sentiment.
+      [REASONING] Detects itemization and exploits ai_exposure in kg_centrality markets. Verified by Macro Strategist
+      protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:52.594Z'
+    updated_at: '2026-03-01T06:01:52.594Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-MACRO-26DB8973
+      runId: uqtl_20260301T150149_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: DIV
+          left:
+            type: constant
+            value: 2.61
+          right:
+            type: variable
+            name: macro_cpi
+        right:
+          type: constant
+          value: 5
+      status: REJECTED
+      score: 0.6473404255319148
+      fitnessScore: 0.575
+      noveltyScore: 0.8617021276595744
+      stabilityScore: 0.5375
+      adoptionScore: 0.6902127659574467
+      ideaHash: e85d41f0d2f016be4bab1276
+      featureSignature:
+        - macro_cpi
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-MACRO-18A7A916
+      mutationType: CROSSOVER
+  - id: ctx-sxief4th
+    content: >-
+      Regime Transition Hypothesis (Behavioral Economist): CLAIM: Autonomous hypothesis on Regime Transition using
+      stability. [REASONING] This model identifies breakout trajectories to extract entropy edge in chaos regimes.
+      Reasoning trace by Behavioral Economist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:57.446Z'
+    updated_at: '2026-03-01T06:01:57.446Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-412BD039
+      runId: uqtl_20260301T150153_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: DIV
+        left:
+          type: operator
+          name: MUL
+          left:
+            type: variable
+            name: kg_centrality
+          right:
+            type: variable
+            name: volume
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: ai_exposure
+          right:
+            type: constant
+            value: 2.12
+      status: REJECTED
+      score: 0.549367088607595
+      fitnessScore: 0.5
+      noveltyScore: 0.7468354430379747
+      stabilityScore: 0.5
+      adoptionScore: 0.5888607594936709
+      ideaHash: e1bcb893eaa7b9f90d3d4963
+      featureSignature:
+        - ai_exposure
+        - kg_centrality
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-xp1p4ail
+    content: >-
+      [EVOLVED] Crossover: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from
+      ALPHA-HFT-1B8534E1. CLAIM: Structural drift identification via 10-K Intelligence 2.0 (Mission) and itemization.
+      [REASONING] The HFT Engineer persona targets ai_exposure using a segment_sentiment approach. Optimized for
+      kg_centrality regimes.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:01:57.446Z'
+    updated_at: '2026-03-01T06:01:57.446Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-F983372B
+      runId: uqtl_20260301T150153_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: variable
+            name: close
+          right:
+            type: operator
+            name: ADD
+            left:
+              type: constant
+              value: 3.89
+            right:
+              type: variable
+              name: high
+        right:
+          type: operator
+          name: DIV
+          left:
+            type: variable
+            name: volume
+          right:
+            type: variable
+            name: open
+      status: SELECTED
+      score: 0.649367088607595
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.7468354430379747
+      stabilityScore: 0.55
+      adoptionScore: 0.668860759493671
+      ideaHash: 160dbd6c6b6ae48132164b28
+      featureSignature:
+        - close
+        - high
+        - open
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-HFT-1B8534E1
+      mutationType: CROSSOVER
+  - id: ctx-e7hf2ni3
+    content: >-
+      [EVOLVED] Shift (MALE): Volatility Regime Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE]
+      Macro-mutation/Structural shift from ALPHA-BEHAVIORAL-4F2DC594. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:04:49.949Z'
+    updated_at: '2026-03-01T06:04:49.949Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-55AC326C
+      runId: uqtl_20260301T150446_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: operator
+            name: SUB
+            left:
+              type: variable
+              name: macro_iip
+            right:
+              type: variable
+              name: activist_bias
+          right:
+            type: operator
+            name: DIV
+            left:
+              type: variable
+              name: segment_sentiment
+            right:
+              type: variable
+              name: open
+        right:
+          type: operator
+          name: LAG
+          left:
+            type: operator
+            name: DIV
+            left:
+              type: variable
+              name: activist_bias
+            right:
+              type: variable
+              name: open
+          right:
+            type: constant
+            value: 3
+      status: SELECTED
+      score: 0.5800000000000001
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.5
+      stabilityScore: 0.5
+      adoptionScore: 0.5640000000000001
+      ideaHash: 0c90b173bf7742933d470494
+      featureSignature:
+        - activist_bias
+        - macro_iip
+        - open
+        - segment_sentiment
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-BEHAVIORAL-4F2DC594
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-h6fft9kw
+    content: >-
+      [EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from
+      ALPHA-HFT-F05073DB. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:04:49.949Z'
+    updated_at: '2026-03-01T06:04:49.949Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-B0A02FE4
+      runId: uqtl_20260301T150446_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: SMA
+          left:
+            type: variable
+            name: volume
+          right:
+            type: constant
+            value: 6
+        right:
+          type: constant
+          value: 7
+      status: REJECTED
+      score: 0.5
+      fitnessScore: 0.5
+      noveltyScore: 0.5
+      stabilityScore: 0.5
+      adoptionScore: 0.5
+      ideaHash: 227f0f89eada3c4236a98688
+      featureSignature:
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-HFT-F05073DB
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-arrconqq
+    content: >-
+      Inventory Lead Hypothesis (Macro Strategist): CLAIM: Strategic Inventory Lead extraction using backlog.
+      [REASONING] Detects cycle and exploits utilization in bottleneck markets. Verified by Macro Strategist protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:04:58.407Z'
+    updated_at: '2026-03-01T06:04:58.407Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-MACRO-D5ECAC50
+      runId: uqtl_20260301T150454_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: DIV
+        left:
+          type: constant
+          value: 4.88
+        right:
+          type: variable
+          name: open
+      status: REJECTED
+      score: 0.5555555555555556
+      fitnessScore: 0.5
+      noveltyScore: 0.7777777777777778
+      stabilityScore: 0.5
+      adoptionScore: 0.6000000000000001
+      ideaHash: 02a39042d679a6b43a0f044f
+      featureSignature:
+        - open
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-5vgqe4gu
+    content: >-
+      Information Asymmetry Hypothesis (Quant Analyst): CLAIM: Structural drift identification via Information Asymmetry
+      and insider. [REASONING] The Quant Analyst persona targets latency using a leakage approach. Optimized for
+      skewness regimes.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:04:58.407Z'
+    updated_at: '2026-03-01T06:04:58.407Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-858E0021
+      runId: uqtl_20260301T150454_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: operator
+          name: MUL
+          left:
+            type: variable
+            name: correction_freq
+          right:
+            type: operator
+            name: MUL
+            left:
+              type: variable
+              name: high
+            right:
+              type: variable
+              name: volume
+        right:
+          type: operator
+          name: MUL
+          left:
+            type: operator
+            name: MUL
+            left:
+              type: variable
+              name: macro_iip
+            right:
+              type: constant
+              value: 3.68
+          right:
+            type: operator
+            name: SMA
+            left:
+              type: variable
+              name: open
+            right:
+              type: constant
+              value: 3
+      status: SELECTED
+      score: 0.5805555555555556
+      fitnessScore: 0.525
+      noveltyScore: 0.7777777777777778
+      stabilityScore: 0.5125
+      adoptionScore: 0.6200000000000001
+      ideaHash: 8d5ead2024081aba6c2ce18c
+      featureSignature:
+        - correction_freq
+        - high
+        - macro_iip
+        - open
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-e4maxfxq
+    content: >-
+      Regime Transition Hypothesis (Fundamental Researcher): CLAIM: High-precision entropy forecasting using Regime
+      Transition. [REASONING] A stability model that uses breakout to filter noise during chaos periods. Proposed by
+      Fundamental Researcher.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:05:05.509Z'
+    updated_at: '2026-03-01T06:05:05.509Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-ABFF4124
+      runId: uqtl_20260301T150501_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: variable
+          name: segment_sentiment
+        right:
+          type: variable
+          name: open
+      status: REJECTED
+      score: 0.5996478873239437
+      fitnessScore: 0.525
+      noveltyScore: 0.8732394366197183
+      stabilityScore: 0.5125
+      adoptionScore: 0.6543661971830986
+      ideaHash: 499ac69711c67f03512e7865
+      featureSignature:
+        - open
+        - segment_sentiment
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-3c56jkqr
+    content: >-
+      [EVOLVED] Shift (MALE): Macro-Socio Divergence (e-Stat) Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY
+      TRACE] Macro-mutation/Structural shift from ALPHA-BEHAVIORAL-4498948D. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:05:05.509Z'
+    updated_at: '2026-03-01T06:05:05.509Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-D712F0F3
+      runId: uqtl_20260301T150501_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: ADD
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: operator
+            name: ADD
+            left:
+              type: variable
+              name: kg_centrality
+            right:
+              type: variable
+              name: macro_iip
+          right:
+            type: operator
+            name: SMA
+            left:
+              type: constant
+              value: 2.98
+            right:
+              type: constant
+              value: 7
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: operator
+            name: SUB
+            left:
+              type: constant
+              value: 0.72
+            right:
+              type: variable
+              name: open
+          right:
+            type: operator
+            name: ADD
+            left:
+              type: variable
+              name: activist_bias
+            right:
+              type: constant
+              value: 4.41
+      status: SELECTED
+      score: 0.6296478873239437
+      fitnessScore: 0.575
+      noveltyScore: 0.8732394366197183
+      stabilityScore: 0.48750000000000004
+      adoptionScore: 0.6783661971830987
+      ideaHash: d483b1bc14fab36dbc2f5266
+      featureSignature:
+        - activist_bias
+        - kg_centrality
+        - macro_iip
+        - open
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-BEHAVIORAL-4498948D
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-osiuob3k
+    content: >-
+      [EVOLVED] Crossover: [EVOLVED] Shift [v4]: [EVOLUTIONARY TRACE] Crossover mutation (GGA FEMALE) from
+      ALPHA-BEHAVIORAL-E7D76A24. CLAIM: Alpha captures dispersion patterns in Volatility Regime via uncertainty logic.
+      [REASONING] Leveraging skew signals in tail markets ensures robustness. Persona: HFT Engineer.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:14:43.667Z'
+    updated_at: '2026-03-01T06:14:43.667Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-AFA6F5C6
+      runId: uqtl_20260301T151439_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: variable
+          name: activist_bias
+        right:
+          type: constant
+          value: 10
+      status: SELECTED
+      score: 0.6136231884057971
+      fitnessScore: 0.6
+      noveltyScore: 0.7681159420289855
+      stabilityScore: 0.45
+      adoptionScore: 0.6445217391304349
+      ideaHash: 77f1ff65bda9d8057dca27fe
+      featureSignature:
+        - activist_bias
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 4
+      parentId: ALPHA-BEHAVIORAL-E7D76A24
+      mutationType: CROSSOVER
+  - id: ctx-sqmb8qn8
+    content: >-
+      [EVOLVED] Shift (MALE): Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Fundamental Researcher) [v2]:
+      [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-FUNDAMENTAL-2EF5EDF6. Focusing on explorative
+      diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:14:43.667Z'
+    updated_at: '2026-03-01T06:14:43.667Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-4DE14841
+      runId: uqtl_20260301T151439_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: SMA
+        left:
+          type: operator
+          name: SMA
+          left:
+            type: operator
+            name: MUL
+            left:
+              type: variable
+              name: ai_exposure
+            right:
+              type: variable
+              name: macro_iip
+          right:
+            type: constant
+            value: 8
+        right:
+          type: constant
+          value: 4
+      status: REJECTED
+      score: 0.5786231884057972
+      fitnessScore: 0.525
+      noveltyScore: 0.7681159420289855
+      stabilityScore: 0.5125
+      adoptionScore: 0.6165217391304348
+      ideaHash: 12a660f364a8fe7100e46ec1
+      featureSignature:
+        - ai_exposure
+        - macro_iip
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-FUNDAMENTAL-2EF5EDF6
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-aek09c7q
+    content: >-
+      Inventory Lead Hypothesis (HFT Engineer): CLAIM: Autonomous hypothesis on Inventory Lead using backlog.
+      [REASONING] This model identifies cycle trajectories to extract utilization edge in bottleneck regimes. Reasoning
+      trace by HFT Engineer.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:14:48.808Z'
+    updated_at: '2026-03-01T06:14:48.808Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-31870637
+      runId: uqtl_20260301T151444_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: variable
+          name: correction_freq
+        right:
+          type: operator
+          name: DIV
+          left:
+            type: variable
+            name: kg_centrality
+          right:
+            type: constant
+            value: 4.06
+      status: SELECTED
+      score: 0.5800000000000001
+      fitnessScore: 0.525
+      noveltyScore: 0.775
+      stabilityScore: 0.5125
+      adoptionScore: 0.6190000000000001
+      ideaHash: 48a3f5450d8a9c6a134dedcf
+      featureSignature:
+        - correction_freq
+        - kg_centrality
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-vi6hoywx
+    content: >-
+      [EVOLVED] Crossover: [EVOLVED] Shift (MALE) [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from
+      ALPHA-BEHAVIORAL-5FE4F457. CLAIM: High-precision latency forecasting using Information Asymmetry. [REASONING] A
+      leakage model that uses insider to filter noise during skewness periods. Proposed by Behavioral Economist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:14:48.808Z'
+    updated_at: '2026-03-01T06:14:48.808Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-33A09439
+      runId: uqtl_20260301T151444_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: ADD
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: operator
+            name: ADD
+            left:
+              type: variable
+              name: kg_centrality
+            right:
+              type: variable
+              name: macro_iip
+          right:
+            type: operator
+            name: SMA
+            left:
+              type: constant
+              value: 2.98
+            right:
+              type: constant
+              value: 7
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: operator
+            name: SUB
+            left:
+              type: constant
+              value: 0.72
+            right:
+              type: variable
+              name: open
+          right:
+            type: operator
+            name: ADD
+            left:
+              type: variable
+              name: activist_bias
+            right:
+              type: constant
+              value: 4.41
+      status: REJECTED
+      score: 0.555
+      fitnessScore: 0.5
+      noveltyScore: 0.775
+      stabilityScore: 0.5
+      adoptionScore: 0.5990000000000001
+      ideaHash: ce647bb1715edca292956aff
+      featureSignature:
+        - activist_bias
+        - kg_centrality
+        - macro_iip
+        - open
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-BEHAVIORAL-5FE4F457
+      mutationType: CROSSOVER
+  - id: ctx-z6irfkeo
+    content: >-
+      [EVOLVED] Fine-tune (FEMALE): Behavioral Momentum Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY TRACE]
+      Micro-mutation from ALPHA-FUNDAMENTAL-512BF248. Focusing on exploititive stability.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:14:54.139Z'
+    updated_at: '2026-03-01T06:14:54.139Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-C8EFF498
+      runId: uqtl_20260301T151450_3
+      loopIteration: 3
+      ast:
+        type: variable
+        name: close
+      status: SELECTED
+      score: 0.5801020408163265
+      fitnessScore: 0.525
+      noveltyScore: 0.7755102040816326
+      stabilityScore: 0.5125
+      adoptionScore: 0.6191836734693877
+      ideaHash: bf49dd0305fede44e52173a0
+      featureSignature:
+        - close
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-FUNDAMENTAL-512BF248
+      mutationType: POINT_MUTATION
+  - id: ctx-1k0fspe2
+    content: >-
+      [EVOLVED] Shift (MALE): Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from
+      ALPHA-HFT-89C6EB51. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:14:54.139Z'
+    updated_at: '2026-03-01T06:14:54.139Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-FC41C995
+      runId: uqtl_20260301T151450_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: operator
+          name: MUL
+          left:
+            type: constant
+            value: 2.65
+          right:
+            type: variable
+            name: macro_iip
+        right:
+          type: operator
+          name: DIV
+          left:
+            type: constant
+            value: 0.62
+          right:
+            type: variable
+            name: high
+      status: REJECTED
+      score: 0.5551020408163265
+      fitnessScore: 0.5
+      noveltyScore: 0.7755102040816326
+      stabilityScore: 0.5
+      adoptionScore: 0.5991836734693877
+      ideaHash: 53fed7decdb9b8fc15776fcb
+      featureSignature:
+        - high
+        - macro_iip
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-HFT-89C6EB51
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-9ggltndv
+    content: >-
+      10-K Intelligence 2.0 (Mission) Hypothesis (Macro Strategist): CLAIM: Autonomous hypothesis on 10-K Intelligence
+      2.0 (Mission) using segment_sentiment. [REASONING] This model identifies itemization trajectories to extract
+      ai_exposure edge in kg_centrality regimes. Reasoning trace by Macro Strategist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:33:52.713Z'
+    updated_at: '2026-03-01T06:33:52.713Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-MACRO-B3986337
+      runId: uqtl_20260301T153347_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: DIV
+        left:
+          type: constant
+          value: 2.8
+        right:
+          type: variable
+          name: segment_sentiment
+      status: SELECTED
+      score: 0.6388888888888888
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.6944444444444444
+      stabilityScore: 0.55
+      adoptionScore: 0.6499999999999999
+      ideaHash: cc329b9e45fd58ec588fde7d
+      featureSignature:
+        - segment_sentiment
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-4dcu8y6q
+    content: >-
+      [EVOLVED] Crossover: 10-K Intelligence 2.0 (Mission) Hypothesis (Quant Analyst) [v2]: [EVOLUTIONARY TRACE]
+      Crossover mutation (GGA MALE) from ALPHA-QUANT-12DC0604. CLAIM: Strategic Liquidity Shock extraction using flow.
+      [REASONING] Detects illiquidity and exploits impact in imbalance markets. Verified by Behavioral Economist
+      protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:33:52.713Z'
+    updated_at: '2026-03-01T06:33:52.713Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-305F6F29
+      runId: uqtl_20260301T153347_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: MUL
+          left:
+            type: constant
+            value: 4.52
+          right:
+            type: variable
+            name: segment_sentiment
+        right:
+          type: constant
+          value: 7
+      status: REJECTED
+      score: 0.5688888888888889
+      fitnessScore: 0.55
+      noveltyScore: 0.6944444444444444
+      stabilityScore: 0.475
+      adoptionScore: 0.5940000000000001
+      ideaHash: 4eaff47c1068a3e24bf6b6cf
+      featureSignature:
+        - segment_sentiment
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-QUANT-12DC0604
+      mutationType: CROSSOVER
+  - id: ctx-ssti8gdx
+    content: >-
+      [EVOLVED] Shift (MALE): [EVOLVED] Shift (MALE) [v3]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from
+      ALPHA-FUNDAMENTAL-0E9D2EE5. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:33:56.860Z'
+    updated_at: '2026-03-01T06:33:56.860Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-D86AD671
+      runId: uqtl_20260301T153352_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: variable
+            name: close
+          right:
+            type: variable
+            name: macro_iip
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: volume
+          right:
+            type: variable
+            name: segment_sentiment
+      status: SELECTED
+      score: 0.5689655172413793
+      fitnessScore: 0.5
+      noveltyScore: 0.8448275862068966
+      stabilityScore: 0.5
+      adoptionScore: 0.6241379310344828
+      ideaHash: 0afd921a4c55e466dc4b4ed6
+      featureSignature:
+        - close
+        - macro_iip
+        - segment_sentiment
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-FUNDAMENTAL-0E9D2EE5
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-4hqsaggy
+    content: >-
+      Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher): CLAIM: Strategic Cross-Asset Retrieval
+      (FactorMiner) extraction using skill. [REASONING] Detects memory and exploits cross-asset in experience markets.
+      Verified by Fundamental Researcher protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:33:56.860Z'
+    updated_at: '2026-03-01T06:33:56.860Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-EFCDC4A7
+      runId: uqtl_20260301T153352_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: DIV
+        left:
+          type: operator
+          name: DIV
+          left:
+            type: variable
+            name: ai_exposure
+          right:
+            type: operator
+            name: DIV
+            left:
+              type: variable
+              name: volume
+            right:
+              type: variable
+              name: volume
+        right:
+          type: operator
+          name: SMA
+          left:
+            type: variable
+            name: macro_iip
+          right:
+            type: constant
+            value: 2
+      status: REJECTED
+      score: 0.5689655172413793
+      fitnessScore: 0.5
+      noveltyScore: 0.8448275862068966
+      stabilityScore: 0.5
+      adoptionScore: 0.6241379310344828
+      ideaHash: 9aaa9de62dd1582aa19c5fb5
+      featureSignature:
+        - ai_exposure
+        - macro_iip
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-zqa7qnro
+    content: >-
+      [EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from
+      ALPHA-HFT-7583C250. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:00.952Z'
+    updated_at: '2026-03-01T06:34:00.952Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-A0AFB640
+      runId: uqtl_20260301T153357_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: ADD
+        left:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: volume
+          right:
+            type: operator
+            name: ADD
+            left:
+              type: variable
+              name: macro_cpi
+            right:
+              type: variable
+              name: kg_centrality
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: activist_bias
+          right:
+            type: operator
+            name: SMA
+            left:
+              type: variable
+              name: activist_bias
+            right:
+              type: constant
+              value: 1
+      status: REJECTED
+      score: 0.5622222222222223
+      fitnessScore: 0.5
+      noveltyScore: 0.8111111111111111
+      stabilityScore: 0.5
+      adoptionScore: 0.6120000000000001
+      ideaHash: 1bd370a0484bdfcb8e4c5a2a
+      featureSignature:
+        - activist_bias
+        - kg_centrality
+        - macro_cpi
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-HFT-7583C250
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-28jk9iz2
+    content: >-
+      [EVOLVED] Crossover: 10-K Intelligence 2.0 (Mission) Hypothesis (Behavioral Economist) [v2]: [LLM_THEME] Regime
+      transition and microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used
+      because remote proposal was unavailable. | [EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from
+      ALPHA-BEHAVIORAL-8EB7B9F7. CLAIM: Strategic Adaptive Regime Cross-Signal (gpt-5-nano) extraction using macro_cpi.
+      [REASONING] Detects macro_iip and exploits volume in close markets. Verified by HFT Engineer protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:00.952Z'
+    updated_at: '2026-03-01T06:34:00.952Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-7416DB4C
+      runId: uqtl_20260301T153357_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: constant
+          value: 0.56
+        right:
+          type: constant
+          value: 3.27
+      status: SELECTED
+      score: 0.6422222222222222
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.8111111111111111
+      stabilityScore: 0.5
+      adoptionScore: 0.676
+      ideaHash: 48f1ede419b0ef59f82e577d
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 2
+      parentId: ALPHA-BEHAVIORAL-8EB7B9F7
+      mutationType: CROSSOVER
+  - id: ctx-2vm2acn8
+    content: >-
+      [EVOLVED] Fine-tune (FEMALE): [EVOLVED] Crossover [v4]: [EVOLUTIONARY TRACE] Micro-mutation from
+      ALPHA-FUNDAMENTAL-E4C47634. Focusing on exploititive stability.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:39.829Z'
+    updated_at: '2026-03-01T06:34:39.829Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-DBD15121
+      runId: uqtl_20260301T153435_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: operator
+          name: DIV
+          left:
+            type: variable
+            name: correction_freq
+          right:
+            type: variable
+            name: low
+        right:
+          type: variable
+          name: macro_iip
+      status: REJECTED
+      score: 0.5777777777777778
+      fitnessScore: 0.5
+      noveltyScore: 0.8888888888888888
+      stabilityScore: 0.5
+      adoptionScore: 0.6400000000000001
+      ideaHash: 80a1f2b6f2b298c693dc0c2d
+      featureSignature:
+        - correction_freq
+        - low
+        - macro_iip
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 4
+      parentId: ALPHA-FUNDAMENTAL-E4C47634
+      mutationType: POINT_MUTATION
+  - id: ctx-6ccv8arc
+    content: >-
+      Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Macro Strategist): [LLM_THEME] Regime transition and
+      microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used because remote
+      proposal was unavailable. | CLAIM: High-precision volume forecasting using Adaptive Regime Cross-Signal
+      (gpt-5-nano). [REASONING] A macro_cpi model that uses macro_iip to filter noise during close periods. Proposed by
+      Macro Strategist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:39.829Z'
+    updated_at: '2026-03-01T06:34:39.829Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-MACRO-D2A9790D
+      runId: uqtl_20260301T153435_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: variable
+          name: macro_cpi
+        right:
+          type: constant
+          value: 1.68
+      status: SELECTED
+      score: 0.6577777777777778
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.8888888888888888
+      stabilityScore: 0.5
+      adoptionScore: 0.7040000000000001
+      ideaHash: 648e23a213c2901be120e360
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-ho2vai0w
+    content: >-
+      Liquidity Shock Hypothesis (Fundamental Researcher): CLAIM: Strategic Liquidity Shock extraction using flow.
+      [REASONING] Detects illiquidity and exploits impact in imbalance markets. Verified by Fundamental Researcher
+      protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:47.930Z'
+    updated_at: '2026-03-01T06:34:47.930Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-E246B903
+      runId: uqtl_20260301T153444_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: SUB
+          left:
+            type: constant
+            value: 3.02
+          right:
+            type: variable
+            name: macro_iip
+        right:
+          type: constant
+          value: 1
+      status: SELECTED
+      score: 0.631
+      fitnessScore: 0.575
+      noveltyScore: 0.88
+      stabilityScore: 0.48750000000000004
+      adoptionScore: 0.6808000000000001
+      ideaHash: 2c2b33e11a101cc82b9148d1
+      featureSignature:
+        - macro_iip
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-s5zpas9z
+    content: >-
+      [EVOLVED] Crossover: Volatility Regime Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE] Crossover
+      mutation (GGA FEMALE) from ALPHA-BEHAVIORAL-4F2DC594. CLAIM: Alpha captures graph patterns in DAG-based Evolution
+      (AlphaPROBE) via retrieval logic. [REASONING] Leveraging biased signals in evolution markets ensures robustness.
+      Persona: Behavioral Economist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:47.930Z'
+    updated_at: '2026-03-01T06:34:47.930Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-EF1A8D77
+      runId: uqtl_20260301T153444_2
+      loopIteration: 2
+      ast:
+        op: div
+        left:
+          op: div
+          left:
+            op: col
+            name: net_sales
+          right:
+            op: sub
+            left:
+              op: col
+              name: profit_margin
+            right:
+              op: col
+              name: profit_margin
+        right:
+          op: div
+          left:
+            op: sub
+            left:
+              op: col
+              name: net_sales
+            right:
+              op: col
+              name: operating_profit
+          right:
+            op: sub
+            left:
+              op: col
+              name: volume
+            right:
+              op: col
+              name: close
+      status: REJECTED
+      score: 0.606
+      fitnessScore: 0.55
+      noveltyScore: 0.88
+      stabilityScore: 0.475
+      adoptionScore: 0.6608
+      ideaHash: 26b2d09f8e15350064bbcad9
+      featureSignature: []
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-BEHAVIORAL-4F2DC594
+      mutationType: CROSSOVER
+  - id: ctx-34glgotx
+    content: >-
+      [EVOLVED] Crossover: Macro-Socio Divergence (e-Stat) Hypothesis (Behavioral Economist) [v2]: [EVOLUTIONARY TRACE]
+      Crossover mutation (GGA FEMALE) from ALPHA-BEHAVIORAL-4498948D. CLAIM: Autonomous hypothesis on Regime Transition
+      using stability. [REASONING] This model identifies breakout trajectories to extract entropy edge in chaos regimes.
+      Reasoning trace by Behavioral Economist.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:54.818Z'
+    updated_at: '2026-03-01T06:34:54.818Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-4761C462
+      runId: uqtl_20260301T153451_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: SMA
+        left:
+          type: constant
+          value: 0.18
+        right:
+          type: constant
+          value: 4
+      status: SELECTED
+      score: 0.6436363636363637
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.8181818181818181
+      stabilityScore: 0.5
+      adoptionScore: 0.6785454545454546
+      ideaHash: c44d3f536b778109a46adfb1
+      featureSignature: []
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-BEHAVIORAL-4498948D
+      mutationType: CROSSOVER
+  - id: ctx-3kna4ep5
+    content: >-
+      Efficiency Divergence Hypothesis (Behavioral Economist): CLAIM: Strategic Efficiency Divergence extraction using
+      operating. [REASONING] Detects margin and exploits leverage in structural markets. Verified by Behavioral
+      Economist protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:34:54.818Z'
+    updated_at: '2026-03-01T06:34:54.818Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-3335DD1A
+      runId: uqtl_20260301T153451_3
+      loopIteration: 3
+      ast:
+        type: constant
+        value: 2.1
+      status: REJECTED
+      score: 0.5536363636363637
+      fitnessScore: 0.45000000000000007
+      noveltyScore: 0.8181818181818181
+      stabilityScore: 0.5750000000000001
+      adoptionScore: 0.6065454545454546
+      ideaHash: b669eb4a048e84a52efaf441
+      featureSignature: []
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-9iat1se4
+    content: >-
+      Macro-Socio Divergence (e-Stat) Hypothesis (Fundamental Researcher): CLAIM: Strategic Macro-Socio Divergence
+      (e-Stat) extraction using labor. [REASONING] Detects demographic and exploits industrial in household markets.
+      Verified by Fundamental Researcher protocols.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:37:11.833Z'
+    updated_at: '2026-03-01T06:37:11.833Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-1943AF72
+      runId: uqtl_20260301T153707_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: ADD
+        left:
+          type: operator
+          name: DIV
+          left:
+            type: variable
+            name: macro_cpi
+          right:
+            type: constant
+            value: 0.06
+        right:
+          type: constant
+          value: 0.56
+      status: SELECTED
+      score: 0.6067241379310345
+      fitnessScore: 0.575
+      noveltyScore: 0.7586206896551724
+      stabilityScore: 0.48750000000000004
+      adoptionScore: 0.6371034482758621
+      ideaHash: 5ed4c429c99666065b9358c5
+      featureSignature:
+        - macro_cpi
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-5noqokd7
+    content: >-
+      Regime Transition Hypothesis (Fundamental Researcher): CLAIM: Autonomous hypothesis on Regime Transition using
+      stability. [REASONING] This model identifies breakout trajectories to extract entropy edge in chaos regimes.
+      Reasoning trace by Fundamental Researcher.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:37:11.833Z'
+    updated_at: '2026-03-01T06:37:11.833Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-6C9284FC
+      runId: uqtl_20260301T153707_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: SUB
+        left:
+          type: variable
+          name: close
+        right:
+          type: variable
+          name: close
+      status: REJECTED
+      score: 0.5767241379310345
+      fitnessScore: 0.525
+      noveltyScore: 0.7586206896551724
+      stabilityScore: 0.5125
+      adoptionScore: 0.613103448275862
+      ideaHash: 4866e6d3cc533e16970b3c15
+      featureSignature:
+        - close
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-abjmffep
+    content: >-
+      [EVOLVED] Shift (MALE): Evolved STRUCTURAL_SHIFT [v3]: [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from
+      ALPHA-MACRO-DA8E5419. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:37:19.625Z'
+    updated_at: '2026-03-01T06:37:19.625Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-6AD2F89C
+      runId: uqtl_20260301T153715_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: operator
+          name: MUL
+          left:
+            type: variable
+            name: macro_iip
+          right:
+            type: constant
+            value: 2.5
+        right:
+          type: operator
+          name: SUB
+          left:
+            type: variable
+            name: volume
+          right:
+            type: variable
+            name: segment_sentiment
+      status: SELECTED
+      score: 0.5754385964912281
+      fitnessScore: 0.5
+      noveltyScore: 0.8771929824561404
+      stabilityScore: 0.5
+      adoptionScore: 0.6357894736842106
+      ideaHash: ee61193f5550a298cd1684b8
+      featureSignature:
+        - macro_iip
+        - segment_sentiment
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-MACRO-DA8E5419
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-ds3kr1fa
+    content: >-
+      Inventory Lead Hypothesis (HFT Engineer): CLAIM: Alpha captures cycle patterns in Inventory Lead via backlog
+      logic. [REASONING] Leveraging utilization signals in bottleneck markets ensures robustness. Persona: HFT Engineer.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:37:19.625Z'
+    updated_at: '2026-03-01T06:37:19.625Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-D5BC05B9
+      runId: uqtl_20260301T153715_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: ADD
+        left:
+          type: variable
+          name: kg_centrality
+        right:
+          type: variable
+          name: correction_freq
+      status: REJECTED
+      score: 0.5754385964912281
+      fitnessScore: 0.5
+      noveltyScore: 0.8771929824561404
+      stabilityScore: 0.5
+      adoptionScore: 0.6357894736842106
+      ideaHash: 5cda4b9538c0ab04269764c5
+      featureSignature:
+        - correction_freq
+        - kg_centrality
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-bg5zwkzw
+    content: >-
+      DAG-based Evolution (AlphaPROBE) Hypothesis (Behavioral Economist): CLAIM: Structural drift identification via
+      DAG-based Evolution (AlphaPROBE) and graph. [REASONING] The Behavioral Economist persona targets biased using a
+      retrieval approach. Optimized for evolution regimes.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:37:28.390Z'
+    updated_at: '2026-03-01T06:37:28.390Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-C717E653
+      runId: uqtl_20260301T153723_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: variable
+          name: correction_freq
+        right:
+          type: variable
+          name: volume
+      status: REJECTED
+      score: 0.6253086419753087
+      fitnessScore: 0.55
+      noveltyScore: 0.8765432098765432
+      stabilityScore: 0.525
+      adoptionScore: 0.6755555555555557
+      ideaHash: 3e543066739efabfcf6346a8
+      featureSignature:
+        - correction_freq
+        - volume
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - id: ctx-iejhbd9b
+    content: >-
+      [EVOLVED] Shift (MALE): Cross-Asset Signal Hypothesis (HFT Engineer) [v2]: [LLM_THEME] Regime transition and
+      microstructure divergence jointly improve short-horizon alpha detection. | Fallback theme used because remote
+      proposal was unavailable. | [EVOLUTIONARY TRACE] Macro-mutation/Structural shift from ALPHA-HFT-BFAF9672. Focusing
+      on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:37:28.390Z'
+    updated_at: '2026-03-01T06:37:28.390Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-56BC9DCF
+      runId: uqtl_20260301T153723_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: operator
+          name: SMA
+          left:
+            type: variable
+            name: macro_cpi
+          right:
+            type: constant
+            value: 1
+        right:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: ai_exposure
+          right:
+            type: variable
+            name: segment_sentiment
+      status: SELECTED
+      score: 0.6553086419753087
+      fitnessScore: 0.6000000000000001
+      noveltyScore: 0.8765432098765432
+      stabilityScore: 0.5
+      adoptionScore: 0.6995555555555557
+      ideaHash: f2aef9705cabe27ef7dd6396
+      featureSignature:
+        - macro_iip
+        - macro_cpi
+        - volume
+        - close
+      themeSource: OPENAI
+      llmModel: gpt-5-nano
+      generation: 2
+      parentId: ALPHA-HFT-BFAF9672
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-o6hh4scv
+    content: >-
+      [EVOLVED] Crossover: Evolved POINT_MUTATION [v3]: [EVOLUTIONARY TRACE] Crossover mutation (GGA MALE) from
+      ALPHA-FUNDAMENTAL-C388C0C6. CLAIM: High-precision basis forecasting using Cross-Asset Signal. [REASONING] A spread
+      model that uses correlation to filter noise during parity periods. Proposed by Quant Analyst.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:39:42.271Z'
+    updated_at: '2026-03-01T06:39:42.271Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-QUANT-2B8FB5F2
+      runId: uqtl_20260301T153938_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: MUL
+        left:
+          type: operator
+          name: MUL
+          left:
+            type: variable
+            name: close
+          right:
+            type: variable
+            name: activist_bias
+        right:
+          type: variable
+          name: segment_sentiment
+      status: REJECTED
+      score: 0.5588235294117647
+      fitnessScore: 0.5
+      noveltyScore: 0.7941176470588236
+      stabilityScore: 0.5
+      adoptionScore: 0.6058823529411765
+      ideaHash: 7c469d1fe30c5f4ecb5420c7
+      featureSignature:
+        - activist_bias
+        - close
+        - segment_sentiment
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 3
+      parentId: ALPHA-FUNDAMENTAL-C388C0C6
+      mutationType: CROSSOVER
+  - id: ctx-gyks7exw
+    content: >-
+      [EVOLVED] Fine-tune (FEMALE): Macro-Socio Divergence (e-Stat) Hypothesis (Fundamental Researcher) [v2]:
+      [EVOLUTIONARY TRACE] Micro-mutation from ALPHA-FUNDAMENTAL-1943AF72. Focusing on exploititive stability.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:39:42.271Z'
+    updated_at: '2026-03-01T06:39:42.271Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-BEHAVIORAL-921C4D6F
+      runId: uqtl_20260301T153938_1
+      loopIteration: 1
+      ast:
+        type: operator
+        name: DIV
+        left:
+          type: variable
+          name: correction_freq
+        right:
+          type: variable
+          name: segment_sentiment
+      status: SELECTED
+      score: 0.6138235294117648
+      fitnessScore: 0.575
+      noveltyScore: 0.7941176470588236
+      stabilityScore: 0.48750000000000004
+      adoptionScore: 0.6498823529411766
+      ideaHash: 17e8ba323a4893b1e2c69299
+      featureSignature:
+        - correction_freq
+        - segment_sentiment
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-FUNDAMENTAL-1943AF72
+      mutationType: POINT_MUTATION
+  - id: ctx-tvjmaydu
+    content: >-
+      [EVOLVED] Shift (MALE): Macro-Socio Divergence (e-Stat) Hypothesis (Fundamental Researcher) [v2]: [EVOLUTIONARY
+      TRACE] Macro-mutation/Structural shift from ALPHA-FUNDAMENTAL-1943AF72. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:39:49.362Z'
+    updated_at: '2026-03-01T06:39:49.362Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-55FA525B
+      runId: uqtl_20260301T153945_2
+      loopIteration: 2
+      ast:
+        type: operator
+        name: SMA
+        left:
+          type: operator
+          name: LAG
+          left:
+            type: variable
+            name: close
+          right:
+            type: constant
+            value: 4
+        right:
+          type: constant
+          value: 3
+      status: SELECTED
+      score: 0.6420967741935484
+      fitnessScore: 0.575
+      noveltyScore: 0.935483870967742
+      stabilityScore: 0.48750000000000004
+      adoptionScore: 0.7007741935483871
+      ideaHash: d9fbefaa752da85cca7f4c45
+      featureSignature:
+        - close
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-FUNDAMENTAL-1943AF72
+      mutationType: STRUCTURAL_SHIFT
+  - id: ctx-707evfyy
+    content: >-
+      Liquidity Shock Hypothesis (HFT Engineer): CLAIM: High-precision impact forecasting using Liquidity Shock.
+      [REASONING] A flow model that uses illiquidity to filter noise during imbalance periods. Proposed by HFT Engineer.
+    section: strategies_and_hard_rules
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:39:49.362Z'
+    updated_at: '2026-03-01T06:39:49.362Z'
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-HFT-F33303D9
+      runId: uqtl_20260301T153945_2
+      loopIteration: 2
+      ast:
+        type: variable
+        name: ai_exposure
+      status: REJECTED
+      score: 0.5920967741935484
+      fitnessScore: 0.525
+      noveltyScore: 0.935483870967742
+      stabilityScore: 0.4625
+      adoptionScore: 0.6607741935483872
+      ideaHash: 5a8ab5a5044cbe186dbfed2a
+      featureSignature:
+        - ai_exposure
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 1
+      mutationType: NEW_SEED
+  - content: >-
+      [EVOLVED] Shift (MALE): Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst) [v2]: [EVOLUTIONARY TRACE]
+      Macro-mutation/Structural shift from ALPHA-QUANT-2635C93E. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-FUNDAMENTAL-93EA4937
+      runId: uqtl_20260301T153952_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: ADD
+          left:
+            type: variable
+            name: open
+          right:
+            type: variable
+            name: open
+        right:
+          type: constant
+          value: 3
+      status: SELECTED
+      score: 0.5438888888888889
+      fitnessScore: 0.575
+      noveltyScore: 0.4444444444444444
+      stabilityScore: 0.48750000000000004
+      adoptionScore: 0.524
+      ideaHash: bc6045b32f28ad1b72853bf6
+      featureSignature:
+        - open
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-QUANT-2635C93E
+      mutationType: STRUCTURAL_SHIFT
+    id: ctx-0mjavx6z
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:39:56.619Z'
+    updated_at: '2026-03-01T06:39:56.619Z'
+  - content: >-
+      [EVOLVED] Shift (MALE): Causal Mechanism (CAMEF) Hypothesis (Macro Strategist) [v2]: [EVOLUTIONARY TRACE]
+      Macro-mutation/Structural shift from ALPHA-MACRO-F77B94E2. Focusing on explorative diversity.
+    section: strategies_and_hard_rules
+    metadata:
+      source: AlphaDiscovery
+      type: HYPOTHESIS
+      id: ALPHA-MACRO-8C012FDD
+      runId: uqtl_20260301T153952_3
+      loopIteration: 3
+      ast:
+        type: operator
+        name: LAG
+        left:
+          type: operator
+          name: SMA
+          left:
+            type: operator
+            name: LAG
+            left:
+              type: variable
+              name: high
+            right:
+              type: constant
+              value: 8
+          right:
+            type: constant
+            value: 5
+        right:
+          type: constant
+          value: 6
+      status: REJECTED
+      score: 0.48888888888888893
+      fitnessScore: 0.5
+      noveltyScore: 0.4444444444444444
+      stabilityScore: 0.5
+      adoptionScore: 0.4800000000000001
+      ideaHash: f69cdd4f4639557ba6e816f7
+      featureSignature:
+        - high
+      themeSource: LOCAL
+      llmModel: ''
+      generation: 2
+      parentId: ALPHA-MACRO-F77B94E2
+      mutationType: STRUCTURAL_SHIFT
+    id: ctx-lajole0o
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T06:39:56.619Z'
+    updated_at: '2026-03-01T06:39:56.619Z'
