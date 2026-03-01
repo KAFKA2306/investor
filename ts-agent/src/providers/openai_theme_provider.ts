@@ -102,11 +102,11 @@ export class OpenAIThemeProvider {
       input: [
         {
           role: "system",
-          content: [{ type: "text", text: systemPrompt }],
+          content: [{ type: "input_text", text: systemPrompt }],
         },
         {
           role: "user",
-          content: [{ type: "text", text: userPrompt }],
+          content: [{ type: "input_text", text: userPrompt }],
         },
       ],
       text: {
@@ -139,11 +139,10 @@ export class OpenAIThemeProvider {
           },
         },
       },
-      temperature: 0.8,
     };
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12_000);
+    const timeout = setTimeout(() => controller.abort(), 60_000);
 
     const response = await fetch(`${this.baseUrl}/responses`, {
       method: "POST",
