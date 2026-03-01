@@ -13,6 +13,7 @@ export type RequestJsonOptions = {
   headers?: Record<string, string>;
   cache?: SqliteHttpCache;
   ttlMs?: number;
+  allowStaleCache?: boolean;
   timeoutMs?: number;
 };
 
@@ -46,6 +47,7 @@ export async function requestJson(
       urlStr,
       headers,
       options.ttlMs,
+      { allowStale: options.allowStaleCache ?? false },
     );
     if (cached.cached) {
       return {
@@ -63,32 +65,30 @@ export async function requestJson(
     options.timeoutMs ?? 30000,
   );
 
-  try {
-    const response = await fetch(urlStr, {
-      headers,
-      signal: controller.signal,
-    });
+  const response = await fetch(urlStr, {
+    headers,
+    signal: controller.signal,
+  });
 
-    if (!response.ok) {
-      throw new ProviderHttpError(
-        response.status,
-        urlStr,
-        await response.text().catch(() => "Unknown error"),
-      );
-    }
-
-    const payload = (await response.json()) as JsonMap;
-    const validated = z.record(z.string(), z.unknown()).parse(payload);
-
-    return {
-      payload: validated,
-      cached: false,
-      status: response.status,
-      finalUrl: urlStr,
-    };
-  } finally {
-    clearTimeout(timeout);
+  if (!response.ok) {
+    throw new ProviderHttpError(
+      response.status,
+      urlStr,
+      await response.text().catch(() => "Unknown error"),
+    );
   }
+
+  const payload = (await response.json()) as JsonMap;
+  const validated = z.record(z.string(), z.unknown()).parse(payload);
+
+  clearTimeout(timeout);
+
+  return {
+    payload: validated,
+    cached: false,
+    status: response.status,
+    finalUrl: urlStr,
+  };
 }
 
 export async function requestRows(

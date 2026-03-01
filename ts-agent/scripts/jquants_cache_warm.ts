@@ -166,16 +166,12 @@ const readCachedAny = (
     .query("SELECT value FROM http_cache WHERE key = ?1")
     .get(key) as { value: string } | null;
   if (!row) return undefined;
-  try {
-    const parsed = JSON.parse(row.value) as unknown;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return undefined;
-    }
-    const payload = parsed as Record<string, unknown>;
-    return isUsablePayload(payload) ? payload : undefined;
-  } catch {
+  const parsed = JSON.parse(row.value) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
     return undefined;
   }
+  const payload = parsed as Record<string, unknown>;
+  return isUsablePayload(payload) ? payload : undefined;
 };
 
 const writeCache = (
@@ -441,6 +437,8 @@ async function run(): Promise<void> {
         if (isRateLimit) {
           rateLimitErrors += 1;
           consecutiveRateLimitErrors += 1;
+          abortedByRateLimit = true;
+          console.log(`⏸️ Stop due to rate limit at date=${isoDate}.`);
         } else {
           consecutiveRateLimitErrors = 0;
         }
@@ -448,11 +446,8 @@ async function run(): Promise<void> {
         if (!cached && args.sleepMs > 0) {
           await sleep(args.sleepMs);
         }
-        if (consecutiveRateLimitErrors >= args.maxRateLimitErrors) {
+        if (abortedByRateLimit || consecutiveRateLimitErrors >= args.maxRateLimitErrors) {
           abortedByRateLimit = true;
-          console.log(
-            `⏸️ Stop due to consecutive rate limits (${consecutiveRateLimitErrors}). Run again later to continue cache warmup.`,
-          );
           break;
         }
       } while (paginationKey);
@@ -505,6 +500,8 @@ async function run(): Promise<void> {
         if (isRateLimit) {
           rateLimitErrors += 1;
           consecutiveRateLimitErrors += 1;
+          abortedByRateLimit = true;
+          console.log(`⏸️ Stop due to rate limit at symbol=${symbol}.`);
         } else {
           consecutiveRateLimitErrors = 0;
         }
@@ -512,11 +509,8 @@ async function run(): Promise<void> {
         if (!cached && args.sleepMs > 0) {
           await sleep(args.sleepMs);
         }
-        if (consecutiveRateLimitErrors >= args.maxRateLimitErrors) {
+        if (abortedByRateLimit || consecutiveRateLimitErrors >= args.maxRateLimitErrors) {
           abortedByRateLimit = true;
-          console.log(
-            `⏸️ Stop due to consecutive rate limits (${consecutiveRateLimitErrors}). Run again later to continue cache warmup.`,
-          );
           break;
         }
       } while (paginationKey);
@@ -536,29 +530,25 @@ async function run(): Promise<void> {
       : Number(((cacheHits / totalRequests) * 100).toFixed(2));
 
   console.log("✅ J-Quants warmup done");
-  console.log(
-    JSON.stringify(
-      {
-        mode: args.mode,
-        dateOrder: args.dateOrder,
-        maxUnits: args.maxUnits ?? null,
-        from: effectiveFrom,
-        to: effectiveTo,
-        unitCount: args.mode === "date" ? weekdays.length : symbols.length,
-        symbols: symbols.length,
-        totalRequests,
-        cacheHits,
-        networkFetches,
-        rateLimitErrors,
-        abortedByRateLimit,
-        hitRatePct: hitRate,
-        totalRows,
-        elapsedSec,
-      },
-      null,
-      2,
-    ),
-  );
+  const summary = {
+    mode: args.mode,
+    dateOrder: args.dateOrder,
+    maxUnits: args.maxUnits ?? null,
+    from: effectiveFrom,
+    to: effectiveTo,
+    unitCount: args.mode === "date" ? weekdays.length : symbols.length,
+    symbols: symbols.length,
+    totalRequests,
+    cacheHits,
+    networkFetches,
+    rateLimitErrors,
+    abortedByRateLimit,
+    hitRatePct: hitRate,
+    totalRows,
+    elapsedSec,
+  };
+  console.log(JSON.stringify(summary, null, 2));
+  console.log(`JQUANTS_WARM_SUMMARY_JSON=${JSON.stringify(summary)}`);
 }
 
 if (import.meta.main) {

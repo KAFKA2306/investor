@@ -77,60 +77,54 @@ async function main() {
 
     console.log(`🔓 [Research] Unzipping and extracting HTML content...`);
 
-    try {
-        const stdout = execSync(`unzip -p "${zipPath}" "XBRL/PublicDoc/*.htm"`, { maxBuffer: 50 * 1024 * 1024 }).toString();
+    const stdout = execSync(`unzip -p "${zipPath}" "XBRL/PublicDoc/*.htm"`, { maxBuffer: 50 * 1024 * 1024 }).toString();
 
-        const content = stdout
-            .replace(/<[^>]*>?/gm, " ")
-            .replace(/\s+/g, " ")
-            .trim();
+    const content = stdout
+        .replace(/<[^>]*>?/gm, " ")
+        .replace(/\s+/g, " ")
+        .trim();
 
-        if (content.length === 0) {
-            console.error(`❌ [Research] Extracted content is empty for ${latestDoc.docID}`);
-            process.exit(1);
-        }
-
-        console.log(`📊 [Research] Extracted ${content.length} characters of raw text.`);
-
-        const debugPath = join(import.meta.dir, "../tmp", "debug_raw_text.txt");
-        writeFileSync(debugPath, content.slice(0, 50000));
-        console.log(`🔍 [Research] Debug sample saved to ${debugPath}`);
-
-        const segments = itemizer.segment(content);
-        console.log(`🧩 [Research] Found ${segments.length} total segments.`);
-
-        const targetSections = [
-            "【事業の内容】",
-            "【経営方針、経営環境及び対処すべき課題等】",
-            "【事業等のリスク】",
-            "【経営者による財政状態、経営成績及びキャッシュ・フローの状況の分析】"
-        ];
-
-        console.log(`\n================================================================================`);
-        console.log(`🏢 RESEARCH SUMMARY: ${latestDoc.filerName} (${ticker})`);
-        console.log(`📅 Report Date: ${latestDoc.submitDateTime}`);
-        console.log(`================================================================================\n`);
-
-        for (const title of targetSections) {
-            const seg = segments.find(s => s.title === title);
-            console.log(`${title}`);
-            console.log(`────────────────────────────────────────────────────────────────────────────────`);
-            if (seg) {
-                const text = seg.content.length > 1500 ? seg.content.slice(0, 1500) + "..." : seg.content;
-                console.log(text);
-            } else {
-                console.log("(Section not found in this document)");
-            }
-            console.log("");
-        }
-
-        console.log(`================================================================================`);
-        console.log(`✅ [Research] Complete.`);
-
-    } catch (e) {
-        console.error(`❌ [Research] Extraction failed: ${e}`);
+    if (content.length === 0) {
+        console.error(`❌ [Research] Extracted content is empty for ${latestDoc.docID}`);
         process.exit(1);
     }
+
+    console.log(`📊 [Research] Extracted ${content.length} characters of raw text.`);
+
+    const debugPath = join(import.meta.dir, "../tmp", "debug_raw_text.txt");
+    writeFileSync(debugPath, content.slice(0, 50000));
+    console.log(`🔍 [Research] Debug sample saved to ${debugPath}`);
+
+    const segments = itemizer.segment(content);
+    console.log(`🧩 [Research] Found ${segments.length} total segments.`);
+
+    const targetSections = [
+        "【事業の内容】",
+        "【経営方針、経営環境及び対処すべき課題等】",
+        "【事業等のリスク】",
+        "【経営者による財政状態、経営成績及びキャッシュ・フローの状況の分析】"
+    ];
+
+    console.log(`\n================================================================================`);
+    console.log(`🏢 RESEARCH SUMMARY: ${latestDoc.filerName} (${ticker})`);
+    console.log(`📅 Report Date: ${latestDoc.submitDateTime}`);
+    console.log(`================================================================================\n`);
+
+    for (const title of targetSections) {
+        const seg = segments.find(s => s.title === title);
+        console.log(`${title}`);
+        console.log(`────────────────────────────────────────────────────────────────────────────────`);
+        if (seg) {
+            const text = seg.content.length > 1500 ? seg.content.slice(0, 1500) + "..." : seg.content;
+            console.log(text);
+        } else {
+            console.log("(Section not found in this document)");
+        }
+        console.log("");
+    }
+
+    console.log(`================================================================================`);
+    console.log(`✅ [Research] Complete.`);
 }
 
 main().catch(console.error);

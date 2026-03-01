@@ -67,19 +67,16 @@ def get_fraud_edinet_codes(fraud_dir: str) -> Set[str]:
     parser = Parser()
 
     for fraud_file in fraud_tsv_files:
-        try:
-            df = pl.read_csv(
-                fraud_file, separator="\t", encoding="utf-16", infer_schema_length=0
-            )
-            edinet_code = (
-                parser.filter_by_element_id(df, "EDINETCodeDEI")
-                .select("値")
-                .to_numpy()[0][0]
-            )
-            logging.info(f"Extracted EDINET code: {edinet_code}")
-            edinet_codes.add(edinet_code)
-        except Exception as e:
-            logging.warning(f"Failed to read {fraud_file}: {e}")
+        df = pl.read_csv(
+            fraud_file, separator="\t", encoding="utf-16", infer_schema_length=0
+        )
+        edinet_code = (
+            parser.filter_by_element_id(df, "EDINETCodeDEI")
+            .select("値")
+            .to_numpy()[0][0]
+        )
+        logging.info(f"Extracted EDINET code: {edinet_code}")
+        edinet_codes.add(edinet_code)
 
     return edinet_codes
 

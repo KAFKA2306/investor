@@ -97,13 +97,9 @@ def process_all_reports_parallel(base_dir: str, explanation_table: dict) -> list
         for future in tqdm(
             as_completed(futures), total=len(futures), desc="Processing all reports"
         ):
-            tsv_file, _ = futures[future]
-            try:
-                entry = future.result()
-                if entry:
-                    entries.append(entry)
-            except Exception as e:
-                logger.error(f"Error processing {tsv_file}: {e}")
+            entry = future.result()
+            if entry:
+                entries.append(entry)
 
     return entries
 

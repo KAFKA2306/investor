@@ -212,29 +212,25 @@ class Core {
     const envFile = overrideEnvFile || configuredEnvFile;
     const envPath = isAbsolute(envFile) ? envFile : resolve(configDir, envFile);
 
-    try {
-      const raw = readFileSync(envPath, "utf8");
-      for (const line of raw.split(/\r?\n/)) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith("#")) continue;
-        const m = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
-        if (!m) continue;
-        const key = m[1];
-        if (!key) continue;
-        let value = m[2];
-        if (value === undefined) continue;
-        if (
-          (value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))
-        ) {
-          value = value.slice(1, -1);
-        }
-        if (process.env[key] === undefined) {
-          process.env[key] = value;
-        }
+    const raw = readFileSync(envPath, "utf8");
+    for (const line of raw.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const m = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+      if (!m) continue;
+      const key = m[1];
+      if (!key) continue;
+      let value = m[2];
+      if (value === undefined) continue;
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
       }
-    } catch {
-      // Optional env file: allow execution when .env is not present.
+      if (process.env[key] === undefined) {
+        process.env[key] = value;
+      }
     }
   }
 

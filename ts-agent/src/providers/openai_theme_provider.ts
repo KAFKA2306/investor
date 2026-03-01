@@ -145,58 +145,49 @@ export class OpenAIThemeProvider {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 12_000);
 
-    try {
-      const response = await fetch(`${this.baseUrl}/responses`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
-      if (!response.ok) {
-        const reason = await response.text();
-        throw new Error(`OpenAI response failed: ${response.status} ${reason}`);
-      }
-      const json = (await response.json()) as unknown;
-      const outputText = extractOutputText(json);
-      if (!outputText) {
-        throw new Error("OpenAI response missing output_text");
-      }
-      const parsed = JSON.parse(outputText) as Record<string, unknown>;
-      const theme = String(parsed.theme || "").trim();
-      const hypothesis = String(parsed.hypothesis || "").trim();
-      const noveltyRationale = String(parsed.noveltyRationale || "").trim();
-      const ideaHashHint = String(parsed.ideaHashHint || "").trim();
-      const featureSignature = normalizeFeatureSignature(
-        parsed.featureSignature,
-      );
-      if (
-        !theme ||
-        !hypothesis ||
-        !ideaHashHint ||
-        featureSignature.length === 0
-      ) {
-        throw new Error("OpenAI proposal missing required fields");
-      }
-      return {
-        theme,
-        hypothesis,
-        featureSignature,
-        noveltyRationale,
-        ideaHashHint,
-        model: this.model,
-        source: "OPENAI",
-      };
-    } catch (error) {
-      console.warn(
-        "[OpenAIThemeProvider] proposal failed, using fallback:",
-        error instanceof Error ? error.message : String(error),
-      );
-      return fallbackTheme();
-    } finally {
-      clearTimeout(timeout);
+    const response = await fetch(`${this.baseUrl}/responses`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const reason = await response.text();
+      throw new Error(`OpenAI response failed: ${response.status} ${reason}`);
     }
+    const json = (await response.json()) as unknown;
+    const outputText = extractOutputText(json);
+    if (!outputText) {
+      throw new Error("OpenAI response missing output_text");
+    }
+    const parsed = JSON.parse(outputText) as Record<string, unknown>;
+    const theme = String(parsed.theme || "").trim();
+    const hypothesis = String(parsed.hypothesis || "").trim();
+    const noveltyRationale = String(parsed.noveltyRationale || "").trim();
+    const ideaHashHint = String(parsed.ideaHashHint || "").trim();
+    const featureSignature = normalizeFeatureSignature(parsed.featureSignature);
+    if (
+      !theme ||
+      !hypothesis ||
+      !ideaHashHint ||
+      featureSignature.length === 0
+    ) {
+      throw new Error("OpenAI proposal missing required fields");
+    }
+
+    clearTimeout(timeout);
+
+    return {
+      theme,
+      hypothesis,
+      featureSignature,
+      noveltyRationale,
+      ideaHashHint,
+      model: this.model,
+      source: "OPENAI",
+    };
   }
 }

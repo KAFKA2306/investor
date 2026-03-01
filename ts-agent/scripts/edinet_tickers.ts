@@ -25,32 +25,28 @@ let errors = 0;
 for (let i = 0; i < totalSamples; i++) {
     const d = new Date(today.getTime() - (i * SAMPLE_INTERVAL_DAYS + 1) * 24 * 60 * 60 * 1000);
     const dateStr = d.toISOString().slice(0, 10);
+const r = await edinet.getDocumentList(dateStr, 2);
+totalDocs += r.metadata.resultset.count;
 
-    try {
-        const r = await edinet.getDocumentList(dateStr, 2);
-        totalDocs += r.metadata.resultset.count;
-
-        for (const doc of r.results) {
-            if (doc.secCode && doc.secCode.trim().length > 0) {
-                const code4 = doc.secCode.slice(0, 4);
-                const existing = uniqueTickers.get(code4);
-                if (existing) {
-                    existing.filingCount++;
-                    if (dateStr < existing.firstSeen) existing.firstSeen = dateStr;
-                    if (dateStr > existing.lastSeen) existing.lastSeen = dateStr;
-                } else {
-                    uniqueTickers.set(code4, {
-                        filerName: doc.filerName ?? "",
-                        edinetCode: doc.edinetCode ?? "",
-                        firstSeen: dateStr,
-                        lastSeen: dateStr,
-                        filingCount: 1,
-                    });
-                }
-            }
+for (const doc of r.results) {
+    if (doc.secCode && doc.secCode.trim().length > 0) {
+        const code4 = doc.secCode.slice(0, 4);
+        const existing = uniqueTickers.get(code4);
+        if (existing) {
+            existing.filingCount++;
+            if (dateStr < existing.firstSeen) existing.firstSeen = dateStr;
+            if (dateStr > existing.lastSeen) existing.lastSeen = dateStr;
+        } else {
+            uniqueTickers.set(code4, {
+                filerName: doc.filerName ?? "",
+                edinetCode: doc.edinetCode ?? "",
+                filingCount: 1,
+                firstSeen: dateStr,
+                lastSeen: dateStr,
+            });
         }
-        scanned++;
-
+    }
+}
         if (scanned % 50 === 0) {
             process.stderr.write(
                 `📡 ${scanned}/${totalSamples} | ${dateStr} | ${uniqueTickers.size} tickers | ${totalDocs} docs\n`,

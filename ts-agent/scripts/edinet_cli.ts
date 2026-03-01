@@ -185,17 +185,15 @@ async function cmdSearch(secCode: string, rangeDays: number = 30): Promise<void>
     for (let i = 0; i < rangeDays; i++) {
         const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
         const dateStr = d.toISOString().slice(0, 10);
-        try {
-            const docs = await edinet.getFilteredDocuments(dateStr, bySecCode(code5));
-            for (const doc of docs) {
-                results.push({
-                    date: dateStr,
-                    docID: doc.docID,
-                    type: doc.docTypeCode ?? "",
-                    desc: (doc.docDescription ?? "").slice(0, 40),
-                });
-            }
-        } catch { /* skip */ }
+        const docs = await edinet.getFilteredDocuments(dateStr, bySecCode(code5));
+        for (const doc of docs) {
+            results.push({
+                date: dateStr,
+                docID: doc.docID,
+                type: doc.docTypeCode ?? "",
+                desc: (doc.docDescription ?? "").slice(0, 40),
+            });
+        }
     }
 
     if (results.length === 0) {

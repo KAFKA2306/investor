@@ -171,45 +171,37 @@ class Downloader:
         url = "https://disclosure.edinet-fsa.go.jp/api/v2/documents/" + doc_id
         params = {"type": 1, "Subscription-Key": self.edinet_api_key}
         # zip download
-        try:
-            with requests.get(url, params=params) as res:
-                with tempfile.TemporaryDirectory() as tmp_dir:
-                    with zipfile.ZipFile(io.BytesIO(res.content)) as z:
-                        for file in z.namelist():
-                            z.extract(file, tmp_dir)
-                            output_file = os.path.join(output_dir, f"{doc_id}", file)
-                            os.makedirs(os.path.dirname(output_file), exist_ok=True)
-                            shutil.move(
-                                os.path.join(tmp_dir, file),
-                                output_file,
-                            )
-        except Exception as e:
-            logger.error(f"Error downloading document {doc_id}: {e}")
-            return None
+        with requests.get(url, params=params) as res:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                with zipfile.ZipFile(io.BytesIO(res.content)) as z:
+                    for file in z.namelist():
+                        z.extract(file, tmp_dir)
+                        output_file = os.path.join(output_dir, f"{doc_id}", file)
+                        os.makedirs(os.path.dirname(output_file), exist_ok=True)
+                        shutil.move(
+                            os.path.join(tmp_dir, file),
+                            output_file,
+                        )
         logger.info(f"Downloaded {doc_id}.xbrl to {output_dir}")
 
     def _download_document_in_tsv(self, doc_id: str, output_dir: str = "data") -> None:
         """Retrieve a specific document from EDINET API. type: 5 for CSV"""
         url = "https://disclosure.edinet-fsa.go.jp/api/v2/documents/" + doc_id
         params = {"type": 5, "Subscription-Key": self.edinet_api_key}
-        try:
-            with requests.get(url, params=params) as res:
-                with tempfile.TemporaryDirectory() as tmp_dir:
-                    with zipfile.ZipFile(io.BytesIO(res.content)) as z:
-                        for file in z.namelist():
-                            if file.startswith("XBRL_TO_CSV/jpcrp") and file.endswith(
-                                ".csv"
-                            ):
-                                z.extract(file, tmp_dir)
-                                output_file = os.path.join(output_dir, f"{doc_id}.tsv")
-                                if not os.path.exists(output_file):
-                                    shutil.move(
-                                        os.path.join(tmp_dir, file),
-                                        output_file,
-                                    )
-        except Exception as e:
-            logger.error(f"Error downloading document {doc_id}: {e}")
-            return None
+        with requests.get(url, params=params) as res:
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                with zipfile.ZipFile(io.BytesIO(res.content)) as z:
+                    for file in z.namelist():
+                        if file.startswith("XBRL_TO_CSV/jpcrp") and file.endswith(
+                            ".csv"
+                        ):
+                            z.extract(file, tmp_dir)
+                            output_file = os.path.join(output_dir, f"{doc_id}.tsv")
+                            if not os.path.exists(output_file):
+                                shutil.move(
+                                    os.path.join(tmp_dir, file),
+                                    output_file,
+                                )
         logger.info(f"Downloaded {doc_id}.tsv to {output_dir}")
 
 

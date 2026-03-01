@@ -111,24 +111,14 @@ def extract_json_between_markers(llm_output: str) -> dict | None:
     matches = re.findall(json_pattern, llm_output, re.DOTALL)
 
     if not matches:
-        # Fallback: Try to find any JSON-like content in the output
+        # Fallback: Find any JSON-like content in the output
         json_pattern = r"\{.*?\}"
         matches = re.findall(json_pattern, llm_output, re.DOTALL)
 
     for json_string in matches:
         json_string = json_string.strip()
-        try:
-            parsed_json = json.loads(json_string)
-            return parsed_json
-        except json.JSONDecodeError:
-            # Attempt to fix common JSON issues
-            try:
-                # Remove invalid control characters
-                json_string_clean = re.sub(r"[\x00-\x1F\x7F]", "", json_string)
-                parsed_json = json.loads(json_string_clean)
-                return parsed_json
-            except json.JSONDecodeError:
-                continue  # Try next match
+        parsed_json = json.loads(json_string)
+        return parsed_json
 
     return None  # No valid JSON found
 
@@ -233,14 +223,9 @@ def judge_amended_batch(
             desc="Processing amended PDFs",
             unit="file",
         ):
-            pdf_file = amended_pdf_files[futures.index(future)]
-            try:
-                analysis = future.result()
-                if analysis:
-                    all_analyses.append(analysis)
-            except Exception as e:
-                logger.error(f"Error processing {pdf_file}: {str(e)}")
-                continue
+            analysis = future.result()
+            if analysis:
+                all_analyses.append(analysis)
 
     with open(os.path.join(analysis_dir, "result.jsonl"), "w", encoding="utf-8") as f:
         for analysis in all_analyses:

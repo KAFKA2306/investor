@@ -2,21 +2,8 @@ import base64
 import json
 import os
 
-try:
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    HAS_PLOT_DEPS = True
-except Exception:
-    plt = None
-    np = None
-    HAS_PLOT_DEPS = False
-
-PLACEHOLDER_PNG_BASE64 = (
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8"
-    "/x8AAusB9oN2wQAAAABJRU5ErkJggg=="
-)
-
+import matplotlib.pyplot as plt
+import numpy as np
 
 def compute_rolling_ic(individual_data: dict, dates: list, window: int = 30) -> list:
     """Cross-sectional IC per date, then 30-day rolling mean."""
@@ -66,16 +53,6 @@ def generate_schema_driven_plot():
 
     with open(json_path, "r") as f:
         data = json.load(f)
-
-    if not HAS_PLOT_DEPS:
-        out_path = os.path.join(verification_dir, data["fileName"])
-        with open(out_path, "wb") as fp:
-            fp.write(base64.b64decode(PLACEHOLDER_PNG_BASE64))
-        print(
-            "⚠️ matplotlib/numpy が未インストールのため、"
-            f"プレースホルダ画像を出力しました: {out_path}"
-        )
-        return
 
     dates = data["dates"]
     strat_name = data["strategyName"]

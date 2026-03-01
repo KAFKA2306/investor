@@ -34,8 +34,13 @@ export class JQuantsProvider {
   private readonly apiKey: string;
   private readonly cache: SqliteHttpCache | undefined;
   private readonly cacheTtlMs: number;
+  private readonly allowStaleCache: boolean;
 
-  constructor(options?: { cache?: SqliteHttpCache; cacheTtlMs?: number }) {
+  constructor(options?: {
+    cache?: SqliteHttpCache;
+    cacheTtlMs?: number;
+    allowStaleCache?: boolean;
+  }) {
     if (!core.config.providers.jquants.enabled) {
       throw new ProviderConfigError("J-Quants provider is disabled");
     }
@@ -46,6 +51,7 @@ export class JQuantsProvider {
     );
     this.cache = options?.cache;
     this.cacheTtlMs = options?.cacheTtlMs ?? 5 * 60 * 1000;
+    this.allowStaleCache = options?.allowStaleCache ?? true;
   }
 
   public async request(
@@ -61,6 +67,7 @@ export class JQuantsProvider {
         ? {
             cache: this.cache,
             ttlMs: this.cacheTtlMs,
+            allowStaleCache: this.allowStaleCache,
           }
         : {}),
     });
@@ -80,6 +87,7 @@ export class JQuantsProvider {
         ? {
             cache: this.cache,
             ttlMs: this.cacheTtlMs,
+            allowStaleCache: this.allowStaleCache,
           }
         : {}),
     });
@@ -111,6 +119,7 @@ export class PeadJquantsGateway {
       join(core.config.paths.logs, "cache", "jquants_pead_cache.sqlite"),
     ),
     cacheTtlMs: 12 * 60 * 60 * 1000,
+    allowStaleCache: true,
   });
 
   public async getEarningsCalendar(

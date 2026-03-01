@@ -60,13 +60,9 @@ def process_single_company(
 
     industry = industry_mapping.get(industry, "invalid")  # 16 industry label
 
-    try:
-        previous_financial_data = parse_tsv(current_tsv)
-        if not previous_financial_data:
-            logger.warning(f"Failed to parse {current_tsv}")
-            return None
-    except Exception as e:
-        logger.warning(f"Failed to parse {current_tsv}: {e}")
+    previous_financial_data = parse_tsv(current_tsv)
+    if not previous_financial_data:
+        logger.warning(f"Failed to parse {current_tsv}")
         return None
 
     return {
@@ -128,34 +124,30 @@ def main():
         latest_doc_id = doc_id_with_period[-1][0]
         tsv_file = os.path.join(dir, latest_doc_id + ".tsv")
         edinet_code = tsv_file.split("/")[2]
-        try:
-            company_info = edinet_code_info.filter(
-                pl.col("ＥＤＩＮＥＴコード") == edinet_code
+        company_info = edinet_code_info.filter(
+            pl.col("ＥＤＩＮＥＴコード") == edinet_code
+        )
+        if company_info.height == 0:  # No matching company found
+            logger.warning(f"Company not found in EDINET info: {edinet_code}")
+            continue
+
+        industry = company_info["提出者業種"].to_numpy()[0]
+        if industry == "内国法人・組合（有価証券報告書等の提出義務者以外）":
+            logger.info(f"Skipping company with industry: {industry}")
+            continue
+
+        industry = industry_mapping.get(industry, "invalid")  # 16 industry label
+
+        ticker_code = company_info["証券コード"].to_numpy()[0]
+        if not ticker_code:
+            logger.warning(f"No ticker code for company: {edinet_code}")
+            continue
+
+        ticker_code = str(ticker_code)[:-1]
+        if ticker_code in excluded_securities_codes:
+            logger.info(
+                f"Skipping excluded company with ticker code: {ticker_code}"
             )
-            if company_info.height == 0:  # No matching company found
-                logger.warning(f"Company not found in EDINET info: {edinet_code}")
-                continue
-
-            industry = company_info["提出者業種"].to_numpy()[0]
-            if industry == "内国法人・組合（有価証券報告書等の提出義務者以外）":
-                logger.info(f"Skipping company with industry: {industry}")
-                continue
-
-            industry = industry_mapping.get(industry, "invalid")  # 16 industry label
-
-            ticker_code = company_info["証券コード"].to_numpy()[0]
-            if not ticker_code:
-                logger.warning(f"No ticker code for company: {edinet_code}")
-                continue
-
-            ticker_code = str(ticker_code)[:-1]
-            if ticker_code in excluded_securities_codes:
-                logger.info(
-                    f"Skipping excluded company with ticker code: {ticker_code}"
-                )
-                continue
-        except Exception as e:
-            logger.warning(f"Error processing {edinet_code}: {e}")
             continue
 
         industry_to_tsvs.setdefault(industry, []).append(tsv_file)

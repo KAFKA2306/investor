@@ -192,42 +192,37 @@ def load_latest_doc_map_from_cache(edinet_cache_db):
     if not os.path.exists(edinet_cache_db):
         return mapping
     conn = sqlite3.connect(edinet_cache_db)
-    try:
-        cur = conn.cursor()
-        cur.execute(
-            """
-            SELECT key, value
-            FROM http_cache
-            WHERE key LIKE '%documents.json%'
-            """
-        )
-        for key_raw, value_raw in cur.fetchall():
-            try:
-                key_obj = json.loads(key_raw)
-                url = key_obj.get("url", "")
-                if "documents.json" not in url:
-                    continue
-                query = parse_qs(urlparse(url).query)
-                if query.get("type", [""])[0] != "2":
-                    continue
-                payload = json.loads(value_raw)
-                docs = payload.get("results", [])
-            except Exception:
-                continue
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT key, value
+        FROM http_cache
+        WHERE key LIKE '%documents.json%'
+        """
+    )
+    for key_raw, value_raw in cur.fetchall():
+        key_obj = json.loads(key_raw)
+        url = key_obj.get("url", "")
+        if "documents.json" not in url:
+            continue
+        query = parse_qs(urlparse(url).query)
+        if query.get("type", [""])[0] != "2":
+            continue
+        payload = json.loads(value_raw)
+        docs = payload.get("results", [])
 
-            for doc in docs:
-                symbol = extract_symbol4(doc.get("secCode"))
-                submit_dt = str(doc.get("submitDateTime") or "")
-                submit_date = submit_dt[:10]
-                doc_id = str(doc.get("docID") or "")
-                if not symbol or len(submit_date) != 10 or not doc_id:
-                    continue
-                key = (symbol, submit_date)
-                previous = mapping.get(key)
-                if not previous or previous["submit_dt"] < submit_dt:
-                    mapping[key] = {"doc_id": doc_id, "submit_dt": submit_dt}
-    finally:
-        conn.close()
+        for doc in docs:
+            symbol = extract_symbol4(doc.get("secCode"))
+            submit_dt = str(doc.get("submitDateTime") or "")
+            submit_date = submit_dt[:10]
+            doc_id = str(doc.get("docID") or "")
+            if not symbol or len(submit_date) != 10 or not doc_id:
+                continue
+            key = (symbol, submit_date)
+            previous = mapping.get(key)
+            if not previous or previous["submit_dt"] < submit_dt:
+                mapping[key] = {"doc_id": doc_id, "submit_dt": submit_dt}
+    conn.close()
     return {k: v["doc_id"] for k, v in mapping.items()}
 
 
@@ -236,16 +231,12 @@ def load_indexed_doc_ids(edinet_search_db):
     if not os.path.exists(edinet_search_db):
         return doc_ids
     conn = sqlite3.connect(edinet_search_db)
-    try:
-        cur = conn.cursor()
-        cur.execute("SELECT docID FROM indexed_docs")
-        for row in cur.fetchall():
-            if row and row[0]:
-                doc_ids.add(str(row[0]))
-    except Exception:
-        return set()
-    finally:
-        conn.close()
+    cur = conn.cursor()
+    cur.execute("SELECT docID FROM indexed_docs")
+    for row in cur.fetchall():
+        if row and row[0]:
+            doc_ids.add(str(row[0]))
+    conn.close()
     return doc_ids
 
 
@@ -445,12 +436,10 @@ def make_plot(events, daily, args):
 def main():
     args = parse_args()
     conn = sqlite3.connect(args.db_path)
-    try:
-        events = fetch_events(
-            conn, args.from_date, args.to_date, args.trade_lag_days
-        )
-    finally:
-        conn.close()
+    events = fetch_events(
+        conn, args.from_date, args.to_date, args.trade_lag_days
+    )
+    conn.close()
 
     if len(events) == 0:
         raise SystemExit("No valid events found for plotting.")

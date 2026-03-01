@@ -1,6 +1,7 @@
+import { join } from "node:path";
 import { core } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
-import { MarketdataDbCache } from "./cache_providers.ts";
+import { MarketdataDbCache, SqliteHttpCache } from "./cache_providers.ts";
 import {
   EstatProvider,
   JQuantsProvider,
@@ -214,7 +215,13 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
 }
 
 export class ApiVerifyGateway {
-  private readonly jquants = new JQuantsProvider();
+  private readonly jquants = new JQuantsProvider({
+    cache: new SqliteHttpCache(
+      join(core.config.paths.logs, "cache", "jquants_pead_cache.sqlite"),
+    ),
+    cacheTtlMs: 12 * 60 * 60 * 1000,
+    allowStaleCache: true,
+  });
   private readonly estat = new EstatProvider();
 
   public async getJquantsListedInfo(): Promise<Record<string, unknown>[]> {

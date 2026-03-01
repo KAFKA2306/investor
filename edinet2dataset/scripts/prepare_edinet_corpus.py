@@ -40,32 +40,28 @@ def parse_args():
 
 
 def process_result(result, downloader, output_dir, doc_type) -> None:
-    try:
-        if downloader.get_doc_type(result.ordinanceCode, result.formCode) != doc_type:
-            return
+    if downloader.get_doc_type(result.ordinanceCode, result.formCode) != doc_type:
+        return
 
-        if result.withdrawalStatus == "1":
-            return
-        edinet_code = result.edinetCode
-        path = os.path.join(output_dir, doc_type, edinet_code)
+    if result.withdrawalStatus == "1":
+        return
+    edinet_code = result.edinetCode
+    path = os.path.join(output_dir, doc_type, edinet_code)
 
-        if os.path.exists(os.path.join(path, f"{result.docID}.json")):
-            logger.info(f"Skip {edinet_code}: already exists")
+    if os.path.exists(os.path.join(path, f"{result.docID}.json")):
+        logger.info(f"Skip {edinet_code}: already exists")
 
-        os.makedirs(path, exist_ok=True)
+    os.makedirs(path, exist_ok=True)
 
-        downloader.download_document(result.docID, "tsv", path)
-        downloader.download_document(result.docID, "pdf", path)
+    downloader.download_document(result.docID, "tsv", path)
+    downloader.download_document(result.docID, "pdf", path)
 
-        with open(
-            os.path.join(path, f"{result.docID}.json"), "w", encoding="utf-8"
-        ) as f:
-            json.dump(result.to_dict(), f, ensure_ascii=False, indent=4)
+    with open(
+        os.path.join(path, f"{result.docID}.json"), "w", encoding="utf-8"
+    ) as f:
+        json.dump(result.to_dict(), f, ensure_ascii=False, indent=4)
 
-        logger.info(f"Downloaded {result.docID} to {path}")
-    except Exception as e:
-        logger.error(f"Error processing {result.docID}: {e}")
-        return None
+    logger.info(f"Downloaded {result.docID} to {path}")
 
 
 if __name__ == "__main__":

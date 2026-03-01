@@ -54,26 +54,20 @@ const createLogsMiddleware =
         return;
       }
 
-      try {
-        const entries = await readdir(targetDir, { withFileTypes: true });
-        const files = entries
-          .filter(
-            (entry) =>
-              entry.isFile() &&
-              entry.name.endsWith(".json") &&
-              entry.name !== "manifest.json",
-          )
-          .map((entry) => entry.name)
-          .sort();
-        res.statusCode = 200;
-        res.setHeader("content-type", "application/json; charset=utf-8");
-        res.end(json(files));
-        return;
-      } catch {
-        res.statusCode = 404;
-        res.end("not found");
-        return;
-      }
+      const entries = await readdir(targetDir, { withFileTypes: true });
+      const files = entries
+        .filter(
+          (entry) =>
+            entry.isFile() &&
+            entry.name.endsWith(".json") &&
+            entry.name !== "manifest.json",
+        )
+        .map((entry) => entry.name)
+        .sort();
+      res.statusCode = 200;
+      res.setHeader("content-type", "application/json; charset=utf-8");
+      res.end(json(files));
+      return;
     }
 
     const relPath = normalizePath(url.pathname);
@@ -84,21 +78,16 @@ const createLogsMiddleware =
       return;
     }
 
-    try {
-      const fileStat = await stat(targetFile);
-      if (!fileStat.isFile()) {
-        next();
-        return;
-      }
-      const data = await readFile(targetFile);
-      res.statusCode = 200;
-      res.setHeader("content-type", contentType(targetFile));
-      res.end(data);
-      return;
-    } catch {
+    const fileStat = await stat(targetFile);
+    if (!fileStat.isFile()) {
       next();
       return;
     }
+    const data = await readFile(targetFile);
+    res.statusCode = 200;
+    res.setHeader("content-type", contentType(targetFile));
+    res.end(data);
+    return;
   };
 
 export default defineConfig({
