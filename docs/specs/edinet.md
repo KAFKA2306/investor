@@ -369,5 +369,127 @@ bun src/experiments/macro_lead_lag_verification.ts
 
 ---
 
+## 14. 現状実装との差分トラッカー（迷子防止マップ）🗺️
+
+| 仕様項目 | 現状 | 差分 | 対応ファイル | 優先度 |
+|---|---|---|---|---|
+| EDINETイベント特徴量保存 | 実装済み | なし | `ts-agent/src/context/alpha_knowledgebase.ts`, `ts-agent/src/experiments/build_alpha_knowledgebase.ts` | High |
+| マクロレジーム保存 | 実装済み | なし | `ts-agent/src/experiments/build_macro_regime.ts` | High |
+| ゲート判定保存 | 実装済み | なし | `ts-agent/src/experiments/run_kb_signal_backtest.ts` | High |
+| `kb-backtest` でのゲート運用 | 実装済み（`--with-gates`） | ドキュメント例の充実 | `ts-agent/src/experiments/run_kb_signal_backtest.ts` | High |
+| 日次ジョブの定時オーケストレーション | 部分実装 | cron/task化の明文化 | `Taskfile.yml`（拡張予定） | Medium |
+| 監査逆引きの自動レポート | 未実装 | 監査CLI追加 | `ts-agent/src/experiments/*`（追加予定） | Medium |
+| 回帰テスト自動化（v1 vs v2） | 部分実装 | CI組み込み | GitHub Actions（追加予定） | Medium |
+
+---
+
+## 15. DoDの判定方法（数値 + 測定手順を固定）📏
+
+### 15.1 KPI一覧（判定キー固定）
+- Sharpe: `summary.backtest.metrics.sharpe >= 0.8`
+- Max Drawdown: `summary.backtest.metrics.maxDrawdown >= -0.15`
+- Tradable Days: `summary.backtest.sample.tradableDays` がベースライン比 `+30%`
+- 監査保存率: `signal_gate_decisions` の保存率 `100%`（対象シグナル比）
+
+### 15.2 測定コマンド（標準）
+```bash
+# 1) ゲート付きバックテスト実行
+bun run experiments:kb-backtest -- \
+  --with-gates --top-k=5 --min-signals-per-day=4 --trade-lag-days=2
+
+# 2) 出力JSONを保存（例）
+bun run experiments:kb-backtest -- \
+  --with-gates --top-k=5 --min-signals-per-day=4 --trade-lag-days=2 \
+  > logs/verification/edinet_kb_backtest_latest.json
+```
+
+### 15.3 判定の原則
+- 判定は必ず**同一期間・同一コスト設定**で比較すること。
+- 比較対象（baseline run id / commit hash）をログに残すこと。
+
+---
+
+## 16. 障害時Runbook（すぐ復旧する用）🚑
+
+### 16.1 症状: EDINET取得が失敗
+1. `--metadata-only` で再実行してカバレッジ優先で復旧。
+2. `--indexed-only` を外して一時運用。
+3. 復旧後に再取得し、差分だけ再計算。
+
+### 16.2 症状: マクロ更新が失敗
+1. `build_macro_regime.ts` を前日データで再実行。
+2. `macro_regime_daily` の当日行が欠損なら `NEUTRAL` 扱いで暫定運用。
+3. 復旧後に当日行を上書き。
+
+### 16.3 症状: ゲート通過ゼロ
+1. `--min-liquidity-jpy` と `--max-correction-90d` を確認。
+2. `--allow-regimes` に `NEUTRAL` を含める。
+3. それでもゼロなら当日はノートレード（監査ログ必須）。
+
+---
+
+## 17. Gate仕様（機械可読YAML）⚙️
+
+```yaml
+alpha:
+  edinet:
+    gates:
+      minSignalsPerDay: 4
+      minLiquidityJpy: 100000000
+      maxCorrection90d: 2
+      regimeAllowlist:
+        - RISK_ON
+        - NEUTRAL
+```
+
+- 本YAMLは `ts-agent/src/config/default.yaml` と同値で運用すること。
+- 仕様変更時は「この章」と「実設定」を同時更新すること。
+
+---
+
+## 18. テスト実行テンプレ（コマンド単位）🧪
+
+| テスト種別 | 実行コマンド | 期待結果 | 失敗時の主原因 |
+|---|---|---|---|
+| 単体（型・静的） | `task check` | format/lint/typecheck 全通過 | 型不整合、import崩れ |
+| 結合（E2E） | `bun run experiments:kb-build` → `bun run experiments:kb-backtest -- --with-gates` | `tradableDays > 0` | データ欠損、閾値過厳 |
+| 回帰（v1 vs v2） | `--with-gates` なし/ありを同期間比較 | v2でDoD基準内 | パラメータ不一致 |
+| 監査 | 任意 `signal_id` をDB逆引き | lineage + gate決定を追跡可能 | 保存漏れ |
+
+---
+
+## 19. 監査トレーサビリティ導線（逆引き図）🔍
+
+```mermaid
+flowchart LR
+  S[signal_id] --> L[source_doc_id]
+  S --> F[feature_version]
+  S --> G[signal_gate_decisions]
+  S --> B[backtest_run_id]
+  L --> D[EDINET document metadata]
+  G --> R[reason / threshold / actual_value]
+```
+
+- 監査は `signal_id` 起点で必ず逆引きできること。
+- 監査不可のシグナルは運用採用しないこと。
+
+---
+
+## 20. リリース段階定義（Phase制）🚦
+
+### Phase A: 研究
+- 目的: 特徴量とゲートの妥当性確認
+- 必須: `task check` 通過、再現実行可能
+
+### Phase B: 紙上運用
+- 目的: 日次オペレーション安定化
+- 必須: 90日連続運用、DoDの主要KPI達成
+
+### Phase C: 準本番
+- 目的: 実注文接続前の最終ゲート
+- 必須: 監査逆引き100%、障害Runbookの実運用検証
+
+---
+
 **Owner**: Antigravity Quant Team  
-**Status**: Draft v1（実装ガイドとして利用可）
+**Status**: Draft v1.1（実装ガイドとして利用可）
