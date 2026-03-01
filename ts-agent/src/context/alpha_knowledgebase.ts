@@ -1,11 +1,12 @@
 import { Database } from "bun:sqlite";
 import { join } from "node:path";
 import { DocumentRepository } from "../db/repos/document_repository.ts";
+import { EvaluationRepository } from "../db/repos/evaluation_repository.ts";
 import { EventRepository } from "../db/repos/event_repository.ts";
 import { FeatureRepository } from "../db/repos/feature_repository.ts";
 import { SignalRepository } from "../db/repos/signal_repository.ts";
-import { EvaluationRepository } from "../db/repos/evaluation_repository.ts";
 import { core } from "../system/app_runtime_core.ts";
+import { logger } from "../utils/logger.ts";
 
 export type KnowledgeDocumentInput = {
   docId: string;
@@ -368,7 +369,7 @@ export class AlphaKnowledgebase {
     `);
   }
 
-  public upsertDocument(input: KnowledgeDocumentInput): void {
+  public async upsertDocument(input: KnowledgeDocumentInput): Promise<void> {
     this.db
       .query(`
         INSERT INTO documents (doc_id, symbol, source, filed_at, title)
@@ -380,9 +381,49 @@ export class AlphaKnowledgebase {
           title = excluded.title
       `)
       .run(input.docId, input.symbol, input.source, input.filedAt, input.title);
+
+    if (
+      this.postgresRepos &&
+      core.config.database?.canonicalDb?.dualWriteEnabled
+    ) {
+      try {
+        const instrumentId = await this.ensureInstrument(input.symbol);
+        // source_document も作っておいてあげるねっ！💖
+        await core.postgres?.query(
+          `
+          INSERT INTO ingest.source_document (source_doc_id, provider, external_id, instrument_id, filed_at, title)
+          VALUES ($1, $2, $3, $4, $5::timestamptz, $6)
+          ON CONFLICT(source_doc_id) DO UPDATE SET
+            instrument_id = EXCLUDED.instrument_id,
+            filed_at = EXCLUDED.filed_at,
+            title = EXCLUDED.title
+          `,
+          [
+            input.docId,
+            input.source,
+            input.docId,
+            instrumentId,
+            input.filedAt,
+            input.title,
+          ],
+        );
+        await this.postgresRepos.documents.upsertDocument({
+          documentId: input.docId,
+          sourceDocId: input.docId,
+          instrumentId,
+          docType: input.source,
+          filedAt: input.filedAt,
+          title: input.title,
+        });
+      } catch (error) {
+        logger.warn(
+          `[AlphaKnowledgebase] Postgres dual-write failed for document ${input.docId}: ${String(error)}`,
+        );
+      }
+    }
   }
 
-  public upsertSection(input: KnowledgeSectionInput): void {
+  public async upsertSection(input: KnowledgeSectionInput): Promise<void> {
     const sectionId = `${input.docId}:${input.sectionName}`;
     const tx = this.db.transaction(() => {
       this.db
@@ -420,6 +461,27 @@ export class AlphaKnowledgebase {
         .run(sectionId, input.docId, input.sectionName, input.content);
     });
     tx();
+
+    if (
+      this.postgresRepos &&
+      core.config.database?.canonicalDb?.dualWriteEnabled
+    ) {
+      try {
+        await this.postgresRepos.documents.upsertSection({
+          sectionId,
+          documentId: input.docId,
+          sectionName: input.sectionName,
+          content: input.content,
+          sentiment: input.sentiment,
+          riskTermCount: input.riskTermCount,
+          aiTermCount: input.aiTermCount,
+        });
+      } catch (error) {
+        logger.warn(
+          `[AlphaKnowledgebase] Postgres dual-write failed for section ${sectionId}: ${String(error)}`,
+        );
+      }
+    }
   }
 
   public upsertMarketRows(rows: readonly MarketDailyInput[]): void {
@@ -454,7 +516,7 @@ export class AlphaKnowledgebase {
     tx(rows);
   }
 
-  public upsertSignals(rows: readonly SignalInput[]): void {
+  public async upsertSignals(rows: readonly SignalInput[]): Promise<void> {
     if (rows.length === 0) return;
     const tx = this.db.transaction((txRows: readonly SignalInput[]) => {
       const stmt = this.db.query(`
@@ -483,9 +545,35 @@ export class AlphaKnowledgebase {
       }
     });
     tx(rows);
+
+    if (
+      this.postgresRepos &&
+      core.config.database?.canonicalDb?.dualWriteEnabled
+    ) {
+      try {
+        for (const row of rows) {
+          const instrumentId = await this.ensureInstrument(row.symbol);
+          await this.postgresRepos.signals.upsertSignal({
+            signalId: row.signalId,
+            instrumentId,
+            tradingDate: row.date,
+            combinedAlpha: row.combinedAlpha,
+            riskDelta: row.riskDelta,
+            pead1d: row.pead1d,
+            pead5d: row.pead5d,
+          });
+        }
+      } catch (error) {
+        logger.warn(
+          `[AlphaKnowledgebase] Postgres dual-write failed for signals: ${String(error)}`,
+        );
+      }
+    }
   }
 
-  public upsertEventFeatures(rows: readonly EventFeatureInput[]): void {
+  public async upsertEventFeatures(
+    rows: readonly EventFeatureInput[],
+  ): Promise<void> {
     if (rows.length === 0) return;
     const tx = this.db.transaction((txRows: readonly EventFeatureInput[]) => {
       const stmt = this.db.query(`
@@ -524,6 +612,40 @@ export class AlphaKnowledgebase {
       }
     });
     tx(rows);
+
+    if (
+      this.postgresRepos &&
+      core.config.database?.canonicalDb?.dualWriteEnabled
+    ) {
+      try {
+        for (const row of rows) {
+          const instrumentId = await this.ensureInstrument(row.symbol);
+          await this.postgresRepos.features.upsertFeatureVersion({
+            featureName: "edinet_event",
+            version: row.featureVersion,
+            formula: "migrated_from_sqlite",
+          });
+          await this.postgresRepos.features.upsertEventFeature({
+            eventFeatureId: row.eventId,
+            sourceDocId: row.docId,
+            instrumentId,
+            filedAt: row.filedAt,
+            featureName: "edinet_event",
+            featureVersion: row.featureVersion,
+            riskDelta: row.riskDelta,
+            sentiment: row.sentiment,
+            aiExposure: row.aiExposure,
+            kgCentrality: row.kgCentrality,
+            correctionFlag: row.correctionFlag,
+            correctionCount90d: row.correctionCount90d,
+          });
+        }
+      } catch (error) {
+        logger.warn(
+          `[AlphaKnowledgebase] Postgres dual-write failed for event features: ${String(error)}`,
+        );
+      }
+    }
   }
 
   public upsertMacroRegimes(rows: readonly MacroRegimeInput[]): void {
@@ -555,7 +677,9 @@ export class AlphaKnowledgebase {
     tx(rows);
   }
 
-  public upsertGateDecisions(rows: readonly GateDecisionInput[]): void {
+  public async upsertGateDecisions(
+    rows: readonly GateDecisionInput[],
+  ): Promise<void> {
     if (rows.length === 0) return;
     const tx = this.db.transaction((txRows: readonly GateDecisionInput[]) => {
       const stmt = this.db.query(`
@@ -583,6 +707,42 @@ export class AlphaKnowledgebase {
       }
     });
     tx(rows);
+
+    if (
+      this.postgresRepos &&
+      core.postgres &&
+      core.config.database?.canonicalDb?.dualWriteEnabled
+    ) {
+      try {
+        for (const row of rows) {
+          await core.postgres.query(
+            `
+            INSERT INTO feature.signal_gate_decision (signal_id, gate_name, trading_date, passed, threshold_text, actual_value, reason)
+            VALUES ($1, $2, $3::date, $4, $5, $6, $7)
+            ON CONFLICT(signal_id, gate_name) DO UPDATE SET
+              trading_date = EXCLUDED.trading_date,
+              passed = EXCLUDED.passed,
+              threshold_text = EXCLUDED.threshold_text,
+              actual_value = EXCLUDED.actual_value,
+              reason = EXCLUDED.reason
+            `,
+            [
+              row.signalId,
+              row.gateName,
+              row.date,
+              row.passed,
+              row.threshold,
+              row.actualValue,
+              row.reason,
+            ],
+          );
+        }
+      } catch (error) {
+        logger.warn(
+          `[AlphaKnowledgebase] Postgres dual-write failed for gate decisions: ${String(error)}`,
+        );
+      }
+    }
   }
 
   public upsertFeatureVersion(input: FeatureVersionInput): void {
@@ -619,7 +779,7 @@ export class AlphaKnowledgebase {
     tx(rows);
   }
 
-  public recordBacktestRun(input: BacktestRunInput): void {
+  public async recordBacktestRun(input: BacktestRunInput): Promise<void> {
     this.db
       .query(`
         INSERT INTO backtest_runs (
@@ -643,6 +803,27 @@ export class AlphaKnowledgebase {
         input.totalReturn,
         input.maxDrawdown,
       );
+
+    if (
+      this.postgresRepos &&
+      core.config.database?.canonicalDb?.dualWriteEnabled
+    ) {
+      try {
+        await this.postgresRepos.evaluation.upsertBacktestRun({
+          runId: input.runId,
+          strategyId: input.strategyId,
+          fromDate: input.fromDate,
+          toDate: input.toDate,
+          sharpe: input.sharpe,
+          totalReturn: input.totalReturn,
+          maxDrawdown: input.maxDrawdown,
+        });
+      } catch (error) {
+        logger.warn(
+          `[AlphaKnowledgebase] Postgres dual-write failed for backtest run ${input.runId}: ${String(error)}`,
+        );
+      }
+    }
   }
 
   public searchSections(
@@ -662,10 +843,10 @@ export class AlphaKnowledgebase {
         LIMIT ?
       `)
       .all(query, Math.max(1, limit)) as {
-        docId: string;
-        sectionName: string;
-        rank: number;
-      }[];
+      docId: string;
+      sectionName: string;
+      rank: number;
+    }[];
   }
 
   public getCounts(): Record<string, number> {
@@ -736,15 +917,15 @@ export class AlphaKnowledgebase {
         toDate ?? null,
         toDate ?? null,
       ) as {
-        signalId: string;
-        symbol: string;
-        date: string;
-        combinedAlpha: number | null;
-        riskDelta: number | null;
-        pead1d: number | null;
-        pead5d: number | null;
-        nextReturn: number | null;
-      }[];
+      signalId: string;
+      symbol: string;
+      date: string;
+      combinedAlpha: number | null;
+      riskDelta: number | null;
+      pead1d: number | null;
+      pead5d: number | null;
+      nextReturn: number | null;
+    }[];
 
     return rows
       .map((row) => ({
@@ -837,20 +1018,20 @@ export class AlphaKnowledgebase {
         toDate ?? null,
         toDate ?? null,
       ) as Array<{
-        signalId: string;
-        symbol: string;
-        date: string;
-        combinedAlpha: number | null;
-        riskDelta: number | null;
-        pead1d: number | null;
-        pead5d: number | null;
-        nextReturn: number | null;
-        correctionFlag: number | null;
-        correctionCount90d: number | null;
-        regimeId: string | null;
-        entryClose: number | null;
-        entryVolume: number | null;
-      }>;
+      signalId: string;
+      symbol: string;
+      date: string;
+      combinedAlpha: number | null;
+      riskDelta: number | null;
+      pead1d: number | null;
+      pead5d: number | null;
+      nextReturn: number | null;
+      correctionFlag: number | null;
+      correctionCount90d: number | null;
+      regimeId: string | null;
+      entryClose: number | null;
+      entryVolume: number | null;
+    }>;
 
     return rows
       .map((row) => ({
@@ -892,14 +1073,14 @@ export class AlphaKnowledgebase {
         WHERE signal_id = ?
       `)
       .get(signalId) as {
-        signalId: string;
-        symbol: string;
-        date: string;
-        combinedAlpha: number | null;
-        riskDelta: number | null;
-        pead1d: number | null;
-        pead5d: number | null;
-      } | null;
+      signalId: string;
+      symbol: string;
+      date: string;
+      combinedAlpha: number | null;
+      riskDelta: number | null;
+      pead1d: number | null;
+      pead5d: number | null;
+    } | null;
 
     const lineage = this.db
       .query(`
@@ -912,10 +1093,10 @@ export class AlphaKnowledgebase {
         ORDER BY source_doc_id ASC, source_section ASC
       `)
       .all(signalId) as Array<{
-        sourceDocId: string;
-        sourceSection: string;
-        modelVersion: string;
-      }>;
+      sourceDocId: string;
+      sourceSection: string;
+      modelVersion: string;
+    }>;
 
     const primaryDocId = lineage[0]?.sourceDocId ?? null;
 
@@ -923,7 +1104,7 @@ export class AlphaKnowledgebase {
       primaryDocId === null
         ? null
         : (this.db
-          .query(`
+            .query(`
               SELECT
                 doc_id AS docId,
                 source,
@@ -932,7 +1113,7 @@ export class AlphaKnowledgebase {
               FROM documents
               WHERE doc_id = ?
             `)
-          .get(primaryDocId) as {
+            .get(primaryDocId) as {
             docId: string;
             source: string;
             filedAt: string;
@@ -943,7 +1124,7 @@ export class AlphaKnowledgebase {
       primaryDocId === null
         ? null
         : (this.db
-          .query(`
+            .query(`
               SELECT
                 event_id AS eventId,
                 feature_version AS featureVersion,
@@ -954,7 +1135,7 @@ export class AlphaKnowledgebase {
               ORDER BY filed_at DESC
               LIMIT 1
             `)
-          .get(primaryDocId) as {
+            .get(primaryDocId) as {
             eventId: string;
             featureVersion: string;
             correctionFlag: number;
@@ -974,12 +1155,12 @@ export class AlphaKnowledgebase {
         ORDER BY gate_name ASC
       `)
       .all(signalId) as Array<{
-        gateName: string;
-        passed: number;
-        threshold: string;
-        actualValue: number | null;
-        reason: string;
-      }>;
+      gateName: string;
+      passed: number;
+      threshold: string;
+      actualValue: number | null;
+      reason: string;
+    }>;
 
     const backtestRuns = this.db
       .query(`
@@ -1002,37 +1183,37 @@ export class AlphaKnowledgebase {
         LIMIT 20
       `)
       .all(signalId) as Array<{
-        runId: string;
-        strategyId: string;
-        fromDate: string;
-        toDate: string;
-        sharpe: number | null;
-        totalReturn: number | null;
-        maxDrawdown: number | null;
-        createdAt: string;
-      }>;
+      runId: string;
+      strategyId: string;
+      fromDate: string;
+      toDate: string;
+      sharpe: number | null;
+      totalReturn: number | null;
+      maxDrawdown: number | null;
+      createdAt: string;
+    }>;
 
     return {
       signal: signal
         ? {
-          signalId: signal.signalId,
-          symbol: signal.symbol,
-          date: signal.date,
-          combinedAlpha: Number(signal.combinedAlpha ?? 0),
-          riskDelta: Number(signal.riskDelta ?? 0),
-          pead1d: Number(signal.pead1d ?? 0),
-          pead5d: Number(signal.pead5d ?? 0),
-        }
+            signalId: signal.signalId,
+            symbol: signal.symbol,
+            date: signal.date,
+            combinedAlpha: Number(signal.combinedAlpha ?? 0),
+            riskDelta: Number(signal.riskDelta ?? 0),
+            pead1d: Number(signal.pead1d ?? 0),
+            pead5d: Number(signal.pead5d ?? 0),
+          }
         : null,
       lineage,
       sourceDocument,
       eventFeature: eventFeature
         ? {
-          eventId: eventFeature.eventId,
-          featureVersion: eventFeature.featureVersion,
-          correctionFlag: eventFeature.correctionFlag > 0,
-          correctionCount90d: Number(eventFeature.correctionCount90d ?? 0),
-        }
+            eventId: eventFeature.eventId,
+            featureVersion: eventFeature.featureVersion,
+            correctionFlag: eventFeature.correctionFlag > 0,
+            correctionCount90d: Number(eventFeature.correctionCount90d ?? 0),
+          }
         : null,
       gateDecisions: gateDecisions.map((row) => ({
         gateName: row.gateName,
