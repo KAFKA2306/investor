@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { DASHBOARD_CONFIG } from "../config";
 import {
   type AlphaDiscoveryPayload,
   AlphaDiscoveryPayloadSchema,
@@ -13,7 +14,6 @@ import {
   type UnifiedLogPayload,
   UnifiedLogPayloadSchema,
 } from "../dashboard_core";
-import { DASHBOARD_CONFIG } from "../config";
 
 const listUnifiedLogFiles = async (): Promise<string[]> => {
   const res = await fetch(
