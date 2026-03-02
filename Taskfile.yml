@@ -134,7 +134,7 @@ tasks:
       - bun run experiments:verification-json
       - bash -lc 'set -euo pipefail; v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); cache_root="${TMPDIR:-/tmp}/ts-agent-cache"; uv_cache_dir="$cache_root/uv"; mkdir -p "$cache_root" "$uv_cache_dir"; VERIFICATION_DIR="$v" UV_CACHE_DIR="$uv_cache_dir" XDG_CACHE_HOME="$cache_root" bun run experiments:verification-plot'
       - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); test -f "$v/standard_verification_data.json"'
-      - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); f=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))[\"fileName\"])" "$v/standard_verification_data.json"); test -n "$f" && test -f "$v/$f"'
+      - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); f=$(uv run python3 -c "import json,sys;print(json.load(open(sys.argv[1]))[\"fileName\"])" "$v/standard_verification_data.json"); test -n "$f" && test -f "$v/$f"'
 
   pipeline:edinet-daily:
     desc: EDINET日次フロー（features -> macro -> kb-build -> gated backtest）
@@ -271,7 +271,7 @@ tasks:
                 fi
               else
                 latest_file=$(ls -1t logs/unified/alpha_discovery_*.json | head -n1);
-                selected_count=$(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding=\"utf-8\")); print(len((j.get(\"payload\") or {}).get(\"selected\", [])))" "$latest_file");
+                selected_count=$(uv run python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding=\"utf-8\")); print(len((j.get(\"payload\") or {}).get(\"selected\", [])))" "$latest_file");
                 if [ "${selected_count}" -lt 1 ]; then
                   echo "[loop] cycle=${cycle} status=fail reason=no_selected_alpha latest=${latest_file}";
                   failures=$((failures+1));
@@ -287,7 +287,7 @@ tasks:
                       new_alpha_found=1;
                     fi
                     echo "$signature" >> "$seen_signatures_file";
-                  done < <(python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding=\"utf-8\")); payload=(j.get(\"payload\") or {}); details=payload.get(\"selectedDetails\") or []; out=[]; [out.append(\"hash:\"+str((d or {}).get(\"ideaHash\",\"\")).strip()) for d in details if str((d or {}).get(\"ideaHash\",\"\")).strip()]; [out.append(\"id:\"+str(x)) for x in (payload.get(\"selected\") or [])] if not out else None; [print(v) for v in out]" "$latest_file")
+                  done < <(uv run python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding=\"utf-8\")); payload=(j.get(\"payload\") or {}); details=payload.get(\"selectedDetails\") or []; out=[]; [out.append(\"hash:\"+str((d or {}).get(\"ideaHash\",\"\")).strip()) for d in details if str((d or {}).get(\"ideaHash\",\"\")).strip()]; [out.append(\"id:\"+str(x)) for x in (payload.get(\"selected\") or [])] if not out else None; [print(v) for v in out]" "$latest_file")
                   sort -u "$seen_signatures_file" -o "$seen_signatures_file";
                   if [ "$new_alpha_found" -ne 1 ]; then
                     echo "[loop] cycle=${cycle} status=fail reason=no_new_alpha_detected latest=${latest_file}";
@@ -421,7 +421,7 @@ tasks:
             echo "No summary marker found in second run output";
             exit 1;
           fi;
-          python3 -c "import json,sys; s=json.loads(sys.argv[1]); hit=float(s.get(\"hitRatePct\",0)); aborted=bool(s.get(\"abortedByRateLimit\",True)); print(json.dumps({\"ok\": (hit>=99 and not aborted), \"hitRatePct\": hit, \"abortedByRateLimit\": aborted}, ensure_ascii=False)); raise SystemExit(0 if (hit>=99 and not aborted) else 1)" "$summary"'
+          uv run python3 -c "import json,sys; s=json.loads(sys.argv[1]); hit=float(s.get(\"hitRatePct\",0)); aborted=bool(s.get(\"abortedByRateLimit\",True)); print(json.dumps({\"ok\": (hit>=99 and not aborted), \"hitRatePct\": hit, \"abortedByRateLimit\": aborted}, ensure_ascii=False)); raise SystemExit(0 if (hit>=99 and not aborted) else 1)" "$summary"'
 
   db:test:
     desc: Postgres くんと仲良くお話しできるか確認するテストだよっ！🛡️✨

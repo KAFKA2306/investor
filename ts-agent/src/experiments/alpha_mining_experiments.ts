@@ -63,7 +63,8 @@ async function run(): Promise<void> {
         targetSymbols: args.symbols.length > 0 ? args.symbols.length : "AUTO",
       },
       knowledgebase: {
-        dbPath: args.dbPath ?? "logs/cache/alpha_knowledgebase.sqlite",
+        dbPath:
+          args.dbPath ?? join(paths.cacheRoot, "alpha_knowledgebase.sqlite"),
         counts,
       },
       message:

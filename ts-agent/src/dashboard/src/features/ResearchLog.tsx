@@ -38,6 +38,7 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showCompare, setShowCompare] = useState(false);
   const [filterToActive, setFilterToActive] = useState(false);
+  const [adoptionThreshold, setAdoptionThreshold] = useState(0.0);
 
   const allCandidates = useMemo(() => {
     const list: CandidateLogEntry[] = [];
@@ -77,8 +78,15 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
     if (filterToActive && activeDate) {
       list = list.filter((c) => c.date === activeDate);
     }
+    list = list.filter((c) => (c.scores.adoption ?? 0) >= adoptionThreshold);
     return list;
-  }, [allCandidates, filterStatus, filterToActive, activeDate]);
+  }, [
+    allCandidates,
+    filterStatus,
+    filterToActive,
+    activeDate,
+    adoptionThreshold,
+  ]);
 
   const chartData = [
     { name: "Selected", value: stats.selected, fill: "var(--brand)" },
@@ -300,6 +308,61 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                 {f.label}
               </button>
             ))}
+          </div>
+          <div
+            style={{
+              height: "20px",
+              width: "1px",
+              background: "var(--line)",
+              margin: "0 0.5rem",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.8rem",
+              padding: "0 0.5rem",
+            }}
+          >
+            <label
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--ink-soft)",
+                fontWeight: "bold",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.8rem",
+              }}
+            >
+              Min Adoption:
+              <span
+                style={{
+                  color: "var(--brand)",
+                  marginLeft: "0.4rem",
+                  fontFamily: "var(--mono)",
+                  fontSize: "0.8rem",
+                }}
+              >
+                {(adoptionThreshold * 100).toFixed(0)}%
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={adoptionThreshold}
+                onChange={(e) =>
+                  setAdoptionThreshold(Number.parseFloat(e.target.value))
+                }
+                style={{
+                  width: "120px",
+                  accentColor: "var(--brand)",
+                  cursor: "pointer",
+                }}
+              />
+            </label>
           </div>
         </div>
         <div>

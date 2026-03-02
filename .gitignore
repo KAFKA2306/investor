@@ -1,5 +1,4 @@
-cache*
-.cache/
+*cache*
 *.sqlite
 *.sqlite-journal
 *.sqlite-wal

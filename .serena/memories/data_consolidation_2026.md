@@ -1,4 +1,14 @@
 # Data Consolidation Project — 完了レポート (2026-03-02)
+## 最終パッチ (2026-03-02 追加)
+
+移行漏れを完全に修正:
+✅ logs/cache の残ったファイル (455 MB) を統合
+✅ ts-agent/data を適切に分散配置してシンボリックリンク化
+✅ ハードコードパス4つをすべて PathRegistry に置き換え
+✅ 全シンボリックリンク: ts-agent/data, logs/cache, logs/unified
+✅ Code format + lint 成功
+
+# Data Consolidation Project — 完了レポート (2026-03-02)
 
 ## 実装完了
 

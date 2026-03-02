@@ -176,28 +176,6 @@ bash scripts/migrate_data_to_d_drive.sh
 8. 監査ログ移行 (unified/experiments/verification)
 9. 後方互換シンボリックリンク作成
 
----
-
-## 🔍 トラブルシューティング
-
-### Q: 「パスが見つからない」エラーが出た
-
-**A**: `PathRegistry` を参照しているか確認：
-```bash
-# ❌ ハードコード
-const path = "/home/kafka/finance/investor/logs/cache/something.sqlite";
-
-# ✅ PathRegistry 使用
-const path = join(paths.cacheRoot, "something.sqlite");
-```
-
-### Q: 環境変数をセットしたのに反映されない
-
-**A**: 環境変数は `ts-agent/src/config/default.yaml` の `paths` セクションで定義される必要があります。新しいパスが必要な場合は、`default.yaml` に追加してから `path_registry.ts` で読み込んでください。
-
-### Q: 旧パスまだ使ってる外部スクリプトがある
-
-**A**: シンボリックリンクで後方互換が保証されています。旧パスへのアクセスは自動的に新パスにリダイレクトされます。
 
 ---
 
@@ -208,6 +186,3 @@ const path = join(paths.cacheRoot, "something.sqlite");
 - `CLAUDE.md` — プロジェクト全体の指針
 - `docs/diagrams/` — アーキテクチャ図
 
----
-
-**重要**: このファイルは月1回以上レビューし、新しいデータパスが追加されたら即座に更新してください！

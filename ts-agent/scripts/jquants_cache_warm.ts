@@ -8,7 +8,8 @@ import {
   hasFlag,
   parseCliArgs,
 } from "../src/providers/cli_args.ts";
-import { toSymbol4 } from "../src/providers/value_normalizers.ts";
+import { paths } from "../src/system/path_registry.ts";
+import { toSymbol4 } from "../src/utils/value_utils.ts";
 
 type CliArgs = {
   mode: "date" | "symbol";
@@ -159,7 +160,7 @@ const isUsablePayload = (payload: Record<string, unknown>): boolean => {
 };
 
 const readCachedAny = (
-  cache: SqliteHttpCache,
+  cache: any,
   key: string,
 ): Record<string, unknown> | undefined => {
   const row = cache.db
@@ -175,7 +176,7 @@ const readCachedAny = (
 };
 
 const writeCache = (
-  cache: SqliteHttpCache,
+  cache: any,
   key: string,
   payload: Record<string, unknown>,
   ttlMs: number,
@@ -316,9 +317,7 @@ async function run(): Promise<void> {
 
   const apiKey = core.getEnv("JQUANTS_API_KEY");
   const headers = { "x-api-key": apiKey };
-  const cache = new SqliteHttpCache(
-    join(core.config.paths.logs, "cache", "jquants_pead_cache.sqlite"),
-  );
+  const cache = new SqliteHttpCache(paths.jquantsPeadCacheSqlite);
   const ttlMs = args.ttlHours * 60 * 60 * 1000;
 
   let symbols: string[] = [];

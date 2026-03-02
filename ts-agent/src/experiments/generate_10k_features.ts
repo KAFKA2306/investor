@@ -309,7 +309,7 @@ async function main(): Promise<void> {
 
   const edinet = new EdinetProvider();
   const search = new EdinetSearchProvider();
-  const dbPath = join(process.cwd(), "../logs/cache/edinet_search.sqlite");
+  const dbPath = join(paths.cacheRoot, "edinet_search.sqlite");
   const db = new Database(dbPath, { create: true });
   const sectionQuery = db.prepare(
     "SELECT sectionName, content FROM edinet_search WHERE docID = ?",

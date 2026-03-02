@@ -133,6 +133,10 @@ pipelineBlueprint:
     maxTrackingError: 0.03
     maxRollingDrawdown: 0.12
     minWinRate: 0.48
+  alphaLoop:
+    maxCycles: 1
+    sleepSec: 0
+    maxFailures: 1
 
 alpha:
   edinet:
@@ -150,11 +154,6 @@ alpha:
 logging:
   envelope:
     version: v2
-
-  alphaLoop:
-    maxCycles: 1
-    sleepSec: 0
-    maxFailures: 1
 
 database:
   canonicalDb:

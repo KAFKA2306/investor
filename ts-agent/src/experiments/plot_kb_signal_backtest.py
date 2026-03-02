@@ -17,7 +17,7 @@ def parse_args():
     )
     parser.add_argument(
         "--db-path",
-        default="/home/kafka/finance/investor/logs/cache/alpha_knowledgebase.sqlite",
+        default=DB_PATH,
         help="Path to alpha_knowledgebase.sqlite",
     )
     parser.add_argument(

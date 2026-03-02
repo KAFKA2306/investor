@@ -404,7 +404,8 @@ export async function runKbSignalBacktest(
   const summary = {
     backtest: {
       runId,
-      dbPath: args.dbPath ?? "logs/cache/alpha_knowledgebase.sqlite",
+      dbPath:
+        args.dbPath ?? join(paths.cacheRoot, "alpha_knowledgebase.sqlite"),
       period: {
         from: firstDate,
         to: lastDate,

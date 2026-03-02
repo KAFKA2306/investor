@@ -5,6 +5,7 @@ import { serve } from "bun";
 import { MemoryCenter } from "../context/unified_context_services.ts";
 import { mirrorEventToCanonical } from "../db/adapters/canonical_bridge.ts";
 import { bootstrapCanonicalDb } from "../db/bootstrap.ts";
+import { paths } from "../system/path_registry.ts";
 
 interface WorkflowMeta {
   id: string;
@@ -40,7 +41,7 @@ const memory = new MemoryCenter();
 const cwd = process.cwd();
 const repoRoot = /(^|[\\/])ts-agent$/.test(cwd) ? resolve(cwd, "..") : cwd;
 const workflowDir = resolve(repoRoot, ".agent/workflows");
-const timeSeriesDir = resolve(repoRoot, "ts-agent/data");
+const timeSeriesDir = paths.outputsRoot;
 const maxStdoutChars = 12000;
 const maxCommandMs = 8 * 60 * 1000;
 const tsAgentRoot = resolve(repoRoot, "ts-agent");

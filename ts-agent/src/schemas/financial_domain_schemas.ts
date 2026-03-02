@@ -583,7 +583,12 @@ export const EvaluationCriteriaSchema = z.object({
 export type EvaluationCriteria = z.infer<typeof EvaluationCriteriaSchema>;
 
 export const DEFAULT_EVALUATION_CRITERIA: EvaluationCriteria =
-  EvaluationCriteriaSchema.parse({});
+  EvaluationCriteriaSchema.parse({
+    alpha: {},
+    performance: {},
+    stability: {},
+    data: {},
+  });
 export type FinancialScores = z.infer<typeof FinancialScoresSchema>;
 
 export const CycleSummarySchema = z.object({
