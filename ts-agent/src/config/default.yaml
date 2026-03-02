@@ -1,3 +1,15 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 📍 UNIFIED DATA PATH ARCHITECTURE (統合データ管理構造)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ⚠️  重要: 以下の paths セクションは「真実の源（SSOT）」です。
+#
+#   ハードコードされたパスを使用してはいけません！❌
+#   代わりに src/system/path_registry.ts から PathRegistry をインポートして使用してください。✅
+#
+# マスターロケーション: /mnt/d/investor_all_cached_data/
+# 詳細は DATA_STRUCTURE.md を参照してください。
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 project:
   name: investor-ts
 
@@ -105,7 +117,7 @@ pipelineBlueprint:
     validationDays: 63
     forwardDays: 63
   verificationAcceptance:
-    minSharpe: 0.35
+    minSharpe: 1.8
     minIC: 0.04
     maxDrawdown: 0.1
     minAnnualizedReturn: 0.0
@@ -154,3 +166,7 @@ database:
     user: investor
     password: "investor"
     ssl: false
+
+dashboard:
+  port: 5173
+  apiPort: 8787

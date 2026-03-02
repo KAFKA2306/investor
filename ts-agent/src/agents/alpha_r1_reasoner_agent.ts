@@ -1,4 +1,5 @@
 import {
+  DEFAULT_EVALUATION_CRITERIA,
   type AlphaScreening,
   AlphaStatus,
   type StandardOutcome,
@@ -23,7 +24,8 @@ export class StrategicReasonerAgent extends BaseAgent {
       "General Alpha";
 
     const riskVerdict =
-      (outcome.verification?.metrics?.maxDrawdown ?? 0) < -0.2
+      Math.abs(outcome.verification?.metrics?.maxDrawdown ?? 0) >
+      DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown
         ? Verdict.INVALID
         : Verdict.VALID;
     const riskEvidence = `MaxDrawdown check: ${outcome.verification?.metrics?.maxDrawdown}.`;

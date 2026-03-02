@@ -34,7 +34,16 @@ The system is built as a multi-agent pipeline with these roles:
 
 ### Data flow
 
-Market data (J-Quants CSV dumps) lives at `/mnt/d/marketdata/`. SQLite caches are under `logs/cache/`. Audit logs write to `logs/unified/alpha_discovery_*.json`. Verification artifacts (JSON + 4-panel PNGs) write to `ts-agent/data/`.
+**🗂️ All data is centralized at `/mnt/d/investor_all_cached_data/` (since 2026-03-02)**:
+- Market data (J-Quants CSV): `jquants/`
+- SQLite caches (API + memory): `cache/`
+- EDINET docs + API cache: `edinet/`
+- Pipeline outputs (JSON + PNG): `outputs/`
+- Preprocessed features: `preprocessed/`
+- Audit logs: `logs/unified/`, `logs/experiments/`, etc.
+
+⚠️ **Path Management Rule**: Never hardcode paths! Use `PathRegistry` from `src/system/path_registry.ts`.
+📖 See `DATA_STRUCTURE.md` for complete reference and `default.yaml` for all path mappings.
 
 ### Acceptance thresholds (from `config/default.yaml`)
 
@@ -100,6 +109,7 @@ task jquants:warm-all:stop
 - **Agents**: Extend `BaseAgent` (from `src/system/app_runtime_core.ts`) and implement `run()`.
 - **Data validation**: All external/gateway data must be validated with Zod schemas in `src/schemas/`.
 - **Side effects**: Keep pipeline logic deterministic; make all side effects explicit.
+- **Path Management** ⚠️: **Never hardcode filesystem paths!** Always use `PathRegistry` from `src/system/path_registry.ts`. Reference `DATA_STRUCTURE.md` for the complete unified data path architecture. This ensures all code uses the single source of truth for data locations (`/mnt/d/investor_all_cached_data/`).
 
 ## Configuration
 
@@ -114,7 +124,10 @@ Follow Conventional Commits as seen in repo history: `feat:`, `fix:`, `docs:`, `
 
 A successful `run:newalphasearch` cycle must produce:
 1. A new `logs/unified/alpha_discovery_*.json` with at least one `selected` alpha
-2. An updated `ts-agent/data/standard_verification_data.json`
-3. A new `ts-agent/data/VERIF_*.png` (4-panel verification plot)
+   - **Location**: `/mnt/d/investor_all_cached_data/logs/unified/alpha_discovery_*.json` (or `logs/unified/` symlink)
+2. An updated `standard_verification_data.json`
+   - **Location**: `/mnt/d/investor_all_cached_data/outputs/standard_verification_data.json` (or `ts-agent/data/` symlink)
+3. A new `VERIF_*.png` (4-panel verification plot)
+   - **Location**: `/mnt/d/investor_all_cached_data/outputs/VERIF_*.png`
 
-The loop monitors these artifacts to detect cycle success/failure before proceeding to the next cycle.
+The loop monitors these artifacts to detect cycle success/failure before proceeding to the next cycle. All paths are managed via `PathRegistry` — see `DATA_STRUCTURE.md` for details.

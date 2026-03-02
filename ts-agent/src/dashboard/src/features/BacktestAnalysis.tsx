@@ -14,10 +14,6 @@ import { RawDataToggle } from "../components/RawDataToggle";
 import {
   collectStageMetricRows,
   computeDrawdownSeries,
-  recomputeMaxDD,
-  recomputeSharpe,
-  recomputeTotalReturn,
-  resolveSourcePath,
   type StandardVerificationData,
   type UnifiedLogPayload,
 } from "../dashboard_core";

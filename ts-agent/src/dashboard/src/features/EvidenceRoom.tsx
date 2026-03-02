@@ -12,9 +12,6 @@ import {
   computeRollingIC,
   formatBpsNullable,
   type ProxySpec,
-  recomputeMaxDD,
-  recomputeSharpe,
-  resolveSourcePath,
   type StandardVerificationData,
 } from "../dashboard_core";
 
@@ -107,34 +104,41 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
 
           <div className="uqtl-grid" style={{ marginTop: "1.5rem" }}>
             <MetricCard
-              label="シャープレシオ (Sharpe) 💎"
-              value={verificationData.metrics?.sharpe ?? 0}
-              sourcePath="metrics.sharpe"
-              derivation={{
-                id: "recomputeSharpe",
-                note: "年率換算のシャープレシオだよっ！",
-                inputs: ["strategyCum"],
-              }}
-              trend={recomputeSharpe(dailyReturns) >= 0 ? "up" : "down"}
+              label="フィットネス (Fitness) 💪"
+              value={((verificationData.metrics?.fitness ?? 0) * 100).toFixed(
+                1,
+              )}
+              unit="%"
+              trend={
+                (verificationData.metrics?.fitness ?? 0) > 0.7
+                  ? "up"
+                  : "neutral"
+              }
               onClick={() => onNavigate?.("backtest")}
             />
             <MetricCard
-              label="情報係数 (IC) 🔍"
-              value={verificationData.metrics?.ic ?? 0}
-              sourcePath="metrics.ic"
-              trend="neutral"
+              label="安定性 (Stability) 🛡️"
+              value={((verificationData.metrics?.stability ?? 0) * 100).toFixed(
+                1,
+              )}
+              unit="%"
+              trend={
+                (verificationData.metrics?.stability ?? 0) > 0.7
+                  ? "up"
+                  : "neutral"
+              }
             />
             <MetricCard
-              label="最大ドローダウン (MaxDD) 📉"
-              value={(verificationData.metrics?.maxDD ?? 0) * 100}
+              label="採用度 (Adoption) 🌟"
+              value={((verificationData.metrics?.adoption ?? 0) * 100).toFixed(
+                1,
+              )}
               unit="%"
-              sourcePath="metrics.maxDD"
-              derivation={{
-                id: "recomputeMaxDD",
-                note: "いちばん凹んだところだよぉ…",
-                inputs: ["strategyCum", "dates"],
-              }}
-              trend="down"
+              trend={
+                (verificationData.metrics?.adoption ?? 0) > 0.7
+                  ? "up"
+                  : "neutral"
+              }
               onClick={() => onNavigate?.("backtest")}
             />
           </div>

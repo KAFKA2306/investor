@@ -13,11 +13,12 @@ import {
   type UnifiedLogPayload,
   UnifiedLogPayloadSchema,
 } from "../dashboard_core";
+import { DASHBOARD_CONFIG } from "../config";
 
 const listUnifiedLogFiles = async (): Promise<string[]> => {
   const res = await fetch(
     // @ts-expect-error
-    `${import.meta.env.BASE_URL}logs/__index?bucket=unified`,
+    `${import.meta.env.BASE_URL}${DASHBOARD_CONFIG.api.paths.logsIndex}?bucket=unified`,
   ).catch(() => undefined);
   if (!res?.ok) return [];
   const payload = await res.json().catch(() => []);
@@ -63,9 +64,12 @@ export const useDashboardData = () => {
     const fetchResults = await Promise.allSettled(
       files.map(async (file) => ({
         file,
-        res: await fetch(`${import.meta.env.BASE_URL}logs/unified/${file}`, {
-          cache: "no-store",
-        }),
+        res: await fetch(
+          `${import.meta.env.BASE_URL}${DASHBOARD_CONFIG.api.paths.logsUnifiedBase}/${file}`,
+          {
+            cache: "no-store",
+          },
+        ),
       })),
     );
 
@@ -169,7 +173,7 @@ export const useDashboardData = () => {
     // Fetch standard verification data
     // @ts-expect-error
     const verifRes = await fetch(
-      `${import.meta.env.BASE_URL}verification/standard_verification_data.json`,
+      `${import.meta.env.BASE_URL}${DASHBOARD_CONFIG.api.paths.verificationData}`,
       { cache: "no-store" },
     ).catch(() => undefined);
     if (verifRes?.ok) {
@@ -186,7 +190,7 @@ export const useDashboardData = () => {
 
   useEffect(() => {
     refresh();
-    const timer = setInterval(refresh, 60000);
+    const timer = setInterval(refresh, DASHBOARD_CONFIG.poll.intervalMs);
     return () => clearInterval(timer);
   }, [refresh]);
 

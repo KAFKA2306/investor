@@ -559,6 +559,31 @@ export const FinancialScoresSchema = z.object({
   stabilityScore: z.number().min(0).max(1),
   adoptionScore: z.number().min(0).max(1),
 });
+
+export const EvaluationCriteriaSchema = z.object({
+  alpha: z.object({
+    minTStat: z.number().default(2.0),
+    maxPValue: z.number().default(0.05),
+    minIC: z.number().default(0.04),
+  }),
+  performance: z.object({
+    minSharpe: z.number().default(1.8),
+    maxDrawdown: z.number().default(0.1),
+  }),
+  stability: z.object({
+    maxTrackingError: z.number().default(0.02),
+  }),
+  data: z.object({
+    minQualityScore: z.number().default(0.82),
+    minCoverageRate: z.number().default(0.8),
+    maxMissingRate: z.number().default(0.08),
+  }),
+});
+
+export type EvaluationCriteria = z.infer<typeof EvaluationCriteriaSchema>;
+
+export const DEFAULT_EVALUATION_CRITERIA: EvaluationCriteria =
+  EvaluationCriteriaSchema.parse({});
 export type FinancialScores = z.infer<typeof FinancialScoresSchema>;
 
 export const CycleSummarySchema = z.object({

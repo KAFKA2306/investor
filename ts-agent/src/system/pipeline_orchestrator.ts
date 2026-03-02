@@ -12,6 +12,7 @@ import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import type { ComputeMarketData } from "../providers/factor_compute_engine_client.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
+  DEFAULT_EVALUATION_CRITERIA,
   type AceBullet,
   type CycleSummary,
   type FinancialScores,
@@ -595,13 +596,17 @@ export class PipelineOrchestrator extends BaseAgent {
       result.verification?.metrics?.annualizedReturn ?? 0;
     const verifyDefaults = this.blueprint()?.verificationAcceptance;
     const minSharpe =
-      requirement.targetMetrics?.minSharpe ?? verifyDefaults?.minSharpe ?? 1.5;
+      requirement.targetMetrics?.minSharpe ??
+      verifyDefaults?.minSharpe ??
+      DEFAULT_EVALUATION_CRITERIA.performance.minSharpe;
     const minIC =
-      requirement.targetMetrics?.minIC ?? verifyDefaults?.minIC ?? 0.03;
+      requirement.targetMetrics?.minIC ??
+      verifyDefaults?.minIC ??
+      DEFAULT_EVALUATION_CRITERIA.alpha.minIC;
     const maxDrawdownLimit =
       requirement.targetMetrics?.maxDrawdown ??
       verifyDefaults?.maxDrawdown ??
-      0.1;
+      DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown;
     const minAnnualizedReturn = verifyDefaults?.minAnnualizedReturn ?? 0;
 
     if (

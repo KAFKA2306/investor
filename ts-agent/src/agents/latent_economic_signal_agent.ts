@@ -1,6 +1,7 @@
 import { loadModelRegistry } from "../model_registry/model_registry_loader.ts";
 import { OpenAIThemeProvider } from "../providers/openai_theme_provider.ts";
 import {
+  DEFAULT_EVALUATION_CRITERIA,
   type AceBullet,
   EvidenceSource,
   type FactorAST,
@@ -430,9 +431,18 @@ export class LesAgent extends BaseAgent {
   }
 
   public static readonly EVALUATION_CRITERIA = {
-    ALPHA: { minTStat: 2.0, maxPValue: 0.05, minIC: 0.03 },
-    PERFORMANCE: { minSharpe: 1.5, maxDrawdown: 0.1 },
-    STABILITY: { maxTrackingError: 0.02 },
+    ALPHA: {
+      minTStat: DEFAULT_EVALUATION_CRITERIA.alpha.minTStat,
+      maxPValue: DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue,
+      minIC: DEFAULT_EVALUATION_CRITERIA.alpha.minIC,
+    },
+    PERFORMANCE: {
+      minSharpe: DEFAULT_EVALUATION_CRITERIA.performance.minSharpe,
+      maxDrawdown: DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown,
+    },
+    STABILITY: {
+      maxTrackingError: DEFAULT_EVALUATION_CRITERIA.stability.maxTrackingError,
+    },
   };
 
   public async run(): Promise<void> {

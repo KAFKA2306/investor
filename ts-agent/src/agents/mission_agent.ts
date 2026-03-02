@@ -1,4 +1,5 @@
 import { writeFileSync } from "node:fs";
+import { DEFAULT_EVALUATION_CRITERIA } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
 
@@ -26,7 +27,7 @@ ${context.currentRequirement || "探索の継続的進化。マーケットの�
 ## constraints
 - ターゲット銘柄: ${context.constraints.join(", ") || "6501.T, 9501.T, 6701.T"}
 - 禁止領域: ${context.forbiddenZones.join(", ") || "Noise-heavy short-term momentum"}
-- 納入条件: Sharpe Ratio > ${context.evaluationCriteria.minSharpe || 1.5}, IC > ${context.evaluationCriteria.minIC || 0.03}
+- 納入条件: Sharpe Ratio > ${context.evaluationCriteria.minSharpe || DEFAULT_EVALUATION_CRITERIA.performance.minSharpe}, IC > ${context.evaluationCriteria.minIC || DEFAULT_EVALUATION_CRITERIA.alpha.minIC}
 
 ## memory_context
 - **シード**: ${context.historySeeds.join(", ")}
@@ -37,8 +38,8 @@ ${context.currentRequirement || "探索の継続的進化。マーケットの�
 - 閾値: quality_score > 0.9
 
 ## evaluation_contract
-- Sharpe Ratio: ${context.evaluationCriteria.minSharpe || 1.5}
-- Information Coefficient: ${context.evaluationCriteria.minIC || 0.03}
+- Sharpe Ratio: ${context.evaluationCriteria.minSharpe || DEFAULT_EVALUATION_CRITERIA.performance.minSharpe}
+- Information Coefficient: ${context.evaluationCriteria.minIC || DEFAULT_EVALUATION_CRITERIA.alpha.minIC}
 - Max Drawdown: < 0.1
 
 ## return_path
@@ -59,7 +60,10 @@ ${context.currentRequirement || "探索の継続的進化。マーケットの�
       historySeeds: [],
       forbiddenZones: [],
       constraints: [],
-      evaluationCriteria: { minSharpe: 1.5, minIC: 0.03 },
+      evaluationCriteria: {
+        minSharpe: DEFAULT_EVALUATION_CRITERIA.performance.minSharpe,
+        minIC: DEFAULT_EVALUATION_CRITERIA.alpha.minIC,
+      },
     });
     console.log(
       `🎯 [MissionAgent] Mission Cycle Started: ${mission.slice(0, 50)}...`,

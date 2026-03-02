@@ -231,6 +231,23 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                 strokeWidth={1.5}
                 strokeDasharray="5 5"
               />
+              <Line
+                type="monotone"
+                dataKey="scores.stability"
+                name="安定性 (Stability)"
+                stroke="var(--success)"
+                dot={false}
+                strokeWidth={1.5}
+              />
+              <Line
+                type="monotone"
+                dataKey="scores.adoption"
+                name="採用度 (Adoption)"
+                stroke="var(--caution)"
+                dot={false}
+                strokeWidth={1.5}
+                strokeDasharray="8 4"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -357,7 +374,41 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                           fontFamily: "var(--mono)",
                         }}
                       >
-                        {c?.scores.fitness.toFixed(3) || "N/A"}
+                        {(c?.scores.fitness ?? 0).toFixed(3)}
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  <td>安定性 (Stability)</td>
+                  {Array.from(selectedIds).map((id) => {
+                    const c = allCandidates.find((x) => x.id === id);
+                    return (
+                      <td
+                        key={id}
+                        style={{
+                          textAlign: "center",
+                          fontFamily: "var(--mono)",
+                        }}
+                      >
+                        {(c?.scores.stability ?? 0).toFixed(3)}
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  <td>採用度 (Adoption)</td>
+                  {Array.from(selectedIds).map((id) => {
+                    const c = allCandidates.find((x) => x.id === id);
+                    return (
+                      <td
+                        key={id}
+                        style={{
+                          textAlign: "center",
+                          fontFamily: "var(--mono)",
+                        }}
+                      >
+                        {(c?.scores.adoption ?? 0).toFixed(3)}
                       </td>
                     );
                   })}
