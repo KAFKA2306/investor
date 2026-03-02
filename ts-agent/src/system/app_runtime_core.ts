@@ -13,18 +13,17 @@ import {
   PostgresClient,
 } from "../db/postgres_client.ts";
 import {
+  CanonicalLogKind,
+  type EventType,
   type StandardOutcome,
   StandardOutcomeSchema,
   type UnifiedLog,
   UnifiedLogSchema,
 } from "../schemas/financial_domain_schemas.ts";
-import type {
-  CanonicalLogKind,
-  EventType,
-} from "../schemas/system_event_schemas.ts";
 import { dateUtils } from "../utils/date_utils.ts";
 import { fsUtils } from "../utils/fs_utils.ts";
 import { logger } from "../utils/logger.ts";
+import { randomUUID } from "node:crypto";
 import { withTelemetry } from "./telemetry_logger.ts";
 
 const ConfigSchema = z.object({
@@ -58,7 +57,10 @@ const ConfigSchema = z.object({
       appId: z.string().optional(),
       appIdEnv: z.string().optional(),
     }),
-    ai: z.object({ enabled: z.boolean() }),
+    ai: z.object({
+      enabled: z.boolean(),
+      model: z.string().optional(),
+    }),
     python: z
       .object({
         uvPath: z.string().optional(),
@@ -136,6 +138,13 @@ const ConfigSchema = z.object({
           maxTrackingError: z.number().min(0),
           maxRollingDrawdown: z.number().min(0),
           minWinRate: z.number().min(0).max(1),
+        })
+        .optional(),
+      alphaLoop: z
+        .object({
+          maxCycles: z.number().int().min(1).default(3),
+          sleepSec: z.number().int().min(0).default(0),
+          maxFailures: z.number().int().min(1).default(1),
         })
         .optional(),
     })
@@ -233,8 +242,54 @@ class Core {
     return result.data as Config;
   }
 
-  public getEnv(key: string): string {
-    return process.env[key] || "";
+  public getEnv(key: string, defaultValue = ""): string {
+    return process.env[key] || defaultValue;
+  }
+
+  /**
+   * 必須の環境変数を取得するよっ！無いと怒っちゃうんだからねっ💢✨
+   */
+  public getRequiredEnv(key: string): string {
+    const val = this.getEnv(key);
+    if (!val) {
+      logger.error(`Missing required environment variable: ${key} 😡`);
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+    return val;
+  }
+
+  /**
+   * プロバイダーごとの資格情報を、設定ファイルか環境変数から可愛く取得するよっ！🔑✨
+   */
+  public getProviderCredential(
+    provider: keyof Config["providers"],
+    key: string,
+    envKey?: string,
+  ): string {
+    const p = this.config.providers[provider] as any;
+    if (p?.[key]) return p[key];
+    if (envKey) {
+      const val = this.getEnv(envKey);
+      if (val) return val;
+    }
+    return "";
+  }
+
+  /**
+   * venv 内の Python 実行パスを可愛く解決するよっ！🐍✨
+   */
+  public getVenvPythonPath(): string {
+    const pythonCfg = this.config.providers.python;
+    if (pythonCfg?.uvPath) return pythonCfg.uvPath;
+    const venvDir = pythonCfg?.venvDir || ".venv";
+    // びよーんと OS に合わせてパスを変えちゃうよっ！🎀
+    const isWindows = process.platform === "win32";
+    return join(
+      process.cwd(),
+      venvDir,
+      isWindows ? "Scripts" : "bin",
+      "python",
+    );
   }
 }
 
@@ -246,25 +301,36 @@ export abstract class BaseAgent {
     }
   }
 
+  /**
+   * イベントを発行するよっ！✨
+   * experimentId などのコンテキストを自動で拾うように強化したんだもん！🛡️
+   */
   public emitEvent(
     type: EventType,
     payload: Record<string, object | string | number | boolean>,
     metadata: Record<string, object | string | number | boolean> = {},
   ) {
-    const id = crypto.randomUUID();
+    const id = randomUUID();
     const timestamp = dateUtils.nowIso();
+
+    // TODO: 共通のランタイム状態から拾えるようにするともっといいかも！🎀
     const event = {
       id,
       timestamp,
       type,
       agentId: this.constructor.name,
+      experimentId:
+        (metadata.experimentId as string) || process.env.UQTL_EXPERIMENT_ID,
+      parentEventId: (metadata.parentEventId as string) || undefined,
       payload,
       metadata,
     };
+
     core.eventStore.appendEvent(event);
     const memory = new MemoryCenter();
     memory.pushEvent(event);
     memory.close();
+
     void mirrorEventToCanonical({
       id: event.id,
       timestamp: event.timestamp,
@@ -304,12 +370,26 @@ export abstract class BaseAgent {
   }
 
   /**
+   * 設定ファイルや環境変数から、可愛く設定を読み込むよっ！🎀
+   */
+  protected getConfig<T>(path: string, defaultValue: T): T {
+    const keys = path.split(".");
+    let current: any = this.core.config;
+    for (const key of keys) {
+      if (current === undefined || current === null) return defaultValue;
+      current = current[key];
+    }
+    return current === undefined ? defaultValue : current;
+  }
+
+  /**
    * ミッションファイルを読み込んでコンテキストを解決するよっ！🎯
    */
   protected loadMissionContext(): string {
-    const { paths: currentPaths } = require("./path_registry.ts");
-    if (currentPaths.missionMd && existsSync(currentPaths.missionMd)) {
-      return readFileSync(currentPaths.missionMd, "utf8");
+    // インポートサイクルを避けるために dynamic import を検討するよ
+    const missionPath = join(this.core.config.paths.data, "mission.md");
+    if (existsSync(missionPath)) {
+      return readFileSync(missionPath, "utf8");
     }
     return "";
   }
@@ -324,6 +404,14 @@ export abstract class BaseAgent {
       generatedAt: validated.timestamp || dateUtils.nowIso(),
       report: validated,
     });
+
+    // ついでにイベントも発行しちゃうよっ！✨
+    this.emitEvent("OUTCOME_GENERATED", {
+      strategyId: validated.strategyId,
+      score: validated.reasoningScore,
+      isProductionReady: validated.stability?.isProductionReady ?? false,
+    });
+
     logger.info(
       `📝 [${this.constructor.name}] StandardOutcome persisted: ${validated.strategyId}`,
     );
@@ -353,7 +441,7 @@ export function writeCanonicalLog(data: UnifiedLog): void {
   const validated = UnifiedLogSchema.parse(data);
   const dateStr = dateUtils.todayYmd();
   writeCanonicalEnvelope({
-    kind: "daily_decision",
+    kind: CanonicalLogKind.ALPHA_DISCOVERY,
     asOfDate: dateStr,
     generatedAt: validated.generatedAt || dateUtils.nowIso(),
     payload: validated,
@@ -365,15 +453,19 @@ export function writeCanonicalEnvelope(input: {
   payload: object;
   asOfDate?: string;
   generatedAt?: string;
+  producerComponent?: string;
+  producerVersion?: string;
 }): string {
   const generatedAt = input.generatedAt || dateUtils.nowIso();
   const asOfDate = input.asOfDate || dateUtils.todayYmd();
   const canonical = {
     schema: "investor.log-envelope.v2",
-    id: crypto.randomUUID(),
+    id: randomUUID(),
     kind: input.kind,
     asOfDate,
     generatedAt,
+    producerComponent: input.producerComponent || "unknown",
+    producerVersion: input.producerVersion || "v1.0.0",
     payload: input.payload,
   };
   const canonicalPath = createLogPath("unified", `log_${Date.now()}.json`);

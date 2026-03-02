@@ -9,40 +9,59 @@ export enum LogLevel {
   ERROR = 3,
 }
 
+type LogContext = Record<string, string | number | boolean>;
+
 class Logger {
   private currentLevel: LogLevel = LogLevel.INFO;
+  private defaultContext: LogContext = {};
 
   public setLevel(level: LogLevel): void {
     this.currentLevel = level;
   }
 
-  private format(level: string, message: string): string {
+  public setContext(context: LogContext): void {
+    this.defaultContext = { ...this.defaultContext, ...context };
+  }
+
+  private format(level: string, message: string, context?: LogContext): string {
     const ts = new Date().toISOString();
-    return `[${ts}] [${level}] ${message}`;
+    const ctx = { ...this.defaultContext, ...context };
+    const ctxStr = Object.keys(ctx).length > 0 ? ` ${JSON.stringify(ctx)}` : "";
+    return `[${ts}] [${level}] ${message}${ctxStr}`;
   }
 
-  public debug(message: string, ...args: any[]): void {
+  public debug(message: string, context?: LogContext, ...args: any[]): void {
     if (this.currentLevel <= LogLevel.DEBUG) {
-      console.debug(this.format("DEBUG", message), ...args);
+      console.debug(this.format("DEBUG", message, context), ...args);
     }
   }
 
-  public info(message: string, ...args: any[]): void {
+  public info(message: string, context?: LogContext, ...args: any[]): void {
     if (this.currentLevel <= LogLevel.INFO) {
-      console.info(this.format("INFO", message), ...args);
+      console.info(this.format("INFO", message, context), ...args);
     }
   }
 
-  public warn(message: string, ...args: any[]): void {
+  public warn(message: string, context?: LogContext, ...args: any[]): void {
     if (this.currentLevel <= LogLevel.WARN) {
-      console.warn(this.format("WARN", message), ...args);
+      console.warn(this.format("WARN", message, context), ...args);
     }
   }
 
-  public error(message: string, ...args: any[]): void {
+  public error(message: string, context?: LogContext, ...args: any[]): void {
     if (this.currentLevel <= LogLevel.ERROR) {
-      console.error(this.format("ERROR", message), ...args);
+      console.error(this.format("ERROR", message, context), ...args);
     }
+  }
+
+  /**
+   * 特定のコンテキストを持つ子ロガーを作成するよっ！👶💖
+   */
+  public child(context: LogContext): Logger {
+    const child = new Logger();
+    child.setLevel(this.currentLevel);
+    child.setContext({ ...this.defaultContext, ...context });
+    return child;
   }
 }
 

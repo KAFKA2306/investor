@@ -64,8 +64,12 @@ export class ComputeEngineClient {
   ): Promise<ComputeResponse> {
     const inputJson = JSON.stringify(request);
 
+    const cmd = this.venvPython.endsWith("uv")
+      ? [this.venvPython, "run", this.enginePath]
+      : [this.venvPython, this.enginePath];
+
     const proc = spawn({
-      cmd: [this.venvPython, this.enginePath],
+      cmd,
       stdin: "pipe",
       stdout: "pipe",
       stderr: "pipe",

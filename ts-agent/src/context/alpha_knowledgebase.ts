@@ -1,5 +1,6 @@
 import { Database } from "bun:sqlite";
-import { join } from "node:path";
+import { mkdirSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { DocumentRepository } from "../db/repos/document_repository.ts";
 import { EvaluationRepository } from "../db/repos/evaluation_repository.ts";
 import { EventRepository } from "../db/repos/event_repository.ts";
@@ -189,7 +190,13 @@ export class AlphaKnowledgebase {
     const targetPath =
       dbPath ??
       join(core.config.paths.logs, "cache", "alpha_knowledgebase.sqlite");
+
+    // ディレクトリがないと SQLITE_CANTOPEN になっちゃうから、優しく作ってあげるねっ！🎀
+    mkdirSync(dirname(targetPath), { recursive: true });
+
     this.db = new Database(targetPath, { create: true });
+    // 他のプロセスが使ってるときのために、同時実行に強くするよっ！🛡️
+    this.db.run("PRAGMA journal_mode = WAL;");
 
     if (core.postgres) {
       this.postgresRepos = {

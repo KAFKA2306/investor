@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
 import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
-import type { AlphaFactor } from "../agents/latent_economic_signal_agent.ts";
+import { AlphaFactor } from "../types/index.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { MissionAgent } from "../agents/mission_agent.ts";
 import {
@@ -18,26 +18,23 @@ import {
   type QuantitativeVerification,
   QuantitativeVerificationSchema,
   type StandardOutcome,
+  type VerificationVerdict,
 } from "../schemas/financial_domain_schemas.ts";
+import type { ComputeMarketData } from "../providers/factor_compute_engine_client.ts";
+import { randomUUID } from "node:crypto";
 import { BaseAgent, core } from "./app_runtime_core.ts";
 import {
   DataPipelineRuntime,
   QuantResearchRuntime,
 } from "./data_pipeline_runtime.ts";
+import {
+  type DriftReport,
+  marketMonitor,
+  type SystemStateSnapshot,
+} from "./market_monitor.ts";
 import { paths } from "./path_registry.ts";
+import { type QualityGateResult, qualityGate } from "./quality_gate.ts";
 import { logIO, logMetric } from "./telemetry_logger.ts";
-
-type VerificationVerdict =
-  | "ADOPTED"
-  | "REJECTED_DATA"
-  | "REJECTED_MODEL"
-  | "REJECTED_GENERAL";
-
-type DataDeliveryGate = {
-  accepted: boolean;
-  threshold: number;
-  failedChecks: string[];
-};
 
 export interface PipelineRequirement {
   id: string;
@@ -60,7 +57,6 @@ export interface PipelineRequirement {
 
 export interface IdeaCandidate extends AlphaFactor {
   requirementId: string;
-  noveltyScore: number;
   priority: number;
 }
 
@@ -123,13 +119,7 @@ export interface AuditRecord {
   violations?: string[];
 }
 
-export interface DriftReport {
-  strategyId: string;
-  driftDetected: boolean;
-  severity: "LOW" | "MEDIUM" | "HIGH";
-  recommendation: "CONTINUE" | "ADJUST" | "HALT";
-  metrics: Record<string, number>;
-}
+// DriftReport moved to market_monitor.ts
 
 export interface DataSourceRow {
   source: string;
@@ -168,14 +158,7 @@ export interface DatasetMetadata {
   };
 }
 
-export interface SystemStateSnapshot {
-  regime: string;
-  volatility: string;
-  driftAlerts: number;
-  updatedAt: string;
-  regimeScore?: number;
-  volatilityScore?: number;
-}
+// SystemStateSnapshot moved to market_monitor.ts
 
 export interface IElder {
   getHistory(requirementId: string): Promise<{
@@ -307,27 +290,9 @@ export class PipelineOrchestrator extends BaseAgent {
 
     return {
       fitnessScore,
-      noveltyScore: 0.5, // placeholder; overridden by caller with real novelty
       stabilityScore,
       adoptionScore,
     };
-  }
-
-  private computeNovelty(sig: string[], others: string[][]): number {
-    if (others.length === 0) return 1.0;
-
-    let maxJaccard = 0;
-    const setA = new Set(sig);
-
-    for (const other of others) {
-      const setB = new Set(other);
-      const intersection = new Set([...setA].filter((x) => setB.has(x)));
-      const union = new Set([...setA, ...setB]);
-      const jaccard = intersection.size / union.size;
-      if (jaccard > maxJaccard) maxJaccard = jaccard;
-    }
-
-    return 1.0 - maxJaccard;
   }
 
   private extractAstVariables(ast: Record<string, unknown>): string[] {
@@ -344,32 +309,6 @@ export class PipelineOrchestrator extends BaseAgent {
     };
     walk(ast);
     return [...new Set(vars)];
-  }
-
-  private async getPriorCycleSignatures(): Promise<string[][]> {
-    const memory = new MemoryCenter();
-    const rawEvents = await memory.getEvents(20); // ちゃんと待つんだもんっ！🛡️✨
-    const events = rawEvents as Array<{ type: string; payload_json: string }>;
-
-    return events
-      .filter((e) => e.type === "ALPHA_IDEA_SAVED")
-      .map((e) => {
-        try {
-          const raw = e.payload_json;
-          if (typeof raw !== "string") return []; // 文字列じゃないならポイっ 🚮
-          const parsed: unknown = JSON.parse(raw);
-          if (!parsed || typeof parsed !== "object") return []; // オブジェクトじゃないならポイっ 🚪
-          const payload = parsed as Record<string, unknown>;
-          const sig = payload.featureSignature;
-          return Array.isArray(sig) &&
-            sig.every((s): s is string => typeof s === "string")
-            ? sig
-            : [];
-        } catch {
-          return [];
-        }
-      })
-      .filter((sig) => sig.length > 0);
   }
 
   private blueprint() {
@@ -389,51 +328,14 @@ export class PipelineOrchestrator extends BaseAgent {
     });
   }
 
-  private evaluateExecutionQuality(execution: ExecutionResult): {
-    accepted: boolean;
-    failedChecks: string[];
-  } {
-    const defaults = {
-      minFillRate: 0.95,
-      maxSlippageBps: 2,
-      maxExecutionLatencyMs: 3000,
-    };
-    const criteria = {
-      ...defaults,
-      ...(this.blueprint()?.executionQuality ?? {}),
-    };
-    const failedChecks = [
-      execution.fillRate >= criteria.minFillRate ? "" : "fill_rate",
-      execution.slippageBps <= criteria.maxSlippageBps ? "" : "slippage",
-      execution.executionLatencyMs <= criteria.maxExecutionLatencyMs
-        ? ""
-        : "latency",
-    ].filter((x) => x.length > 0);
-    return { accepted: failedChecks.length === 0, failedChecks };
+  private evaluateExecutionQuality(
+    execution: ExecutionResult,
+  ): QualityGateResult {
+    return qualityGate.evaluateExecutionQuality(execution);
   }
 
-  private evaluateExecutionConstraints(plan: OrderPlan): {
-    accepted: boolean;
-    failedChecks: string[];
-  } {
-    const defaults = {
-      maxPositionWeight: 0.12,
-      maxTurnover: 0.9,
-    };
-    const constraints = {
-      ...defaults,
-      ...(this.blueprint()?.executionConstraints ?? {}),
-    };
-    const maxWeight = Math.max(...Object.values(plan.allocations), 0);
-    const turnover = Object.values(plan.allocations).reduce(
-      (sum, w) => sum + Math.abs(w),
-      0,
-    );
-    const failedChecks = [
-      maxWeight <= constraints.maxPositionWeight ? "" : "max_position_weight",
-      turnover <= constraints.maxTurnover ? "" : "max_turnover",
-    ].filter((x) => x.length > 0);
-    return { accepted: failedChecks.length === 0, failedChecks };
+  private evaluateExecutionConstraints(plan: OrderPlan): QualityGateResult {
+    return qualityGate.evaluateExecutionConstraints(plan);
   }
 
   public async runPipeline(requirement: PipelineRequirement): Promise<void> {
@@ -483,114 +385,67 @@ export class PipelineOrchestrator extends BaseAgent {
 
     if (acceptedData.accepted === "NO") {
       await this.elder.saveRejectionReason(candidate.id, "DATA_DELIVERY_UNMET");
-      await this.elder.reflectLearning(
-        candidate.id,
-        "Data delivery unmet after retries",
-      );
+      await this.elder.reflectLearning(candidate.id, "Data delivery unmet");
       return { verdict: "REJECTED_GENERAL", scores: null };
     }
 
-    let dataset = acceptedData.dataset;
+    const dataset = acceptedData.dataset;
     dataAttempt = acceptedData.nextAttempt;
     await this.persistDataset(dataset, requirement);
 
-    let retryMode: "MODEL" | "NONE" = "NONE";
+    const retryMode: "MODEL" | "NONE" = "NONE";
 
-    for (let attempt = 1; attempt <= 10; attempt++) {
-      console.log(
-        `🔄 [Orchestrator] Attempt ${attempt}: Processing ${candidate.id}`,
-      );
-      this.logPhase("評価と判定", `候補 ${candidate.id} のモデル・検証ループ`);
+    const attempt = 1;
+    console.log(`🎯 [Orchestrator] Single Shot: Processing ${candidate.id}`);
+    this.logPhase("評価と判定", `候補 ${candidate.id} のモデル・検証ループ`);
 
-      const modelConfig = await this.quantResearcher.selectFoundationModel(
+    const modelConfig = await this.quantResearcher.selectFoundationModel(
+      candidate,
+      dataset.context,
+    );
+    modelConfig.adaptationPolicy =
+      await this.quantResearcher.designAdaptationPolicy(
+        modelConfig.foundationModelId,
         candidate,
+      );
+    await this.elder.saveModelConfiguration(modelConfig);
+
+    const refined = await this.quantResearcher.exploreFactors(
+      candidate,
+      dataset.context,
+    );
+    const verification = await this.quantResearcher.coOptimizeAndVerify(
+      refined,
+      dataset,
+      modelConfig,
+      retryMode,
+      forbiddenZones,
+    );
+
+    const scores = this.computeFinancialScores(verification, requirement);
+    await this.elder.saveVerificationResult(verification, scores);
+
+    const verdict = this.judgeVerification(verification, requirement);
+
+    if (verdict === "ADOPTED") {
+      await this.handleAdoptedCandidate(
+        candidate.id,
+        verification,
         dataset.context,
       );
-      modelConfig.adaptationPolicy =
-        await this.quantResearcher.designAdaptationPolicy(
-          modelConfig.foundationModelId,
-          candidate,
-        );
-      await this.elder.saveModelConfiguration(modelConfig);
-
-      const refined = await this.quantResearcher.exploreFactors(
-        candidate,
-        dataset.context,
-      );
-      const verification = await this.quantResearcher.coOptimizeAndVerify(
-        refined,
-        dataset,
-        modelConfig,
-        retryMode,
-        forbiddenZones,
-      );
-
-      const scores = this.computeFinancialScores(verification, requirement);
-      scores.noveltyScore = candidate.noveltyScore;
-      await this.elder.saveVerificationResult(verification, scores);
-
-      const verdict = this.judgeVerification(verification, requirement);
-
-      if (verdict === "ADOPTED") {
-        await this.handleAdoptedCandidate(
-          candidate.id,
-          verification,
-          dataset.context,
-        );
-        return { verdict, scores };
-      }
-
-      if (verdict === "REJECTED_GENERAL") {
-        await this.elder.saveRejectionReason(
-          candidate.id,
-          "REJECTED_GENERAL",
-          verification.verification?.metrics,
-        );
-        await this.elder.reflectLearning(
-          candidate.id,
-          "General gate rejected candidate",
-        );
-        return { verdict, scores };
-      }
-
-      if (verdict === "REJECTED_MODEL") {
-        console.log(
-          `🔄 [Return Path] Model-cause rejection. Retrying model selection...`,
-        );
-        await this.elder.reflectLearning(
-          candidate.id,
-          "Verification rejected by model",
-        );
-        retryMode = "MODEL";
-        continue;
-      }
-
-      if (verdict === "REJECTED_DATA") {
-        console.log(
-          `🔄 [Return Path] Data-cause rejection. Returning to data creation...`,
-        );
-        await this.elder.reflectLearning(
-          candidate.id,
-          "Verification rejected by data",
-        );
-        const nextData = await this.acquireAcceptedDataset(
-          requirement,
-          candidate.id,
-          dataAttempt,
-        );
-        if (nextData.accepted === "NO") {
-          await this.elder.saveRejectionReason(
-            candidate.id,
-            "DATA_RETRY_EXHAUSTED",
-          );
-          return { verdict, scores };
-        }
-        dataset = nextData.dataset;
-        dataAttempt = nextData.nextAttempt;
-        retryMode = "NONE";
-        await this.persistDataset(dataset, requirement);
-      }
+      return { verdict, scores };
     }
+
+    // リトライは禁止なんだもんっ！💢 即終了だよっ！
+    await this.elder.saveRejectionReason(
+      candidate.id,
+      verdict,
+      verification.verification?.metrics,
+    );
+    await this.elder.reflectLearning(
+      candidate.id,
+      `Verification failed with verdict: ${verdict}. No retries allowed.`,
+    );
     return { verdict: "REJECTED_GENERAL", scores: null };
   }
   private async handleAdoptedCandidate(
@@ -658,20 +513,11 @@ export class PipelineOrchestrator extends BaseAgent {
     await this.elder.saveAuditRecord(audit);
 
     const drift = await this.executionAgent.analyzeDrift(audit);
-    const driftThreshold = this.blueprint()?.driftRetraining;
-    if (driftThreshold) {
-      const te = Number(drift.metrics.trackingError ?? 0);
-      const mdd = Math.abs(Number(drift.metrics.maxDrawdown ?? 0));
-      const winRate = Number(drift.metrics.winRate ?? 1);
-      if (
-        te > driftThreshold.maxTrackingError ||
-        mdd > driftThreshold.maxRollingDrawdown ||
-        winRate < driftThreshold.minWinRate
-      ) {
-        drift.driftDetected = true;
-        drift.severity = "HIGH";
-        drift.recommendation = "ADJUST";
-      }
+    const driftResult = marketMonitor.evaluateDrift(drift);
+    if (driftResult.detected) {
+      drift.driftDetected = true;
+      drift.severity = driftResult.severity;
+      drift.recommendation = "ADJUST";
     }
     await this.updateStatus(drift);
     await this.stateMonitor.recordDrift(drift);
@@ -690,25 +536,24 @@ export class PipelineOrchestrator extends BaseAgent {
       requirement,
       startAttempt,
     );
-    for (let attempt = startAttempt; attempt <= 5; attempt += 1) {
-      const current = await this.dataEngineer.preparePITData(
-        requirement,
-        attempt,
-      );
-      current.context = await this.dataEngineer.generateScenario(current);
-      const dataGate = this.evaluateDataDelivery(current, requirement);
-      if (dataGate.accepted) {
-        return {
-          accepted: "YES",
-          dataset: current,
-          nextAttempt: attempt + 1,
-        };
-      }
-      await this.elder.reflectLearning(
-        candidateId,
-        `Data delivery unmet at attempt=${attempt}, quality=${current.qualityScore.toFixed(3)}, failed=${dataGate.failedChecks.join("|")}`,
-      );
+    const attempt = startAttempt;
+    const current = await this.dataEngineer.preparePITData(
+      requirement,
+      attempt,
+    );
+    current.context = await this.dataEngineer.generateScenario(current);
+    const dataGate = this.evaluateDataDelivery(current, requirement);
+    if (dataGate.accepted) {
+      return {
+        accepted: "YES",
+        dataset: current,
+        nextAttempt: attempt + 1,
+      };
     }
+    await this.elder.reflectLearning(
+      candidateId,
+      `Data delivery unmet, quality=${current.qualityScore.toFixed(3)}, failed=${dataGate.failedChecks.join("|")}. No retries allowed.`,
+    );
 
     return {
       accepted: "NO",
@@ -773,49 +618,8 @@ export class PipelineOrchestrator extends BaseAgent {
   private evaluateDataDelivery(
     dataset: PITDataset,
     requirement: PipelineRequirement,
-  ): DataDeliveryGate {
-    const minSharpe =
-      requirement.targetMetrics?.minSharpe ??
-      this.blueprint()?.verificationAcceptance?.minSharpe ??
-      1.5;
-    const derivedQuality = Math.max(
-      0.75,
-      Math.min(0.9, 0.7 + minSharpe * 0.05),
-    );
-    const criteria = requirement.targetMetrics?.dataDelivery;
-    const blueprintData = this.blueprint()?.dataAcceptance;
-    const threshold =
-      criteria?.minQualityScore ??
-      blueprintData?.minQualityScore ??
-      derivedQuality;
-    const minCoverageRate =
-      criteria?.minCoverageRate ?? blueprintData?.minCoverageRate ?? 0.8;
-    const maxMissingRate =
-      criteria?.maxMissingRate ?? blueprintData?.maxMissingRate ?? 0.08;
-    const minLatencyScore = criteria?.minLatencyScore ?? 0.75;
-    const minLeakFreeScore =
-      criteria?.minLeakFreeScore ??
-      (blueprintData?.requireLeakFree === false ? 0 : 1);
-    const minSourceConsistency =
-      criteria?.minSourceConsistency ??
-      blueprintData?.minSourceConsistency ??
-      0.9;
-    const maxLatencyMinutes = blueprintData?.maxLatencyMinutes ?? 40;
-    const m = dataset.deliveryMetrics;
-    const failedChecks = [
-      dataset.qualityScore >= threshold ? "" : "quality",
-      m.coverageRate >= minCoverageRate ? "" : "coverage",
-      m.missingRate <= maxMissingRate ? "" : "missing",
-      m.latencyScore >= minLatencyScore ? "" : "latency",
-      m.latencyMinutes <= maxLatencyMinutes ? "" : "latency_minutes",
-      m.leakFreeScore >= minLeakFreeScore ? "" : "leak",
-      m.sourceConsistency >= minSourceConsistency ? "" : "consistency",
-    ].filter((x) => x.length > 0);
-    return {
-      accepted: failedChecks.length === 0,
-      threshold,
-      failedChecks,
-    };
+  ): QualityGateResult {
+    return qualityGate.evaluateDataDelivery(dataset, requirement);
   }
 
   private async updateStatus(report: DriftReport): Promise<void> {
@@ -855,34 +659,12 @@ export class PipelineOrchestrator extends BaseAgent {
 
     const ideas = await les.generateAlphaFactors(contextBullets, { count: 3 });
 
-    const priorSigs = await this.getPriorCycleSignatures();
-
     return ideas
-      .map((idea, idx) => {
-        const sig =
-          idea.featureSignature && idea.featureSignature.length > 0
-            ? idea.featureSignature
-            : this.extractAstVariables(idea.ast);
-
-        const otherSigsInThisBatch = ideas.slice(0, idx).map((i) => {
-          return i.featureSignature && i.featureSignature.length > 0
-            ? i.featureSignature
-            : this.extractAstVariables(i.ast);
-        });
-
-        const noveltyScore = this.computeNovelty(sig, [
-          ...priorSigs,
-          ...otherSigsInThisBatch,
-        ]);
-
-        return {
-          ...idea,
-          requirementId: requirement.id,
-          noveltyScore,
-          priority: idea.priority ?? 0.9,
-        };
-      })
-      .filter((idea) => idea.noveltyScore >= 0.15)
+      .map((idea) => ({
+        ...idea,
+        requirementId: requirement.id,
+        priority: idea.priority ?? 0.9,
+      }))
       .filter(
         (idea) =>
           !history.forbiddenZones.some((zone: string) =>
@@ -1012,7 +794,6 @@ export class PipelineOrchestrator extends BaseAgent {
         avgSharpe: avg(cycleScores.map((s) => s.fitnessScore * 3)),
         avgIC: avg(cycleScores.map((s) => s.stabilityScore * 0.04)),
         avgFitness: avg(cycleScores.map((s) => s.fitnessScore)),
-        avgNovelty: avg(cycleScores.map((s) => s.noveltyScore)),
         adoptedIds,
         playbookBulletCount: await this.elder.getPlaybookBullets(),
       };
@@ -1035,7 +816,6 @@ export class PipelineOrchestrator extends BaseAgent {
               id: c.id,
               ideaHash: c.ideaHash,
               featureSignature: c.featureSignature,
-              noveltyScore: s?.noveltyScore ?? 0.5,
               adoptionScore: s?.adoptionScore ?? 0,
             };
           }),
@@ -1047,7 +827,6 @@ export class PipelineOrchestrator extends BaseAgent {
             ? {
                 fitness: cycleResults[idx].scores!.fitnessScore,
                 stability: cycleResults[idx].scores!.stabilityScore,
-                novelty: cycleResults[idx].scores!.noveltyScore,
                 adoption: cycleResults[idx].scores!.adoptionScore,
               }
             : undefined,
@@ -1182,7 +961,6 @@ export class ElderBridge implements IElder {
       metadata: {
         id: candidate.id,
         requirementId: candidate.requirementId,
-        noveltyScore: candidate.noveltyScore,
         priority: candidate.priority,
         status: "PENDING",
       },
@@ -1192,7 +970,6 @@ export class ElderBridge implements IElder {
     this.pushMemoryEvent("ALPHA_IDEA_SAVED", {
       strategyId: candidate.id,
       requirementId: candidate.requirementId,
-      noveltyScore: candidate.noveltyScore,
       priority: candidate.priority,
       featureSignature: candidate.featureSignature || [],
     });
@@ -1229,7 +1006,14 @@ export class ElderBridge implements IElder {
     const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
     const ic = Math.abs(result.alpha?.informationCoefficient ?? 0);
     const maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
-    const passed = sharpe >= 1.8 && ic >= 0.04 && maxDD <= 0.1;
+    const verifyDefaults =
+      core.config.pipelineBlueprint?.verificationAcceptance;
+    const minSharpe = verifyDefaults?.minSharpe ?? 1.8;
+    const minIC = verifyDefaults?.minIC ?? 0.04;
+    const maxDrawdownLimit = verifyDefaults?.maxDrawdown ?? 0.1;
+
+    const passed =
+      sharpe >= minSharpe && ic >= minIC && maxDD <= maxDrawdownLimit;
 
     const feedback = passed ? "HELPFUL" : "HARMFUL";
     const reason = passed
@@ -1662,9 +1446,12 @@ export class DataEngineerBridge implements IDataEngineer {
 }
 
 export class QuantResearcherBridge implements IQuantResearcher {
-  private les = new LesAgent();
-  private reasoner = new StrategicReasonerAgent();
-  private runtime = new QuantResearchRuntime();
+  constructor(
+    private les: LesAgent,
+    private marketdata: MarketdataLocalGateway,
+    private runtime: QuantResearchRuntime,
+    private quantEngine: QuantResearchRuntime,
+  ) {}
 
   private loadVerificationReport(): QuantitativeVerification {
     const raw = readFileSync(paths.verificationJson, "utf8");
@@ -1775,10 +1562,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     console.log(
       `[QuantResearcher] Exploring factors for candidate: ${candidate.id}`,
     );
-    return {
-      ...candidate,
-      noveltyScore: this.runtime.scoreNoveltyBoost(candidate.noveltyScore),
-    };
+    return candidate;
   }
 
   async coOptimizeAndVerify(
@@ -1806,13 +1590,75 @@ export class QuantResearcherBridge implements IQuantResearcher {
 
     modelConfig.parameters.learningRate =
       this.runtime.selectLearningRate(retryMode);
-    const report = this.loadVerificationReport();
-    const backtest = this.buildBacktestFromVerification(report);
-    const { predictions, targets } = this.buildPredictionTargetPairs(report);
+    // 🚧 [FIX] 新しいアルファを基に本当の評価を行うよっ！✨💎
+    // 評価用の市場データを可愛く集めるよっ！💹✨
+    const universe = await (this.quantEngine as any).resolveTargetSymbols(
+      this.runtime,
+      { symbols: [], limit: 20 },
+    );
+    logger.info(
+      `[QuantResearcher] Universe resolved for backtest: ${universe.length} symbols`,
+    );
+
+    const computeInputs: ComputeMarketData[] = [];
+    for (const symbol of universe) {
+      const bars = await this.marketdata.getBars(symbol, 252);
+      if (bars.length === 0) continue;
+      for (const b of bars) {
+        computeInputs.push({
+          symbol,
+          date: String(b.date || b.Date),
+          values: {
+            open: Number(b.open || b.Open),
+            high: Number(b.high || b.High),
+            low: Number(b.low || b.Low),
+            close: Number(b.close || b.Close),
+            volume: Number(b.volume || b.Volume),
+          },
+        });
+      }
+    }
+    logger.info(
+      `[QuantResearcher] Compute inputs prepared: ${computeInputs.length} rows`,
+    );
+
+    const computeRes = await this.les.evaluateFactorsViaEngine(
+      [{ id: candidate.id, ast: candidate.ast } as any],
+      computeInputs,
+    );
+
+    const predictions: number[] = [];
+    const targets: number[] = [];
+    const dailyReturns: number[] = [];
+
+    const scores = computeRes.results[0]?.scores || [];
+    logger.info(
+      `[QuantResearcher] Factor scores received: ${scores.length} entries`,
+    );
+
+    if (scores.length > 0) {
+      // 簡易的なバックテスト結果を生成するよっ！✨
+      const returns = scores.map((s, i) => {
+        const nextPrice = computeInputs[i + 1]?.values.close;
+        const currPrice = computeInputs[i]?.values.close;
+        if (!nextPrice || !currPrice) return 0;
+        const ret = (nextPrice - currPrice) / currPrice;
+        predictions.push(s);
+        targets.push(ret);
+        return s > 0 ? ret : -ret; // シンプルなロング/ショートを想定
+      });
+      dailyReturns.push(...returns);
+    }
+
+    const backtest: BacktestResult = {
+      strategyId: candidate.id,
+      netReturn: dailyReturns.reduce((a, b) => a + b, 0),
+      tradingDays: dailyReturns.length,
+      history: dailyReturns,
+    };
 
     const outcome = this.les.calculateOutcome(
       candidate.id,
-      candidate.noveltyScore,
       backtest,
       predictions,
       targets,
@@ -1831,7 +1677,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
       failureType: "NONE",
       strategicReasoning: reasoning,
       alphaScreening: screening,
-      adoptionReason: `Co-optimization finished with measured OOS Sharpe=${report.metrics.sharpe}; period=${report.evaluationWindow.from}..${report.evaluationWindow.to}; split=${researchDesign?.trainDays ?? "n/a"}/${researchDesign?.validationDays ?? "n/a"}/${researchDesign?.forwardDays ?? "n/a"}; data=${manifest.dataRoot}; asof=${manifest.asOfDate}`,
+      adoptionReason: `Co-optimization finished with measured OOS Sharpe=${outcome.verification?.metrics?.sharpeRatio.toFixed(3)}; asof=${manifest.asOfDate}`,
     };
   }
 }

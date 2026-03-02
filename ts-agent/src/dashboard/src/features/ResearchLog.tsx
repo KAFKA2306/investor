@@ -118,27 +118,29 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
   return (
     <div className="main">
       <div className="section-head">
-        <h2>Research Log</h2>
-        <span className="pill">Total Attempts: {stats.total}</span>
+        <h2>リサーチ・ログ 📜✨</h2>
+        <span className="pill" style={{ border: "1px solid var(--line)" }}>
+          総試行回数：{stats.total}
+        </span>
       </div>
 
       <div className="hero panel hero-uqtl">
         <div className="hero-content">
-          <h1 className="hero-title">Hypothesis Evolution</h1>
+          <h1 className="hero-title">アルファ進化の系譜 🧬</h1>
           <p className="hero-subtitle">
-            Historical record of all alpha discovery attempts.
+            これまでの全アルファ探索の記録だよ。取捨選択の歴史がここにあるんだもんっ！✨
           </p>
           <div className="uqtl-grid" style={{ marginTop: "1rem" }}>
             <div className="kpi-card">
-              <div className="label">Discovery Rate</div>
+              <div className="label">採用率 (Discovery)</div>
               <div className="value">{stats.rate.toFixed(1)}%</div>
             </div>
             <div className="kpi-card">
-              <div className="label">Selected</div>
+              <div className="label">採用済み (Selected)</div>
               <div className="value pos">{stats.selected}</div>
             </div>
             <div className="kpi-card">
-              <div className="label">Rejected</div>
+              <div className="label">不採用 (Rejected)</div>
               <div className="value neg">{stats.rejected}</div>
             </div>
           </div>
@@ -157,10 +159,11 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
+                  width={60}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "var(--glass-bg)",
+                    backgroundColor: "var(--bg-panel)",
                     border: "1px solid var(--line)",
                     borderRadius: "8px",
                     fontSize: "10px",
@@ -175,16 +178,20 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
               fontSize: "0.65rem",
               color: "var(--ink-soft)",
               textAlign: "center",
+              fontWeight: "bold",
             }}
           >
-            Selection Summary
+            アルファ選別サマリー 📊
           </div>
         </div>
       </div>
 
-      <div className="panel section" style={{ minHeight: "240px" }}>
+      <div
+        className="panel section"
+        style={{ minHeight: "240px", border: "1px solid var(--line)" }}
+      >
         <h3 className="quick-title">
-          Discovery Progress (Priority vs Novelty)
+          探索の進捗状況 (重要度 vs フィットネス) 📈
         </h3>
         <div style={{ height: "200px", marginTop: "1rem" }}>
           <ResponsiveContainer width="100%" height="100%">
@@ -194,10 +201,13 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                 stroke="rgba(255,255,255,0.05)"
               />
               <XAxis dataKey="date" hide />
-              <YAxis domain={[0, 1]} tick={{ fontSize: 10 }} />
+              <YAxis
+                domain={[0, 100]}
+                tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
+              />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "var(--glass-bg)",
+                  backgroundColor: "var(--bg-panel)",
                   border: "1px solid var(--line)",
                   borderRadius: "8px",
                   fontSize: "11px",
@@ -207,15 +217,15 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
               <Line
                 type="monotone"
                 dataKey="scores.priority"
-                name="Priority"
+                name="重要度 (Priority)"
                 stroke="var(--brand)"
                 dot={false}
                 strokeWidth={2}
               />
               <Line
                 type="monotone"
-                dataKey="scores.novelty"
-                name="Novelty"
+                dataKey="scores.fitness"
+                name="フィットネス (Fitness)"
                 stroke="var(--accent)"
                 dot={false}
                 strokeWidth={1.5}
@@ -233,6 +243,8 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
           gap: "1rem",
           alignItems: "center",
           justifyContent: "space-between",
+          background: "var(--bg-soft)",
+          border: "1px solid var(--line)",
         }}
       >
         <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
@@ -245,6 +257,7 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                 gap: "0.4rem",
                 cursor: "pointer",
                 color: "var(--ink-soft)",
+                fontWeight: "bold",
               }}
             >
               <input
@@ -252,20 +265,22 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                 checked={filterToActive}
                 onChange={(e) => setFilterToActive(e.target.checked)}
               />
-              {activeDate} に絞るっ！🎯
+              {activeDate} の試行のみ表示🎯
             </label>
           )}
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            {["ALL", "SELECTED", "REJECTED"].map((status) => (
+            {[
+              { id: "ALL", label: "すべて" },
+              { id: "SELECTED", label: "採用のみ" },
+              { id: "REJECTED", label: "不採用のみ" },
+            ].map((f) => (
               <button
-                key={status}
+                key={f.id}
                 type="button"
-                className={`tab-btn ${filterStatus === status ? "active" : ""}`}
-                onClick={() =>
-                  setFilterStatus(status as "ALL" | "SELECTED" | "REJECTED")
-                }
+                className={`tab-btn ${filterStatus === f.id ? "active" : ""}`}
+                onClick={() => setFilterStatus(f.id as any)}
               >
-                {status}
+                {f.label}
               </button>
             ))}
           </div>
@@ -276,29 +291,36 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
               type="button"
               className="button"
               onClick={() => setShowCompare(!showCompare)}
+              style={{ fontWeight: "bold" }}
             >
               {showCompare
-                ? "比較を閉じるっ！"
-                : `選ばれた子を比較っ！ (${selectedIds.size})`}
+                ? "比較画面を閉じる"
+                : `選んだアルファを比較中っ！ (${selectedIds.size})`}
             </button>
           )}
         </div>
       </div>
 
       {showCompare && selectedIds.size > 0 && (
-        <div className="panel section">
-          <h3 className="quick-title">Candidate Comparison</h3>
+        <div
+          className="panel section"
+          style={{ border: "2px solid var(--brand-soft)" }}
+        >
+          <h3 className="quick-title">アルファ候補の徹底比較 ⚖️</h3>
           <div className="table-wrap" style={{ marginTop: "1rem" }}>
             <table>
               <thead>
                 <tr>
-                  <th>Metric / Feature</th>
+                  <th>項目 / パラメータ</th>
                   {Array.from(selectedIds).map((id) => {
                     const _c = allCandidates.find((x) => x.id === id);
                     return (
                       <th
                         key={id}
-                        style={{ width: `${100 / (selectedIds.size + 1)}%` }}
+                        style={{
+                          width: `${100 / (selectedIds.size + 1)}%`,
+                          textAlign: "center",
+                        }}
                       >
                         {id.slice(0, 8)}...
                       </th>
@@ -308,52 +330,53 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
               </thead>
               <tbody>
                 <tr>
-                  <td>Status</td>
+                  <td>採択ステータス</td>
                   {Array.from(selectedIds).map((id) => {
                     const c = allCandidates.find((x) => x.id === id);
                     return (
-                      <td key={id}>
+                      <td key={id} style={{ textAlign: "center" }}>
                         <span
                           className={`chip ${c?.status === "SELECTED" ? "ready" : "risk"}`}
+                          style={{ fontWeight: "bold" }}
                         >
-                          {c?.status || "UNKNOWN"}
+                          {c?.status === "SELECTED" ? "ADOPTED" : "REJECTED"}
                         </span>
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td>Risk Adj. Score</td>
+                  <td>フィットネス (Fitness)</td>
                   {Array.from(selectedIds).map((id) => {
                     const c = allCandidates.find((x) => x.id === id);
                     return (
-                      <td key={id}>
-                        {c?.scores.riskAdjusted.toFixed(3) || "N/A"}
+                      <td
+                        key={id}
+                        style={{
+                          textAlign: "center",
+                          fontFamily: "var(--mono)",
+                        }}
+                      >
+                        {c?.scores.fitness.toFixed(3) || "N/A"}
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
-                  <td>Novelty Score</td>
-                  {Array.from(selectedIds).map((id) => {
-                    const c = allCandidates.find((x) => x.id === id);
-                    return (
-                      <td key={id}>{c?.scores.novelty.toFixed(3) || "N/A"}</td>
-                    );
-                  })}
-                </tr>
-                <tr>
-                  <td>Feature Signature</td>
+                  <td>特徴量シグネチャ</td>
                   {Array.from(selectedIds).map((id) => {
                     const c = allCandidates.find((x) => x.id === id);
                     return (
                       <td key={id}>
                         <pre
                           style={{
-                            fontSize: "0.65rem",
+                            fontSize: "0.6rem",
                             whiteSpace: "pre-wrap",
                             wordBreak: "break-all",
                             color: "var(--brand)",
+                            background: "var(--bg-soft)",
+                            padding: "0.4rem",
+                            borderRadius: "4px",
                           }}
                         >
                           {c?.featureSignature || "N/A"}
@@ -383,7 +406,7 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                 style={{
                   marginBottom: "0.5rem",
                   display: "flex",
-                  gap: "0.5rem",
+                  gap: "0.8rem",
                   alignItems: "center",
                 }}
               >
@@ -391,32 +414,45 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                   type="checkbox"
                   checked={selectedIds.has(candidate.id)}
                   onChange={() => handleToggleSelect(candidate.id)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: "pointer", width: "16px", height: "16px" }}
                 />
                 <span
                   className="timeline-date"
                   style={{
+                    fontSize: "0.9rem",
                     fontWeight:
                       candidate.date === activeDate ? "bold" : "normal",
                     color:
                       candidate.date === activeDate
                         ? "var(--brand)"
-                        : "inherit",
+                        : "var(--ink-soft)",
                   }}
                 >
-                  {candidate.date} {candidate.date === activeDate && "✨"}
+                  {candidate.date} {candidate.date === activeDate && "📍"}
                 </span>
-                <span style={{ fontSize: "0.6rem", color: "var(--ink-soft)" }}>
+                <span
+                  style={{
+                    fontSize: "0.65rem",
+                    color: "var(--ink-soft)",
+                    fontFamily: "var(--mono)",
+                  }}
+                >
                   {new Date(candidate.generatedAt).toLocaleString()}
                 </span>
                 {onSelectDate && candidate.date !== activeDate && (
                   <button
                     type="button"
                     className="button"
-                    style={{ fontSize: "0.55rem", padding: "2px 6px" }}
+                    style={{
+                      fontSize: "0.55rem",
+                      padding: "2px 8px",
+                      background: "none",
+                      border: "1px solid var(--line)",
+                      color: "var(--ink-soft)",
+                    }}
                     onClick={() => onSelectDate(candidate.date)}
                   >
-                    この日にジャンプっ！🕰️
+                    この日に移動っ！🕰️
                   </button>
                 )}
               </div>
@@ -435,39 +471,69 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
               />
 
               {candidate.status === "REJECTED" && parsedReason && (
-                <div style={{ marginTop: "0.5rem" }}>
+                <div
+                  style={{
+                    marginTop: "0.8rem",
+                    padding: "0.8rem",
+                    background: "rgba(255,0,0,0.02)",
+                    borderRadius: "8px",
+                    border: "1px dashed var(--danger-soft)",
+                  }}
+                >
                   <span
                     style={{
-                      fontSize: "0.7rem",
-                      color: "var(--ink-soft)",
+                      fontSize: "0.65rem",
+                      color: "var(--danger)",
                       textTransform: "uppercase",
+                      fontWeight: "bold",
+                      display: "block",
+                      marginBottom: "0.4rem",
                     }}
                   >
-                    Rejection Logic
+                    不採用判定の理由 (Rejection Logic)
                   </span>
                   {parsedReason.raw ? (
-                    <div className="reject-reason-row">
-                      <span
-                        style={{ color: "var(--danger)", fontWeight: "bold" }}
-                      >
-                        ✖ FAILED
-                      </span>
-                      <span style={{ gridColumn: "span 2" }}>
-                        {parsedReason.raw}
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="reject-reason-row">
+                    <div
+                      className="reject-reason-row"
+                      style={{
+                        display: "flex",
+                        gap: "1rem",
+                        alignItems: "center",
+                      }}
+                    >
                       <span
                         style={{
                           color: "var(--danger)",
                           fontWeight: "bold",
-                          textAlign: "center",
+                          fontSize: "0.75rem",
                         }}
                       >
-                        ✖ FAILED
+                        ✖ CRITERIA FAILED
                       </span>
-                      <span>
+                      <span style={{ fontSize: "0.75rem" }}>
+                        {parsedReason.raw}
+                      </span>
+                    </div>
+                  ) : (
+                    <div
+                      className="reject-reason-row"
+                      style={{
+                        display: "flex",
+                        gap: "1rem",
+                        alignItems: "center",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "var(--danger)",
+                          fontWeight: "bold",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        ✖ CRITERIA FAILED
+                      </span>
+                      <span style={{ fontSize: "0.75rem" }}>
                         {parsedReason.metric}:{" "}
                         <strong style={{ color: "var(--danger)" }}>
                           {parsedReason.value}
@@ -476,9 +542,10 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
                       </span>
                       <span
                         style={{
-                          fontSize: "0.65rem",
+                          fontSize: "0.6rem",
                           fontFamily: "var(--mono)",
                           color: "var(--ink-soft)",
+                          marginLeft: "auto",
                         }}
                       >
                         source: {parsedReason.source}
@@ -493,7 +560,9 @@ export const ResearchLog: React.FC<ResearchLogProps> = ({
       </div>
 
       {filteredCandidates.length === 0 && (
-        <div className="panel section empty">No research history found.</div>
+        <div className="panel section empty">
+          該当するリサーチログが見つからないよぉ…😢
+        </div>
       )}
 
       <RawDataToggle data={allCandidates} fileName="all_candidates.json" />

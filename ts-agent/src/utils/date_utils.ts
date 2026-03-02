@@ -10,17 +10,18 @@ export function nowIso(): string {
 }
 
 /**
- * YYYYMMDD 形式の文字列を取得するよっ！📅
+ * 現在の時刻を YYYYMMDD 形式で取得するよっ！📅
  */
-export function todayYmd(): string {
-  return new Date().toISOString().slice(0, 10).replace(/-/g, "");
+export function nowYmd(): string {
+  return todayYmd();
 }
 
 /**
- * ファイル名に使えるタイムスタンプを作るよっ！📁
+ * 日付を ISO 形式に可愛く整えるよっ！✨
  */
-export function fileTimestamp(): string {
-  return new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+export function formatDateISO(date: Date | string | number): string {
+  if (date instanceof Date) return date.toISOString();
+  return new Date(date).toISOString();
 }
 
 /**
@@ -39,11 +40,35 @@ export function startTimer(): () => number {
 }
 
 /**
+ * 今日の日付を YYYYMMDD 形式で取得するよっ！📅✨
+ */
+export function todayYmd(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}${m}${day}`;
+}
+
+/**
+ * ファイル名に使えるタイムスタンプを取得するよっ！📁✨
+ */
+export function fileTimestamp(): string {
+  return new Date()
+    .toISOString()
+    .replace(/[:.]/g, "-")
+    .replace("T", "_")
+    .split("Z")[0]!;
+}
+
+/**
  * 日付操作の「きゅーとな相棒」dateUtilsだよっ！📅💖
  */
 export const dateUtils = {
   nowIso,
+  nowYmd,
   todayYmd,
+  formatDateISO,
   fileTimestamp,
   sleep,
   startTimer,

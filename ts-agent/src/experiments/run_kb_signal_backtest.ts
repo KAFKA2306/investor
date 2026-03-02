@@ -197,7 +197,7 @@ const writeStandardOutcome = async (params: {
   reasoningScore: number;
   isProductionReady: boolean;
 }) => {
-  const generatedAt = new Date().toISOString();
+  const generatedAt = dateUtils.nowIso();
   const evidenceSource = params.evidenceSource ?? "LINGUISTIC_ONLY";
 
   const outcome: StandardOutcome = {
@@ -237,13 +237,9 @@ const writeStandardOutcome = async (params: {
     report: outcome,
   };
 
-  const today = generatedAt.split("T")[0];
-  const logDir = join(core.config.paths.logs, "unified");
-  mkdirSync(logDir, { recursive: true });
-  writeFileSync(
-    join(logDir, `${today}.json`),
-    JSON.stringify(unifiedLog, null, 2),
-  );
+  const today = dateUtils.todayYmd();
+  const logPath = join(core.config.paths.logs, "unified", `${today}.json`);
+  fsUtils.writeValidatedJson(logPath, unifiedLog);
   return UnifiedLogSchema.parse(unifiedLog);
 };
 

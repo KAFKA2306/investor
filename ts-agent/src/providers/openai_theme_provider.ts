@@ -1,3 +1,5 @@
+import { core } from "../system/app_runtime_core.ts";
+
 type ThemeProposalInput = {
   missionContext: string;
   marketContext: string;
@@ -69,7 +71,7 @@ const normalizeFeatureSignature = (items: unknown): string[] => {
 
 export class OpenAIThemeProvider {
   private readonly apiKey = process.env.OPENAI_API_KEY;
-  private readonly model = DEFAULT_MODEL;
+  private readonly model = core.config.providers.ai.model || DEFAULT_MODEL;
   private readonly baseUrl = DEFAULT_BASE_URL;
 
   public isEnabled(): boolean {

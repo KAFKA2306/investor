@@ -338,6 +338,53 @@ serve({
       });
     }
 
+    if (url.pathname === "/api/canonical/health" && req.method === "GET") {
+      const db = await bootstrapCanonicalDb();
+      if (!db) {
+        return new Response(
+          JSON.stringify({
+            enabled: false,
+            healthy: false,
+            reason: "canonical DB is disabled",
+          }),
+          { headers: jsonHeaders },
+        );
+      }
+
+      try {
+        const [{ count: eventCount }] = (
+          await db.query<{
+            count: string;
+          }>("SELECT COUNT(*)::text AS count FROM compat.uqtl_events_v1")
+        ).rows;
+        const [{ count: signalCount }] = (
+          await db.query<{
+            count: string;
+          }>("SELECT COUNT(*)::text AS count FROM compat.signals_v1")
+        ).rows;
+        return new Response(
+          JSON.stringify({
+            enabled: true,
+            healthy: true,
+            counts: {
+              uqtlEvents: Number(eventCount),
+              signals: Number(signalCount),
+            },
+          }),
+          { headers: jsonHeaders },
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            enabled: true,
+            healthy: false,
+            reason: String(error),
+          }),
+          { status: 500, headers: jsonHeaders },
+        );
+      }
+    }
+
     if (url.pathname === "/api/workflows/run" && req.method === "POST") {
       const authError = requireApiToken(req);
       if (authError) return authError;

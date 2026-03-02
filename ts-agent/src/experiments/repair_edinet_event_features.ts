@@ -133,7 +133,7 @@ const countMissingSignals = (db: Database): number => {
 
 function main(): void {
   const args = parseArgs();
-  const runAt = new Date().toISOString();
+  const runAt = dateUtils.nowIso();
 
   const baseReport = {
     runAt,

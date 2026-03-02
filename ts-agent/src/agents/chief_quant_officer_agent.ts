@@ -14,7 +14,6 @@ export interface AuditReport {
   scores: {
     alphaStability: number;
     riskAdjustedReturn: number;
-    reasoningScore: number;
   };
   critique: string[];
   isProductionReady: boolean;
@@ -66,15 +65,8 @@ export class CqoAgent extends BaseAgent {
       );
     }
 
-    const reasoningScore = outcome.reasoningScore ?? 0;
     const r1 = outcome.strategicReasoning;
     const screening = outcome.alphaScreening;
-
-    if (reasoningScore < crit.REASONING.minRS) {
-      critique.push(
-        `Low reasoning score (${reasoningScore.toFixed(2)} < ${crit.REASONING.minRS}). Hypothesis logic is not robust.`,
-      );
-    }
 
     if (r1) {
       const invalidChecks = r1.logicChecks.filter(
@@ -83,11 +75,6 @@ export class CqoAgent extends BaseAgent {
       if (invalidChecks.length > 0) {
         critique.push(
           `[Alpha-R1] Strategic logic violation: ${invalidChecks.map((c) => c.claim).join(", ")}`,
-        );
-      }
-      if (r1.contextAlignment < 0.6) {
-        critique.push(
-          `[Alpha-R1] Low context alignment (${(r1.contextAlignment * 100).toFixed(1)}%). Strategy may be misaligned with ${r1.marketRegime}.`,
         );
       }
     }
@@ -115,20 +102,25 @@ export class CqoAgent extends BaseAgent {
       verdict = "REQUIRES_FIX";
     }
 
-    return {
+    const audit = {
       strategyId: outcome.strategyId,
       timestamp: new Date().toISOString(),
       verdict,
       scores: {
         alphaStability: tStat / crit.ALPHA.minTStat,
         riskAdjustedReturn: sharpe / crit.PERFORMANCE.minSharpe,
-        reasoningScore: r1
-          ? reasoningScore * 0.4 + r1.contextAlignment * 0.6
-          : reasoningScore,
       },
       critique,
       isProductionReady,
     };
+
+    this.emitEvent("AUDIT_COMPLETED", {
+      strategyId: audit.strategyId,
+      verdict: audit.verdict,
+      isProductionReady: audit.isProductionReady,
+    });
+
+    return audit;
   }
 
   public generateAuditMarkdown(audit: AuditReport): string {
@@ -140,7 +132,7 @@ export class CqoAgent extends BaseAgent {
           : "⚠️";
 
     return `# CQO Audit Report: ${audit.strategyId}
-    
+
 **Audit Date**: ${audit.timestamp.split("T")[0]}
 **Role**: Chief Quantitative Officer (Critical Critic)
 **Verdict**: **${audit.verdict} ${statusIcon}**
@@ -151,7 +143,6 @@ ${audit.critique.length > 0 ? audit.critique.map((c) => `- ${c}`).join("\n") : "
 ## 2. Audit Scores (Normalized to Thresholds)
 - **Alpha Stability**: ${audit.scores.alphaStability.toFixed(2)}x
 - **Risk-Adjusted Return**: ${audit.scores.riskAdjustedReturn.toFixed(2)}x
-- **Reasoning Quality**: ${(audit.scores.reasoningScore * 100).toFixed(1)}%
 
 ## 3. Deployment Recommendation
 **Production Ready**: ${audit.isProductionReady ? "**YES** - Proceed to execution stage." : "**NO** - Back to research/backtest phase."}

@@ -1,9 +1,170 @@
 import { z } from "zod";
 
+/**
+ * ✨ システムイベントと金融ドメインの最強スキーマ集だよっ！ ✨
+ */
+
+// --- EDINET 関連 ---
+export const EdinetDocumentSchema = z.object({
+  docID: z.string(),
+  secCode: z.string().nullable(),
+  edinetCode: z.string().nullable(),
+  filerName: z.string().nullable(),
+  docDescription: z.string().nullable(),
+  docTypeCode: z.string().nullable(),
+  submitDateTime: z.string().nullable(),
+  periodStart: z.string().nullable(),
+  periodEnd: z.string().nullable(),
+  parentDocID: z.string().nullable(),
+  opeDateTime: z.string().nullable(),
+  withdrawalStatus: z.string().nullable(),
+  currentReportReason: z.string().nullable(),
+});
+
+export type EdinetDocument = z.infer<typeof EdinetDocumentSchema>;
+
+export const EdinetDocumentListResponseSchema = z.object({
+  metadata: z.object({
+    title: z.string(),
+    parameter: z.object({
+      date: z.string(),
+      type: z.string(),
+    }),
+    resultset: z.object({
+      count: z.number().int(),
+    }),
+    processDateTime: z.string(),
+    status: z.string(),
+    message: z.string(),
+  }),
+  results: z.array(EdinetDocumentSchema).default([]),
+});
+
+export type EdinetDocumentListResponse = z.infer<
+  typeof EdinetDocumentListResponseSchema
+>;
+
+export type EdinetDocumentType = 1 | 2 | 3 | 4 | 5;
+
+export const EdinetDocumentTypeLabel: Record<EdinetDocumentType, string> = {
+  1: "XBRL",
+  2: "PDF",
+  3: "代替書面・添付書類",
+  4: "英文XBRL",
+  5: "CSV",
+};
+
+// --- 金融ドメイン固有の DSL / 構造 ---
+
+export interface FactorAST {
+  type: "variable" | "constant" | "operator";
+  name?: string;
+  value?: number;
+  left?: FactorAST;
+  right?: FactorAST;
+}
+
+export interface FactorGenerationOptions {
+  count?: number;
+}
+
+// --- システムイベント関連 ---
+
+export const EventTypeSchema = z.enum([
+  "ALPHA_GENERATED",
+  "STRATEGY_DECIDED",
+  "SYSTEM_LOG",
+  "RUN_STARTED",
+  "RUN_FINISHED",
+  "RUN_FAILED",
+  "AGENT_STARTED",
+  "AGENT_COMPLETED",
+  "AGENT_FAILED",
+  "PIPELINE_STARTED",
+  "PIPELINE_COMPLETED",
+  "DATASET_PREPARED",
+  "STRATEGY_EXECUTED",
+  "STRATEGY_REJECTED",
+  "ORDER_PLAN_SAVED",
+  "MODEL_CONFIG_SAVED",
+  "AUDIT_RECORD_SAVED",
+  "STATE_UPDATED",
+  "OUTCOME_GENERATED",
+  "AUDIT_COMPLETED",
+]);
+
+export type EventType = z.infer<typeof EventTypeSchema>;
+
+export const BaseEventSchema = z.object({
+  id: z.string(),
+  timestamp: z.string(),
+  type: EventTypeSchema,
+  agentId: z.string().optional(),
+  operatorId: z.string().optional(),
+  experimentId: z.string().optional(),
+  parentEventId: z.string().optional(),
+  payload: z.record(z.string(), z.unknown()),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+export type UQTLEvent = z.infer<typeof BaseEventSchema>;
+
+// --- プロバイダー / 外部データ関連 ---
+export const YahooChartSchema = z.object({
+  chart: z.object({
+    result: z
+      .array(
+        z.object({
+          timestamp: z.array(z.number()),
+          indicators: z.object({
+            quote: z.array(
+              z.object({
+                open: z.array(z.number().nullable()),
+                high: z.array(z.number().nullable()),
+                low: z.array(z.number().nullable()),
+                close: z.array(z.number().nullable()),
+                volume: z.array(z.number().nullable()),
+              }),
+            ),
+          }),
+        }),
+      )
+      .optional(),
+  }),
+});
+
+export type YahooChartPayload = z.infer<typeof YahooChartSchema>;
+
+export interface MarketBar {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
 export enum Verdict {
   VALID = "VALID",
   INVALID = "INVALID",
   UNCERTAIN = "UNCERTAIN",
+}
+
+export enum VerificationVerdict {
+  PASS = "PASS",
+  FAIL = "FAIL",
+  REJECTED_GENERAL = "REJECTED_GENERAL",
+  REJECTED_DATA = "REJECTED_DATA",
+  REJECTED_MODEL = "REJECTED_MODEL",
+  ADOPTED = "ADOPTED",
+}
+
+export enum CanonicalLogKind {
+  DATA_ENGINEER = "data_engineer",
+  QUANT_RESEARCHER = "quant_researcher",
+  ADAPTATION_STRATEGY = "adaptation_strategy",
+  VERIFICATION_RECORD = "verification_record",
+  ALPHA_DISCOVERY = "alpha_discovery",
 }
 
 export enum AlphaStatus {
@@ -317,6 +478,7 @@ export const UnifiedLogSchema = z.object({
     "investor.daily-log.v1",
     "investor.benchmark-log.v1",
     "investor.investment-outcome.v1",
+    "investor.alpha-discovery.v3",
   ]),
   generatedAt: z.string().datetime(),
   models: z.array(ModelReferenceLogSchema).optional(),
@@ -394,7 +556,6 @@ export type QuantitativeVerification = z.infer<
 
 export const FinancialScoresSchema = z.object({
   fitnessScore: z.number().min(0).max(1),
-  noveltyScore: z.number().min(0).max(1),
   stabilityScore: z.number().min(0).max(1),
   adoptionScore: z.number().min(0).max(1),
 });
@@ -410,7 +571,6 @@ export const CycleSummarySchema = z.object({
   avgSharpe: z.number(),
   avgIC: z.number(),
   avgFitness: z.number(),
-  avgNovelty: z.number(),
   adoptedIds: z.array(z.string()),
   playbookBulletCount: z.number().int().nonnegative(),
 });

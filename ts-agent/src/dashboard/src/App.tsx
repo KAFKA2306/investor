@@ -44,10 +44,12 @@ const App: React.FC = () => {
     }).catch(() => undefined);
 
     if (res?.ok) {
-      alert("Kill signal sent successfully.");
+      alert("緊急停止シグナルを送信しました。全プロセスを終了します。");
       return;
     }
-    alert("Kill signal failed. API connection or valid token required.");
+    alert(
+      "緊急停止に失敗しました。APIサーバーの接続状態か、認証トークンを確認してください。",
+    );
   };
 
   if (loading && !verificationData && timeline.length === 0) {
@@ -57,14 +59,18 @@ const App: React.FC = () => {
         style={{
           height: "100vh",
           display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "var(--display)",
-          fontSize: "1.5rem",
+          fontSize: "1.2rem",
           color: "var(--brand)",
+          background: "var(--bg-panel)",
         }}
       >
-        Loading Evidence Ledger...
+        <div className="spinner" />
+        証拠台帳 (Evidence Ledger) を読み込み中だよぉ…✨
       </div>
     );
   }

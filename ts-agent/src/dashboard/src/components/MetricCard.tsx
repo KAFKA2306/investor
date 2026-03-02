@@ -1,54 +1,66 @@
 import type React from "react";
 
 /**
- * KPIを可愛く、プレミアムに表示するカードだよっ！🎀✨
+ * KPIを圧倒的にプロフェッショナルかつプレミアムに表示するカードだよっ！💎✨
+ * 投資家が信頼を寄せる「重厚感」のあるデザインを目指したんだもんっ！🌈
  */
 export interface MetricCardProps {
-  title: string;
+  label: string;
   value: string | number;
+  unit?: string;
   subValue?: string | number;
   trend?: "up" | "down" | "neutral";
   icon?: React.ReactNode;
+  onClick?: () => void;
 }
 
 export const MetricCard: React.FC<MetricCardProps> = ({
-  title,
+  label,
   value,
+  unit,
   subValue,
   trend,
   icon,
+  onClick,
 }) => {
-  const trendColor =
-    trend === "up"
-      ? "text-emerald-400"
-      : trend === "down"
-        ? "text-rose-400"
-        : "text-slate-400";
+  const trendClass = trend === "up" ? "pos" : trend === "down" ? "neg" : "";
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-md border border-slate-700 p-6 rounded-2xl shadow-xl hover:shadow-cyan-500/10 transition-all duration-300">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-slate-400 text-sm font-medium uppercase tracking-wider">
-          {title}
-        </h3>
-        {icon && (
-          <div className="text-cyan-400 bg-cyan-400/10 p-2 rounded-lg">
-            {icon}
-          </div>
-        )}
+    <button
+      type="button"
+      className={`panel kpi-card ${onClick ? "clickable" : ""}`}
+      onClick={onClick}
+      style={{
+        cursor: onClick ? "pointer" : "default",
+        width: "100%",
+        display: "block",
+        textAlign: "left",
+        background: "none",
+        border: "none",
+        padding: 0,
+        font: "inherit",
+        color: "inherit",
+      }}
+    >
+      <div className="section-head">
+        <h3>{label}</h3>
+        {icon && <span className="icon-host">{icon}</span>}
       </div>
-      <div className="flex items-baseline gap-2">
-        <span className="text-3xl font-bold text-white tracking-tight">
-          {value}
+      <div className="kpi-main">
+        <span className="kpi-value">
+          {typeof value === "number"
+            ? value.toLocaleString(undefined, { maximumFractionDigits: 3 })
+            : value}
         </span>
-        {subValue && (
-          <span className={`text-sm font-semibold ${trendColor}`}>
-            {trend === "up" && "▲"}
-            {trend === "down" && "▼"}
-            {subValue}
-          </span>
-        )}
+        {unit && <span className="kpi-unit">{unit}</span>}
       </div>
-    </div>
+      {subValue !== undefined && (
+        <div className={`kpi-sub ${trendClass}`}>
+          {trend === "up" && "▲"}
+          {trend === "down" && "▼"}
+          <span>比較: {subValue}</span>
+        </div>
+      )}
+    </button>
   );
 };

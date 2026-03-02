@@ -105,7 +105,7 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
   return (
     <div className="main tab-fade">
       <div className="section-head">
-        <h2>Data Inspector</h2>
+        <h2>データ・インスペクター 🔍✨</h2>
         <div
           className="workflow-controls rail"
           style={{
@@ -113,6 +113,7 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
             background: "var(--bg-soft)",
             padding: "0.2rem",
             borderRadius: "999px",
+            border: "1px solid var(--line)",
           }}
         >
           <button
@@ -120,14 +121,14 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
             className={`tab-btn ${mode === "single" ? "active" : ""}`}
             onClick={() => setMode("single")}
           >
-            Single Symbol
+            個別銘柄分析
           </button>
           <button
             type="button"
             className={`tab-btn ${mode === "cross_section" ? "active" : ""}`}
             onClick={() => setMode("cross_section")}
           >
-            Cross Section
+            クロスセクション分析
           </button>
         </div>
       </div>
@@ -136,16 +137,31 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
         <>
           <div
             className="panel section"
-            style={{ display: "flex", gap: "1rem", alignItems: "center" }}
+            style={{
+              display: "flex",
+              gap: "1rem",
+              alignItems: "center",
+              background: "var(--bg-soft)",
+            }}
           >
-            <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
-              Select Symbol:
+            <span
+              style={{
+                fontSize: "0.8rem",
+                color: "var(--ink-soft)",
+                fontWeight: "bold",
+              }}
+            >
+              表示銘柄を選択：
             </span>
             <select
               className="input-select"
               value={currentSymbol}
               onChange={(e) => setSelectedSymbol(e.target.value)}
-              style={{ width: "200px" }}
+              style={{
+                width: "240px",
+                fontWeight: "bold",
+                border: "1px solid var(--brand)",
+              }}
             >
               {symbols.map((s) => (
                 <option key={s} value={s}>
@@ -156,8 +172,13 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
           </div>
 
           <div className="inspector-grid">
-            <div className="panel section">
-              <h3 className="quick-title">Price Series</h3>
+            <div
+              className="panel section"
+              style={{ border: "1px solid var(--line)" }}
+            >
+              <h3 className="quick-title" style={{ color: "var(--brand)" }}>
+                株価推移 (Price)
+              </h3>
               <div
                 className="chart-recharts-wrapper"
                 style={{ height: "240px" }}
@@ -194,8 +215,13 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
               </div>
             </div>
 
-            <div className="panel section">
-              <h3 className="quick-title">Factor Values</h3>
+            <div
+              className="panel section"
+              style={{ border: "1px solid var(--line)" }}
+            >
+              <h3 className="quick-title" style={{ color: "var(--accent)" }}>
+                ファクター値 (Factor)
+              </h3>
               <div
                 className="chart-recharts-wrapper"
                 style={{ height: "240px" }}
@@ -231,8 +257,11 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
               </div>
             </div>
 
-            <div className="panel section">
-              <h3 className="quick-title">Target Position</h3>
+            <div
+              className="panel section"
+              style={{ border: "1px solid var(--line)" }}
+            >
+              <h3 className="quick-title">仕掛ポジション (Position)</h3>
               <div
                 className="chart-recharts-wrapper"
                 style={{ height: "240px" }}
@@ -280,16 +309,27 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
         <>
           <div
             className="panel section"
-            style={{ display: "flex", gap: "1rem", alignItems: "center" }}
+            style={{
+              display: "flex",
+              gap: "1.5rem",
+              alignItems: "center",
+              background: "var(--bg-soft)",
+            }}
           >
-            <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
-              Evaluation Date:
+            <span
+              style={{
+                fontSize: "0.8rem",
+                color: "var(--ink-soft)",
+                fontWeight: "bold",
+              }}
+            >
+              基準日を選択：
             </span>
             <select
               className="input-select"
               value={currentDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              style={{ width: "200px" }}
+              style={{ width: "220px", fontWeight: "bold" }}
             >
               {dates.slice(0, dates.length - 1).map((d) => (
                 <option key={d} value={d}>
@@ -298,18 +338,19 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
               ))}
             </select>
 
-            <div style={{ marginLeft: "auto", display: "flex", gap: "1rem" }}>
+            <div style={{ marginLeft: "auto", display: "flex", gap: "2rem" }}>
               <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
-                Valid Universe:{" "}
-                <strong style={{ color: "var(--brand)" }}>
+                ユニバース数:{" "}
+                <strong style={{ color: "var(--brand)", fontSize: "1rem" }}>
                   {crossSectionData.length}
                 </strong>
               </span>
               <span style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}>
-                Position HHI:{" "}
+                ポジション集中度 (HHI):{" "}
                 <strong
                   style={{
                     color: hhi > 0.1 ? "var(--danger)" : "var(--brand)",
+                    fontSize: "1rem",
                   }}
                 >
                   {hhi.toFixed(4)}
@@ -319,8 +360,13 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
           </div>
 
           <div className="inspector-cross-section">
-            <div className="panel section">
-              <h3 className="quick-title">Factor vs Forward Return</h3>
+            <div
+              className="panel section"
+              style={{ border: "1px solid var(--line)" }}
+            >
+              <h3 className="quick-title">
+                ファクター値 vs 未来のリターン (Scatter)
+              </h3>
               <ScatterChart
                 data={crossSectionData}
                 onClick={(sym) => {
@@ -333,15 +379,25 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
             <div
               style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
             >
-              <div className="panel section table-wrap" style={{ flex: 1 }}>
-                <h3 className="quick-title" style={{ color: "var(--brand)" }}>
-                  Top 5 Factors
+              <div
+                className="panel section table-wrap"
+                style={{ flex: 1, border: "1px solid var(--line)" }}
+              >
+                <h3
+                  className="quick-title"
+                  style={{
+                    color: "var(--brand)",
+                    borderBottom: "1px solid var(--line)",
+                    paddingBottom: "0.4rem",
+                  }}
+                >
+                  上位 5 銘柄 (High Factor)
                 </h3>
                 <table style={{ minWidth: "100%", marginTop: "0.5rem" }}>
                   <thead>
                     <tr>
-                      <th>Symbol</th>
-                      <th>Factor</th>
+                      <th>コード</th>
+                      <th>ファクター</th>
                       <th>Pos</th>
                     </tr>
                   </thead>
@@ -357,6 +413,9 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
                               border: "none",
                               padding: 0,
                               font: "inherit",
+                              color: "var(--brand)",
+                              fontWeight: "bold",
+                              cursor: "pointer",
                             }}
                             onClick={() => {
                               setSelectedSymbol(row.symbol);
@@ -366,23 +425,37 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
                             {row.symbol}
                           </button>
                         </td>
-                        <td>{row.factor.toFixed(4)}</td>
-                        <td>{row.position.toFixed(2)}</td>
+                        <td style={{ fontFamily: "var(--mono)" }}>
+                          {row.factor.toFixed(4)}
+                        </td>
+                        <td style={{ fontFamily: "var(--mono)" }}>
+                          {row.position.toFixed(2)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
-              <div className="panel section table-wrap" style={{ flex: 1 }}>
-                <h3 className="quick-title" style={{ color: "var(--danger)" }}>
-                  Bottom 5 Factors
+              <div
+                className="panel section table-wrap"
+                style={{ flex: 1, border: "1px solid var(--line)" }}
+              >
+                <h3
+                  className="quick-title"
+                  style={{
+                    color: "var(--danger)",
+                    borderBottom: "1px solid var(--line)",
+                    paddingBottom: "0.4rem",
+                  }}
+                >
+                  下位 5 銘柄 (Low Factor)
                 </h3>
                 <table style={{ minWidth: "100%", marginTop: "0.5rem" }}>
                   <thead>
                     <tr>
-                      <th>Symbol</th>
-                      <th>Factor</th>
+                      <th>コード</th>
+                      <th>ファクター</th>
                       <th>Pos</th>
                     </tr>
                   </thead>
@@ -398,6 +471,9 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
                               border: "none",
                               padding: 0,
                               font: "inherit",
+                              color: "var(--brand)",
+                              fontWeight: "bold",
+                              cursor: "pointer",
                             }}
                             onClick={() => {
                               setSelectedSymbol(row.symbol);
@@ -407,8 +483,12 @@ export const DataInspector: React.FC<DataInspectorProps> = ({
                             {row.symbol}
                           </button>
                         </td>
-                        <td>{row.factor.toFixed(4)}</td>
-                        <td>{row.position.toFixed(2)}</td>
+                        <td style={{ fontFamily: "var(--mono)" }}>
+                          {row.factor.toFixed(4)}
+                        </td>
+                        <td style={{ fontFamily: "var(--mono)" }}>
+                          {row.position.toFixed(2)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

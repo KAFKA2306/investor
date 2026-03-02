@@ -1,47 +1,40 @@
 import { join } from "node:path";
-import { core } from "../../system/app_runtime_core.ts";
+import { paths as pathRegistry } from "../../system/path_registry.ts";
 import { logger } from "../../utils/logger.ts";
 import { migrateSqliteToCanonical } from "../adapters/sqlite_to_postgres.ts";
 import { bootstrapCanonicalDb } from "../bootstrap.ts";
 
-/**
- * 🚚✨ SQLiteからPostgresへのお引っ越し大作戦！
- */
 async function run() {
-  logger.info("🚚 お引っ越し大作戦、はじめるよっ！💖");
+  logger.info("[canonical-migrate] migration started");
 
   const pg = await bootstrapCanonicalDb();
   if (!pg) {
     logger.error(
-      "Postgresくんに繋がらないよ…設定（default.yaml）を確認してみてねっ💢",
+      "[canonical-migrate] canonical DB not enabled. Set database.canonicalDb.enabled=true first.",
     );
     process.exit(1);
   }
 
-  // 設定からSQLiteのパスを持ってくるよっ！🎀
-  const paths = {
-    knowledgebasePath:
-      core.config.paths.cacheMarketdataSqlite ||
-      join(process.cwd(), "..", "..", "logs", "cache", "marketdata.sqlite"),
-    memoryPath:
-      core.config.paths.cacheUqtlSqlite ||
-      join(process.cwd(), "..", "..", "logs", "cache", "uqtl.sqlite"),
+  const sqlitePaths = {
+    knowledgebasePath: join(
+      pathRegistry.logsRoot,
+      "cache",
+      "alpha_knowledgebase.sqlite",
+    ),
+    memoryPath: join(pathRegistry.logsRoot, "memory.sqlite"),
   };
 
   logger.info(
-    `🔍 SQLiteを探してるよ：\n KB: ${paths.knowledgebasePath}\n Memory: ${paths.memoryPath}`,
+    `[canonical-migrate] source sqlite files\nknowledgebase=${sqlitePaths.knowledgebasePath}\nmemory=${sqlitePaths.memoryPath}`,
   );
 
   try {
-    const result = await migrateSqliteToCanonical(pg, paths);
+    const result = await migrateSqliteToCanonical(pg, sqlitePaths);
     logger.info(
-      `✨ お引っ越し完了！ 🎉\n ・シグナル: ${result.migratedSignals}件\n ・イベント: ${result.migratedEvents}件`,
+      `[canonical-migrate] completed\nsignals=${result.migratedSignals}\nevents=${result.migratedEvents}`,
     );
-    logger.info("これでPostgresくんもハッピーだねっ！💎💖");
   } catch (err) {
-    logger.error(
-      `えぇ〜っ！お引っ越し中にトラブル発生だよっ💢: ${String(err)}`,
-    );
+    logger.error(`[canonical-migrate] failed: ${String(err)}`);
     process.exit(1);
   } finally {
     await pg.close();

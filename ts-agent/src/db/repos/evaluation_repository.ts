@@ -21,51 +21,41 @@ export type SignalOutcomeInput = {
 
 export class EvaluationRepository extends BaseRepository {
   public async upsertBacktestRun(input: BacktestRunInput): Promise<void> {
-    await this.db.query(
-      `
-      INSERT INTO eval.backtest_run
-      (run_id, strategy_id, from_date, to_date, sharpe, total_return, max_drawdown, config_json)
-      VALUES ($1, $2, $3::date, $4::date, $5, $6, $7, $8)
-      ON CONFLICT(run_id) DO UPDATE SET
-        strategy_id = EXCLUDED.strategy_id,
-        from_date = EXCLUDED.from_date,
-        to_date = EXCLUDED.to_date,
-        sharpe = EXCLUDED.sharpe,
-        total_return = EXCLUDED.total_return,
-        max_drawdown = EXCLUDED.max_drawdown,
-        config_json = EXCLUDED.config_json
-      `,
-      [
-        input.runId,
-        input.strategyId,
-        input.fromDate,
-        input.toDate,
-        input.sharpe,
-        input.totalReturn,
-        input.maxDrawdown,
-        input.configJson ? JSON.stringify(input.configJson) : null,
-      ],
-    );
+    await this.executeUpsert({
+      table: "eval.backtest_run",
+      conflictTarget: "run_id",
+      data: {
+        run_id: input.runId,
+        strategy_id: input.strategyId,
+        from_date: input.fromDate,
+        to_date: input.toDate,
+        sharpe: input.sharpe,
+        total_return: input.totalReturn,
+        max_drawdown: input.maxDrawdown,
+        config_json: this.toJson(input.configJson),
+      },
+      casts: {
+        from_date: "date",
+        to_date: "date",
+        config_json: "jsonb",
+      },
+    });
   }
 
   public async upsertSignalOutcome(input: SignalOutcomeInput): Promise<void> {
-    await this.db.query(
-      `
-      INSERT INTO eval.signal_outcome
-      (signal_id, horizon, realized_return, benchmark_return, measured_at)
-      VALUES ($1, $2, $3, $4, COALESCE($5::timestamptz, NOW()))
-      ON CONFLICT(signal_id, horizon) DO UPDATE SET
-        realized_return = EXCLUDED.realized_return,
-        benchmark_return = EXCLUDED.benchmark_return,
-        measured_at = EXCLUDED.measured_at
-      `,
-      [
-        input.signalId,
-        input.horizon,
-        input.realizedReturn,
-        input.benchmarkReturn ?? null,
-        input.measuredAt ?? null,
-      ],
-    );
+    await this.executeUpsert({
+      table: "eval.signal_outcome",
+      conflictTarget: ["signal_id", "horizon"],
+      data: {
+        signal_id: input.signalId,
+        horizon: input.horizon,
+        realized_return: input.realizedReturn,
+        benchmark_return: input.benchmarkReturn ?? null,
+        measured_at: input.measuredAt ?? new Date().toISOString(),
+      },
+      casts: {
+        measured_at: "timestamptz",
+      },
+    });
   }
 }

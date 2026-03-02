@@ -89,7 +89,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
   return (
     <div className="main">
       <div className="section-head">
-        <h2>証拠のお部屋✨</h2>
+        <h2>証拠の部屋 🏛️✨</h2>
         <SourceBadge
           codeFingerprint={verificationData.audit.commitHash}
           dataFingerprint={verificationData.audit.dataFingerprint}
@@ -107,57 +107,34 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
 
           <div className="uqtl-grid" style={{ marginTop: "1.5rem" }}>
             <MetricCard
-              label="シャープレシオ✨"
-              value={verificationData.metrics?.sharpe}
+              label="シャープレシオ (Sharpe) 💎"
+              value={verificationData.metrics?.sharpe ?? 0}
               sourcePath="metrics.sharpe"
-              rootData={verificationData}
-              resolve={resolveSourcePath}
               derivation={{
                 id: "recomputeSharpe",
                 note: "年率換算のシャープレシオだよっ！",
                 inputs: ["strategyCum"],
               }}
-              recomputed={recomputeSharpe(dailyReturns)}
-              threshold={{
-                direction: "gt",
-                value: 1.8,
-                label: "最低ラインっ！",
-              }}
+              trend={recomputeSharpe(dailyReturns) >= 0 ? "up" : "down"}
               onClick={() => onNavigate?.("backtest")}
             />
             <MetricCard
-              label="情報係数（IC）🔍"
-              value={verificationData.metrics?.ic}
+              label="情報係数 (IC) 🔍"
+              value={verificationData.metrics?.ic ?? 0}
               sourcePath="metrics.ic"
-              rootData={verificationData}
-              resolve={resolveSourcePath}
-              threshold={{
-                direction: "gt",
-                value: 0.04,
-                label: "これくらいは欲しいなっ！",
-              }}
+              trend="neutral"
             />
             <MetricCard
-              label="最大ドローダウン📉"
-              value={verificationData.metrics?.maxDD}
+              label="最大ドローダウン (MaxDD) 📉"
+              value={(verificationData.metrics?.maxDD ?? 0) * 100}
               unit="%"
               sourcePath="metrics.maxDD"
-              rootData={verificationData}
-              resolve={resolveSourcePath}
               derivation={{
                 id: "recomputeMaxDD",
                 note: "いちばん凹んだところだよぉ…",
                 inputs: ["strategyCum", "dates"],
               }}
-              recomputed={recomputeMaxDD(
-                verificationData.dates,
-                verificationData.strategyCum,
-              )}
-              threshold={{
-                direction: "lt",
-                value: -0.1,
-                label: "ここが限界っ！",
-              }}
+              trend="down"
               onClick={() => onNavigate?.("backtest")}
             />
           </div>
@@ -166,24 +143,70 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
         <div className="hero-side">
           <div
             className="panel section"
-            style={{ background: "rgba(255,255,255,0.5)" }}
+            style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid var(--line)",
+            }}
           >
-            <h3 className="quick-title">コストの内訳だよっ！💸</h3>
-            <div className="health-row">
-              <span>お取引の手数料✨</span>
-              <span className="pill">
+            <h3
+              className="quick-title"
+              style={{
+                fontSize: "0.75rem",
+                fontWeight: "bold",
+                borderBottom: "1px solid var(--line)",
+                paddingBottom: "0.4rem",
+                marginBottom: "0.8rem",
+              }}
+            >
+              運用コストの内訳 💸
+            </h3>
+            <div
+              className="health-row"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "0.4rem",
+                fontSize: "0.75rem",
+              }}
+            >
+              <span style={{ color: "var(--ink-soft)" }}>売買手数料 (Bps)</span>
+              <span className="pill" style={{ fontFamily: "var(--mono)" }}>
                 {formatBpsNullable(verificationData.costs?.feeBps)}
               </span>
             </div>
-            <div className="health-row">
-              <span>スリッページ💦</span>
-              <span className="pill">
+            <div
+              className="health-row"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "0.4rem",
+                fontSize: "0.75rem",
+              }}
+            >
+              <span style={{ color: "var(--ink-soft)" }}>推定スリッページ</span>
+              <span className="pill" style={{ fontFamily: "var(--mono)" }}>
                 {formatBpsNullable(verificationData.costs?.slippageBps)}
               </span>
             </div>
-            <div className="health-row">
-              <span>全部でこれくらいっ！</span>
-              <span className="pill" style={{ fontWeight: 700 }}>
+            <div
+              className="health-row"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                paddingTop: "0.4rem",
+                borderTop: "1px dashed var(--line)",
+                fontSize: "0.8rem",
+                fontWeight: "bold",
+              }}
+            >
+              <span>合計コスト</span>
+              <span
+                className="pill"
+                style={{
+                  background: "var(--brand-soft)",
+                  color: "var(--brand)",
+                }}
+              >
                 {formatBpsNullable(verificationData.costs?.totalCostBps)}
               </span>
             </div>
@@ -193,7 +216,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
 
       <div className="split">
         <div className="panel section">
-          <h3 className="quick-title">これまでの成績っ！📈</h3>
+          <h3 className="quick-title">資産推移の履歴 📈</h3>
           <CumulativeReturnChart
             dates={verificationData.dates}
             strategyCum={verificationData.strategyCum}
@@ -209,13 +232,15 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             }}
           >
             <h3 className="quick-title">
-              移動IC (30日) 📐{" "}
+              移動IC推移 (30日窓) 📐{" "}
               {proxySpec.kind !== "none" && (
-                <span style={{ color: "var(--danger)" }}>📐 PROXY</span>
+                <span style={{ color: "var(--danger)", fontSize: "0.6rem" }}>
+                  [PROXY使用中]
+                </span>
               )}
             </h3>
             <span style={{ fontSize: "0.6rem", color: "var(--ink-soft)" }}>
-              出典：{factorSource}
+              ソース：{factorSource}
             </span>
           </div>
           <RollingICChart data={rollingICPoints} />
@@ -223,7 +248,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
       </div>
 
       <div className="section-head" style={{ marginTop: "1rem" }}>
-        <h3>アルファ・パスポートの証明書っ！🎫</h3>
+        <h3>アルファ・パスポート鑑定書 🎫✨</h3>
         {selectedAlpha && (
           <button
             type="button"
@@ -235,10 +260,11 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
               border: "none",
               padding: 0,
               cursor: "pointer",
+              color: "var(--brand)",
             }}
             onClick={() => onNavigate?.("research")}
           >
-            → これまでの発見の歴史を見るっ！📜
+            → 発見の歴史（タイムライン）を見るっ！📜
           </button>
         )}
       </div>
@@ -255,12 +281,12 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
         />
       ) : (
         <div className="panel section empty">
-          最近のログに選ばれたアルファ君がいないみたい…😢
+          現在、このセッションで採択されたアルファは見つかりませんでした😢
         </div>
       )}
 
       <div className="panel section">
-        <h3 className="quick-title">ドローダウンの推移だよっ！📉</h3>
+        <h3 className="quick-title">最大ドローダウンの推移 📉</h3>
         <DrawdownChart data={drawdownPoints} />
       </div>
 

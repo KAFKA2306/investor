@@ -6,7 +6,7 @@ const compatViewStatements: readonly string[] = [
   SELECT
     s.signal_id,
     i.symbol,
-    TO_CHAR(s.trading_date, 'YYYY-MM-DD') AS date,
+    s.trading_date AS date,
     s.risk_delta,
     s.pead_1d,
     s.pead_5d,

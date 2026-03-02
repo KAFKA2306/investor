@@ -12,7 +12,7 @@ export async function bootstrapCanonicalDb(): Promise<PostgresClient | null> {
     return null;
   }
 
-  const client = new PostgresClient(cfg);
+  const client = core.postgres ?? new PostgresClient(cfg);
   await client.ensureSchema();
   await ensureCompatViews(client);
   singleton = client;

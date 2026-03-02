@@ -29,8 +29,6 @@ type IntelligencePoint = {
   correctionCount90d: number;
 };
 
-type IntelligenceMap = Record<string, Record<string, IntelligencePoint>>;
-
 const parseArgs = (): CliArgs => {
   const parsedArgs = parseCliArgs(process.argv.slice(2));
   return {
@@ -91,7 +89,7 @@ const scopedViolationFilter = (
 
 function main(): void {
   const args = parseArgs();
-  const runAt = new Date().toISOString();
+  const runAt = dateUtils.nowIso();
 
   const baseReport = {
     runAt,

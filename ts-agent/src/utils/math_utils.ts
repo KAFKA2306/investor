@@ -157,6 +157,160 @@ export function randomInt(min: number, max: number): number {
 }
 
 /**
+ * RMSE（平方根平均二乗誤差）を計算するよっ！📉
+ */
+export function calculateRMSE(
+  a: readonly number[],
+  p: readonly number[],
+): number {
+  const n = Math.min(a.length, p.length);
+  if (n === 0) return 0;
+  const mse = a.reduce((acc, val, i) => acc + (val - p[i]!) ** 2, 0) / n;
+  return Math.sqrt(mse);
+}
+
+/**
+ * SMAPE（対称平均絶対パーセント誤差）を計算するよっ！📊
+ */
+export function calculateSMAPE(
+  a: readonly number[],
+  p: readonly number[],
+): number {
+  const n = Math.min(a.length, p.length);
+  if (n === 0) return 0;
+  const sum = a.reduce((acc, val, i) => {
+    const den = (Math.abs(val) + Math.abs(p[i]!)) / 2;
+    return acc + (den !== 0 ? Math.abs(p[i]! - val) / den : 0);
+  }, 0);
+  return (sum / n) * 100;
+}
+
+/**
+ * DA（方向正確性）を計算するよっ！🎯
+ */
+export function calculateDA(
+  a: readonly number[],
+  p: readonly number[],
+  prev: readonly number[],
+): number {
+  const n = Math.min(a.length, p.length, prev.length);
+  if (n === 0) return 0;
+  let correct = 0;
+  for (let i = 0; i < n; i++) {
+    if (Math.sign(a[i]! - prev[i]!) === Math.sign(p[i]! - prev[i]!)) {
+      correct++;
+    }
+  }
+  return (correct / n) * 100;
+}
+
+/**
+ * GaussRank スケーリングのための逆誤差関数だよっ！📉
+ */
+function erfInv(x: number): number {
+  const a = 0.147;
+  const l = Math.log(1 - x * x);
+  const m = 2 / (Math.PI * a) + l / 2;
+  const res = Math.sqrt(Math.sqrt(m * m - l / a) - m);
+  return x < 0 ? -res : res;
+}
+
+/**
+ * 標準正規分布の累積分布関数の逆関数（逆CDF）だよっ！🎀
+ */
+export function invNormalCdf(p: number): number {
+  return Math.sqrt(2) * erfInv(2 * Math.max(0.001, Math.min(0.999, p)) - 1);
+}
+
+/**
+ * データを正規分布にマッピングする GaussRank スケーリングだよっ！✨
+ */
+export function gaussRank(data: readonly number[]): number[] {
+  const sorted = [...data].sort((a, b) => a - b);
+  return data.map((v) => invNormalCdf(sorted.indexOf(v) / (data.length - 1)));
+}
+
+/**
+ * 逆正規累積分布関数を使って、より高度な分散分析をするよっ！🛡️
+ */
+export function calculateGaussCorr(
+  p: readonly number[],
+  t: readonly number[],
+): number {
+  if (p.length < 2 || t.length < 2) return 0;
+  return calculateCorr(gaussRank([...p]), gaussRank([...t]));
+}
+
+/**
+ * インフォメーション・レシオ（Information Ratio）を計算するよっ！📊
+ */
+export function calculateInformationRatio(
+  strategyReturns: readonly number[],
+  benchmarkReturns: readonly number[],
+  annualizeFactor = 252,
+): number {
+  if (
+    strategyReturns.length !== benchmarkReturns.length ||
+    strategyReturns.length < 2
+  )
+    return 0;
+  const activeReturns = strategyReturns.map((r, i) => r - benchmarkReturns[i]!);
+  const avgActiveReturn = mean(activeReturns);
+  const trackingError = stdDev(activeReturns);
+  return trackingError === 0
+    ? 0
+    : (avgActiveReturn / trackingError) * Math.sqrt(annualizeFactor);
+}
+
+/**
+ * ソルティノレシオ（Sortino Ratio）を計算するよっ！🛡️
+ */
+export function calculateSortinoRatio(
+  returns: readonly number[],
+  rfr = 0,
+  annualizeFactor = 252,
+): number {
+  if (returns.length < 2) return 0;
+  const mu = mean(returns);
+  const downsideReturns = returns
+    .filter((r) => r < rfr)
+    .map((r) => (r - rfr) ** 2);
+  const downsideDev = Math.sqrt(mean(downsideReturns));
+  return downsideDev === 0
+    ? 0
+    : ((mu - rfr) / downsideDev) * Math.sqrt(annualizeFactor);
+}
+
+/**
+ * OHLCデータを上位の時間軸にリサンプリングするよっ！⏰✨
+ */
+export function resampleOHLC<
+  T extends {
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+  },
+>(bars: readonly T[], windowSize: number): T[] {
+  const result: T[] = [];
+  for (let i = 0; i < bars.length; i += windowSize) {
+    const chunk = bars.slice(i, i + windowSize);
+    if (chunk.length === 0) continue;
+
+    const resampled = {
+      ...chunk[0]!,
+      high: Math.max(...chunk.map((b) => b.high)),
+      low: Math.min(...chunk.map((b) => b.low)),
+      close: chunk[chunk.length - 1]!.close,
+      volume: chunk.reduce((sum, b) => sum + b.volume, 0),
+    };
+    result.push(resampled);
+  }
+  return result;
+}
+
+/**
  * 数字の「きゅーとな相棒」mathUtilsだよっ！🔢💖
  */
 export const mathUtils = {
@@ -166,11 +320,20 @@ export const mathUtils = {
   stdDev,
   zScore,
   calculateCorr,
+  calculateGaussCorr,
   computeMaxDrawdown,
   calculateTStat,
   calculatePValue,
   calculateSharpeRatio,
+  calculateInformationRatio,
+  calculateSortinoRatio,
   calculateAnnualizedReturn,
+  calculateRMSE,
+  calculateSMAPE,
+  calculateDA,
+  gaussRank,
+  invNormalCdf,
   pickOne,
   randomInt,
+  resampleOHLC,
 };

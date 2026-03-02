@@ -304,53 +304,6 @@ export const canonicalSchemaStatements: readonly CanonicalSchemaStatement[] = [
       CREATE INDEX IF NOT EXISTS idx_log_envelope_asof ON obs.log_envelope(as_of_date DESC, kind);
     `,
   },
-  {
-    name: "compat-views",
-    sql: `
-      -- Phase 1 compatibility views
-      CREATE OR REPLACE VIEW compat.signals_v1 AS
-      SELECT
-        signal_id,
-        instrument_id as symbol,
-        trading_date as date,
-        combined_alpha,
-        risk_delta,
-        pead_1d,
-        pead_5d,
-        created_at
-      FROM signal.signal;
-
-      CREATE OR REPLACE VIEW compat.edinet_event_features_v1 AS
-      SELECT
-        event_feature_id as event_id,
-        instrument_id as symbol,
-        filed_at,
-        source_doc_id as doc_id,
-        risk_delta,
-        sentiment,
-        ai_exposure,
-        kg_centrality,
-        correction_flag,
-        correction_count_90d,
-        feature_version,
-        created_at
-      FROM feature.event_feature;
-
-      CREATE OR REPLACE VIEW compat.uqtl_events_v1 AS
-      SELECT
-        event_id as id,
-        event_ts as timestamp,
-        event_type as type,
-        agent_id,
-        operator_id,
-        experiment_id,
-        parent_event_id,
-        payload_jsonb as payload_json,
-        metadata_jsonb as metadata_json,
-        created_at
-      FROM obs.event;
-    `,
-  },
 ];
 
 export function getCanonicalSchemaSql(): string[] {

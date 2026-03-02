@@ -65,9 +65,9 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
             <tr>
               <th>候補</th>
               <th>Priority</th>
-              <th>Plausibility</th>
-              <th>Risk-Adjusted</th>
-              <th>Novelty</th>
+              <th>Fitness</th>
+              <th>Stability</th>
+              <th>Adoption</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -78,13 +78,9 @@ export const DiscoveryView: React.FC<DiscoveryViewProps> = ({
                   <strong>{candidate.id}</strong>
                 </td>
                 <td>{formatNullableNumber(candidate.scores.priority, 3)}</td>
-                <td>
-                  {formatNullableNumber(candidate.scores.plausibility, 3)}
-                </td>
-                <td>
-                  {formatNullableNumber(candidate.scores.riskAdjusted, 3)}
-                </td>
-                <td>{formatNullableNumber(candidate.scores.novelty, 3)}</td>
+                <td>{formatNullableNumber(candidate.scores.fitness, 3)}</td>
+                <td>{formatNullableNumber(candidate.scores.stability, 3)}</td>
+                <td>{formatNullableNumber(candidate.scores.adoption, 3)}</td>
                 <td>
                   <span
                     className={`chip ${candidate.status === "SELECTED" ? "ready" : "caution"}`}

@@ -20,54 +20,40 @@ export type SignalLineageInput = {
   evidenceType?: string;
 };
 
-export class SignalRepository extends BaseRepository {
+export class SignalRepository extends BaseRepository<{ id: string }> {
+  protected readonly table = "signal.signal";
   public async upsertSignal(input: SignalInput): Promise<void> {
-    await this.db.query(
-      `
-      INSERT INTO signal.signal
-      (signal_id, instrument_id, trading_date, combined_alpha, risk_delta, pead_1d, pead_5d, model_version)
-      VALUES ($1, $2, $3::date, $4, $5, $6, $7, $8)
-      ON CONFLICT(signal_id) DO UPDATE SET
-        instrument_id = EXCLUDED.instrument_id,
-        trading_date = EXCLUDED.trading_date,
-        combined_alpha = EXCLUDED.combined_alpha,
-        risk_delta = EXCLUDED.risk_delta,
-        pead_1d = EXCLUDED.pead_1d,
-        pead_5d = EXCLUDED.pead_5d,
-        model_version = EXCLUDED.model_version
-      `,
-      [
-        input.signalId,
-        input.instrumentId,
-        input.tradingDate,
-        input.combinedAlpha,
-        input.riskDelta,
-        input.pead1d,
-        input.pead5d,
-        input.modelVersion ?? null,
-      ],
-    );
+    await this.executeUpsert({
+      table: "signal.signal",
+      conflictTarget: "signal_id",
+      data: {
+        signal_id: input.signalId,
+        instrument_id: input.instrumentId,
+        trading_date: input.tradingDate,
+        combined_alpha: input.combinedAlpha,
+        risk_delta: input.riskDelta,
+        pead_1d: input.pead1d,
+        pead_5d: input.pead5d,
+        model_version: input.modelVersion ?? null,
+      },
+      casts: {
+        trading_date: "date",
+      },
+    });
   }
 
   public async upsertSignalLineage(input: SignalLineageInput): Promise<void> {
-    await this.db.query(
-      `
-      INSERT INTO signal.signal_lineage
-      (signal_id, source_doc_id, section_id, feature_name, feature_version, evidence_type)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      ON CONFLICT(signal_id, source_doc_id, section_id) DO UPDATE SET
-        feature_name = EXCLUDED.feature_name,
-        feature_version = EXCLUDED.feature_version,
-        evidence_type = EXCLUDED.evidence_type
-      `,
-      [
-        input.signalId,
-        input.sourceDocId,
-        input.sectionId ?? "",
-        input.featureName ?? null,
-        input.featureVersion ?? null,
-        input.evidenceType ?? "DOCUMENT_SECTION",
-      ],
-    );
+    await this.executeUpsert({
+      table: "signal.signal_lineage",
+      conflictTarget: ["signal_id", "source_doc_id", "section_id"],
+      data: {
+        signal_id: input.signalId,
+        source_doc_id: input.sourceDocId,
+        section_id: input.sectionId ?? "",
+        feature_name: input.featureName ?? null,
+        feature_version: input.featureVersion ?? null,
+        evidence_type: input.evidenceType ?? "DOCUMENT_SECTION",
+      },
+    });
   }
 }

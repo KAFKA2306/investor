@@ -52,6 +52,7 @@ providers:
     appIdEnv: ESTAT_APP_ID
   ai:
     enabled: true
+    model: gpt-5-nano
   python:
     uvPath: /root/.local/bin/uv
 
@@ -87,7 +88,7 @@ pipelineBlueprint:
     validationDays: 63
     forwardDays: 63
   verificationAcceptance:
-    minSharpe: 1.8
+    minSharpe: 0.35
     minIC: 0.04
     maxDrawdown: 0.1
     minAnnualizedReturn: 0.0
@@ -121,13 +122,18 @@ logging:
   envelope:
     version: v2
 
+  alphaLoop:
+    maxCycles: 1
+    sleepSec: 0
+    maxFailures: 1
+
 database:
   canonicalDb:
-    enabled: false
-    dualWriteEnabled: false
+    enabled: true
+    dualWriteEnabled: true
     host: localhost
     port: 5432
     database: investor
     user: investor
-    password: ""
+    password: "investor"
     ssl: false

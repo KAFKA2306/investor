@@ -1,59 +1,18 @@
+import { Buffer } from "node:buffer";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
+import {
+  type EdinetDocument,
+  EdinetDocumentSchema,
+  EdinetDocumentTypeLabel,
+  type EdinetDocumentListResponse,
+  type EdinetDocumentType,
+} from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { SqliteHttpCache } from "./cache_providers.ts";
 import { requestJson } from "./http_json_client.ts";
 import { ProviderConfigError, ProviderHttpError } from "./provider_errors.ts";
-
-export const EdinetDocumentSchema = z.object({
-  docID: z.string(),
-  secCode: z.string().nullable(),
-  edinetCode: z.string().nullable(),
-  filerName: z.string().nullable(),
-  docDescription: z.string().nullable(),
-  docTypeCode: z.string().nullable(),
-  submitDateTime: z.string().nullable(),
-  periodStart: z.string().nullable(),
-  periodEnd: z.string().nullable(),
-  parentDocID: z.string().nullable(),
-  opeDateTime: z.string().nullable(),
-  withdrawalStatus: z.string().nullable(),
-  currentReportReason: z.string().nullable(),
-});
-
-export type EdinetDocument = z.infer<typeof EdinetDocumentSchema>;
-
-export const EdinetDocumentListResponseSchema = z.object({
-  metadata: z.object({
-    title: z.string(),
-    parameter: z.object({
-      date: z.string(),
-      type: z.string(),
-    }),
-    resultset: z.object({
-      count: z.number().int(),
-    }),
-    processDateTime: z.string(),
-    status: z.string(),
-    message: z.string(),
-  }),
-  results: z.array(EdinetDocumentSchema).default([]),
-});
-
-export type EdinetDocumentListResponse = z.infer<
-  typeof EdinetDocumentListResponseSchema
->;
-
-export type EdinetDocumentType = 1 | 2 | 3 | 4 | 5;
-
-export const EdinetDocumentTypeLabel: Record<EdinetDocumentType, string> = {
-  1: "XBRL",
-  2: "PDF",
-  3: "代替書面・添付書類",
-  4: "英文XBRL",
-  5: "CSV",
-};
 
 export const isAnnualReport = (doc: EdinetDocument): boolean =>
   doc.docTypeCode === "030";

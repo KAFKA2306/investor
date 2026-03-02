@@ -1,4 +1,6 @@
 import { join, resolve } from "node:path";
+import { dateUtils } from "../utils/date_utils.ts";
+import { fsUtils } from "../utils/fs_utils.ts";
 import { calculatePerformanceMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
   getNumberArg,
@@ -144,7 +146,7 @@ async function run(): Promise<void> {
     strategyId: "PROOF-BASELINE",
     strategyName: "Proof Baseline Momentum",
     description: "Baseline verification data for orchestrator",
-    generatedAt: new Date().toISOString(),
+    generatedAt: dateUtils.nowIso(),
     audit: {
       commitHash: "0000000000000000000000000000000000000000",
       environment: "development",
@@ -191,8 +193,7 @@ async function run(): Promise<void> {
     },
   };
 
-  const fs = await import("node:fs");
-  fs.writeFileSync(paths.verificationJson, JSON.stringify(output, null, 2));
+  fsUtils.writeValidatedJson(paths.verificationJson, output);
   console.log(
     "✅ Written standard_verification_data.json with V1.1.8 Schema Compliance and IndividualData",
   );

@@ -46,6 +46,37 @@ export function readJsonFile<T>(filePath: string): T {
 }
 
 /**
+ * Zod スキーマで検証しながら JSON ファイルを読み込むよっ！🛡️✨
+ */
+export function readValidatedJson<T>(filePath: string, schema: z.Schema<T>): T {
+  const raw = readJsonFile<unknown>(filePath);
+  return schema.parse(raw);
+}
+
+/**
+ * CSVファイルを読み込んでオブジェクトの配列にするよっ！📊✨
+ */
+export function readCsv<T extends Record<string, string>>(
+  filePath: string,
+  delimiter = ",",
+): T[] {
+  if (!existsSync(filePath)) return [];
+  const content = readFileSync(filePath, "utf8");
+  const lines = content.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length === 0) return [];
+
+  const headers = lines[0]!.split(delimiter).map((h) => h.trim());
+  return lines.slice(1).map((line) => {
+    const values = line.split(delimiter).map((v) => v.trim());
+    const obj: Record<string, string> = {};
+    headers.forEach((h, i) => {
+      obj[h] = values[i] ?? "";
+    });
+    return obj as T;
+  });
+}
+
+/**
  * ファイルやディレクトリの存在チェックと、前提条件の確認を一挙に引き受けるよっ！🛡️✨
  */
 export function requirePrerequisites(
@@ -71,13 +102,6 @@ export function writeReport<T>(
 }
 
 /**
- * ユニークなIDをしゅばばばっと生成するよっ！🆔
- */
-export function generateId(prefix = "ID"): string {
-  return `${prefix}-${randomUUID().split("-")[0]!.toUpperCase()}`;
-}
-
-/**
  * タイムスタンプ付きのファイル名を作るよっ！📅
  */
 export function generateTimestampedName(base: string, ext: string): string {
@@ -94,8 +118,9 @@ export const fsUtils = {
   readJsonl,
   writeValidatedJson,
   readJsonFile,
+  readValidatedJson,
+  readCsv,
   requirePrerequisites,
   writeReport,
-  generateId,
   generateTimestampedName,
 };

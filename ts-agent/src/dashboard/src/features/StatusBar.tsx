@@ -48,7 +48,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       style={{ flexWrap: "wrap", gap: "0.5rem" }}
     >
       <div className="brand">
-        <h1>Hypothesis Evolution</h1>
+        <h1>アルファ進化ダッシュボード 💎</h1>
         <p>視覚的な証明 ＋ 改ざんできない証拠だよっ！✨</p>
       </div>
 
@@ -74,10 +74,17 @@ export const StatusBar: React.FC<StatusBarProps> = ({
               display: "flex",
               alignItems: "center",
               gap: "0.5rem",
+              border: "1px solid var(--brand-soft)",
             }}
           >
-            <span style={{ fontSize: "0.6rem", textTransform: "uppercase" }}>
-              Time Machine
+            <span
+              style={{
+                fontSize: "0.6rem",
+                textTransform: "uppercase",
+                fontWeight: "bold",
+              }}
+            >
+              Time Machine 🕰️
             </span>
             <select
               className="input-select"
@@ -101,26 +108,36 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           </div>
         )}
 
-        <span className="pill mono" style={{ fontSize: "0.65rem" }}>
-          アップデート：{lastUpdated}
+        <span
+          className="pill mono"
+          style={{ fontSize: "0.65rem", border: "1px solid var(--line)" }}
+        >
+          最終更新：{lastUpdated}
         </span>
 
         {/* Option B: Compact with Tooltip for space efficiency in topbar */}
         {hasFingerprints && commitHash && (
           <span
             className="pill mono"
-            style={{ fontSize: "0.65rem", cursor: "help" }}
+            style={{
+              fontSize: "0.65rem",
+              cursor: "help",
+              border: "1px solid var(--line)",
+            }}
             title={`Code: ${commitHash}\nData: ${dataFingerprint || "—"}\nRun: ${runId || "—"}\nEnv: ${environment || "—"}`}
           >
             git:{commitHash.slice(0, 7)}
           </span>
         )}
 
-        <span className={`pill ${status === "emergency" ? "risk" : "ready"}`}>
-          {status === "active" ? "動いてるよっ！✨" : "たいへんっ！🚨"}
+        <span
+          className={`pill ${status === "emergency" ? "risk" : "ready"}`}
+          style={{ fontWeight: "bold" }}
+        >
+          {status === "active" ? "正常稼働中っ！✨" : "緊急事態発生っ！🚨"}
         </span>
         <button className="button" type="button" onClick={onRefresh}>
-          更新するっ！🔃
+          最新に更新🔃
         </button>
         <button
           className="button"
@@ -128,9 +145,10 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           onClick={onKill}
           style={{
             background: "linear-gradient(110deg, #b91c35, #d86024)",
+            fontWeight: "bold",
           }}
         >
-          緊急停止っ！💥
+          全システム停止っ！💥
         </button>
       </div>
     </header>

@@ -48,24 +48,35 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
   return (
     <div className="main">
       <div className="section-head">
-        <h2>System Health</h2>
-        <span className={`chip ${chipClass(qualityGate.verdict)}`}>
-          {qualityGate.verdict}
+        <h2>システムの健康診断 🏥✨</h2>
+        <span
+          className={`chip ${chipClass(qualityGate.verdict)}`}
+          style={{ fontWeight: "bold" }}
+        >
+          {qualityGate.verdict === "READY" ? "正常稼働中" : "要確認"}
         </span>
       </div>
 
       <div className="hero panel hero-uqtl">
         <div className="hero-content">
           <h1 className="hero-title">{qualityGate.score.toFixed(1)}</h1>
-          <p className="hero-subtitle">Total Readiness Score</p>
+          <p className="hero-subtitle">総合システム稼働スコア (Ready %)</p>
           <div className="confidence-track" style={{ marginTop: "1rem" }}>
             <div
               className="confidence-bar"
-              style={{ width: `${qualityGate.score}%` }}
+              style={{
+                width: `${qualityGate.score}%`,
+                background:
+                  "linear-gradient(90deg, var(--brand-soft), var(--brand))",
+              }}
             />
           </div>
-          <p className="hero-reason" style={{ fontSize: "0.8rem" }}>
-            Derived from {qualityGate.derivedFrom.length} independent signals.
+          <p
+            className="hero-reason"
+            style={{ fontSize: "0.8rem", color: "var(--ink-soft)" }}
+          >
+            {qualityGate.derivedFrom.length}{" "}
+            個の独立した信号から算出された信頼度だよっ！✨
           </p>
         </div>
         <div className="hero-side">
@@ -74,7 +85,13 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
               <BarChart data={chartData}>
                 <XAxis dataKey="date" hide />
                 <YAxis hide domain={[0, 100]} />
-                <Tooltip />
+                <Tooltip
+                  contentStyle={{
+                    background: "var(--bg-panel)",
+                    border: "1px solid var(--line)",
+                    fontSize: "10px",
+                  }}
+                />
                 <Bar dataKey="score">
                   {chartData.map((entry) => (
                     <Cell
@@ -92,16 +109,35 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
       </div>
 
       <div className="split">
-        <div className="panel section">
-          <h3 className="quick-title">Provider Connectivity</h3>
+        <div
+          className="panel section"
+          style={{ border: "1px solid var(--line)" }}
+        >
+          <h3 className="quick-title">プロバイダー接続状況 🌐</h3>
           <div className="main" style={{ marginTop: "1rem" }}>
             {providers.map(([name, data]) => {
               const d = data as { status: string };
               return (
-                <div key={name} className="health-row">
-                  <span style={{ fontWeight: 600 }}>{name.toUpperCase()}</span>
-                  <span className={`chip ${chipClass(d.status)}`}>
-                    {d.status}
+                <div
+                  key={name}
+                  className="health-row"
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.5rem",
+                  }}
+                >
+                  <span style={{ fontWeight: 600, fontSize: "0.8rem" }}>
+                    {name.toUpperCase()}
+                  </span>
+                  <span
+                    className={`chip ${chipClass(d.status)}`}
+                    style={{ fontSize: "0.65rem" }}
+                  >
+                    {d.status === "PASS" || d.status === "OK"
+                      ? "接続完了"
+                      : "エラー"}
                   </span>
                 </div>
               );
@@ -109,8 +145,11 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
           </div>
         </div>
 
-        <div className="panel section">
-          <h3 className="quick-title">Component Pulse (Radar)</h3>
+        <div
+          className="panel section"
+          style={{ border: "1px solid var(--line)" }}
+        >
+          <h3 className="quick-title">コンポーネント・パルス (Radar) 📡</h3>
           <div
             className="chart-recharts-wrapper"
             style={{ height: "250px", marginTop: "1rem" }}
@@ -128,7 +167,7 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
                   tick={{ fontSize: 9 }}
                 />
                 <Radar
-                  name="Score"
+                  name="スコア"
                   dataKey="score"
                   stroke="var(--brand)"
                   fill="var(--brand)"
@@ -139,6 +178,7 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
                     borderRadius: "12px",
                     border: "1px solid var(--line)",
                     fontSize: "12px",
+                    background: "var(--bg-panel)",
                   }}
                 />
               </RadarChart>
@@ -147,21 +187,28 @@ export const SystemHealth: React.FC<SystemHealthProps> = ({
         </div>
       </div>
 
-      <div className="panel section">
-        <h3 className="quick-title">Educational Note</h3>
+      <div
+        className="panel section"
+        style={{
+          background: "rgba(0,0,0,0.02)",
+          border: "1px solid var(--line)",
+        }}
+      >
+        <h3 className="quick-title">システムの健全性について 📖</h3>
         <p
           style={{
-            fontSize: "0.85rem",
+            fontSize: "0.8rem",
             color: "var(--ink-soft)",
             lineHeight: 1.6,
           }}
         >
-          Ready for alpha discovery requires a score of 80+. Current verdict is{" "}
+          新しいアルファの探索を開始するには、総合スコアが{" "}
+          <strong>80点以上</strong> である必要があるよ。 現在の判定は{" "}
           <strong className={`pos ${chipClass(qualityGate.verdict)}`}>
-            {qualityGate.verdict}
-          </strong>
-          . Connectivity checks ensure that market data providers (J-Quants) and
-          macro data (e-Stat, EDINET) are accessible and returning fresh data.
+            {qualityGate.verdict === "READY" ? "合格（Ready）" : "準備中"}
+          </strong>{" "}
+          だねっ！✨ J-Quants（株価データ）や
+          e-Stat（経済統計）、EDINET（企業開示）などの外部ソースへの接続と、各解析エンジンの整合性を常にチェックしているんだもんっ！🔍
         </p>
       </div>
 

@@ -7,12 +7,10 @@ import {
   type AceBullet,
   type AcePlaybook,
   AcePlaybookSchema,
-} from "../schemas/financial_domain_schemas.ts";
-import {
   BaseEventSchema,
   type EventType,
   type UQTLEvent,
-} from "../schemas/system_event_schemas.ts";
+} from "../schemas/financial_domain_schemas.ts";
 
 export class ContextPlaybook {
   private playbook: AcePlaybook = { bullets: [] };

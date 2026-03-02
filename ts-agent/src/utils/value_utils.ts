@@ -1,5 +1,50 @@
+import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { mathUtils } from "./math_utils.ts";
+
+/**
+ * ✨ プロジェクト全体の「値の魔術師」value_utils.ts だよっ！ ✨
+ */
+
+// --- 配列操作ユーティリティ ---
+export const arrayUtils = {
+  shuffle<T>(items: readonly T[]): T[] {
+    const result = [...items];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j]!, result[i]!];
+    }
+    return result;
+  },
+  unique<T>(items: readonly T[]): T[] {
+    return Array.from(new Set(items));
+  },
+  chunk<T>(items: readonly T[], size: number): T[][] {
+    const result: T[][] = [];
+    for (let i = 0; i < items.length; i += size) {
+      result.push(items.slice(i, i + size));
+    }
+    return result;
+  },
+  last<T>(items: readonly T[], n = 1): T[] {
+    return items.slice(-n);
+  },
+};
+
+// --- ID生成ユーティリティ ---
+export const idUtils = {
+  uuid: () => randomUUID(),
+  short: (prefix = "ID") =>
+    `${prefix}-${randomUUID().split("-")[0]!.toUpperCase()}`,
+  timestamp: (prefix = "TID") => {
+    const ts = Date.now().toString(36).toUpperCase();
+    const rand = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `${prefix}-${ts}-${rand}`;
+  },
+  alpha: (suffix = "") => idUtils.short(`ALPHA-${suffix}`),
+  experiment: () => idUtils.short("EXP"),
+  order: () => idUtils.timestamp("ORD"),
+};
 
 // ── 正規化 (Normalizers) ───────────────────────────────────────────────────
 
@@ -37,11 +82,9 @@ export function normalizeSymbol(symbol: string): string {
 }
 
 /**
- * 証券コードを4桁に整えるよっ！🔢✨ (互換性のために残すね)
+ * normalizeSymbol のエイリアスだよっ！✨
  */
-export function toSymbol4(value: string): string {
-  return normalizeSymbol(value);
-}
+export const toSymbol4 = normalizeSymbol;
 
 /**
  * 有限な数値に変換するよっ！🔢✨
@@ -213,6 +256,10 @@ export const valueFormatters = {
 export const valueUtils = {
   normalizers: valueNormalizers,
   formatters: valueFormatters,
+  array: arrayUtils,
+  id: idUtils,
   ...valueNormalizers,
   ...valueFormatters,
+  ...arrayUtils,
+  ...idUtils,
 };

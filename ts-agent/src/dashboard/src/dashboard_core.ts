@@ -164,9 +164,9 @@ export const AlphaDiscoveryPayloadSchema = z.object({
         recency: z.string().datetime(),
         scores: z.object({
           priority: z.number().min(0).max(1),
-          plausibility: z.number().min(0).max(1),
-          riskAdjusted: z.number().min(0).max(1),
-          novelty: z.number().min(0).max(1),
+          fitness: z.number().min(0).max(1),
+          stability: z.number().min(0).max(1),
+          adoption: z.number().min(0).max(1),
         }),
         ast: z.unknown().optional(),
         featureSignature: z.string().optional(),

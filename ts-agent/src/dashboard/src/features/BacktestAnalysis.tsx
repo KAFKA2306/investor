@@ -75,66 +75,99 @@ export const BacktestAnalysis: React.FC<BacktestAnalysisProps> = ({
   return (
     <div className="main">
       <div className="section-head">
-        <h2>Backtest Analysis</h2>
+        <h2>バックテスト詳細解析 📊✨</h2>
       </div>
 
       <div className="hero panel hero-uqtl">
         <div className="hero-content">
-          <h1 className="hero-title">Performance Deep-dive</h1>
+          <h1 className="hero-title">パフォーマンス深掘り 💎</h1>
           <p className="hero-subtitle">
-            Structural analysis of the verified alpha.
+            検証済みアルファの構造的特性と、運用実績の比較を行うよ。
           </p>
           <div className="uqtl-grid" style={{ marginTop: "1rem" }}>
             <MetricCard
-              label="Total Return"
+              label="累積リターン (Total R)"
               value={verificationData.metrics?.totalReturn ?? 0}
               unit="%"
               sourcePath="metrics.totalReturn"
-              rootData={verificationData}
-              resolve={resolveSourcePath}
               derivation={{
                 id: "recomputeTotalReturn",
-                note: "Cumulative return from baseline",
+                note: "基準日からの累積収益率だよっ！",
                 inputs: ["strategyCum"],
               }}
-              recomputed={recomputeTotalReturn(verificationData.strategyCum)}
             />
             <MetricCard
-              label="Sharpe Ratio"
+              label="シャープレシオ (Sharpe)"
               value={verificationData.metrics?.sharpe ?? 0}
               sourcePath="metrics.sharpe"
-              rootData={verificationData}
-              resolve={resolveSourcePath}
               derivation={{
                 id: "recomputeSharpe",
-                note: "Annualized Sharpe Ratio",
+                note: "年率換算のリスク調整後リターンだよっ！",
                 inputs: ["strategyCum"],
               }}
-              recomputed={recomputeSharpe(rawDailyReturnsArray)}
+              trend={recomputeSharpe(rawDailyReturnsArray) >= 0 ? "up" : "down"}
             />
             <MetricCard
-              label="Max DD"
-              value={verificationData.metrics?.maxDD ?? 0}
+              label="最大ドローダウン (MaxDD)"
+              value={(verificationData.metrics?.maxDD ?? 0) * 100}
               unit="%"
               sourcePath="metrics.maxDD"
-              rootData={verificationData}
-              resolve={resolveSourcePath}
               derivation={{
                 id: "recomputeMaxDD",
-                note: "Maximum peak-to-trough decline",
+                note: "ピークからの最大下落率だよぉ…",
                 inputs: ["strategyCum", "dates"],
               }}
-              recomputed={recomputeMaxDD(
-                verificationData.dates,
-                verificationData.strategyCum,
-              )}
+              trend="down"
             />
           </div>
         </div>
       </div>
 
-      <div className="panel section">
-        <h3 className="quick-title">Current vs Historical Production (%)</h3>
+      <div
+        className="panel section"
+        style={{ border: "1px solid var(--line)" }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "1rem",
+          }}
+        >
+          <h3 className="quick-title" style={{ margin: 0 }}>
+            現行バックテスト vs 過去の運用実績 (%)
+          </h3>
+          <div style={{ fontSize: "0.6rem", display: "flex", gap: "1rem" }}>
+            <span
+              style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+            >
+              <span
+                style={{
+                  width: "12px",
+                  height: "12px",
+                  background: "var(--brand)",
+                  borderRadius: "2px",
+                }}
+              ></span>
+              今回のバックテスト
+            </span>
+            <span
+              style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}
+            >
+              <span
+                style={{
+                  width: "12px",
+                  height: "12px",
+                  background: "var(--accent)",
+                  border: "1px dashed var(--accent)",
+                  borderRadius: "2px",
+                }}
+              ></span>
+              過去のプロダクション実績
+            </span>
+          </div>
+        </div>
         <div className="chart-recharts-wrapper">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={combinedChartData}>
@@ -147,12 +180,12 @@ export const BacktestAnalysis: React.FC<BacktestAnalysisProps> = ({
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: "var(--ink-soft)" }}
                 unit="%"
               />
               <Tooltip
@@ -160,22 +193,25 @@ export const BacktestAnalysis: React.FC<BacktestAnalysisProps> = ({
                   borderRadius: "12px",
                   border: "1px solid var(--line)",
                   fontSize: "12px",
+                  background: "var(--bg-panel)",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
                 }}
               />
               <Line
                 type="monotone"
                 dataKey="current"
-                name="Current Backtest"
+                name="今回の試算"
                 stroke="var(--brand)"
-                strokeWidth={2}
+                strokeWidth={3}
                 dot={false}
+                activeDot={{ r: 6, strokeWidth: 0 }}
               />
               <Line
                 type="monotone"
                 dataKey="historical"
-                name="Historical Production"
+                name="過去の実績"
                 stroke="var(--accent)"
-                strokeWidth={1}
+                strokeWidth={2}
                 strokeDasharray="5 5"
                 dot={true}
               />
@@ -185,50 +221,60 @@ export const BacktestAnalysis: React.FC<BacktestAnalysisProps> = ({
       </div>
 
       <div className="panel section">
-        <h3 className="quick-title">Structural Drawdown</h3>
+        <h3 className="quick-title">構造的ドローダウン解析 📉</h3>
         <DrawdownChart data={drawdownPoints} />
       </div>
 
-      <div className="panel section">
-        <h3 className="quick-title">Technical Glossary</h3>
-        <div className="main" style={{ marginTop: "1rem", gap: "1rem" }}>
+      <div className="panel section" style={{ background: "rgba(0,0,0,0.02)" }}>
+        <h3 className="quick-title">テクニカル・グロッサリー 📖</h3>
+        <div className="main" style={{ marginTop: "1rem", gap: "1.5rem" }}>
           <div>
-            <strong>Sharpe Ratio</strong>
+            <strong style={{ color: "var(--ink)", fontSize: "0.9rem" }}>
+              シャープレシオ (Sharpe Ratio)
+            </strong>
             <p
               style={{
                 fontSize: "0.8rem",
                 color: "var(--ink-soft)",
-                margin: "0.2rem 0",
+                margin: "0.3rem 0",
+                lineHeight: 1.5,
               }}
             >
-              The excess return per unit of risk (standard deviation). A value
-              above 1.5 is considered excellent for quantitative strategies.
+              取ったリスク（標準偏差）に対して、どれだけのリターンを得られたかを示す指標だよ。
+              クオンツ戦略では 1.5 以上が優秀、2.0
+              を超えると最高にキラキラしてる判定になるんだもんっ！✨
             </p>
           </div>
           <div>
-            <strong>Information Coefficient (IC)</strong>
+            <strong style={{ color: "var(--ink)", fontSize: "0.9rem" }}>
+              情報係数 (Information Coefficient - IC)
+            </strong>
             <p
               style={{
                 fontSize: "0.8rem",
                 color: "var(--ink-soft)",
-                margin: "0.2rem 0",
+                margin: "0.3rem 0",
+                lineHeight: 1.5,
               }}
             >
-              The correlation between predicted alpha and actual forward
-              returns. This measures the predictive power of the factor.
+              予測したアルファと、実際に発生したリターンの相関関係だよ。
+              この値が高いほど、システムの「予知能力」が正確であることを証明してくれるんだもんっ！🔍
             </p>
           </div>
           <div>
-            <strong>Max Drawdown (MaxDD)</strong>
+            <strong style={{ color: "var(--ink)", fontSize: "0.9rem" }}>
+              最大ドローダウン (Max Drawdown)
+            </strong>
             <p
               style={{
                 fontSize: "0.8rem",
                 color: "var(--ink-soft)",
-                margin: "0.2rem 0",
+                margin: "0.3rem 0",
+                lineHeight: 1.5,
               }}
             >
-              The maximum peak-to-trough decline of the cumulative return curve.
-              Critical for risk management.
+              累積リターンのピークから底までの最大下落率のこと。
+              リスク管理において最も重要な数字の一つで、運用を続けるための「体力測定」みたいなものだねっ📉
             </p>
           </div>
         </div>

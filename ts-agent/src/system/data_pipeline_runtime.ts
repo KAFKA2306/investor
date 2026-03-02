@@ -4,6 +4,7 @@ import { clamp } from "../utils/math_utils.ts";
 import {
   normalizeSymbol,
   toIsoDate,
+  toYmd,
   valueUtils,
 } from "../utils/value_utils.ts";
 import { core } from "./app_runtime_core.ts";
@@ -106,9 +107,6 @@ export type VerificationWindow = {
   to: string;
 };
 
-const toYmd = (d: Date): string =>
-  toIsoDate(d.toISOString())?.replaceAll("-", "") ?? "";
-
 export class QuantResearchRuntime {
   public buildManifest(
     symbols: string[],
@@ -151,14 +149,6 @@ export class QuantResearchRuntime {
     const end = new Date(Date.UTC(y, m - 1, d));
     const start = new Date(end.getTime() - 365 * 24 * 60 * 60 * 1000);
     return { from: toYmd(start), to: toYmd(end) };
-  }
-
-  public scoreNoveltyBoost(score: number): number {
-    return clamp(score + 0.05, 0, 1);
-  }
-
-  public netReturnFromPriority(priority: number): number {
-    return priority * 0.2;
   }
 
   public totalCostBps(): number {

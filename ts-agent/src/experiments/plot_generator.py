@@ -46,10 +46,15 @@ def compute_drawdown(strat_cum: list) -> list:
 
 
 def generate_schema_driven_plot():
-    verification_dir = os.environ.get("VERIFICATION_DIR", "data")
+    verification_dir = os.environ.get("VERIFICATION_DIR")
+    if not verification_dir:
+        # スクリプトの場所から '../../data' を探すよっ！🎀
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        verification_dir = os.path.abspath(os.path.join(script_dir, "..", "..", "data"))
+    
     json_path = os.path.join(verification_dir, "standard_verification_data.json")
     if not os.path.exists(json_path):
-        raise FileNotFoundError(f"Verification data not found: {json_path}")
+        raise FileNotFoundError(f"Verification data not found: {json_path}. Please check VERIFICATION_DIR or the data file existence.")
 
     with open(json_path, "r") as f:
         data = json.load(f)

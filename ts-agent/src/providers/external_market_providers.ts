@@ -1,4 +1,8 @@
 import { join } from "node:path";
+import {
+  type MarketBar,
+  YahooChartSchema,
+} from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { SqliteHttpCache } from "./cache_providers.ts";
 import { requestJson, requestRows } from "./http_json_client.ts";
@@ -54,11 +58,8 @@ export class JQuantsProvider {
     this.allowStaleCache = options?.allowStaleCache ?? true;
   }
 
-  public async request(
-    endpoint: string,
-    params: Record<string, string> = {},
-  ): Promise<Record<string, unknown>> {
-    const res = await requestJson({
+  private getRequestOptions(endpoint: string, params: Record<string, string>) {
+    return {
       baseUrl: this.baseUrl,
       endpoint,
       query: params,
@@ -70,7 +71,14 @@ export class JQuantsProvider {
             allowStaleCache: this.allowStaleCache,
           }
         : {}),
-    });
+    };
+  }
+
+  public async request(
+    endpoint: string,
+    params: Record<string, string> = {},
+  ): Promise<Record<string, unknown>> {
+    const res = await requestJson(this.getRequestOptions(endpoint, params));
     return res.payload;
   }
 
@@ -78,19 +86,7 @@ export class JQuantsProvider {
     endpoint: string,
     params: Record<string, string> = {},
   ): Promise<unknown[]> {
-    return requestRows({
-      baseUrl: this.baseUrl,
-      endpoint,
-      query: params,
-      headers: { "x-api-key": this.apiKey },
-      ...(this.cache
-        ? {
-            cache: this.cache,
-            ttlMs: this.cacheTtlMs,
-            allowStaleCache: this.allowStaleCache,
-          }
-        : {}),
-    });
+    return requestRows(this.getRequestOptions(endpoint, params));
   }
 
   public async getListedInfo(): Promise<unknown[]> {
@@ -113,6 +109,9 @@ export class JQuantsProvider {
   }
 }
 
+/**
+ * PEAD 分析に特化した J-Quants ゲートウェイだよっ！🚀
+ */
 export class PeadJquantsGateway {
   private readonly provider = new JQuantsProvider({
     cache: new SqliteHttpCache(
@@ -122,39 +121,15 @@ export class PeadJquantsGateway {
     allowStaleCache: true,
   });
 
-  public async getEarningsCalendar(
-    params: Record<string, string>,
-  ): Promise<unknown[]> {
-    return await this.provider.getEarningsCalendar(params);
+  public getEarningsCalendar(params: Record<string, string>) {
+    return this.provider.getEarningsCalendar(params);
   }
-
-  public async getStatements(
-    params: Record<string, string>,
-  ): Promise<unknown[]> {
-    return await this.provider.getStatements(params);
+  public getStatements(params: Record<string, string>) {
+    return this.provider.getStatements(params);
   }
-
-  public async getDailyQuotes(
-    params: Record<string, string>,
-  ): Promise<unknown[]> {
-    return await this.provider.getDailyQuotes(params);
+  public getDailyQuotes(params: Record<string, string>) {
+    return this.provider.getDailyQuotes(params);
   }
-}
-
-export interface YahooBar {
-  Date: string;
-  Open: number;
-  High: number;
-  Low: number;
-  Close: number;
-  Volume: number;
-  CorrectionCount?: number;
-  LargeHolderCount?: number;
-  MacroIIP?: number;
-  MacroCPI?: number;
-  SegmentSentiment?: number;
-  AiExposure?: number;
-  KgCentrality?: number;
 }
 
 export class YahooFinanceGateway {
@@ -162,57 +137,36 @@ export class YahooFinanceGateway {
     join(core.config.paths.logs, "cache", "yahoo_finance_cache.sqlite"),
   );
 
-  public async getChart(symbol: string, range = "2y"): Promise<YahooBar[]> {
+  public async getChart(symbol: string, range = "2y"): Promise<MarketBar[]> {
     const res = await requestJson({
-      url: `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`,
+      url: `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}${symbol.includes(".") ? "" : ".T"}`,
       query: { interval: "1d", range },
       cache: this.cache,
       ttlMs: 24 * 60 * 60 * 1000,
     });
 
-    const resRaw = (
-      res.payload as {
-        chart: {
-          result: {
-            timestamp: number[];
-            indicators: {
-              quote: {
-                open: (number | null)[];
-                high: (number | null)[];
-                low: (number | null)[];
-                close: (number | null)[];
-                volume: (number | null)[];
-              }[];
-            };
-          }[];
-        };
-      }
-    ).chart.result?.[0];
+    const payload = YahooChartSchema.parse(res.payload);
+    const resRaw = payload.chart.result?.[0];
 
     if (!resRaw) throw new Error(`No data for ${symbol}`);
     const timestamps = resRaw.timestamp || [];
     const quote = resRaw.indicators.quote[0];
     if (!quote) throw new Error(`No quote data for ${symbol}`);
 
-    const opens = quote.open || [];
-    const highs = quote.high || [];
-    const lows = quote.low || [];
-    const closes = quote.close || [];
-    const volumes = quote.volume || [];
+    const { open, high, low, close, volume } = quote;
+    const bars: MarketBar[] = [];
 
-    const bars: YahooBar[] = [];
     for (let i = 0; i < timestamps.length; i++) {
       const ts = timestamps[i];
-      const open = opens[i];
-      const close = closes[i];
-      if (typeof ts === "number" && open !== null && close !== null) {
+      const c = close[i];
+      if (typeof ts === "number" && c !== null) {
         bars.push({
-          Date: new Date(ts * 1000).toISOString().split("T")[0]!,
-          Open: open ?? 0,
-          High: highs[i] ?? close ?? 0,
-          Low: lows[i] ?? close ?? 0,
-          Close: close ?? 0,
-          Volume: volumes[i] ?? 0,
+          date: new Date(ts * 1000).toISOString().split("T")[0]!,
+          open: open[i] ?? c,
+          high: high[i] ?? c,
+          low: low[i] ?? c,
+          close: c,
+          volume: volume[i] ?? 0,
         });
       }
     }

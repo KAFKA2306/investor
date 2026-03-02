@@ -5,7 +5,7 @@ import {
   type DailyScenarioLogSchema,
   UnifiedLogSchema,
 } from "../../schemas/financial_domain_schemas.ts";
-import { CanonicalLogEnvelopeSchema } from "../../schemas/system_event_schemas.ts";
+import { fsUtils } from "../../utils/fs_utils.ts";
 import { mathUtils } from "../../utils/math_utils.ts";
 
 const EPS = 1e-12;
@@ -63,8 +63,8 @@ export function evaluate(
   const cumulative = returns.reduce((acc, r) => acc * (1 + r), 1) - 1;
   const avg = mean(returns),
     vol = std(returns);
-  const sharpe = vol < EPS ? 0 : (avg / vol) * Math.sqrt(365);
-  const cagr = (1 + cumulative) ** (365 / returns.length) - 1;
+  const sharpe = vol < EPS ? 0 : (avg / vol) * Math.sqrt(252);
+  const cagr = (1 + cumulative) ** (252 / returns.length) - 1;
   const winRate = returns.filter((r) => r > 0).length / returns.length;
   const maxDrawdown = computeMaxDrawdown(returns);
   const benchmarks = logs
@@ -75,7 +75,7 @@ export function evaluate(
     const diffs = returns.map((r, i) => r - (benchmarks[i] ?? 0));
     const muDiff = mean(diffs),
       volDiff = std(diffs);
-    informationRatio = volDiff < EPS ? 0 : (muDiff / volDiff) * Math.sqrt(365);
+    informationRatio = volDiff < EPS ? 0 : (muDiff / volDiff) * Math.sqrt(252);
   }
   const positives = returns.filter((r) => r > 0),
     negatives = returns.filter((r) => r < 0);
@@ -145,13 +145,19 @@ export function loadPerformanceLedgerRows(
   const files = fs.readdirSync(logsDir).filter((f) => f.endsWith(".json"));
   const rows: PerformanceLedgerRow[] = [];
   for (const file of files) {
-    const raw = JSON.parse(fs.readFileSync(path.join(logsDir, file), "utf8"));
-    const envelope = CanonicalLogEnvelopeSchema.safeParse(raw);
-    if (!envelope.success || envelope.data.kind !== "daily_decision") continue;
+    const raw = fsUtils.readJsonFile<any>(path.join(logsDir, file));
+    // CanonicalLogEnvelopeSchema が見当たらないので、直接 payload を見るよっ！🛡️
+    const envelope = raw;
+    if (!envelope || envelope.kind !== "daily_decision") continue;
 
-    const payload = UnifiedLogSchema.safeParse(envelope.data.payload);
-    if (!payload.success || payload.data.schema !== "investor.daily-log.v1")
+    const payloadResult = UnifiedLogSchema.safeParse(envelope.payload);
+    if (
+      !payloadResult.success ||
+      payloadResult.data.schema !== "investor.daily-log.v1"
+    )
       continue;
+
+    const payload = payloadResult.data;
 
     const report = payload.data.report as z.infer<
       typeof DailyScenarioLogSchema
@@ -159,7 +165,7 @@ export function loadPerformanceLedgerRows(
     if (report.scenarioId && report.results?.backtest) {
       const b = report.results.backtest;
       rows.push({
-        date: envelope.data.asOfDate || report.date,
+        date: envelope.asOfDate || report.date,
         strategyId: report.scenarioId,
         grossReturn: b.grossReturn,
         netReturn: b.netReturn,
@@ -167,7 +173,7 @@ export function loadPerformanceLedgerRows(
         slippageBps: b.slippageBps,
         totalCostBps: b.totalCostBps,
         grossExposure: 1.0,
-        metadata: { file, runId: envelope.data.runId },
+        metadata: { file, runId: envelope.runId },
       });
     }
   }
@@ -175,90 +181,13 @@ export function loadPerformanceLedgerRows(
 }
 
 export namespace QuantMetrics {
-  function normalCdf(x: number): number {
-    const t = 1 / (1 + 0.2316419 * Math.abs(x));
-    const d = 0.3989423 * Math.exp((-x * x) / 2);
-    const prob =
-      d *
-      t *
-      (0.3193815 +
-        t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-    return x > 0 ? 1 - prob : prob;
-  }
-
-  function erfInv(x: number): number {
-    const a = 0.147,
-      l = Math.log(1 - x * x),
-      m = 2 / (Math.PI * a) + l / 2;
-    const res = Math.sqrt(Math.sqrt(m * m - l / a) - m);
-    return x < 0 ? -res : res;
-  }
-
-  function invNormalCdf(p: number): number {
-    return Math.sqrt(2) * erfInv(2 * Math.max(0.001, Math.min(0.999, p)) - 1);
-  }
-
-  function gaussRank(data: number[]): number[] {
-    const sorted = [...data].sort((a, b) => a - b);
-    return data.map((v) => invNormalCdf(sorted.indexOf(v) / (data.length - 1)));
-  }
-
-  function pearson(x: number[], y: number[]): number {
-    const n = Math.min(x.length, y.length);
-    if (n < 2) return 0;
-    let sX = 0,
-      sY = 0,
-      sXY = 0,
-      sX2 = 0,
-      sY2 = 0;
-    for (let i = 0; i < n; i++) {
-      const xi = x[i]!,
-        yi = y[i]!;
-      sX += xi;
-      sY += yi;
-      sXY += xi * yi;
-      sX2 += xi * xi;
-      sY2 += yi * yi;
-    }
-    const den = Math.sqrt((n * sX2 - sX * sX) * (n * sY2 - sY * sY));
-    return den === 0 ? 0 : (n * sXY - sX * sY) / den;
-  }
-
   export const mean = mathUtils.mean;
-  export function calculateCorr(p: number[], t: number[]): number {
-    return pearson(gaussRank(p), gaussRank(t));
-  }
+  export const calculateCorr = mathUtils.calculateGaussCorr;
   export const calculateTStat = mathUtils.calculateTStat;
   export const calculatePValue = mathUtils.calculatePValue;
-  export function calculateRMSE(a: number[], p: number[]): number {
-    const n = Math.min(a.length, p.length);
-    if (n === 0) return 0;
-    return Math.sqrt(
-      a.reduce((acc, val, i) => acc + (val - p[i]!) ** 2, 0) / n,
-    );
-  }
-  export function calculateSMAPE(a: number[], p: number[]): number {
-    const n = Math.min(a.length, p.length);
-    if (n === 0) return 0;
-    const sum = a.reduce((acc, val, i) => {
-      const den = (Math.abs(val) + Math.abs(p[i]!)) / 2;
-      return acc + (den !== 0 ? Math.abs(p[i]! - val) / den : 0);
-    }, 0);
-    return (sum / n) * 100;
-  }
-  export function calculateDA(
-    a: number[],
-    p: number[],
-    prev: number[],
-  ): number {
-    const n = Math.min(a.length, p.length, prev.length);
-    if (n === 0) return 0;
-    let correct = 0;
-    for (let i = 0; i < n; i++)
-      if (Math.sign(a[i]! - prev[i]!) === Math.sign(p[i]! - prev[i]!))
-        correct++;
-    return (correct / n) * 100;
-  }
+  export const calculateRMSE = mathUtils.calculateRMSE;
+  export const calculateSMAPE = mathUtils.calculateSMAPE;
+  export const calculateDA = mathUtils.calculateDA;
   export const calculateSharpeRatio = mathUtils.calculateSharpeRatio;
   export const calculateAnnualizedReturn = mathUtils.calculateAnnualizedReturn;
 }

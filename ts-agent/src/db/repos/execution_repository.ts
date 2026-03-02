@@ -19,54 +19,42 @@ export type ExecutionFillInput = {
   venueTs?: string | null;
 };
 
-export class ExecutionRepository extends BaseRepository {
+export class ExecutionRepository extends BaseRepository<{ id: string }> {
+  protected readonly table = "exec.order_plan";
   public async upsertOrderPlan(input: OrderPlanInput): Promise<void> {
-    await this.db.query(
-      `
-      INSERT INTO exec.order_plan
-      (order_plan_id, run_id, signal_id, instrument_id, side, target_weight, payload_json)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
-      ON CONFLICT(order_plan_id) DO UPDATE SET
-        run_id = EXCLUDED.run_id,
-        signal_id = EXCLUDED.signal_id,
-        instrument_id = EXCLUDED.instrument_id,
-        side = EXCLUDED.side,
-        target_weight = EXCLUDED.target_weight,
-        payload_json = EXCLUDED.payload_json
-      `,
-      [
-        input.orderPlanId,
-        input.runId ?? null,
-        input.signalId ?? null,
-        input.instrumentId,
-        input.side,
-        input.targetWeight,
-        input.payloadJson ? JSON.stringify(input.payloadJson) : null,
-      ],
-    );
+    await this.executeUpsert({
+      table: "exec.order_plan",
+      conflictTarget: "order_plan_id",
+      data: {
+        order_plan_id: input.orderPlanId,
+        run_id: input.runId ?? null,
+        signal_id: input.signalId ?? null,
+        instrument_id: input.instrumentId,
+        side: input.side,
+        target_weight: input.targetWeight,
+        payload_json: this.toJson(input.payloadJson),
+      },
+      casts: {
+        payload_json: "jsonb",
+      },
+    });
   }
 
   public async upsertExecutionFill(input: ExecutionFillInput): Promise<void> {
-    await this.db.query(
-      `
-      INSERT INTO exec.execution_fill
-      (fill_id, order_plan_id, filled_qty, fill_price, slippage_bps, venue_ts)
-      VALUES ($1, $2, $3, $4, $5, $6::timestamptz)
-      ON CONFLICT(fill_id) DO UPDATE SET
-        order_plan_id = EXCLUDED.order_plan_id,
-        filled_qty = EXCLUDED.filled_qty,
-        fill_price = EXCLUDED.fill_price,
-        slippage_bps = EXCLUDED.slippage_bps,
-        venue_ts = EXCLUDED.venue_ts
-      `,
-      [
-        input.fillId,
-        input.orderPlanId,
-        input.filledQty,
-        input.fillPrice,
-        input.slippageBps ?? null,
-        input.venueTs ?? null,
-      ],
-    );
+    await this.executeUpsert({
+      table: "exec.execution_fill",
+      conflictTarget: "fill_id",
+      data: {
+        fill_id: input.fillId,
+        order_plan_id: input.orderPlanId,
+        filled_qty: input.filledQty,
+        fill_price: input.fillPrice,
+        slippage_bps: input.slippageBps ?? null,
+        venue_ts: input.venueTs ?? null,
+      },
+      casts: {
+        venue_ts: "timestamptz",
+      },
+    });
   }
 }
