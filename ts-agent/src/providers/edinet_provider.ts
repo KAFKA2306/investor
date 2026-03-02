@@ -10,6 +10,7 @@ import {
   type EdinetDocumentType,
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
+import { paths } from "../system/path_registry.ts";
 import { SqliteHttpCache } from "./cache_providers.ts";
 import { requestJson } from "./http_json_client.ts";
 import { ProviderConfigError, ProviderHttpError } from "./provider_errors.ts";

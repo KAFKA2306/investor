@@ -23,6 +23,7 @@
     "pipeline:ab": "bun src/pipeline/evaluate/backtest_core.ts",
     "pipeline:mine": "bun src/pipeline/factor_mining/mining_core.ts",
     "pipeline:backtest": "bun src/pipeline/evaluate/backtest_core.ts",
+    "db:migrate:canonical": "bun src/db/scripts/migrate_to_postgres.ts",
     "edinet": "bun scripts/edinet_cli.ts",
     "edinet:tickers": "bun scripts/edinet_tickers.ts",
     "jquants:warm-cache": "bun scripts/jquants_cache_warm.ts",

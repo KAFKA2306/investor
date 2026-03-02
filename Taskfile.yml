@@ -234,7 +234,7 @@ tasks:
           bash -lc 'set -euo pipefail;
           max_cycles="${ALPHA_LOOP_MAX_CYCLES:-3}";
           sleep_sec="${ALPHA_LOOP_SLEEP_SEC:-0}";
-          max_failures="${ALPHA_LOOP_MAX_FAILURES:-3}";
+          max_failures="${ALPHA_LOOP_MAX_FAILURES:-1}";
           input_channel="${UQTL_INPUT_CHANNEL:-task}";
           nl_input="${UQTL_NL_INPUT:-}";
           nl_input_file="${UQTL_NL_INPUT_FILE:-}";
@@ -406,7 +406,7 @@ tasks:
           from="${FROM:-2021-03-01}";
           to="${TO:-$(date +%F)}";
           max_units="${MAX_UNITS:-0}";
-          args=(--mode date --from "$from" --to "$to" --date-order desc --req-per-30sec 1 --max-rate-limit-errors 2);
+          args=(--mode date --from "$from" --to "$to" --date-order desc --req-per-30sec 1 --max-rate-limit-errors 0);
           if [ "$max_units" -gt 0 ]; then
             args+=(--max-units "$max_units");
           fi;

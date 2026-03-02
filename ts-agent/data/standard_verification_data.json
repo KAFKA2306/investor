@@ -3,7 +3,7 @@
   "strategyId": "PROOF-BASELINE",
   "strategyName": "Proof Baseline Momentum",
   "description": "Baseline verification data for orchestrator",
-  "generatedAt": "2026-03-01T10:14:28.519Z",
+  "generatedAt": "2026-03-02T09:57:09.526Z",
   "audit": {
     "commitHash": "0000000000000000000000000000000000000000",
     "environment": "development",
@@ -55733,7 +55733,7 @@
   },
   "metrics": {
     "ic": 0.05,
-    "sharpe": 0.008517411529516298,
+    "sharpe": 0.007077200009196147,
     "maxDD": -0.028284358228907885,
     "totalReturn": -0.0004199186139726141,
     "universe": [

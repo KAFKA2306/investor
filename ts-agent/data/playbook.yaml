@@ -10200,8 +10200,13 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-  - content: Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist) (sig=[unknown])
+  - id: ctx-ouhnqkao
+    content: Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist) (sig=[unknown])
     section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T10:13:02.520Z'
+    updated_at: '2026-03-01T10:13:03.003Z'
     metadata:
       id: ALPHA-BEHAVIORAL-03715A4F
       requirementId: req-agentic-1aa72e61
@@ -10218,13 +10223,13 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-ouhnqkao
+  - id: ctx-j2urbsky
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
     helpful_count: 0
     harmful_count: 1
-    created_at: '2026-03-01T10:13:02.520Z'
-    updated_at: '2026-03-01T10:13:03.003Z'
-  - content: 10-K Intelligence 2.0 (Mission) Hypothesis (HFT Engineer) (sig=[unknown])
-    section: evidence
+    created_at: '2026-03-01T10:13:03.035Z'
+    updated_at: '2026-03-01T10:13:03.383Z'
     metadata:
       id: ALPHA-HFT-955B3B91
       requirementId: req-agentic-1aa72e61
@@ -10241,13 +10246,13 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-j2urbsky
+  - id: ctx-v5c8ie4j
+    content: Inventory Lead Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
     helpful_count: 0
     harmful_count: 1
-    created_at: '2026-03-01T10:13:03.035Z'
-    updated_at: '2026-03-01T10:13:03.383Z'
-  - content: Inventory Lead Hypothesis (Fundamental Researcher) (sig=[unknown])
-    section: evidence
+    created_at: '2026-03-01T10:13:03.422Z'
+    updated_at: '2026-03-01T10:13:03.774Z'
     metadata:
       id: ALPHA-FUNDAMENTAL-7773E8FC
       requirementId: req-agentic-1aa72e61
@@ -10264,13 +10269,13 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-v5c8ie4j
+  - id: ctx-e6fg8d0v
+    content: Behavioral Momentum Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
     helpful_count: 0
     harmful_count: 1
-    created_at: '2026-03-01T10:13:03.422Z'
-    updated_at: '2026-03-01T10:13:03.774Z'
-  - content: Behavioral Momentum Hypothesis (Macro Strategist) (sig=[unknown])
-    section: evidence
+    created_at: '2026-03-01T10:13:37.281Z'
+    updated_at: '2026-03-01T10:13:37.654Z'
     metadata:
       id: ALPHA-MACRO-40AE4B3C
       requirementId: req-agentic-3cfe8958
@@ -10287,15 +10292,15 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-e6fg8d0v
-    helpful_count: 0
-    harmful_count: 1
-    created_at: '2026-03-01T10:13:37.281Z'
-    updated_at: '2026-03-01T10:13:37.654Z'
-  - content: >-
+  - id: ctx-iqzdpedd
+    content: >-
       Capex-Quality Momentum (CQM) in Japanese Equities (gpt-5-nano) Hypothesis (HFT Engineer)
       (sig=[operating_profit_yoy_growth,capital_expenditure_yoy_growth,capex_to_operating_profit_ratio_yoy,price_momentum_12w,volatility_trend_8w])
     section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T10:13:37.686Z'
+    updated_at: '2026-03-01T10:13:38.024Z'
     metadata:
       id: ALPHA-HFT-5F6AD70B
       requirementId: req-agentic-3cfe8958
@@ -10312,13 +10317,13 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-iqzdpedd
+  - id: ctx-cvvq2i9l
+    content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
     helpful_count: 0
     harmful_count: 1
-    created_at: '2026-03-01T10:13:37.686Z'
-    updated_at: '2026-03-01T10:13:38.024Z'
-  - content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Behavioral Economist) (sig=[unknown])
-    section: evidence
+    created_at: '2026-03-01T10:13:38.056Z'
+    updated_at: '2026-03-01T10:13:38.507Z'
     metadata:
       id: ALPHA-BEHAVIORAL-E3FCBD58
       requirementId: req-agentic-3cfe8958
@@ -10335,13 +10340,13 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-cvvq2i9l
+  - id: ctx-t5uiqn4w
+    content: Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
     helpful_count: 0
     harmful_count: 1
-    created_at: '2026-03-01T10:13:38.056Z'
-    updated_at: '2026-03-01T10:13:38.507Z'
-  - content: Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist) (sig=[unknown])
-    section: evidence
+    created_at: '2026-03-01T10:14:14.899Z'
+    updated_at: '2026-03-01T10:14:15.274Z'
     metadata:
       id: ALPHA-BEHAVIORAL-D4474B54
       requirementId: req-agentic-8756c7b5
@@ -10358,13 +10363,13 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-t5uiqn4w
+  - id: ctx-fr1pbowr
+    content: Information Asymmetry Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
     helpful_count: 0
     harmful_count: 1
-    created_at: '2026-03-01T10:14:14.899Z'
-    updated_at: '2026-03-01T10:14:15.274Z'
-  - content: Information Asymmetry Hypothesis (Macro Strategist) (sig=[unknown])
-    section: evidence
+    created_at: '2026-03-01T10:14:15.308Z'
+    updated_at: '2026-03-01T10:14:15.658Z'
     metadata:
       id: ALPHA-MACRO-31285541
       requirementId: req-agentic-8756c7b5
@@ -10381,8 +10386,2877 @@ bullets:
       sharpe: 0.03314977785795034
       ic: 2.9617796597649844e-10
       maxDD: 0.027877681012480227
-    id: ctx-fr1pbowr
+  - id: ctx-hnchf05e
+    content: Efficiency Divergence Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:14.990Z'
+    updated_at: '2026-03-01T23:24:14.990Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-2D6DA53A
+      requirementId: req-agentic-23fab6e2
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-obspa6gz
+    content: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:16.943Z'
+    updated_at: '2026-03-01T23:24:16.943Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-945C11C3
+      requirementId: req-agentic-23fab6e2
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-eezfnon1
+    content: Liquidity Shock Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:17.386Z'
+    updated_at: '2026-03-01T23:24:17.386Z'
+    metadata:
+      id: ALPHA-HFT-AFC71B81
+      requirementId: req-agentic-23fab6e2
+      noveltyScore: 0.5
+      priority: 0.9
+      status: PENDING
+  - id: ctx-oce8y3yl
+    content: Volatility Regime Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:17.841Z'
+    updated_at: '2026-03-01T23:24:17.841Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-366D647D
+      requirementId: req-agentic-32abae27
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-v0k71zem
+    content: Causal Mechanism (CAMEF) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:18.281Z'
+    updated_at: '2026-03-01T23:24:18.281Z'
+    metadata:
+      id: ALPHA-QUANT-208E729C
+      requirementId: req-agentic-32abae27
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-cydldqdd
+    content: Inventory Lead Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:18.781Z'
+    updated_at: '2026-03-01T23:24:18.781Z'
+    metadata:
+      id: ALPHA-QUANT-B67309C7
+      requirementId: req-agentic-32abae27
+      noveltyScore: 0.8
+      priority: 0.9
+      status: PENDING
+  - id: ctx-jyznmnmo
+    content: Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:19.382Z'
+    updated_at: '2026-03-01T23:24:19.382Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-65E5093E
+      requirementId: req-agentic-303e6b96
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-0gw5vv9c
+    content: Corporate Governance (J-Quants) Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:19.830Z'
+    updated_at: '2026-03-01T23:24:19.830Z'
+    metadata:
+      id: ALPHA-HFT-B67C840E
+      requirementId: req-agentic-303e6b96
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-tgdhqse5
+    content: Cross-Asset Signal Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:20.279Z'
+    updated_at: '2026-03-01T23:24:20.279Z'
+    metadata:
+      id: ALPHA-QUANT-4A403BBA
+      requirementId: req-agentic-303e6b96
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-oiboubao
+    content: Volatility Regime Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:21.706Z'
+    updated_at: '2026-03-01T23:24:21.706Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-E54F4972
+      requirementId: req-agentic-9c474b1f
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-tsybt41f
+    content: Cross-Asset Signal Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:22.242Z'
+    updated_at: '2026-03-01T23:24:22.242Z'
+    metadata:
+      id: ALPHA-MACRO-66F76C91
+      requirementId: req-agentic-9c474b1f
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-at45fakr
+    content: Behavioral Momentum Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:22.783Z'
+    updated_at: '2026-03-01T23:24:22.783Z'
+    metadata:
+      id: ALPHA-QUANT-D4AD8C7E
+      requirementId: req-agentic-9c474b1f
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-czmy8v1j
+    content: Volatility Regime Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:23.387Z'
+    updated_at: '2026-03-01T23:24:23.387Z'
+    metadata:
+      id: ALPHA-QUANT-78FED183
+      requirementId: req-agentic-c8c4377e
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-2c7u6b5a
+    content: Liquidity Shock Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:23.878Z'
+    updated_at: '2026-03-01T23:24:23.878Z'
+    metadata:
+      id: ALPHA-QUANT-F492E185
+      requirementId: req-agentic-c8c4377e
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-kzx66ybc
+    content: Corporate Governance (J-Quants) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:24.369Z'
+    updated_at: '2026-03-01T23:24:24.369Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-C20C79E6
+      requirementId: req-agentic-c8c4377e
+      noveltyScore: 0.5
+      priority: 0.9
+      status: PENDING
+  - id: ctx-4c89rcy5
+    content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:24.834Z'
+    updated_at: '2026-03-01T23:24:24.834Z'
+    metadata:
+      id: ALPHA-MACRO-AFA59649
+      requirementId: req-agentic-10b6535b
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-jjwcggup
+    content: Causal Mechanism (CAMEF) Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:25.293Z'
+    updated_at: '2026-03-01T23:24:25.293Z'
+    metadata:
+      id: ALPHA-HFT-33897541
+      requirementId: req-agentic-10b6535b
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-jhqx0mcd
+    content: Inventory Lead Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:25.747Z'
+    updated_at: '2026-03-01T23:24:25.747Z'
+    metadata:
+      id: ALPHA-QUANT-8913A8B2
+      requirementId: req-agentic-10b6535b
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-dzntsuvp
+    content: Efficiency Divergence Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:27.097Z'
+    updated_at: '2026-03-01T23:24:27.097Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-15E7FC94
+      requirementId: req-agentic-b4b59ce3
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-7uk4xtmq
+    content: Efficiency Divergence Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:27.576Z'
+    updated_at: '2026-03-01T23:24:27.576Z'
+    metadata:
+      id: ALPHA-HFT-BC123EE3
+      requirementId: req-agentic-b4b59ce3
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-fgczcjx6
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:28.123Z'
+    updated_at: '2026-03-01T23:24:28.123Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-6DF3D9E0
+      requirementId: req-agentic-b4b59ce3
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-2fg4170s
+    content: Volatility Regime Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:28.657Z'
+    updated_at: '2026-03-01T23:24:28.657Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-E1147B79
+      requirementId: req-agentic-f0604fcd
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-eop9iz9f
+    content: Behavioral Momentum Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:29.113Z'
+    updated_at: '2026-03-01T23:24:29.113Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-45E4BA8E
+      requirementId: req-agentic-f0604fcd
+      noveltyScore: 0.5
+      priority: 0.9
+      status: PENDING
+  - id: ctx-kv7kzvls
+    content: Inventory Lead Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:29.550Z'
+    updated_at: '2026-03-01T23:24:29.550Z'
+    metadata:
+      id: ALPHA-MACRO-80973415
+      requirementId: req-agentic-f0604fcd
+      noveltyScore: 0.6666666666666667
+      priority: 0.9
+      status: PENDING
+  - id: ctx-yfuuz68t
+    content: Regime Transition Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:30.010Z'
+    updated_at: '2026-03-01T23:24:30.010Z'
+    metadata:
+      id: ALPHA-MACRO-020E7246
+      requirementId: req-agentic-e3237478
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-sadbhrnn
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:30.446Z'
+    updated_at: '2026-03-01T23:24:30.446Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-43567CDF
+      requirementId: req-agentic-e3237478
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-c70nzu98
+    content: Information Asymmetry Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-01T23:24:30.926Z'
+    updated_at: '2026-03-01T23:24:30.926Z'
+    metadata:
+      id: ALPHA-MACRO-0106573A
+      requirementId: req-agentic-e3237478
+      noveltyScore: 0.75
+      priority: 0.9
+      status: PENDING
+  - id: ctx-1jfimyne
+    content: Cross-Asset Retrieval (FactorMiner) Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
     helpful_count: 0
     harmful_count: 1
-    created_at: '2026-03-01T10:14:15.308Z'
-    updated_at: '2026-03-01T10:14:15.658Z'
+    created_at: '2026-03-01T23:27:34.414Z'
+    updated_at: '2026-03-01T23:27:34.798Z'
+    metadata:
+      id: ALPHA-MACRO-AC535BE4
+      requirementId: req-agentic-495ed1ef
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:34.771Z'
+      lastRunId: uqtl_20260302T082732_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-a0k83hyy
+    content: Liquidity Shock Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:34.842Z'
+    updated_at: '2026-03-01T23:27:35.208Z'
+    metadata:
+      id: ALPHA-MACRO-58B4F56E
+      requirementId: req-agentic-495ed1ef
+      noveltyScore: 0.75
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:35.188Z'
+      lastRunId: uqtl_20260302T082732_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-jjnlrdy1
+    content: Efficiency Divergence Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:35.251Z'
+    updated_at: '2026-03-01T23:27:35.595Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-0B7D6977
+      requirementId: req-agentic-0e14ae31
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:35.573Z'
+      lastRunId: uqtl_20260302T082732_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-6nf7ql6w
+    content: Liquidity Shock Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:35.626Z'
+    updated_at: '2026-03-01T23:27:35.972Z'
+    metadata:
+      id: ALPHA-HFT-BE71EF99
+      requirementId: req-agentic-0e14ae31
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:35.950Z'
+      lastRunId: uqtl_20260302T082732_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-xrm0egc7
+    content: Liquidity Shock Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:36.006Z'
+    updated_at: '2026-03-01T23:27:36.327Z'
+    metadata:
+      id: ALPHA-MACRO-5D4969E2
+      requirementId: req-agentic-0e14ae31
+      noveltyScore: 0.75
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:36.308Z'
+      lastRunId: uqtl_20260302T082732_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-cbnevi3h
+    content: Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:36.371Z'
+    updated_at: '2026-03-01T23:27:36.723Z'
+    metadata:
+      id: ALPHA-QUANT-7FD27940
+      requirementId: req-agentic-53e8fb7a
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:36.705Z'
+      lastRunId: uqtl_20260302T082732_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-qt2327m8
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:36.753Z'
+    updated_at: '2026-03-01T23:27:37.115Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-46875C17
+      requirementId: req-agentic-53e8fb7a
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:37.089Z'
+      lastRunId: uqtl_20260302T082732_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-wkoim7sz
+    content: Corporate Governance (J-Quants) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:39.080Z'
+    updated_at: '2026-03-01T23:27:39.510Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-A949AE74
+      requirementId: req-agentic-874da166
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:39.478Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-hqrkjwcf
+    content: Behavioral Momentum Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:39.550Z'
+    updated_at: '2026-03-01T23:27:39.864Z'
+    metadata:
+      id: ALPHA-MACRO-B9E114AD
+      requirementId: req-agentic-874da166
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:39.844Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-s7jlqpag
+    content: Macro-Socio Divergence (e-Stat) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:39.905Z'
+    updated_at: '2026-03-01T23:27:40.237Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-1A1CF988
+      requirementId: req-agentic-874da166
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:40.209Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-2yvknu0o
+    content: DAG-based Evolution (AlphaPROBE) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:40.284Z'
+    updated_at: '2026-03-01T23:27:40.628Z'
+    metadata:
+      id: ALPHA-QUANT-F26C842D
+      requirementId: req-agentic-73f36932
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:40.608Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-hmht7c90
+    content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:40.661Z'
+    updated_at: '2026-03-01T23:27:40.995Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-1663D467
+      requirementId: req-agentic-73f36932
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:40.977Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-11h4shlr
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:41.030Z'
+    updated_at: '2026-03-01T23:27:41.363Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-771F53A5
+      requirementId: req-agentic-73f36932
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:41.333Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-m6gdpgyh
+    content: Regime Transition Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:41.407Z'
+    updated_at: '2026-03-01T23:27:41.743Z'
+    metadata:
+      id: ALPHA-QUANT-CC1A04D8
+      requirementId: req-agentic-77c1ba49
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:41.727Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-8hgf07zk
+    content: Information Asymmetry Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:41.777Z'
+    updated_at: '2026-03-01T23:27:42.104Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-D56EA015
+      requirementId: req-agentic-77c1ba49
+      noveltyScore: 0.6666666666666667
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:42.081Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-segghzqo
+    content: Corporate Governance (J-Quants) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:42.138Z'
+    updated_at: '2026-03-01T23:27:42.462Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-51B98C44
+      requirementId: req-agentic-77c1ba49
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:42.438Z'
+      lastRunId: uqtl_20260302T082737_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-dbxz1dcv
+    content: Corporate Governance (J-Quants) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:44.468Z'
+    updated_at: '2026-03-01T23:27:44.857Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-65092847
+      requirementId: req-agentic-a112328b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:44.829Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-db7022cx
+    content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:44.904Z'
+    updated_at: '2026-03-01T23:27:45.253Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-96596C5D
+      requirementId: req-agentic-a112328b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:45.231Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-y9umtgm3
+    content: Cross-Asset Signal Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:45.286Z'
+    updated_at: '2026-03-01T23:27:45.631Z'
+    metadata:
+      id: ALPHA-HFT-AEFD6C00
+      requirementId: req-agentic-a112328b
+      noveltyScore: 0.5
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:45.602Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-4h4x84mn
+    content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:45.694Z'
+    updated_at: '2026-03-01T23:27:46.057Z'
+    metadata:
+      id: ALPHA-QUANT-C3A92E4C
+      requirementId: req-agentic-0f7d8f56
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:46.023Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-walr5i93
+    content: Corporate Governance (J-Quants) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:46.102Z'
+    updated_at: '2026-03-01T23:27:46.462Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-A200480B
+      requirementId: req-agentic-0f7d8f56
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:46.438Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-n18xqxzc
+    content: Corporate Governance (J-Quants) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:46.502Z'
+    updated_at: '2026-03-01T23:27:46.958Z'
+    metadata:
+      id: ALPHA-QUANT-2B017A01
+      requirementId: req-agentic-0f7d8f56
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:46.916Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-azvnoews
+    content: Cross-Asset Retrieval (FactorMiner) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:47.039Z'
+    updated_at: '2026-03-01T23:27:47.489Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-04FE25E4
+      requirementId: req-agentic-fd30de2b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:47.464Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-ze15ucbp
+    content: Volatility Regime Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:47.526Z'
+    updated_at: '2026-03-01T23:27:47.866Z'
+    metadata:
+      id: ALPHA-QUANT-ADA6C492
+      requirementId: req-agentic-fd30de2b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:47.847Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-uqxg0qiu
+    content: Regime Transition Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:27:47.899Z'
+    updated_at: '2026-03-01T23:27:48.228Z'
+    metadata:
+      id: ALPHA-HFT-B88EA226
+      requirementId: req-agentic-fd30de2b
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:27:48.206Z'
+      lastRunId: uqtl_20260302T082742_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-orkfnsny
+    content: Behavioral Momentum Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:48.708Z'
+    updated_at: '2026-03-01T23:28:49.104Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-DFC4FAF4
+      requirementId: req-agentic-efa203ca
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:49.079Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-nfemkfh0
+    content: Behavioral Momentum Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:49.147Z'
+    updated_at: '2026-03-01T23:28:49.507Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-A922D92F
+      requirementId: req-agentic-efa203ca
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:49.478Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-sbtk28gs
+    content: Liquidity Shock Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:49.547Z'
+    updated_at: '2026-03-01T23:28:49.893Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-E8D9A4DB
+      requirementId: req-agentic-efa203ca
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:49.870Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-jbawnqi0
+    content: Causal Mechanism (CAMEF) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:49.940Z'
+    updated_at: '2026-03-01T23:28:50.286Z'
+    metadata:
+      id: ALPHA-QUANT-802D58AB
+      requirementId: req-agentic-76c5c049
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:50.257Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-o1x1jxoh
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:50.321Z'
+    updated_at: '2026-03-01T23:28:50.661Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-90B3079D
+      requirementId: req-agentic-76c5c049
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:50.639Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-znjoog29
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:50.697Z'
+    updated_at: '2026-03-01T23:28:51.015Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-48550380
+      requirementId: req-agentic-76c5c049
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:50.994Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-8m8zp4ol
+    content: Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (HFT Engineer) (sig=[macro_iip,macro_cpi,volume,close])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:51.059Z'
+    updated_at: '2026-03-01T23:28:51.419Z'
+    metadata:
+      id: ALPHA-HFT-9D2C4BD8
+      requirementId: req-agentic-44b5fee7
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:51.400Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-w4p9gl39
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:51.454Z'
+    updated_at: '2026-03-01T23:28:51.864Z'
+    metadata:
+      id: ALPHA-HFT-9E6AFC89
+      requirementId: req-agentic-44b5fee7
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:51.838Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-sb17ecx7
+    content: DAG-based Evolution (AlphaPROBE) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:51.910Z'
+    updated_at: '2026-03-01T23:28:52.257Z'
+    metadata:
+      id: ALPHA-QUANT-A2AC150E
+      requirementId: req-agentic-44b5fee7
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:52.231Z'
+      lastRunId: uqtl_20260302T082846_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-6bwjww9p
+    content: Cross-Asset Retrieval (FactorMiner) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:57.334Z'
+    updated_at: '2026-03-01T23:28:57.817Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-2BEEDC28
+      requirementId: req-agentic-505cbdc6
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:57.785Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-ptbo1f3l
+    content: Causal Mechanism (CAMEF) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:57.850Z'
+    updated_at: '2026-03-01T23:28:58.167Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-93AABF42
+      requirementId: req-agentic-505cbdc6
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:58.150Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-khgl0sm6
+    content: Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Quant Analyst) (sig=[macro_iip,macro_cpi,volume,close])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:58.201Z'
+    updated_at: '2026-03-01T23:28:58.528Z'
+    metadata:
+      id: ALPHA-QUANT-37659C28
+      requirementId: req-agentic-505cbdc6
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:58.507Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-ip2jwu63
+    content: Regime Transition Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:58.574Z'
+    updated_at: '2026-03-01T23:28:58.910Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-5F626408
+      requirementId: req-agentic-13662449
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:58.885Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-th8tnp9b
+    content: DAG-based Evolution (AlphaPROBE) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:58.950Z'
+    updated_at: '2026-03-01T23:28:59.279Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-AC91A931
+      requirementId: req-agentic-13662449
+      noveltyScore: 0.6666666666666667
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:59.260Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-16rrhzz7
+    content: Inventory Lead Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:59.313Z'
+    updated_at: '2026-03-01T23:28:59.653Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-AFD4BE80
+      requirementId: req-agentic-13662449
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:59.628Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-epui0kul
+    content: Behavioral Momentum Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:28:59.702Z'
+    updated_at: '2026-03-01T23:29:00.019Z'
+    metadata:
+      id: ALPHA-QUANT-F9D97C30
+      requirementId: req-agentic-84ed84de
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:28:59.997Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-o8si3w81
+    content: Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:00.054Z'
+    updated_at: '2026-03-01T23:29:00.368Z'
+    metadata:
+      id: ALPHA-QUANT-0C2A9D3E
+      requirementId: req-agentic-84ed84de
+      noveltyScore: 0.5
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:00.351Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-rwa33agm
+    content: Inventory Lead Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:00.405Z'
+    updated_at: '2026-03-01T23:29:00.741Z'
+    metadata:
+      id: ALPHA-MACRO-91FF7182
+      requirementId: req-agentic-84ed84de
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:00.719Z'
+      lastRunId: uqtl_20260302T082855_2
+      lastLoopIteration: 2
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-n6x4kh2w
+    content: Corporate Governance (J-Quants) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:04.809Z'
+    updated_at: '2026-03-01T23:29:05.199Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-ABC86CF2
+      requirementId: req-agentic-25146d9b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:05.172Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-xv0z1sl2
+    content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:05.234Z'
+    updated_at: '2026-03-01T23:29:05.585Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-28A845D4
+      requirementId: req-agentic-25146d9b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:05.551Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-2hncoo86
+    content: DAG-based Evolution (AlphaPROBE) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:05.627Z'
+    updated_at: '2026-03-01T23:29:05.942Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-E5333C6C
+      requirementId: req-agentic-25146d9b
+      noveltyScore: 0.5
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:05.924Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-4ewks68y
+    content: >-
+      Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Fundamental Researcher)
+      (sig=[macro_iip,macro_cpi,volume,close])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:05.985Z'
+    updated_at: '2026-03-01T23:29:06.366Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-C336A76C
+      requirementId: req-agentic-14baf515
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:06.346Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-zekpu8uc
+    content: Macro-Socio Divergence (e-Stat) Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:06.398Z'
+    updated_at: '2026-03-01T23:29:06.712Z'
+    metadata:
+      id: ALPHA-QUANT-F7A7B685
+      requirementId: req-agentic-14baf515
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:06.693Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-g8n1yb0g
+    content: Behavioral Momentum Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:06.751Z'
+    updated_at: '2026-03-01T23:29:07.072Z'
+    metadata:
+      id: ALPHA-QUANT-50C0638E
+      requirementId: req-agentic-14baf515
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:07.050Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-fip21i6e
+    content: DAG-based Evolution (AlphaPROBE) Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:07.115Z'
+    updated_at: '2026-03-01T23:29:07.477Z'
+    metadata:
+      id: ALPHA-HFT-84A342E7
+      requirementId: req-agentic-8d518835
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:07.455Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-b562wao1
+    content: Information Asymmetry Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:07.514Z'
+    updated_at: '2026-03-01T23:29:07.834Z'
+    metadata:
+      id: ALPHA-QUANT-402E9DF2
+      requirementId: req-agentic-8d518835
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:07.813Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-scltlgrf
+    content: Volatility Regime Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:29:07.870Z'
+    updated_at: '2026-03-01T23:29:08.185Z'
+    metadata:
+      id: ALPHA-HFT-A57AEB75
+      requirementId: req-agentic-8d518835
+      noveltyScore: 0.6666666666666667
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:29:08.161Z'
+      lastRunId: uqtl_20260302T082903_3
+      lastLoopIteration: 3
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-1lbcv7cl
+    content: Neuro-Symbolic Logic (NeuroSymbolic) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:28.160Z'
+    updated_at: '2026-03-01T23:30:28.561Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-F3B6098C
+      requirementId: req-agentic-138ac82a
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:28.532Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-1erggeo7
+    content: Liquidity Shock Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:28.607Z'
+    updated_at: '2026-03-01T23:30:28.964Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-84359867
+      requirementId: req-agentic-138ac82a
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:28.939Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-nxrsahoy
+    content: Inventory Lead Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:29.023Z'
+    updated_at: '2026-03-01T23:30:29.404Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-F06C0C86
+      requirementId: req-agentic-138ac82a
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:29.379Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-opsg8itn
+    content: 10-K Intelligence 2.0 (Mission) Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:29.455Z'
+    updated_at: '2026-03-01T23:30:29.825Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-8E50C52E
+      requirementId: req-agentic-93a3e488
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:29.794Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-j6oawtaz
+    content: Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Quant Analyst) (sig=[macro_iip,macro_cpi,volume,close])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:29.864Z'
+    updated_at: '2026-03-01T23:30:30.194Z'
+    metadata:
+      id: ALPHA-QUANT-2A81EC67
+      requirementId: req-agentic-93a3e488
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:30.174Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-x23j96n7
+    content: Causal Mechanism (CAMEF) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:30.267Z'
+    updated_at: '2026-03-01T23:30:30.653Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-9723CAE3
+      requirementId: req-agentic-93a3e488
+      noveltyScore: 0.8571428571428572
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:30.630Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-ru8wmux9
+    content: Cross-Asset Retrieval (FactorMiner) Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:30.702Z'
+    updated_at: '2026-03-01T23:30:31.048Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-2C2ACFD6
+      requirementId: req-agentic-d12b6e17
+      noveltyScore: 0.7142857142857143
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:31.025Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-l7olxjlx
+    content: Efficiency Divergence Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:31.083Z'
+    updated_at: '2026-03-01T23:30:31.455Z'
+    metadata:
+      id: ALPHA-MACRO-7F99DFEE
+      requirementId: req-agentic-d12b6e17
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:31.423Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-l3pdefh6
+    content: Causal Mechanism (CAMEF) Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-01T23:30:31.512Z'
+    updated_at: '2026-03-01T23:30:31.879Z'
+    metadata:
+      id: ALPHA-MACRO-77D124FC
+      requirementId: req-agentic-d12b6e17
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-01T23:30:31.856Z'
+      lastRunId: uqtl_20260302T083026_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059283606295
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 2.9617796597649844e-10
+      maxDD: 0.027877681012480227
+  - id: ctx-810xtjv1
+    content: Inventory Lead Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:54.822Z'
+    updated_at: '2026-03-02T05:55:55.066Z'
+    metadata:
+      id: ALPHA-HFT-C99785D5
+      requirementId: req-agentic-5bef0dde
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:55.039Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-6qwiteg2
+    content: Regime Transition Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:55.098Z'
+    updated_at: '2026-03-02T05:55:55.280Z'
+    metadata:
+      id: ALPHA-DATA-4A8B03E4
+      requirementId: req-agentic-5bef0dde
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:55.258Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-suz4cdju
+    content: Inventory Lead Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:55.311Z'
+    updated_at: '2026-03-02T05:55:55.497Z'
+    metadata:
+      id: ALPHA-DATA-C13E7B05
+      requirementId: req-agentic-5bef0dde
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:55.478Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-omzjt9v4
+    content: Information Asymmetry Hypothesis (Risk Manager) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:55.549Z'
+    updated_at: '2026-03-02T05:55:55.768Z'
+    metadata:
+      id: ALPHA-RISK-F177D317
+      requirementId: req-agentic-ce68d45c
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:55.747Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-imnlyl2i
+    content: >-
+      Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Behavioral Economist)
+      (sig=[macro_iip,macro_cpi,volume,close])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:55.803Z'
+    updated_at: '2026-03-02T05:55:56.000Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-8B8B7E26
+      requirementId: req-agentic-ce68d45c
+      noveltyScore: 0.5
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:55.980Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-91dmu8wr
+    content: Efficiency Divergence Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:56.030Z'
+    updated_at: '2026-03-02T05:55:56.214Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-36A3D1AD
+      requirementId: req-agentic-ce68d45c
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:56.195Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-frbzpoki
+    content: Regime Transition Hypothesis (Risk Manager) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:56.259Z'
+    updated_at: '2026-03-02T05:55:56.448Z'
+    metadata:
+      id: ALPHA-RISK-0B260F66
+      requirementId: req-agentic-399de807
+      noveltyScore: 0.75
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:56.424Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-dv89bh7j
+    content: Efficiency Divergence Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T05:55:56.478Z'
+    updated_at: '2026-03-02T05:55:56.659Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-A156CB12
+      requirementId: req-agentic-399de807
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T05:55:56.640Z'
+      lastRunId: uqtl_20260302T145553_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-gmn7dmtd
+    content: Macro-Socio Divergence Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:52.412Z'
+    updated_at: '2026-03-02T09:20:52.655Z'
+    metadata:
+      id: ALPHA-HFT-A65CB38D
+      requirementId: req-agentic-410ec16f
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:52.625Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-t1spvccx
+    content: Information Asymmetry Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:52.707Z'
+    updated_at: '2026-03-02T09:20:52.907Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-F675855B
+      requirementId: req-agentic-410ec16f
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:52.883Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-tasz67gg
+    content: Behavioral Momentum Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:52.940Z'
+    updated_at: '2026-03-02T09:20:53.151Z'
+    metadata:
+      id: ALPHA-DATA-A52A8DF3
+      requirementId: req-agentic-410ec16f
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:53.132Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-nuplzjbj
+    content: Macro-Socio Divergence Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:53.211Z'
+    updated_at: '2026-03-02T09:20:53.408Z'
+    metadata:
+      id: ALPHA-HFT-CF9CDBC7
+      requirementId: req-agentic-5be3b9e4
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:53.386Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-n10zw8jv
+    content: Efficiency Divergence Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:53.440Z'
+    updated_at: '2026-03-02T09:20:53.620Z'
+    metadata:
+      id: ALPHA-MACRO-4ABF9128
+      requirementId: req-agentic-5be3b9e4
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:53.599Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-256awj2s
+    content: Inventory Lead Hypothesis (Risk Manager) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:53.651Z'
+    updated_at: '2026-03-02T09:20:53.837Z'
+    metadata:
+      id: ALPHA-RISK-874D5EE8
+      requirementId: req-agentic-5be3b9e4
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:53.812Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-ryvr4tbg
+    content: Efficiency Divergence Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:53.880Z'
+    updated_at: '2026-03-02T09:20:54.091Z'
+    metadata:
+      id: ALPHA-DATA-E9C6AA2A
+      requirementId: req-agentic-3d19e86d
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:54.054Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-sg7ltrd9
+    content: Cross-Asset Signal Hypothesis (Risk Manager) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:54.128Z'
+    updated_at: '2026-03-02T09:20:54.329Z'
+    metadata:
+      id: ALPHA-RISK-82FACB1E
+      requirementId: req-agentic-3d19e86d
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:54.304Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-a4c36cp2
+    content: Volatility Regime Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:20:54.364Z'
+    updated_at: '2026-03-02T09:20:54.559Z'
+    metadata:
+      id: ALPHA-HFT-B6DCDB52
+      requirementId: req-agentic-3d19e86d
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:20:54.528Z'
+      lastRunId: uqtl_20260302T182050_1
+      lastLoopIteration: 1
+      fitnessScore: 0.18133059061472948
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-51fzet5l
+    content: Macro-Socio Divergence Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:39.703Z'
+    updated_at: '2026-03-02T09:25:39.973Z'
+    metadata:
+      id: ALPHA-MACRO-62D31D31
+      requirementId: req-agentic-df2b7048
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:39.945Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-qeqkkfrs
+    content: Macro-Socio Divergence Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:40.015Z'
+    updated_at: '2026-03-02T09:25:40.204Z'
+    metadata:
+      id: ALPHA-DATA-19FED60F
+      requirementId: req-agentic-df2b7048
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:40.182Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-zkjs2rmk
+    content: Inventory Lead Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:40.234Z'
+    updated_at: '2026-03-02T09:25:40.416Z'
+    metadata:
+      id: ALPHA-MACRO-57DADCAA
+      requirementId: req-agentic-df2b7048
+      noveltyScore: 0.8333333333333334
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:40.392Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-z8bk1taj
+    content: Inventory Lead Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:40.467Z'
+    updated_at: '2026-03-02T09:25:40.667Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-E00E9DE0
+      requirementId: req-agentic-981ab791
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:40.643Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-b2rioljt
+    content: Liquidity Shock Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:40.703Z'
+    updated_at: '2026-03-02T09:25:40.896Z'
+    metadata:
+      id: ALPHA-DATA-9FA876CF
+      requirementId: req-agentic-981ab791
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:40.875Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-q6nwebg3
+    content: Liquidity Shock Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:40.933Z'
+    updated_at: '2026-03-02T09:25:41.124Z'
+    metadata:
+      id: ALPHA-MACRO-94330313
+      requirementId: req-agentic-981ab791
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:41.099Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-rr6xbpn2
+    content: Macro-Socio Divergence Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:41.167Z'
+    updated_at: '2026-03-02T09:25:41.372Z'
+    metadata:
+      id: ALPHA-MACRO-043514D2
+      requirementId: req-agentic-8e330856
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:41.343Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-1wwht8l3
+    content: Efficiency Divergence Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:41.407Z'
+    updated_at: '2026-03-02T09:25:41.607Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-EFC3D9F6
+      requirementId: req-agentic-8e330856
+      noveltyScore: 0.75
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:41.576Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-jcdf3z9x
+    content: Macro-Socio Divergence Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:25:41.638Z'
+    updated_at: '2026-03-02T09:25:41.828Z'
+    metadata:
+      id: ALPHA-MACRO-7DEDACBE
+      requirementId: req-agentic-8e330856
+      noveltyScore: 0.75
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:25:41.803Z'
+      lastRunId: uqtl_20260302T182537_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-2x8oeydg
+    content: Volatility Regime Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:37.379Z'
+    updated_at: '2026-03-02T09:27:37.602Z'
+    metadata:
+      id: ALPHA-QUANT-5E682B9D
+      requirementId: req-agentic-0516854b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:37.580Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-ji7dwva9
+    content: Liquidity Shock Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:37.635Z'
+    updated_at: '2026-03-02T09:27:37.819Z'
+    metadata:
+      id: ALPHA-QUANT-827DCE26
+      requirementId: req-agentic-0516854b
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:37.796Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-qygjasi2
+    content: Cross-Asset Signal Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:37.851Z'
+    updated_at: '2026-03-02T09:27:38.045Z'
+    metadata:
+      id: ALPHA-DATA-E9187F55
+      requirementId: req-agentic-0516854b
+      noveltyScore: 0.8
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:38.023Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-sl7xvz1p
+    content: Cross-Asset Signal Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:38.091Z'
+    updated_at: '2026-03-02T09:27:38.358Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-68366C61
+      requirementId: req-agentic-947173b1
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:38.334Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-001hk7z4
+    content: Inventory Lead Hypothesis (Risk Manager) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:38.395Z'
+    updated_at: '2026-03-02T09:27:38.592Z'
+    metadata:
+      id: ALPHA-RISK-9A599141
+      requirementId: req-agentic-947173b1
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:38.576Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-r52yf7kc
+    content: Macro-Socio Divergence Hypothesis (Risk Manager) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:38.623Z'
+    updated_at: '2026-03-02T09:27:38.793Z'
+    metadata:
+      id: ALPHA-RISK-77B3E2C7
+      requirementId: req-agentic-947173b1
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:38.775Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-ua79j63s
+    content: Information Asymmetry Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:38.836Z'
+    updated_at: '2026-03-02T09:27:39.029Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-BCB3E3AA
+      requirementId: req-agentic-861c1ebe
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:39.008Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-9x9lhdrx
+    content: Cross-Asset Signal Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:39.063Z'
+    updated_at: '2026-03-02T09:27:39.264Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-6BBCC97C
+      requirementId: req-agentic-861c1ebe
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:39.240Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-h6zex5uu
+    content: Liquidity Shock Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:27:39.299Z'
+    updated_at: '2026-03-02T09:27:39.499Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-A3F4147D
+      requirementId: req-agentic-861c1ebe
+      noveltyScore: 1
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.03, IC=0.000, MaxDD=2.8%'
+      lastFeedbackAt: '2026-03-02T09:27:39.475Z'
+      lastRunId: uqtl_20260302T182735_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2194791444988787
+      stabilityScore: 0.4721223189875198
+      sharpe: 0.03314977785795034
+      ic: 1.70070485630329e-16
+      maxDD: 0.027877681012480227
+  - id: ctx-i76fyq3i
+    content: Behavioral Momentum Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:30:45.951Z'
+    updated_at: '2026-03-02T09:30:45.951Z'
+    metadata:
+      id: ALPHA-HFT-0D142DD5
+      requirementId: req-agentic-d5c8446a
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-otp2zvwu
+    content: Macro-Socio Divergence Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:44:32.579Z'
+    updated_at: '2026-03-02T09:44:32.579Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-E0AB0084
+      requirementId: req-agentic-6ca3b930
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-etg1kjr0
+    content: Regime Transition Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:49:12.634Z'
+    updated_at: '2026-03-02T09:49:12.634Z'
+    metadata:
+      id: ALPHA-QUANT-AFF541EA
+      requirementId: req-agentic-b7c81376
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-an65xtyc
+    content: Liquidity Shock Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:51:12.849Z'
+    updated_at: '2026-03-02T09:51:12.849Z'
+    metadata:
+      id: ALPHA-HFT-E7C1C4F5
+      requirementId: req-agentic-7c735487
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-1g1mdd74
+    content: Corporate Governance Hypothesis (Fundamental Researcher) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:51:47.010Z'
+    updated_at: '2026-03-02T09:51:47.010Z'
+    metadata:
+      id: ALPHA-FUNDAMENTAL-33128800
+      requirementId: req-agentic-d4457fb2
+      noveltyScore: 1
+      priority: 0.9
+      status: PENDING
+  - id: ctx-xqc2am8n
+    content: Volatility Regime Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:52:55.280Z'
+    updated_at: '2026-03-02T09:52:55.997Z'
+    metadata:
+      id: ALPHA-DATA-A2423F2F
+      requirementId: req-agentic-b28cdd1f
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:52:55.960Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-xb0fsssw
+    content: Information Asymmetry Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:52:56.040Z'
+    updated_at: '2026-03-02T09:52:56.647Z'
+    metadata:
+      id: ALPHA-HFT-E11FED8F
+      requirementId: req-agentic-b28cdd1f
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:52:56.591Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-fbuebz6b
+    content: Corporate Governance Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:52:56.700Z'
+    updated_at: '2026-03-02T09:52:57.319Z'
+    metadata:
+      id: ALPHA-QUANT-738A627B
+      requirementId: req-agentic-b28cdd1f
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:52:57.288Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-qmzvr5j6
+    content: Behavioral Momentum Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:52:57.376Z'
+    updated_at: '2026-03-02T09:52:58.082Z'
+    metadata:
+      id: ALPHA-QUANT-97565C61
+      requirementId: req-agentic-2f9bd1ab
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:52:58.037Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-stpba9x3
+    content: Information Asymmetry Hypothesis (Risk Manager) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:52:58.117Z'
+    updated_at: '2026-03-02T09:52:58.714Z'
+    metadata:
+      id: ALPHA-RISK-EB049948
+      requirementId: req-agentic-2f9bd1ab
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:52:58.676Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-bi0jtz79
+    content: Corporate Governance Hypothesis (Behavioral Economist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:52:58.752Z'
+    updated_at: '2026-03-02T09:52:59.367Z'
+    metadata:
+      id: ALPHA-BEHAVIORAL-2FC7FF38
+      requirementId: req-agentic-2f9bd1ab
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:52:59.327Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-qew7651a
+    content: Regime Transition Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:52:59.424Z'
+    updated_at: '2026-03-02T09:53:00.088Z'
+    metadata:
+      id: ALPHA-DATA-A4EE073D
+      requirementId: req-agentic-0f4eeab2
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:53:00.040Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-ccm227xi
+    content: Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Risk Manager) (sig=[macro_iip,macro_cpi,volume,close])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:53:00.141Z'
+    updated_at: '2026-03-02T09:53:00.734Z'
+    metadata:
+      id: ALPHA-RISK-13B64AA0
+      requirementId: req-agentic-0f4eeab2
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:53:00.681Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-rl8hyp18
+    content: Volatility Regime Hypothesis (Macro Strategist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 1
+    created_at: '2026-03-02T09:53:00.789Z'
+    updated_at: '2026-03-02T09:53:01.446Z'
+    metadata:
+      id: ALPHA-MACRO-CAD11D15
+      requirementId: req-agentic-0f4eeab2
+      priority: 0.9
+      status: REJECTED
+      lastFeedback: HARMFUL
+      lastFeedbackReason: 'Gates failed: Sharpe=0.00, IC=0.000, MaxDD=0.0%'
+      lastFeedbackAt: '2026-03-02T09:53:01.417Z'
+      lastRunId: uqtl_20260302T185253_1
+      lastLoopIteration: 1
+      fitnessScore: 0.2
+      stabilityScore: 0.5
+      sharpe: 0
+      ic: 0
+      maxDD: 0
+  - id: ctx-plac4h8i
+    content: Macro-Socio Divergence Hypothesis (Quant Analyst) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:53:55.295Z'
+    updated_at: '2026-03-02T09:53:55.295Z'
+    metadata:
+      id: ALPHA-QUANT-2510D0F4
+      requirementId: req-agentic-4eb21f21
+      priority: 0.9
+      status: PENDING
+  - id: ctx-l0o0wxs0
+    content: Adaptive Regime Cross-Signal (gpt-5-nano) Hypothesis (Macro Strategist) (sig=[macro_iip,macro_cpi,volume,close])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:55:19.608Z'
+    updated_at: '2026-03-02T09:55:19.608Z'
+    metadata:
+      id: ALPHA-MACRO-C38DE5AD
+      requirementId: req-agentic-f37d6bac
+      priority: 0.9
+      status: PENDING
+  - id: ctx-r8cv6ngg
+    content: Efficiency Divergence Hypothesis (Data Scientist) (sig=[unknown])
+    section: evidence
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:56:26.044Z'
+    updated_at: '2026-03-02T09:56:26.044Z'
+    metadata:
+      id: ALPHA-DATA-B58F9CAA
+      requirementId: req-agentic-54d01a4e
+      priority: 0.9
+      status: PENDING
+  - content: Behavioral Momentum Hypothesis (HFT Engineer) (sig=[unknown])
+    section: evidence
+    metadata:
+      id: ALPHA-HFT-8955B3A1
+      requirementId: req-agentic-ca6c16de
+      priority: 0.9
+      status: PENDING
+    id: ctx-zd63k0ly
+    helpful_count: 0
+    harmful_count: 0
+    created_at: '2026-03-02T09:57:09.760Z'
+    updated_at: '2026-03-02T09:57:09.760Z'

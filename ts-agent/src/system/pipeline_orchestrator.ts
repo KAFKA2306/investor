@@ -1446,12 +1446,22 @@ export class DataEngineerBridge implements IDataEngineer {
 }
 
 export class QuantResearcherBridge implements IQuantResearcher {
+  private les: LesAgent;
+  private marketdata: MarketdataLocalGateway;
+  private runtime: DataPipelineRuntime;
+  private quantEngine: QuantResearchRuntime;
+
   constructor(
-    private les: LesAgent,
-    private marketdata: MarketdataLocalGateway,
-    private runtime: QuantResearchRuntime,
-    private quantEngine: QuantResearchRuntime,
-  ) {}
+    les?: LesAgent,
+    marketdata?: MarketdataLocalGateway,
+    runtime?: DataPipelineRuntime,
+    quantEngine?: QuantResearchRuntime,
+  ) {
+    this.les = les ?? new LesAgent();
+    this.marketdata = marketdata ?? new MarketdataLocalGateway([]);
+    this.runtime = runtime ?? new DataPipelineRuntime();
+    this.quantEngine = quantEngine ?? new QuantResearchRuntime();
+  }
 
   private loadVerificationReport(): QuantitativeVerification {
     const raw = readFileSync(paths.verificationJson, "utf8");
@@ -1533,7 +1543,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     console.log(
       `[QuantResearcher] Selecting Foundation Model based on context`,
     );
-    const foundationModelId = this.runtime.selectFoundationModelId(
+    const foundationModelId = this.quantEngine.selectFoundationModelId(
       context,
       0.75,
     );
@@ -1589,7 +1599,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
       console.log(`[QuantResearcher] Candidate overlaps with forbidden zone`);
 
     modelConfig.parameters.learningRate =
-      this.runtime.selectLearningRate(retryMode);
+      this.quantEngine.selectLearningRate(retryMode);
     // 🚧 [FIX] 新しいアルファを基に本当の評価を行うよっ！✨💎
     // 評価用の市場データを可愛く集めるよっ！💹✨
     const universe = await (this.quantEngine as any).resolveTargetSymbols(

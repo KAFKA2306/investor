@@ -11,6 +11,7 @@ import {
   type EventType,
   type UQTLEvent,
 } from "../schemas/financial_domain_schemas.ts";
+import { paths } from "../system/path_registry.ts";
 
 export class ContextPlaybook {
   private playbook: AcePlaybook = { bullets: [] };
@@ -170,9 +171,7 @@ export class MemoryCenter {
   private db: Database;
 
   constructor(dbPath?: string) {
-    const cwd = process.cwd();
-    const baseDir = /(^|[/])ts-agent$/.test(cwd) ? join(cwd, "..") : cwd;
-    const targetPath = dbPath || join(baseDir, "logs", "memory.sqlite");
+    const targetPath = dbPath || paths.memorySqlite;
     this.db = new Database(targetPath, { create: true });
     this.initializeSchema();
   }
@@ -349,8 +348,7 @@ export class EventStore {
   private readonly db: Database;
 
   constructor(dbPath?: string) {
-    const defaultPath = "uqtl.sqlite";
-    this.db = new Database(dbPath || defaultPath, { create: true });
+    this.db = new Database(dbPath || paths.uqtlSqlite, { create: true });
     this.initialize();
   }
 

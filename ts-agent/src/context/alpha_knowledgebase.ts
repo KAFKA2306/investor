@@ -7,6 +7,7 @@ import { EventRepository } from "../db/repos/event_repository.ts";
 import { FeatureRepository } from "../db/repos/feature_repository.ts";
 import { SignalRepository } from "../db/repos/signal_repository.ts";
 import { core } from "../system/app_runtime_core.ts";
+import { paths } from "../system/path_registry.ts";
 import { logger } from "../utils/logger.ts";
 
 export type KnowledgeDocumentInput = {
@@ -187,9 +188,7 @@ export class AlphaKnowledgebase {
   } | null = null;
 
   constructor(dbPath?: string) {
-    const targetPath =
-      dbPath ??
-      join(core.config.paths.logs, "cache", "alpha_knowledgebase.sqlite");
+    const targetPath = dbPath ?? paths.alphaKnowledgebaseSqlite;
 
     // ディレクトリがないと SQLITE_CANTOPEN になっちゃうから、優しく作ってあげるねっ！🎀
     mkdirSync(dirname(targetPath), { recursive: true });
