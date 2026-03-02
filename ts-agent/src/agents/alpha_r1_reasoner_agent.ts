@@ -1,7 +1,7 @@
 import {
-  DEFAULT_EVALUATION_CRITERIA,
   type AlphaScreening,
   AlphaStatus,
+  DEFAULT_EVALUATION_CRITERIA,
   type StandardOutcome,
   type StrategicReasoning,
   Verdict,

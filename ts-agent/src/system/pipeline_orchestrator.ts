@@ -12,9 +12,9 @@ import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
 import type { ComputeMarketData } from "../providers/factor_compute_engine_client.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
-  DEFAULT_EVALUATION_CRITERIA,
   type AceBullet,
   type CycleSummary,
+  DEFAULT_EVALUATION_CRITERIA,
   type FinancialScores,
   type Metrics,
   type QuantitativeVerification,

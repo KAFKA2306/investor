@@ -1,8 +1,8 @@
 import { loadModelRegistry } from "../model_registry/model_registry_loader.ts";
 import { OpenAIThemeProvider } from "../providers/openai_theme_provider.ts";
 import {
-  DEFAULT_EVALUATION_CRITERIA,
   type AceBullet,
+  DEFAULT_EVALUATION_CRITERIA,
   EvidenceSource,
   type FactorAST,
   type FactorGenerationOptions,
