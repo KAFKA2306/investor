@@ -48,22 +48,22 @@ def parse_args():
     )
     parser.add_argument(
         "--out-path",
-        default="/home/kafka/finance/investor/ts-agent/data/KB_BACKTEST_EDINET_RISK_DELTA_PEAD_HYBRID.png",
+        default="/mnt/d/investor_all_cached_data/outputs/KB_BACKTEST_EDINET_RISK_DELTA_PEAD_HYBRID.png",
         help="Output PNG path",
     )
     parser.add_argument(
         "--edinet-cache-db",
-        default="/home/kafka/finance/investor/logs/cache/edinet_cache.sqlite",
+        default="/mnt/d/investor_all_cached_data/edinet/cache.sqlite",
         help="Path to edinet_cache.sqlite",
     )
     parser.add_argument(
         "--edinet-search-db",
-        default="/home/kafka/finance/investor/logs/cache/edinet_search.sqlite",
+        default="/mnt/d/investor_all_cached_data/edinet/search.sqlite",
         help="Path to edinet_search.sqlite",
     )
     parser.add_argument(
         "--edinet-docs-dir",
-        default="/home/kafka/finance/investor/logs/cache/edinet_docs",
+        default="/mnt/d/investor_all_cached_data/edinet/docs",
         help="Directory containing cached EDINET zip files",
     )
     return parser.parse_args()

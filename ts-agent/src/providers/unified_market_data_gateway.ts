@@ -1,11 +1,11 @@
 import { core } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
+import { MarketdataDbCache } from "./cache_providers.ts";
 import {
   EstatProvider,
   PeadJquantsGateway,
   YahooFinanceGateway,
 } from "./external_market_providers.ts";
-import { MarketdataDbCache } from "./cache_providers.ts";
 
 export interface MarketDataGateway {
   getDailyBars(

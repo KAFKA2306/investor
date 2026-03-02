@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import yaml from "js-yaml";
@@ -23,7 +24,6 @@ import {
 import { dateUtils } from "../utils/date_utils.ts";
 import { fsUtils } from "../utils/fs_utils.ts";
 import { logger } from "../utils/logger.ts";
-import { randomUUID } from "node:crypto";
 import { withTelemetry } from "./telemetry_logger.ts";
 
 const ConfigSchema = z.object({

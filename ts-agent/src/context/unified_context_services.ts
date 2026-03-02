@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite";
 import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
-import path, { join } from "node:path";
+import path from "node:path";
 import yaml from "js-yaml";
 import {
   type AceBullet,

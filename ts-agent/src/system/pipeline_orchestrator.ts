@@ -1,7 +1,7 @@
+import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
 import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
-import { AlphaFactor } from "../types/index.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { MissionAgent } from "../agents/mission_agent.ts";
 import {
@@ -9,6 +9,7 @@ import {
   MemoryCenter,
 } from "../context/unified_context_services.ts";
 import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
+import type { ComputeMarketData } from "../providers/factor_compute_engine_client.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
   type AceBullet,
@@ -20,8 +21,7 @@ import {
   type StandardOutcome,
   type VerificationVerdict,
 } from "../schemas/financial_domain_schemas.ts";
-import type { ComputeMarketData } from "../providers/factor_compute_engine_client.ts";
-import { randomUUID } from "node:crypto";
+import type { AlphaFactor } from "../types/index.ts";
 import { BaseAgent, core } from "./app_runtime_core.ts";
 import {
   DataPipelineRuntime,

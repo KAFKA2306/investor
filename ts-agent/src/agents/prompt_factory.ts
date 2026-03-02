@@ -3,11 +3,11 @@ import { mathUtils } from "../utils/math_utils.ts";
 /**
  * ✨ エージェントたちの知恵の源、プロンプト工場だよっ！ ✨
  */
-export class PromptFactory {
+export namespace PromptFactory {
   /**
    * アルファ生成のためのペルソナリストだよっ！🎭
    */
-  public static readonly PERSONAS = [
+  export const PERSONAS = [
     "Quant Analyst",
     "Macro Strategist",
     "Behavioral Economist",
@@ -20,7 +20,7 @@ export class PromptFactory {
   /**
    * アルファ生成の基本テーマだよっ！🌟
    */
-  public static readonly BASE_THEMES = [
+  export const BASE_THEMES = [
     {
       name: "Liquidity Shock",
       terms: ["illiquidity", "flow", "impact", "imbalance", "stress"],
@@ -66,7 +66,7 @@ export class PromptFactory {
   /**
    * 推論テンプレートだよっ！📝
    */
-  public static readonly REASONING_TEMPLATES = [
+  export const REASONING_TEMPLATES = [
     "CLAIM: Alpha captures {1} patterns in {0} via {2} logic. [REASONING] Leveraging {3} signals in {4} markets ensures robustness. Persona: {5}.",
     "CLAIM: Structural drift identification via {0} and {1}. [REASONING] The {5} persona targets {3} using a {2} approach. Optimized for {4} regimes.",
     "CLAIM: High-precision {3} forecasting using {0}. [REASONING] A {2} model that uses {1} to filter noise during {4} periods. Proposed by {5}.",
@@ -77,19 +77,19 @@ export class PromptFactory {
   /**
    * ランダムなペルソナを一つ選ぶよっ！🎭
    */
-  public static pickPersona(): string {
-    return mathUtils.pickOne(PromptFactory.PERSONAS);
+  export function pickPersona(): string {
+    return mathUtils.pickOne(PERSONAS);
   }
 
   /**
    * 推論テキストをテンプレートから生成するよっ！📝✨
    */
-  public static formatReasoning(params: {
+  export function formatReasoning(params: {
     themeName: string;
     terms: string[];
     persona: string;
   }): string {
-    const template = mathUtils.pickOne(PromptFactory.REASONING_TEMPLATES);
+    const template = mathUtils.pickOne(REASONING_TEMPLATES);
     let reasoning = template.replace("{0}", params.themeName);
     for (let i = 0; i < 4; i++) {
       reasoning = reasoning.replace(`{${i + 1}}`, params.terms[i] || "N/A");

@@ -15,6 +15,7 @@ import {
 } from "../providers/edinet_provider.ts";
 import { EdinetSearchProvider } from "../providers/edinet_search_provider.ts";
 import { DataPipelineRuntime } from "../system/data_pipeline_runtime.ts";
+import { paths } from "../system/path_registry.ts";
 import {
   type IntelligenceMap,
   type IntelligencePoint,
@@ -266,7 +267,7 @@ const loadDocumentListsFromCache = (
   from: string,
   to: string,
 ): Map<string, EdinetDocument[]> => {
-  const dbPath = join(process.cwd(), "../logs/cache/edinet_cache.sqlite");
+  const dbPath = paths.edinetCacheSqlite;
   if (!existsSync(dbPath)) {
     return new Map();
   }
@@ -433,11 +434,7 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const cacheZipPath = join(
-      process.cwd(),
-      "../logs/cache/edinet_docs",
-      `${doc.docID}_type1.zip`,
-    );
+    const cacheZipPath = join(paths.edinetDocsDir, `${doc.docID}_type1.zip`);
     const zipPath = existsSync(cacheZipPath)
       ? cacheZipPath
       : args.cacheOnly

@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { z } from "zod";
@@ -33,9 +32,9 @@ export function readJsonl<T>(sourcePath: string): T[] {
   if (!existsSync(sourcePath)) return [];
   return readFileSync(sourcePath, "utf8")
     .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .map((line) => JSON.parse(line) as T);
+    .map((line: string) => line.trim())
+    .filter((line: string) => line.length > 0)
+    .map((line: string) => JSON.parse(line) as T);
 }
 
 /**
@@ -62,14 +61,16 @@ export function readCsv<T extends Record<string, string>>(
 ): T[] {
   if (!existsSync(filePath)) return [];
   const content = readFileSync(filePath, "utf8");
-  const lines = content.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  const lines = content
+    .split(/\r?\n/)
+    .filter((l: string) => l.trim().length > 0);
   if (lines.length === 0) return [];
 
-  const headers = lines[0]!.split(delimiter).map((h) => h.trim());
-  return lines.slice(1).map((line) => {
-    const values = line.split(delimiter).map((v) => v.trim());
+  const headers = lines[0]!.split(delimiter).map((h: string) => h.trim());
+  return lines.slice(1).map((line: string) => {
+    const values = line.split(delimiter).map((v: string) => v.trim());
     const obj: Record<string, string> = {};
-    headers.forEach((h, i) => {
+    headers.forEach((h: string, i: number) => {
       obj[h] = values[i] ?? "";
     });
     return obj as T;

@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 import { mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { DocumentRepository } from "../db/repos/document_repository.ts";
 import { EvaluationRepository } from "../db/repos/evaluation_repository.ts";
 import { EventRepository } from "../db/repos/event_repository.ts";

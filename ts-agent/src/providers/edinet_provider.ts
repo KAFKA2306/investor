@@ -4,10 +4,10 @@ import { join } from "node:path";
 import { z } from "zod";
 import {
   type EdinetDocument,
-  EdinetDocumentSchema,
-  EdinetDocumentTypeLabel,
   type EdinetDocumentListResponse,
+  EdinetDocumentSchema,
   type EdinetDocumentType,
+  EdinetDocumentTypeLabel,
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
@@ -65,12 +65,8 @@ export class EdinetProvider {
       "apiKey",
       "EDINET_API_KEY",
     );
-    this.cache = new SqliteHttpCache(
-      join(core.config.paths.logs, "cache", "edinet_cache.sqlite"),
-    );
-    this.downloadDir =
-      options?.downloadDir ??
-      join(core.config.paths.logs, "cache", "edinet_docs");
+    this.cache = new SqliteHttpCache(paths.edinetCacheSqlite);
+    this.downloadDir = options?.downloadDir ?? paths.edinetDocsDir;
     mkdirSync(this.downloadDir, { recursive: true });
   }
 
