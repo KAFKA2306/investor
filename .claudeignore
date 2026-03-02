@@ -1,0 +1,32 @@
+# .claudeignore
+
+# 📦 Dependency and Environments
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+
+# 🗄️ Large Data and Corpus
+edinet2dataset/edinet_corpus/
+edinet2dataset/data/
+/mnt/d/investor_all_cached_data/
+
+# 📂 Binary and Build Artifacts
+build/
+dist/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.gz
+
+# 🔍 Internal and Metadata
+.git/
+.serena/
+.agent/
+.claude/
+.gemini/
+
+# 📝 Logs and Temp
+logs/
+tmp/
+*.log
