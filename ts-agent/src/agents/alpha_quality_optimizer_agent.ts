@@ -7,6 +7,13 @@ import {
   type AlphaQualityOptimizerInput,
   type AlphaQualityOptimizerOutput,
 } from "../schemas/alpha_quality_optimizer_schema.ts";
+import { computeCorrelationScore } from "./metrics/correlation_scorer.ts";
+import { computeConstraintScore } from "./metrics/constraint_scorer.ts";
+import {
+  computeOrthogonalityScore,
+  extractFactorsFromDSL,
+} from "./metrics/orthogonality_scorer.ts";
+import { computeBacktestScore } from "./metrics/backtest_scorer.ts";
 
 /**
  * AlphaQualityOptimizerAgent
@@ -50,9 +57,16 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
    * Returns:
    *   AlphaQualityOptimizerOutput with optimized DSL, fitness score, and detailed report
    *
-   * Note: This is a placeholder implementation that returns synthetic output.
-   * In subsequent tasks, this will be replaced with actual LLM-driven optimization
-   * and metric calculation.
+   * Implementation flow:
+   * 1. Generate optimized DSL (placeholder for now)
+   * 2. Extract factors from DSL
+   * 3. Compute all 4 metrics:
+   *    - Correlation Score: factor correlation with returns
+   *    - Constraint Score: Sharpe, IC, MaxDrawdown compliance
+   *    - Orthogonality Score: uniqueness vs playbook patterns
+   *    - Backtest Score: aggregate backtest quality
+   * 4. Aggregate fitness as weighted sum of 4 metrics
+   * 5. Return output with detailed report
    */
   async run(
     input: AlphaQualityOptimizerInput,
@@ -61,38 +75,74 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Starting optimization for prompt: "${input.alphaPrompt.slice(0, 50)}..."`,
     );
 
-    // Placeholder: generate baseline scores from market data
-    const marketAvgVolatility =
-      input.marketData.volatilities.reduce((a, b) => a + b, 0) /
-      input.marketData.volatilities.length;
+    // Step 1: DSL generation (placeholder - will be implemented in Task 8)
+    const optimizedDSL = "alpha = rank(volatility) * -1";
 
-    // Calculate placeholder scores based on market conditions
-    const correlationScore = Math.min(
-      1.0,
-      Math.max(0, 0.5 + input.marketData.informationCoefficient),
+    // Step 2: Extract factors from DSL
+    const dslFactors = extractFactorsFromDSL(optimizedDSL);
+    logger.debug(
+      `[${this.agentName}] Extracted factors from DSL: ${dslFactors.join(", ")}`,
     );
-    const constraintScore = Math.min(1.0, 0.8 - input.marketData.maxDrawdown);
-    const orthogonalityScore = Math.min(1.0, 0.7 + marketAvgVolatility * 0.2);
-    const backtestScore = Math.min(1.0, input.marketData.sharpeRatio / 3.0);
 
-    // Calculate weighted fitness score
+    // Step 3: Compute all 4 metrics
+
+    // 3.1 Correlation Score: measure correlation between factors and returns
+    const returnsArray = input.marketData.returns[0] || [];
+    // TODO: In Task 8, replace with actual factor values extracted from market data
+    const mockFactorValues = [returnsArray];
+    const correlationScore = computeCorrelationScore(
+      mockFactorValues,
+      returnsArray,
+    );
+    logger.debug(
+      `[${this.agentName}] Correlation Score: ${correlationScore.toFixed(4)}`,
+    );
+
+    // 3.2 Constraint Score: evaluate Sharpe, IC, and MaxDrawdown thresholds
+    const constraintScore = computeConstraintScore({
+      sharpeRatio: input.marketData.sharpeRatio,
+      informationCoefficient: input.marketData.informationCoefficient,
+      maxDrawdown: input.marketData.maxDrawdown,
+    });
+    logger.debug(
+      `[${this.agentName}] Constraint Score: ${constraintScore.toFixed(4)}`,
+    );
+
+    // 3.3 Orthogonality Score: measure uniqueness vs historical patterns
+    const orthogonalityScore = computeOrthogonalityScore(
+      dslFactors,
+      input.playbookPatterns,
+    );
+    logger.debug(
+      `[${this.agentName}] Orthogonality Score: ${orthogonalityScore.toFixed(4)}`,
+    );
+
+    // 3.4 Backtest Score: aggregate Sharpe and IC into single quality metric
+    const backtestScore = computeBacktestScore(
+      input.marketData.sharpeRatio,
+      input.marketData.informationCoefficient,
+    );
+    logger.debug(
+      `[${this.agentName}] Backtest Score: ${backtestScore.toFixed(4)}`,
+    );
+
+    // Step 4: Aggregate fitness as weighted sum of 4 metrics
     const fitness =
-      correlationScore * this.config.metricsWeights.correlation +
-      constraintScore * this.config.metricsWeights.constraint +
-      orthogonalityScore * this.config.metricsWeights.orthogonal +
-      backtestScore * this.config.metricsWeights.backtest;
+      this.config.metricsWeights.correlation * correlationScore +
+      this.config.metricsWeights.constraint * constraintScore +
+      this.config.metricsWeights.orthogonal * orthogonalityScore +
+      this.config.metricsWeights.backtest * backtestScore;
 
-    // Construct placeholder output
+    // Step 5: Construct and validate output
     const output: AlphaQualityOptimizerOutput = {
-      optimizedDSL: "alpha = rank(volatility) * -1",
-      fitness: Math.round(fitness * 100) / 100,
+      optimizedDSL,
+      fitness,
       detailedReport: {
-        correlationScore: Math.round(correlationScore * 100) / 100,
-        constraintScore: Math.round(constraintScore * 100) / 100,
-        orthogonalityScore: Math.round(orthogonalityScore * 100) / 100,
-        backtestScore: Math.round(backtestScore * 100) / 100,
-        reasoning:
-          "Placeholder optimization - awaiting full implementation. Alpha candidate shows moderate cross-factor correlation and reasonable constraint compliance. Orthogonality score reflects market volatility conditions. Backtest score derived from market Sharpe ratio. Final fitness aggregates all four dimensions using configured metric weights.",
+        correlationScore,
+        constraintScore,
+        orthogonalityScore,
+        backtestScore,
+        reasoning: `Correlation: ${correlationScore.toFixed(2)}, Constraint: ${constraintScore.toFixed(2)}, Orthogonal: ${orthogonalityScore.toFixed(2)}, Backtest: ${backtestScore.toFixed(2)}. Fitness aggregates all four metrics using weights: correlation=${this.config.metricsWeights.correlation}, constraint=${this.config.metricsWeights.constraint}, orthogonal=${this.config.metricsWeights.orthogonal}, backtest=${this.config.metricsWeights.backtest}.`,
       },
     };
 
@@ -106,7 +156,7 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
     }
 
     logger.info(
-      `[${this.agentName}] Optimization complete. Fitness score: ${output.fitness}`,
+      `[${this.agentName}] Optimization complete. Fitness score: ${output.fitness.toFixed(4)}`,
     );
 
     return validation.data;

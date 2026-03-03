@@ -126,4 +126,105 @@ describe("AlphaQualityOptimizerAgent", () => {
     expect(result.fitness).toBeGreaterThanOrEqual(0);
     expect(result.fitness).toBeLessThanOrEqual(1);
   });
+
+  it("should compute all 4 metrics and aggregate fitness", async () => {
+    const agent = new AlphaQualityOptimizerAgent(testConfig);
+
+    const input: AlphaQualityOptimizerInput = {
+      alphaPrompt: "日本株の低ボラティリティ効果",
+      marketData: {
+        asOfDate: "2026-03-03",
+        symbols: ["9984"],
+        returns: [[0.01, 0.02, 0.015, 0.025]],
+        volatilities: [0.12],
+        sharpeRatio: 1.9,
+        informationCoefficient: 0.055,
+        maxDrawdown: 0.08,
+      },
+      playbookPatterns: [{ factorSet: ["momentum"], fitnessScore: 0.5 }],
+    };
+
+    const result = await agent.run(input);
+
+    // Verify all 4 metrics are computed and in valid range
+    expect(result.detailedReport.correlationScore).toBeGreaterThanOrEqual(0);
+    expect(result.detailedReport.correlationScore).toBeLessThanOrEqual(1);
+
+    expect(result.detailedReport.constraintScore).toBeGreaterThanOrEqual(0);
+    expect(result.detailedReport.constraintScore).toBeLessThanOrEqual(1);
+
+    expect(result.detailedReport.orthogonalityScore).toBeGreaterThanOrEqual(0);
+    expect(result.detailedReport.orthogonalityScore).toBeLessThanOrEqual(1);
+
+    expect(result.detailedReport.backtestScore).toBeGreaterThanOrEqual(0);
+    expect(result.detailedReport.backtestScore).toBeLessThanOrEqual(1);
+
+    // Verify fitness is computed as weighted sum of 4 metrics
+    const expectedFitness =
+      0.25 * result.detailedReport.correlationScore +
+      0.25 * result.detailedReport.constraintScore +
+      0.25 * result.detailedReport.orthogonalityScore +
+      0.25 * result.detailedReport.backtestScore;
+
+    expect(result.fitness).toBeCloseTo(expectedFitness, 5);
+
+    // Verify reasoning contains metric information
+    expect(result.detailedReport.reasoning).toContain("Correlation");
+    expect(result.detailedReport.reasoning).toContain("Constraint");
+    expect(result.detailedReport.reasoning).toContain("Orthogonal");
+    expect(result.detailedReport.reasoning).toContain("Backtest");
+  });
+
+  it("should handle high-quality alpha with excellent metrics", async () => {
+    const agent = new AlphaQualityOptimizerAgent(testConfig);
+
+    const input: AlphaQualityOptimizerInput = {
+      alphaPrompt: "High-quality momentum factor",
+      marketData: {
+        asOfDate: "2026-03-03",
+        symbols: ["9984", "8008"],
+        returns: [[0.02, 0.03, 0.02, 0.04], [0.015, 0.025, 0.018, 0.035]],
+        volatilities: [0.15, 0.12],
+        sharpeRatio: 2.5,
+        informationCoefficient: 0.08,
+        maxDrawdown: 0.06,
+      },
+      playbookPatterns: [
+        { factorSet: ["volatility", "beta"], fitnessScore: 0.6 },
+      ],
+    };
+
+    const result = await agent.run(input);
+
+    // High-quality alpha should have decent scores across all metrics
+    expect(result.detailedReport.constraintScore).toBeGreaterThan(0.5);
+    expect(result.detailedReport.backtestScore).toBeGreaterThan(0.5);
+    expect(result.fitness).toBeGreaterThan(0.4);
+  });
+
+  it("should handle weak alpha with poor metrics", async () => {
+    const agent = new AlphaQualityOptimizerAgent(testConfig);
+
+    const input: AlphaQualityOptimizerInput = {
+      alphaPrompt: "Weak alpha factor",
+      marketData: {
+        asOfDate: "2026-03-03",
+        symbols: ["9984"],
+        returns: [[0.001, 0.0005, 0.0008]],
+        volatilities: [0.05],
+        sharpeRatio: 0.8,
+        informationCoefficient: 0.01,
+        maxDrawdown: 0.15,
+      },
+      playbookPatterns: [{ factorSet: ["momentum"], fitnessScore: 0.5 }],
+    };
+
+    const result = await agent.run(input);
+
+    // Weak alpha should have lower constraint score
+    expect(result.detailedReport.constraintScore).toBeLessThan(0.8);
+    // But fitness should still be in valid range
+    expect(result.fitness).toBeGreaterThanOrEqual(0);
+    expect(result.fitness).toBeLessThanOrEqual(1);
+  });
 });
