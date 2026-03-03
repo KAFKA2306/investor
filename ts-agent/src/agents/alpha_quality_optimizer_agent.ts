@@ -1,19 +1,23 @@
-import { BaseAgent } from "../system/app_runtime_core.ts";
-import { logger } from "../utils/logger.ts";
 import {
-  AlphaQualityOptimizerConfigSchema,
-  AlphaQualityOptimizerOutputSchema,
   type AlphaQualityOptimizerConfig,
+  AlphaQualityOptimizerConfigSchema,
   type AlphaQualityOptimizerInput,
   type AlphaQualityOptimizerOutput,
+  AlphaQualityOptimizerOutputSchema,
 } from "../schemas/alpha_quality_optimizer_schema.ts";
-import { computeCorrelationScore } from "./metrics/correlation_scorer.ts";
+import { BaseAgent } from "../system/app_runtime_core.ts";
+import { logger } from "../utils/logger.ts";
+import { computeBacktestScore } from "./metrics/backtest_scorer.ts";
 import { computeConstraintScore } from "./metrics/constraint_scorer.ts";
+import { computeCorrelationScore } from "./metrics/correlation_scorer.ts";
 import {
   computeOrthogonalityScore,
   extractFactorsFromDSL,
 } from "./metrics/orthogonality_scorer.ts";
-import { computeBacktestScore } from "./metrics/backtest_scorer.ts";
+import {
+  buildQwenAlphaDSLPrompt,
+  generateAlphaDSLWithQwen,
+} from "./prompts/qwen_alpha_dsl_prompt.ts";
 
 /**
  * AlphaQualityOptimizerAgent
@@ -58,15 +62,16 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
    *   AlphaQualityOptimizerOutput with optimized DSL, fitness score, and detailed report
    *
    * Implementation flow:
-   * 1. Generate optimized DSL (placeholder for now)
-   * 2. Extract factors from DSL
-   * 3. Compute all 4 metrics:
+   * 1. Build Qwen prompt with market context (volatility, symbols)
+   * 2. Call Qwen LLM to generate optimized DSL
+   * 3. Extract factors from DSL
+   * 4. Compute all 4 metrics:
    *    - Correlation Score: factor correlation with returns
    *    - Constraint Score: Sharpe, IC, MaxDrawdown compliance
    *    - Orthogonality Score: uniqueness vs playbook patterns
    *    - Backtest Score: aggregate backtest quality
-   * 4. Aggregate fitness as weighted sum of 4 metrics
-   * 5. Return output with detailed report
+   * 5. Aggregate fitness as weighted sum of 4 metrics
+   * 6. Return output with detailed report
    */
   async run(
     input: AlphaQualityOptimizerInput,
@@ -75,18 +80,37 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Starting optimization for prompt: "${input.alphaPrompt.slice(0, 50)}..."`,
     );
 
-    // Step 1: DSL generation (placeholder - will be implemented in Task 8)
-    const optimizedDSL = "alpha = rank(volatility) * -1";
+    // Step 1: Build Qwen prompt with market context
+    const avgVolatility =
+      input.marketData.volatilities.length > 0
+        ? input.marketData.volatilities.reduce((a, b) => a + b, 0) /
+          input.marketData.volatilities.length
+        : 0;
+    const qwenPrompt = buildQwenAlphaDSLPrompt(
+      input.alphaPrompt,
+      input.marketData.symbols,
+      avgVolatility,
+    );
+    logger.debug(
+      `[${this.agentName}] Built Qwen prompt with ${input.marketData.symbols.length} symbols and ${(avgVolatility * 100).toFixed(1)}% avg volatility`,
+    );
 
-    // Step 2: Extract factors from DSL
+    // Step 2: Generate optimized DSL using Qwen LLM
+    const optimizedDSL = await generateAlphaDSLWithQwen(
+      qwenPrompt,
+      this.config.modelId,
+    );
+    logger.info(`[${this.agentName}] Generated optimized DSL: ${optimizedDSL}`);
+
+    // Step 3: Extract factors from DSL
     const dslFactors = extractFactorsFromDSL(optimizedDSL);
     logger.debug(
       `[${this.agentName}] Extracted factors from DSL: ${dslFactors.join(", ")}`,
     );
 
-    // Step 3: Compute all 4 metrics
+    // Step 4: Compute all 4 metrics
 
-    // 3.1 Correlation Score: measure correlation between factors and returns
+    // 4.1 Correlation Score: measure correlation between factors and returns
     const returnsArray = input.marketData.returns[0] || [];
     // TODO: In Task 8, replace with actual factor values extracted from market data
     const mockFactorValues = [returnsArray];
@@ -98,7 +122,7 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Correlation Score: ${correlationScore.toFixed(4)}`,
     );
 
-    // 3.2 Constraint Score: evaluate Sharpe, IC, and MaxDrawdown thresholds
+    // 4.2 Constraint Score: evaluate Sharpe, IC, and MaxDrawdown thresholds
     const constraintScore = computeConstraintScore({
       sharpeRatio: input.marketData.sharpeRatio,
       informationCoefficient: input.marketData.informationCoefficient,
@@ -108,7 +132,7 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Constraint Score: ${constraintScore.toFixed(4)}`,
     );
 
-    // 3.3 Orthogonality Score: measure uniqueness vs historical patterns
+    // 4.3 Orthogonality Score: measure uniqueness vs historical patterns
     const orthogonalityScore = computeOrthogonalityScore(
       dslFactors,
       input.playbookPatterns,
@@ -117,7 +141,7 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Orthogonality Score: ${orthogonalityScore.toFixed(4)}`,
     );
 
-    // 3.4 Backtest Score: aggregate Sharpe and IC into single quality metric
+    // 4.4 Backtest Score: aggregate Sharpe and IC into single quality metric
     const backtestScore = computeBacktestScore(
       input.marketData.sharpeRatio,
       input.marketData.informationCoefficient,
@@ -126,14 +150,14 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Backtest Score: ${backtestScore.toFixed(4)}`,
     );
 
-    // Step 4: Aggregate fitness as weighted sum of 4 metrics
+    // Step 5: Aggregate fitness as weighted sum of 4 metrics
     const fitness =
       this.config.metricsWeights.correlation * correlationScore +
       this.config.metricsWeights.constraint * constraintScore +
       this.config.metricsWeights.orthogonal * orthogonalityScore +
       this.config.metricsWeights.backtest * backtestScore;
 
-    // Step 5: Construct and validate output
+    // Step 6: Construct and validate output
     const output: AlphaQualityOptimizerOutput = {
       optimizedDSL,
       fitness,
