@@ -204,10 +204,10 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
     };
 
     // Validate output against schema before returning
-    const validation = AlphaQualityOptimizerOutputSchema.safeParse(output);
-    if (!validation.success) {
+    const outputValidation = AlphaQualityOptimizerOutputSchema.safeParse(output);
+    if (!outputValidation.success) {
       logger.error(
-        `[${this.agentName}] Output validation failed: ${validation.error.message}`,
+        `[${this.agentName}] Output validation failed: ${outputValidation.error.message}`,
       );
       throw new Error("Failed to generate valid output");
     }
@@ -216,6 +216,6 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Optimization complete. Fitness score: ${output.fitness.toFixed(4)}`,
     );
 
-    return validation.data;
+    return outputValidation.data;
   }
 }
