@@ -21,7 +21,6 @@ import {
   type StandardOutcome,
   VerificationVerdict,
 } from "../schemas/financial_domain_schemas.ts";
-import type { PlaybookPattern } from "../schemas/alpha_quality_optimizer_schema.ts";
 import type {
   AlphaFactor,
   BacktestResult,
@@ -437,7 +436,7 @@ export class PipelineOrchestrator extends BaseAgent {
             returns[i].push((Math.random() - 0.5) * baseVolatility);
           }
         }
-      } catch (e) {
+      } catch (_e) {
         logger.debug(
           `[Pipeline] Failed to fetch bars for ${symbol}, using synthetic`,
         );
