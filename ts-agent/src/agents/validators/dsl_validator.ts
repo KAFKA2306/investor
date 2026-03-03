@@ -45,8 +45,7 @@ const ALLOWED_FACTORS = [
  *
  * Note: Forward slash (/) is allowed for division but we'll validate against // comments separately
  */
-const DSL_REGEX =
-  /^alpha\s*=\s*[a-z0-9_+\-*/.()\s]+$/i;
+const DSL_REGEX = /^alpha\s*=\s*[a-z0-9_+\-*/.()\s]+$/i;
 
 /**
  * Validates a DSL expression string for correctness and safety.

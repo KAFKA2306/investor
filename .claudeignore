@@ -1,32 +1,26 @@
-# .claudeignore
+# 🐾 Claude Code への「見ちゃダメ！」リスト 🐾
 
-# 📦 Dependency and Environments
-.venv/
+# フォルダたち
 node_modules/
-__pycache__/
-*.pyc
-
-# 🗄️ Large Data and Corpus
-edinet2dataset/edinet_corpus/
-edinet2dataset/data/
-/mnt/d/investor_all_cached_data/
-
-# 📂 Binary and Build Artifacts
-build/
 dist/
-*.sqlite
-*.sqlite-journal
-*.sqlite-wal
-*.gz
-
-# 🔍 Internal and Metadata
+build/
 .git/
-.serena/
-.agent/
-.claude/
-.gemini/
+.vscode/
+.idea/
 
-# 📝 Logs and Temp
-logs/
-tmp/
+# ロックファイル (超重量級！)
+uv.lock
+*-lock.yaml
+bun.lock
+package-lock.json
+
+# ts-agent 関連の重たいデータ
+ts-agent/data/
+ts-agent/cache/
 *.log
+*.sqlite
+
+# その他
+.env*
+temp/
+tmp/
