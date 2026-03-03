@@ -6,6 +6,7 @@ import {
   AlphaQualityOptimizerOutputSchema,
 } from "../schemas/alpha_quality_optimizer_schema.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
+import { logIO, logMetric } from "../system/telemetry_logger.ts";
 import { logger } from "../utils/logger.ts";
 import { computeBacktestScore } from "./metrics/backtest_scorer.ts";
 import { computeConstraintScore } from "./metrics/constraint_scorer.ts";
@@ -81,9 +82,23 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
   async run(
     input: AlphaQualityOptimizerInput,
   ): Promise<AlphaQualityOptimizerOutput> {
+    const startTime = performance.now();
+
     logger.info(
       `[${this.agentName}] Starting optimization for prompt: "${input.alphaPrompt.slice(0, 50)}..."`,
     );
+
+    // Log input telemetry
+    logIO({
+      stage: "alpha_quality_optimizer.evaluate",
+      direction: "IN",
+      name: "optimization_request",
+      values: {
+        alpha_prompt_length: input.alphaPrompt.length,
+        symbol_count: input.marketData.symbols.length,
+        playbook_patterns: input.playbookPatterns.length,
+      },
+    });
 
     // Step 1: Build Qwen prompt with market context
     const avgVolatility =
@@ -204,7 +219,8 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
     };
 
     // Validate output against schema before returning
-    const outputValidation = AlphaQualityOptimizerOutputSchema.safeParse(output);
+    const outputValidation =
+      AlphaQualityOptimizerOutputSchema.safeParse(output);
     if (!outputValidation.success) {
       logger.error(
         `[${this.agentName}] Output validation failed: ${outputValidation.error.message}`,
@@ -212,8 +228,43 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       throw new Error("Failed to generate valid output");
     }
 
+    // Log output telemetry
+    logIO({
+      stage: "alpha_quality_optimizer.evaluate",
+      direction: "OUT",
+      name: "optimization_result",
+      values: {
+        fitness: Number(output.fitness.toFixed(4)),
+        optimized_dsl_length: output.optimizedDSL.length,
+        factors_count: dslFactors.length,
+      },
+    });
+
+    // Log detailed metrics
+    logMetric({
+      stage: "alpha_quality_optimizer.evaluate",
+      name: "fitness_scores",
+      values: {
+        correlation: Number(correlationScore.toFixed(4)),
+        constraint: Number(constraintScore.toFixed(4)),
+        orthogonal: Number(orthogonalityScore.toFixed(4)),
+        backtest: Number(backtestScore.toFixed(4)),
+        fitness: Number(output.fitness.toFixed(4)),
+      },
+    });
+
+    // Log execution duration
+    const duration = performance.now() - startTime;
+    logMetric({
+      stage: "alpha_quality_optimizer.evaluate",
+      name: "execution_duration",
+      values: {
+        ms: Number(duration.toFixed(2)),
+      },
+    });
+
     logger.info(
-      `[${this.agentName}] Optimization complete. Fitness score: ${output.fitness.toFixed(4)}`,
+      `[${this.agentName}] Optimization complete. Fitness score: ${output.fitness.toFixed(4)} (${duration.toFixed(0)}ms)`,
     );
 
     return outputValidation.data;
