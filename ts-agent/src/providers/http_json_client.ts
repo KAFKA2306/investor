@@ -20,8 +20,8 @@ export type RequestJsonOptions = {
 };
 
 const DEFAULT_TIMEOUT_MS = 60_000;
-const DEFAULT_MAX_RETRIES = 0; // リトライは絶対禁止だよっ！💢💎
-const DEFAULT_RETRY_DELAY_MS = 1000;
+const _DEFAULT_MAX_RETRIES = 0; // リトライは絶対禁止だよっ！💢💎
+const _DEFAULT_RETRY_DELAY_MS = 1000;
 
 export type RequestJsonResult = {
   payload: JsonMap;

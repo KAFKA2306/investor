@@ -115,13 +115,21 @@ export function loadFeatureRows(logsBaseDir: string): FeatureRow[] {
       continue;
 
     const report = result.data.report as DailyScenarioLog;
+
+    // 📌 Bug 1修正: avgAlphaScoreを動的に取得
+    const alphaScores = report.analysis.map((a) => a.alphaScore);
+    const avgAlphaScore =
+      alphaScores.length > 0
+        ? alphaScores.reduce((a, b) => a + b, 0) / alphaScores.length
+        : 0.5; // フォールバック: ログがない場合は中立値
+
     rows.push(
       FeatureRowSchema.parse({
         date: report.date,
         basketDailyReturn: report.results.basketDailyReturn,
         features: {
           vegetablePriceMomentum: report.market.vegetablePriceMomentum,
-          avgAlphaScore: 0,
+          avgAlphaScore,
         },
       }),
     );

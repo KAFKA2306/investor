@@ -1,12 +1,6 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
-import { clamp } from "../utils/math_utils.ts";
-import {
-  normalizeSymbol,
-  toIsoDate,
-  toYmd,
-  valueUtils,
-} from "../utils/value_utils.ts";
+import { normalizeSymbol, toYmd, valueUtils } from "../utils/value_utils.ts";
 import { core } from "./app_runtime_core.ts";
 import { paths } from "./path_registry.ts";
 

@@ -4,8 +4,6 @@ import { z } from "zod";
 import { extractEstatValues } from "../../experiments/analysis/daily_alpha_feature_calculations.ts";
 import { MarketdataLocalGateway } from "../../providers/unified_market_data_gateway.ts";
 import { logIO, logMetric } from "../../system/telemetry_logger.ts";
-import { mathUtils } from "../../utils/math_utils.ts";
-import { valueUtils } from "../../utils/value_utils.ts";
 import {
   calculatePerformanceMetrics,
   QuantMetrics,

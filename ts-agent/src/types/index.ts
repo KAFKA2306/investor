@@ -2,7 +2,6 @@
  * ✨ プロジェクト共通の型定義（Types）だよっ！ ✨
  */
 
-import type { z } from "zod";
 import type { FactorAST } from "../schemas/financial_domain_schemas.ts";
 
 export interface AlphaFactor {
@@ -40,7 +39,7 @@ export interface ComputeMarketData {
 export interface ComputeResponse {
   results: Array<{
     id: string;
-    scores: number[];
+    scores: { symbol: string; score: number }[];
   }>;
 }
 

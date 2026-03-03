@@ -1,4 +1,3 @@
-import { logger } from "../utils/logger.ts";
 import { core } from "./app_runtime_core.ts";
 
 export interface SystemStateSnapshot {
@@ -22,8 +21,6 @@ export interface DriftReport {
  * ✨ 市場環境とシステムの健康状態を監視するサービス ✨
  */
 export class MarketMonitor {
-  private readonly logger = logger.child({ service: "MarketMonitor" });
-
   /**
    * 現在の相場レジームやボラティリティを取得するよっ！📈
    */

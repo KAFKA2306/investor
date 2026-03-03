@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
 import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
@@ -8,21 +7,25 @@ import {
   ContextPlaybook,
   MemoryCenter,
 } from "../context/unified_context_services.ts";
-import type { BacktestResult } from "../pipeline/evaluate/backtest_core.ts";
-import type { ComputeMarketData } from "../providers/factor_compute_engine_client.ts";
+import { MarketdataDbCache } from "../providers/cache_providers.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import {
   type AceBullet,
+  CanonicalLogKind,
   type CycleSummary,
   DEFAULT_EVALUATION_CRITERIA,
   type FinancialScores,
   type Metrics,
-  type QuantitativeVerification,
   QuantitativeVerificationSchema,
   type StandardOutcome,
-  type VerificationVerdict,
+  VerificationVerdict,
 } from "../schemas/financial_domain_schemas.ts";
-import type { AlphaFactor } from "../types/index.ts";
+import type {
+  AlphaFactor,
+  BacktestResult,
+  ComputeMarketData,
+} from "../types/index.ts";
+import { logger } from "../utils/logger.ts";
 import { BaseAgent, core } from "./app_runtime_core.ts";
 import {
   DataPipelineRuntime,
@@ -59,6 +62,7 @@ export interface PipelineRequirement {
 export interface IdeaCandidate extends AlphaFactor {
   requirementId: string;
   priority: number;
+  ideaHash?: string;
 }
 
 export interface PITDataset {
@@ -189,7 +193,11 @@ export interface IElder {
     reason: string,
     metrics?: Metrics,
   ): Promise<void>;
-  reflectLearning(strategyId: string, reason: string): Promise<void>;
+  reflectLearning(
+    strategyId: string,
+    reason: string,
+    metrics?: any,
+  ): Promise<void>;
   updateStatus(report: DriftReport): Promise<void>;
   getPlaybookBullets(): Promise<number>;
 }
@@ -197,6 +205,25 @@ export interface IElder {
 export interface IStateMonitor {
   recordDrift(report: DriftReport): Promise<void>;
   getCurrentState(): Promise<SystemStateSnapshot>;
+}
+
+// 📌 ACE 失敗文脈化: 失敗の詳細な分析を記録
+export interface ContextualizedRejection {
+  reason:
+    | "SHARPE_TOO_LOW"
+    | "IC_ZERO"
+    | "HIGH_DRAWDOWN"
+    | "DATA_FAILURE"
+    | "ORDER_GATE_REJECTED"
+    | "EXECUTION_CONSTRAINT"
+    | "EXECUTION_QUALITY";
+  metrics?: {
+    sharpe?: number;
+    ic?: number;
+    maxDD?: number;
+  };
+  hypothesis: string; // 失敗した仮説の説明
+  avoidanceHint: string; // 次サイクルへの回避ヒント
 }
 
 export interface IDataEngineer {
@@ -248,6 +275,10 @@ export class PipelineOrchestrator extends BaseAgent {
   private cqo = new CqoAgent();
   private missionAgent = new MissionAgent();
 
+  // 📌 AAARTS: 連続失敗カウント（動的閾値緩和用）
+  private consecutiveFailures = 0;
+  private readonly MAX_RELAXATION_CYCLES = 3;
+
   constructor(
     private readonly elder: IElder,
     private readonly dataEngineer: IDataEngineer,
@@ -268,9 +299,19 @@ export class PipelineOrchestrator extends BaseAgent {
       verification.verification?.metrics?.maxDrawdown ?? 1,
     );
     const annReturn = verification.verification?.metrics?.annualizedReturn ?? 0;
-    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.8;
-    const minIC = requirement.targetMetrics?.minIC ?? 0.04;
-    const maxDrawdownLimit = requirement.targetMetrics?.maxDrawdown ?? 0.1;
+
+    // 📌 AAARTS: 動的閾値緩和 (Dynamic Threshold Relaxation)
+    // 失敗が続いている場合は、一時的に基準を緩めて「学習のきっかけ」を作るよっ！ 📈✨
+    const relaxationFactor =
+      this.consecutiveFailures > 0 &&
+      this.consecutiveFailures <= this.MAX_RELAXATION_CYCLES
+        ? 0.8
+        : 1.0;
+    const minSharpe =
+      (requirement.targetMetrics?.minSharpe ?? 1.8) * relaxationFactor;
+    const minIC = (requirement.targetMetrics?.minIC ?? 0.04) * relaxationFactor;
+    const maxDrawdownLimit =
+      (requirement.targetMetrics?.maxDrawdown ?? 0.1) / relaxationFactor;
 
     // fitnessScore: blend normalized Sharpe + IC + drawdown fitness
     // Sharpe: normalized by target (1.8), IC: normalized by target (0.04), DD: penalized if > 0.1
@@ -296,22 +337,6 @@ export class PipelineOrchestrator extends BaseAgent {
     };
   }
 
-  private extractAstVariables(ast: Record<string, unknown>): string[] {
-    const vars: string[] = [];
-    const walk = (node: unknown) => {
-      if (!node || typeof node !== "object") return;
-      const n = node as Record<string, unknown>;
-      if (n.type === "variable" && typeof n.name === "string") {
-        vars.push(n.name);
-      }
-      for (const key of Object.keys(n)) {
-        walk(n[key]);
-      }
-    };
-    walk(ast);
-    return [...new Set(vars)];
-  }
-
   private blueprint() {
     return core.config.pipelineBlueprint;
   }
@@ -323,7 +348,7 @@ export class PipelineOrchestrator extends BaseAgent {
   private async persistLog(name: string, data: unknown): Promise<void> {
     const { writeCanonicalEnvelope } = await import("./app_runtime_core.ts");
     writeCanonicalEnvelope({
-      kind: name as "quality_gate",
+      kind: CanonicalLogKind.VERIFICATION_RECORD,
       payload: data as Record<string, unknown>,
       producerComponent: `PipelineOrchestrator.${name}`,
     });
@@ -353,6 +378,7 @@ export class PipelineOrchestrator extends BaseAgent {
     const results: {
       verdict: VerificationVerdict;
       scores: FinancialScores | null;
+      metrics: Metrics | null;
     }[] = [];
     for (const candidate of candidates) {
       const result = await this.processCandidate(
@@ -373,7 +399,11 @@ export class PipelineOrchestrator extends BaseAgent {
     requirement: PipelineRequirement,
     candidate: IdeaCandidate,
     forbiddenZones: string[],
-  ): Promise<{ verdict: VerificationVerdict; scores: FinancialScores | null }> {
+  ): Promise<{
+    verdict: VerificationVerdict;
+    scores: FinancialScores | null;
+    metrics: Metrics | null;
+  }> {
     this.logPhase("入力と探索", `候補 ${candidate.id} を記憶保存し評価開始`);
     await this.elder.saveIdeaCandidate(candidate);
 
@@ -387,7 +417,11 @@ export class PipelineOrchestrator extends BaseAgent {
     if (acceptedData.accepted === "NO") {
       await this.elder.saveRejectionReason(candidate.id, "DATA_DELIVERY_UNMET");
       await this.elder.reflectLearning(candidate.id, "Data delivery unmet");
-      return { verdict: "REJECTED_GENERAL", scores: null };
+      return {
+        verdict: VerificationVerdict.REJECTED_GENERAL as any,
+        scores: null,
+        metrics: null,
+      };
     }
 
     const dataset = acceptedData.dataset;
@@ -396,7 +430,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
     const retryMode: "MODEL" | "NONE" = "NONE";
 
-    const attempt = 1;
+    const _attempt = 1;
     console.log(`🎯 [Orchestrator] Single Shot: Processing ${candidate.id}`);
     this.logPhase("評価と判定", `候補 ${candidate.id} のモデル・検証ループ`);
 
@@ -428,14 +462,26 @@ export class PipelineOrchestrator extends BaseAgent {
 
     const verdict = this.judgeVerification(verification, requirement);
 
-    if (verdict === "ADOPTED") {
+    if (verdict === VerificationVerdict.ADOPTED) {
+      // ✅ 成功時: 連続失敗カウントをリセット
+      this.consecutiveFailures = 0;
       await this.handleAdoptedCandidate(
         candidate.id,
         verification,
         dataset.context,
       );
-      return { verdict, scores };
+      return {
+        verdict,
+        scores,
+        metrics: verification.verification?.metrics ?? null,
+      };
     }
+
+    // ❌ 失敗時: 連続失敗カウントを増加（上限あり）
+    this.consecutiveFailures = Math.min(
+      this.consecutiveFailures + 1,
+      this.MAX_RELAXATION_CYCLES,
+    );
 
     // リトライは禁止なんだもんっ！💢 即終了だよっ！
     await this.elder.saveRejectionReason(
@@ -446,8 +492,13 @@ export class PipelineOrchestrator extends BaseAgent {
     await this.elder.reflectLearning(
       candidate.id,
       `Verification failed with verdict: ${verdict}. No retries allowed.`,
+      verification.verification?.metrics,
     );
-    return { verdict: "REJECTED_GENERAL", scores: null };
+    return {
+      verdict: VerificationVerdict.REJECTED_GENERAL as any,
+      scores: null,
+      metrics: verification.verification?.metrics ?? null,
+    };
   }
   private async handleAdoptedCandidate(
     candidateId: string,
@@ -459,7 +510,41 @@ export class PipelineOrchestrator extends BaseAgent {
       `採用候補 ${candidateId} の発注ゲート判定`,
     );
     const gate = this.cqo.auditStrategy(verification);
-    if (gate.verdict !== "APPROVED" || !gate.isProductionReady) {
+
+    // 📌 AAARTS: GO/HOLD/PIVOT 判定に基づくアクション
+    if (gate.verdict === "PIVOT") {
+      console.log(
+        `🔄 [CQO] PIVOT verdict for ${candidateId}: ${gate.aaartesVerdictRationale}`,
+      );
+      await this.elder.saveRejectionReason(
+        candidateId,
+        "PIVOT_BY_AUDIT",
+        verification.verification?.metrics,
+      );
+      await this.elder.reflectLearning(
+        candidateId,
+        `Pivot required: ${gate.aaartesVerdictRationale}`,
+      );
+      return;
+    }
+
+    if (gate.verdict === "HOLD") {
+      console.log(
+        `⚠️ [CQO] HOLD verdict for ${candidateId}: ${gate.aaartesVerdictRationale}`,
+      );
+      await this.elder.saveRejectionReason(
+        candidateId,
+        "HOLD_BY_AUDIT",
+        verification.verification?.metrics,
+      );
+      await this.elder.reflectLearning(
+        candidateId,
+        `Hold for refinement: ${gate.aaartesVerdictRationale}`,
+      );
+      return;
+    }
+
+    if (gate.verdict !== "GO" && gate.verdict !== "APPROVED") {
       const reason = gate.critique.join(", ") || "ORDER_GATE_REJECTED";
       await this.elder.saveRejectionReason(
         candidateId,
@@ -471,6 +556,12 @@ export class PipelineOrchestrator extends BaseAgent {
         `Order gate rejected: ${reason}`,
       );
       return;
+    }
+
+    if (!gate.isProductionReady) {
+      console.log(`⚠️ [CQO] Approved but NOT Production Ready: ${candidateId}`);
+      // 本番準備ができていない場合は、警告を出しつつも先に進むか、ここで止めるか...
+      // AAARTSでは「GO」以外は慎重に扱うため、ここでは中断するねっ ✨
     }
 
     const raw = await this.executionAgent.optimizeAllocation(verification);
@@ -567,6 +658,7 @@ export class PipelineOrchestrator extends BaseAgent {
     dataset: PITDataset,
     requirement: PipelineRequirement,
   ): Promise<void> {
+    const gateResult = this.evaluateDataDelivery(dataset, requirement);
     await this.elder.saveDatasetInfo(
       dataset.id,
       {
@@ -574,7 +666,11 @@ export class PipelineOrchestrator extends BaseAgent {
         context: dataset.context,
         qualityScore: dataset.qualityScore,
         deliveryMetrics: dataset.deliveryMetrics,
-        gate: this.evaluateDataDelivery(dataset, requirement),
+        gate: {
+          accepted: gateResult.accepted,
+          threshold: gateResult.threshold ?? 0,
+          failedChecks: gateResult.failedChecks,
+        },
       },
       dataset.preprocessingConditions,
     );
@@ -584,8 +680,9 @@ export class PipelineOrchestrator extends BaseAgent {
     result: VerificationResult,
     requirement: PipelineRequirement,
   ): VerificationVerdict {
-    if (result.failureType === "DATA") return "REJECTED_DATA";
-    if (result.failureType === "MODEL") return "REJECTED_MODEL";
+    if (result.failureType === "DATA") return VerificationVerdict.REJECTED_DATA;
+    if (result.failureType === "MODEL")
+      return VerificationVerdict.REJECTED_MODEL;
 
     const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
     const ic = result.alpha?.informationCoefficient ?? 0;
@@ -615,9 +712,9 @@ export class PipelineOrchestrator extends BaseAgent {
       maxDrawdownAbs <= maxDrawdownLimit &&
       annualizedReturn >= minAnnualizedReturn
     ) {
-      return "ADOPTED";
+      return VerificationVerdict.ADOPTED;
     }
-    return "REJECTED_GENERAL";
+    return VerificationVerdict.REJECTED_GENERAL;
   }
 
   private evaluateDataDelivery(
@@ -668,7 +765,7 @@ export class PipelineOrchestrator extends BaseAgent {
       .map((idea) => ({
         ...idea,
         requirementId: requirement.id,
-        priority: idea.priority ?? 0.9,
+        priority: (idea as any).priority ?? 0.9,
       }))
       .filter(
         (idea) =>
@@ -683,20 +780,27 @@ export class PipelineOrchestrator extends BaseAgent {
     state: SystemStateSnapshot,
     history: { seeds: string[]; forbiddenZones: string[] },
   ): Promise<PipelineRequirement> {
-    const missionPrompt = `Market Regime: ${state.regime}, Volatility: ${state.volatility}. Existing Seeds: ${history.seeds.join(", ")}. Forbidden: ${history.forbiddenZones.join(", ")}.`;
+    const nl = this.readNaturalLanguageInput();
+    const missionPrompt = `Market Regime: ${state.regime}, Volatility: ${state.volatility}. Existing Seeds: ${history.seeds.join(", ")}. Forbidden: ${history.forbiddenZones.join(", ")}.${nl.text ? ` User focus: ${nl.text}` : ""}`;
+
+    // 📌 NL入力から特定のティッカー（4桁数字）があれば優先的に抽出するねっ！💎✨
+    const nlTickers = (nl.text.match(/\d{4}/g) || []).map((t) => `${t}.T`);
+    const defaultUniverse = ["6501.T", "9501.T", "6701.T"];
+    const activeConstraints =
+      nlTickers.length > 0 ? nlTickers : defaultUniverse;
 
     const missionMd = await this.missionAgent.generateNextMission({
       currentRequirement: missionPrompt,
       historySeeds: history.seeds,
       forbiddenZones: history.forbiddenZones,
-      constraints: ["6501.T", "9501.T", "6701.T"],
+      constraints: activeConstraints,
       evaluationCriteria: {
         minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe ?? 1.8,
         minIC: this.blueprint()?.verificationAcceptance?.minIC ?? 0.04,
       },
     });
 
-    let universe = ["6501.T", "9501.T", "6701.T"];
+    let universe = activeConstraints;
     const uniMatch =
       missionMd.match(/ターゲット銘柄[:：]\s*(.*)/) ||
       missionMd.match(/銘柄ユニバース[:：]\s*(.*)/);
@@ -733,6 +837,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
     let discoveryAttempts = 0;
     const maxDiscoveryAttempts = 3;
+    let consecutiveFailures = 0; // 📌 Ralph Loop: 連続失敗カウント
 
     while (discoveryAttempts < maxDiscoveryAttempts) {
       discoveryAttempts++;
@@ -768,6 +873,7 @@ export class PipelineOrchestrator extends BaseAgent {
       const cycleResults: {
         verdict: VerificationVerdict;
         scores: FinancialScores | null;
+        metrics: Metrics | null;
       }[] = [];
       const adoptedIds: string[] = [];
       for (let ci = 0; ci < candidates.length; ci++) {
@@ -778,7 +884,38 @@ export class PipelineOrchestrator extends BaseAgent {
           history.forbiddenZones,
         );
         cycleResults.push(result);
-        if (result.verdict === "ADOPTED") adoptedIds.push(candidates[ci].id);
+        if (result.verdict === VerificationVerdict.ADOPTED)
+          adoptedIds.push(candidates[ci].id);
+      }
+
+      // 📌 Ralph Loop: 連続失敗を検知してドメイン再構築
+      const allRejected = cycleResults.every(
+        (r) => r.verdict !== VerificationVerdict.ADOPTED,
+      );
+      if (allRejected) {
+        consecutiveFailures++;
+        console.log(
+          `⚠️ [Ralph Loop] All candidates rejected. Consecutive failures: ${consecutiveFailures}`,
+        );
+
+        if (consecutiveFailures >= 2) {
+          console.log(
+            `🔄 [Ralph Loop] Triggering domain re-initialization after ${consecutiveFailures} consecutive failures`,
+          );
+          // TODO(human): Ralph Loop設定
+          // 以下の設計判断をユーザーに委ねる：
+          // 1. 連続失敗N回でリセット: 現在は2に設定
+          // 2. 新ドメインの選択方法: ランダム vs 最遠禁止区域逆方向 vs その他
+          // 3. リセット後の評価基準一時緩和の有無と緩和率
+          await this.missionAgent.pivotDomain({
+            reason: "CONSECUTIVE_FAILURE",
+            count: consecutiveFailures,
+            currentForbiddenZones: history.forbiddenZones,
+          });
+          consecutiveFailures = 0; // リセット
+        }
+      } else {
+        consecutiveFailures = 0; // 1つでも採用されたらカウントリセット
       }
 
       const cycleScores = cycleResults
@@ -796,8 +933,16 @@ export class PipelineOrchestrator extends BaseAgent {
         finishedAt: new Date().toISOString(),
         candidatesGenerated: candidates.length,
         candidatesAdopted: adoptedIds.length,
-        avgSharpe: avg(cycleScores.map((s) => s.fitnessScore * 3)),
-        avgIC: avg(cycleScores.map((s) => s.stabilityScore * 0.04)),
+        avgSharpe: avg(cycleResults.map((r) => r.metrics?.sharpeRatio ?? 0)),
+        avgIC: avg(
+          cycleResults.map((r) =>
+            Math.abs(
+              (r as any).alpha?.informationCoefficient ??
+                (r.metrics as any)?.ic ??
+                0,
+            ),
+          ),
+        ),
         avgFitness: avg(cycleScores.map((s) => s.fitnessScore)),
         adoptedIds,
         playbookBulletCount: await this.elder.getPlaybookBullets(),
@@ -1079,15 +1224,126 @@ export class ElderBridge implements IElder {
     this.pushMemoryEvent("STRATEGY_REJECTED", { strategyId, reason, metrics });
   }
 
-  async reflectLearning(strategyId: string, reason: string): Promise<void> {
+  async reflectLearning(
+    strategyId: string,
+    reason: string,
+    metrics?: any,
+  ): Promise<void> {
+    // 📌 ACE 失敗文脈化: 失敗原因を分析して詳細な学習記録を作成
+    const contextualized = this.analyzeFailureContext(reason, metrics);
+
     console.log(
-      `[Elder] Learning reflected from rejection/failure of ${strategyId}: ${reason}`,
+      `[Elder] Learning reflected from rejection/failure of ${strategyId}: ${contextualized.reason}`,
     );
+    console.log(`  ↳ Hypothesis: ${contextualized.hypothesis}`);
+    console.log(`  ↳ Avoidance: ${contextualized.avoidanceHint}`);
+
     this.pushMemoryEvent("SYSTEM_LOG", {
-      message: "Learning Reflection",
+      message: "Learning Reflection (Contextualized)",
       strategyId,
-      reason,
+      reason: contextualized.reason,
+      hypothesis: contextualized.hypothesis,
+      avoidanceHint: contextualized.avoidanceHint,
+      metrics: contextualized.metrics,
     });
+  }
+
+  private analyzeFailureContext(
+    reason: string,
+    providedMetrics?: any,
+  ): ContextualizedRejection {
+    // 失敗文字列をパースして詳細な文脈情報を抽出
+    const sharpeMatch = reason.match(
+      /Sharpe=([0-9.]+)|sharpe[^0-9]*([0-9.]+)/i,
+    );
+    const icMatch = reason.match(/IC=([0-9.]+)|ic[^0-9]*([0-9.]+)/i);
+    const maxDDMatch = reason.match(/MaxDD=([0-9.]+)|maxDD[^0-9]*([0-9.]+)/i);
+
+    const sharpe = sharpeMatch
+      ? Number(sharpeMatch[1] || sharpeMatch[2])
+      : providedMetrics?.sharpeRatio;
+    let ic = icMatch
+      ? Number(icMatch[1] || icMatch[2])
+      : providedMetrics?.informationCoefficient;
+    let maxDD = maxDDMatch
+      ? Number(maxDDMatch[1] || maxDDMatch[2])
+      : providedMetrics?.maxDrawdown;
+
+    // Fallback and Absolute Value Correctness
+    if (ic === undefined && providedMetrics?.ic !== undefined)
+      ic = providedMetrics.ic;
+    if (ic !== undefined) ic = Math.abs(ic);
+    if (maxDD !== undefined) maxDD = Math.abs(maxDD);
+
+    let failureReason: ContextualizedRejection["reason"] = "DATA_FAILURE";
+    let hypothesis = "Unknown failure mode";
+    let avoidanceHint = "Review candidate design and data quality";
+
+    // 失敗理由をパターンマッチで判定
+    if (reason.includes("Data delivery")) {
+      failureReason = "DATA_FAILURE";
+      hypothesis =
+        "Data integrity or availability issue - insufficient quality metrics or coverage";
+      avoidanceHint =
+        "Prioritize high-quality data sources with complete feature coverage";
+    } else if (
+      reason.includes("Sharpe") &&
+      sharpe !== undefined &&
+      sharpe < 1.8
+    ) {
+      failureReason = "SHARPE_TOO_LOW";
+      hypothesis = `Insufficient risk-adjusted returns (Sharpe=${sharpe.toFixed(2)}): factor lacks consistency`;
+      avoidanceHint =
+        "Explore mean-reverting or momentum strategies with different lookback windows";
+    } else if (reason.includes("IC") && ic !== undefined && ic < 0.04) {
+      failureReason = "IC_ZERO";
+      hypothesis = `Information coefficient too low (IC=${ic.toFixed(3)}): weak predictive power`;
+      avoidanceHint =
+        "Increase feature dimensionality or add regime-conditional terms";
+    } else if (reason.includes("MaxDD") && maxDD !== undefined && maxDD > 0.1) {
+      failureReason = "HIGH_DRAWDOWN";
+      hypothesis = `Maximum drawdown too high (${(maxDD * 100).toFixed(1)}%): tail risk unmanaged`;
+      avoidanceHint =
+        "Add stop-loss or volatility-scaling mechanisms to limit downside";
+    } else if (reason.includes("Order gate") || reason.includes("ORDER_GATE")) {
+      failureReason = "ORDER_GATE_REJECTED";
+      hypothesis =
+        "Strategy fails operational viability checks - slippage or execution risk too high";
+      avoidanceHint =
+        "Reduce position sizes or increase liquidity requirements for target symbols";
+    } else if (
+      reason.includes("Execution constraint") ||
+      reason.includes("EXECUTION_CONSTRAINT")
+    ) {
+      failureReason = "EXECUTION_CONSTRAINT";
+      hypothesis =
+        "Risk control or capital constraints violated - oversized allocations";
+      avoidanceHint =
+        "Scale down candidate sizes or tighten portfolio-level constraints";
+    } else if (
+      reason.includes("Execution quality") ||
+      reason.includes("EXECUTION_QUALITY")
+    ) {
+      failureReason = "EXECUTION_QUALITY";
+      hypothesis =
+        "Real-world execution quality degraded - slippage or timing mismatch";
+      avoidanceHint =
+        "Add market microstructure modeling or adjust order urgency";
+    }
+
+    return {
+      reason: failureReason,
+      metrics:
+        sharpe !== undefined || ic !== undefined || maxDD !== undefined
+          ? {
+              sharpe,
+              ic,
+              maxDD,
+            }
+          : undefined,
+      hypothesis,
+      avoidanceHint,
+    };
   }
 
   async updateStatus(report: DriftReport): Promise<void> {
@@ -1455,90 +1711,24 @@ export class QuantResearcherBridge implements IQuantResearcher {
   private marketdata: MarketdataLocalGateway;
   private runtime: DataPipelineRuntime;
   private quantEngine: QuantResearchRuntime;
+  private reasoner: StrategicReasonerAgent;
 
   constructor(
     les?: LesAgent,
     marketdata?: MarketdataLocalGateway,
     runtime?: DataPipelineRuntime,
     quantEngine?: QuantResearchRuntime,
+    reasoner?: StrategicReasonerAgent,
   ) {
     this.les = les ?? new LesAgent();
-    this.marketdata = marketdata ?? new MarketdataLocalGateway([]);
+    this.marketdata =
+      marketdata ??
+      new MarketdataLocalGateway(
+        new MarketdataDbCache(paths.dataRoot, paths.marketdataSqlite),
+      );
     this.runtime = runtime ?? new DataPipelineRuntime();
     this.quantEngine = quantEngine ?? new QuantResearchRuntime();
-  }
-
-  private loadVerificationReport(): QuantitativeVerification {
-    const raw = readFileSync(paths.verificationJson, "utf8");
-    const parsed = JSON.parse(raw) as {
-      dates?: string[];
-      evaluationWindow?: { from: string; to: string; days: number };
-    };
-    if (!parsed.evaluationWindow) {
-      const dates = parsed.dates ?? [];
-      if (dates.length === 0) {
-        throw new Error("verification report has no dates");
-      }
-      parsed.evaluationWindow = {
-        from: dates[0] ?? "",
-        to: dates[dates.length - 1] ?? "",
-        days: dates.length,
-      };
-    }
-    return QuantitativeVerificationSchema.parse(parsed);
-  }
-
-  private buildBacktestFromVerification(
-    report: QuantitativeVerification,
-  ): BacktestResult {
-    const history: number[] = new Array(report.strategyCum.length).fill(0);
-    for (let i = 1; i < report.strategyCum.length; i++) {
-      const prev = 1 + (report.strategyCum[i - 1] ?? 0) / 100;
-      const curr = 1 + (report.strategyCum[i] ?? 0) / 100;
-      history[i] = curr / prev - 1;
-    }
-    const from = report.evaluationWindow.from.replaceAll("-", "");
-    const to = report.evaluationWindow.to.replaceAll("-", "");
-    return {
-      from,
-      to,
-      tradingDays: report.evaluationWindow.days,
-      feeBps: report.costs.feeBps,
-      slippageBps: report.costs.slippageBps,
-      totalCostBps: report.costs.totalCostBps,
-      grossReturn:
-        report.metrics.totalReturn / 100 + report.costs.totalCostBps / 10000,
-      netReturn: report.metrics.totalReturn / 100,
-      pnlPerUnit: report.metrics.totalReturn / 100,
-      history,
-    };
-  }
-
-  private buildPredictionTargetPairs(report: QuantitativeVerification): {
-    predictions: number[];
-    targets: number[];
-  } {
-    const predictions: number[] = [];
-    const targets: number[] = [];
-    for (const symbol of Object.keys(report.individualData)) {
-      const series = report.individualData[symbol];
-      if (!series) continue;
-      const len = Math.min(series.factors.length, series.prices.length - 1);
-      for (let i = 0; i < len; i++) {
-        const price0 = series.prices[i] ?? 0;
-        const price1 = series.prices[i + 1] ?? 0;
-        if (price0 <= 0 || price1 <= 0) continue;
-        const prediction = series.factors[i] ?? 0;
-        const target = (price1 - price0) / price0;
-        if (!Number.isFinite(prediction) || !Number.isFinite(target)) continue;
-        predictions.push(prediction);
-        targets.push(target);
-      }
-    }
-    if (predictions.length === 0 || targets.length === 0) {
-      throw new Error("No prediction-target pairs in verification report");
-    }
-    return { predictions, targets };
+    this.reasoner = reasoner ?? new StrategicReasonerAgent();
   }
 
   async selectFoundationModel(
@@ -1555,7 +1745,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     return {
       foundationModelId,
       adaptationPolicy: "",
-      parameters: { learningRate: this.runtime.selectLearningRate("NONE") },
+      parameters: { learningRate: this.quantEngine.selectLearningRate("NONE") },
       selectedReason: `Context indicates ${context.slice(0, 10)}...`,
     };
   }
@@ -1588,7 +1778,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     forbiddenZones: string[] = [],
   ): Promise<VerificationResult> {
     console.log(`[QuantResearcher] Co-optimizing factor, model, and backtest`);
-    const manifest = this.runtime.buildManifest(
+    const manifest = this.quantEngine.buildManifest(
       dataset.symbols,
       dataset.asOfDate,
       dataset.qualityScore,
@@ -1609,7 +1799,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     // 評価用の市場データを可愛く集めるよっ！💹✨
     const universe = await (this.quantEngine as any).resolveTargetSymbols(
       this.runtime,
-      { symbols: [], limit: 20 },
+      { symbols: dataset.symbols, limit: 20 },
     );
     logger.info(
       `[QuantResearcher] Universe resolved for backtest: ${universe.length} symbols`,
@@ -1630,7 +1820,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
             close: Number(b.close || b.Close),
             volume: Number(b.volume || b.Volume),
           },
-        });
+        } as any);
       }
     }
     logger.info(
@@ -1652,17 +1842,36 @@ export class QuantResearcherBridge implements IQuantResearcher {
     );
 
     if (scores.length > 0) {
-      // 簡易的なバックテスト結果を生成するよっ！✨
-      const returns = scores.map((s, i) => {
-        const nextPrice = computeInputs[i + 1]?.values.close;
-        const currPrice = computeInputs[i]?.values.close;
-        if (!nextPrice || !currPrice) return 0;
-        const ret = (nextPrice - currPrice) / currPrice;
-        predictions.push(s);
-        targets.push(ret);
-        return s > 0 ? ret : -ret; // シンプルなロング/ショートを想定
-      });
-      dailyReturns.push(...returns);
+      // 📌 Bug 3修正: シンボルごとにグループ化してからリターン計算
+      // Symbol別にcomputeInputsをグループ化
+      const inputsBySymbol = new Map<string, ComputeMarketData[]>();
+      for (const input of computeInputs) {
+        if (!inputsBySymbol.has(input.symbol)) {
+          inputsBySymbol.set(input.symbol, []);
+        }
+        inputsBySymbol.get(input.symbol)!.push(input);
+      }
+
+      // スコアをシンボル別に処理してリターンを計算
+      for (const scoreEntry of scores) {
+        const symbolBars = inputsBySymbol.get(scoreEntry.symbol);
+        if (!symbolBars || symbolBars.length < 2) continue;
+
+        // シンボル内でのリターン計算（シンボル境界を跨がない）
+        for (let i = 0; i < symbolBars.length - 1; i++) {
+          const currPrice = symbolBars[i]!.values.close;
+          const nextPrice = symbolBars[i + 1]!.values.close;
+          if (!nextPrice || !currPrice) continue;
+
+          const ret = (nextPrice - currPrice) / currPrice;
+          // 📌 Bug 2修正: s.score (オブジェクトのscoreプロパティ)を使用
+          predictions.push(scoreEntry.score);
+          targets.push(ret);
+          // シンプルなロング/ショートを想定
+          const strategyRet = scoreEntry.score > 0 ? ret : -ret;
+          dailyReturns.push(strategyRet);
+        }
+      }
     }
 
     const backtest: BacktestResult = {
@@ -1692,7 +1901,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
       failureType: "NONE",
       strategicReasoning: reasoning,
       alphaScreening: screening,
-      adoptionReason: `Co-optimization finished with measured OOS Sharpe=${outcome.verification?.metrics?.sharpeRatio.toFixed(3)}; asof=${manifest.asOfDate}`,
+      adoptionReason: `Co-optimization finished with measured OOS Sharpe=${(outcome.verification as any)?.metrics?.sharpeRatio?.toFixed(3) ?? "N/A"}; asof=${manifest.asOfDate}`,
     };
   }
 }

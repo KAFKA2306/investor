@@ -130,7 +130,7 @@ export class LiveMarketDataGateway extends BaseMarketDataGateway {
 export class MarketdataLocalGateway extends BaseMarketDataGateway {
   private readonly db: MarketdataDbCache;
 
-  private constructor(db: MarketdataDbCache) {
+  public constructor(db: MarketdataDbCache) {
     super();
     this.db = db;
   }
@@ -164,9 +164,7 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
     symbol: string,
   ): Promise<Record<string, number>[]> {
     const fins = await this.db.getLatestFin(symbol);
-    return fins.map(
-      (f: Record<string, unknown>) => f as Record<string, number>,
-    );
+    return fins.map((f: unknown) => f as Record<string, number>);
   }
 
   public async getMarketDataEndDate(): Promise<string> {
@@ -198,7 +196,6 @@ export class MarketdataLocalGateway extends BaseMarketDataGateway {
 }
 
 export class ApiVerifyGateway {
-  private readonly jquants = new PeadJquantsGateway();
   private readonly estat = new EstatProvider();
 
   public async getJquantsListedInfo(): Promise<Record<string, unknown>[]> {

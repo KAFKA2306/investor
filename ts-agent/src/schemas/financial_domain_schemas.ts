@@ -91,6 +91,7 @@ export const EventTypeSchema = z.enum([
   "STATE_UPDATED",
   "OUTCOME_GENERATED",
   "AUDIT_COMPLETED",
+  "DOMAIN_PIVOTED",
 ]);
 
 export type EventType = z.infer<typeof EventTypeSchema>;
@@ -165,7 +166,19 @@ export enum CanonicalLogKind {
   ADAPTATION_STRATEGY = "adaptation_strategy",
   VERIFICATION_RECORD = "verification_record",
   ALPHA_DISCOVERY = "alpha_discovery",
+  DAILY_DECISION = "daily_decision",
 }
+
+export const CanonicalLogEnvelopeSchema = z.object({
+  schema: z.string(),
+  id: z.string(),
+  kind: z.union([z.nativeEnum(CanonicalLogKind), z.string()]),
+  asOfDate: z.string().optional(),
+  generatedAt: z.string().datetime(),
+  producerComponent: z.string().optional(),
+  producerVersion: z.string().optional(),
+  payload: z.unknown(),
+});
 
 export enum AlphaStatus {
   ACTIVE = "ACTIVE",

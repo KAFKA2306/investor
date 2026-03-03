@@ -193,7 +193,7 @@ tasks:
       - bun -e 'import { QuantResearchRuntime } from "./src/system/data_pipeline_runtime.ts"; const q=new QuantResearchRuntime(); const m=q.buildManifest(["1301","1332"],"20220831",0.8); console.log(JSON.stringify({proof:"quant_manifest", manifest:m, window:q.deriveVerificationWindow("20220831")},null,2));'
 
   run:newalphasearch:cycle:
-    desc: 自律アルファ探索の1サイクル（theme更新 + 探索 + 改善）
+    desc: 自律アルファ探索の1サイクル（知能循環：theme更新 + 探索 + Audit）
     cmds:
       - task: pipeline:proof-layers
       - task: pipeline:verify
@@ -228,7 +228,7 @@ tasks:
           UQTL_NL_INPUT="$prompt" UQTL_INPUT_CHANNEL="${UQTL_INPUT_CHANNEL:-codex}" task run:newalphasearch'
 
   run:newalphasearch:loop:
-    desc: 自律アルファ探索を連続ループ実行（自律探索/改善/テーマ更新を毎サイクル必須実行）
+    desc: 自律アルファ探索を連続ループ実行（AAARTS：探索/Audit/ドメイン転換を各サイクルで実行）
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -256,21 +256,21 @@ tasks:
           while true; do
             cycle=$((cycle+1));
             run_id="uqtl_$(date +%Y%m%dT%H%M%S)_${cycle}";
-            before_count=$(find logs/unified -maxdepth 1 -type f -name "alpha_discovery_*.json" 2>/dev/null | wc -l | tr -d " ");
+            before_count=$(find logs/unified -maxdepth 1 -type f -name "log_*.json" 2>/dev/null | wc -l | tr -d " ");
             before_plot_ts=$(f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi);
             echo "[loop] cycle=${cycle} run_id=${run_id} channel=${input_channel} nl_input_len=${#nl_input} started_at=$(date -Is)";
             if UQTL_RUN_ID="$run_id" UQTL_LOOP_ITERATION="$cycle" UQTL_INPUT_CHANNEL="$input_channel" UQTL_NL_INPUT="$nl_input" task run:newalphasearch:cycle; then
-              after_count=$(find logs/unified -maxdepth 1 -type f -name "alpha_discovery_*.json" 2>/dev/null | wc -l | tr -d " ");
+              after_count=$(find logs/unified -maxdepth 1 -type f -name "log_*.json" 2>/dev/null | wc -l | tr -d " ");
               after_plot_ts=$(f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi);
               if [ "$after_count" -le "$before_count" ]; then
-                echo "[loop] cycle=${cycle} status=fail reason=no_new_alpha_discovery_log before=${before_count} after=${after_count}";
+                echo "[loop] cycle=${cycle} status=fail reason=no_new_logs before=${before_count} after=${after_count}";
                 failures=$((failures+1));
                 if [ "$failures" -ge "$max_failures" ]; then
                   echo "[loop] termination_reason=max_failures_reached";
                   exit 1;
                 fi
               else
-                latest_file=$(ls -1t logs/unified/alpha_discovery_*.json | head -n1);
+                latest_file=$(ls -1t logs/unified/log_*.json | head -n1);
                 selected_count=$(uv run python3 -c "import json,sys; j=json.load(open(sys.argv[1], encoding=\"utf-8\")); print(len((j.get(\"payload\") or {}).get(\"selected\", [])))" "$latest_file");
                 if [ "${selected_count}" -lt 1 ]; then
                   echo "[loop] cycle=${cycle} status=fail reason=no_selected_alpha latest=${latest_file}";

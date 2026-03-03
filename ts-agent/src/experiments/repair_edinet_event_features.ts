@@ -41,7 +41,7 @@ const parseArgs = (): CliArgs => {
   const parsedArgs = parseCliArgs(process.argv.slice(2));
   const fromRaw = getStringArg(parsedArgs, "--from-date");
   const toRaw = getStringArg(parsedArgs, "--to-date");
-  const fromDate = fromRaw
+  const _fromDate = fromRaw
     ? fsUtils.requirePrerequisites({ from: fromRaw }).from
     : undefined; // Dummy usage to keep requireIsoDate logic if I wanted, but I'll stick to simple check
 

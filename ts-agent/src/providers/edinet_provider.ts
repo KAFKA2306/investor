@@ -1,13 +1,11 @@
 import { Buffer } from "node:buffer";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { z } from "zod";
 import {
   type EdinetDocument,
   type EdinetDocumentListResponse,
   EdinetDocumentSchema,
   type EdinetDocumentType,
-  EdinetDocumentTypeLabel,
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";

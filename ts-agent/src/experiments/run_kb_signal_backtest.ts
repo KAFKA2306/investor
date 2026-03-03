@@ -1,5 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import {
   AlphaKnowledgebase,
@@ -23,7 +22,6 @@ import {
 } from "../schemas/financial_domain_schemas.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { clamp, mean } from "../utils/math_utils.ts";
-import { valueUtils } from "../utils/value_utils.ts";
 
 type CliArgs = {
   topK: number;

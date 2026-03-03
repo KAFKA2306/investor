@@ -1,4 +1,5 @@
 import { core } from "../system/app_runtime_core.ts";
+import { logger } from "../utils/logger.ts";
 
 type ThemeProposalInput = {
   missionContext: string;
@@ -146,6 +147,10 @@ export class OpenAIThemeProvider {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60_000);
 
+    logger.debug("🤖 [LLM Request Body]", {
+      body: JSON.stringify(body, null, 2),
+    });
+
     const response = await fetch(`${this.baseUrl}/responses`, {
       method: "POST",
       headers: {
@@ -160,6 +165,9 @@ export class OpenAIThemeProvider {
       throw new Error(`OpenAI response failed: ${response.status} ${reason}`);
     }
     const json = (await response.json()) as unknown;
+    logger.debug("🤖 [LLM Response JSON]", {
+      json: JSON.stringify(json, null, 2),
+    });
     const outputText = extractOutputText(json);
     if (!outputText) {
       throw new Error("OpenAI response missing output_text");

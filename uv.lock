@@ -842,6 +842,15 @@ http = [
 ]
 
 [[package]]
+name = "ghat"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/27/02/6d7acb1353c77c041d693bcee9a8b37df88e6b9d841081813bba29e486a7/ghat-0.1.3.tar.gz", hash = "sha256:7a9ad4b6e25ee54ac2186371ae290ee11b4a44b4b30b214c68f83b317367ea19", size = 7828, upload-time = "2021-03-25T06:02:18.638Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/26/31b2ea936de4c95abdef27edb6e4a2bee699a3465c2547b063c0541929b6/ghat-0.1.3-py3-none-any.whl", hash = "sha256:36c39e7efdf7e49f50bb16cf4e9aabde6f8e3fb69b84dd282c68dc6ca161778f", size = 9497, upload-time = "2021-03-25T06:02:16.698Z" },
+]
+
+[[package]]
 name = "gitdb"
 version = "4.0.12"
 source = { registry = "https://pypi.org/simple" }
@@ -2733,6 +2742,18 @@ wheels = [
 name = "ts-agent"
 version = "0.1.0"
 source = { virtual = "ts-agent" }
+dependencies = [
+    { name = "ghat" },
+    { name = "matplotlib" },
+    { name = "numpy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ghat", specifier = ">=0.1.3" },
+    { name = "matplotlib" },
+    { name = "numpy" },
+]
 
 [[package]]
 name = "typer"

@@ -12,7 +12,10 @@ export enum LogLevel {
 type LogContext = Record<string, string | number | boolean>;
 
 class Logger {
-  private currentLevel: LogLevel = LogLevel.INFO;
+  private currentLevel: LogLevel =
+    process.env.LOG_LEVEL?.toUpperCase() === "DEBUG"
+      ? LogLevel.DEBUG
+      : LogLevel.INFO;
   private defaultContext: LogContext = {};
 
   public setLevel(level: LogLevel): void {
