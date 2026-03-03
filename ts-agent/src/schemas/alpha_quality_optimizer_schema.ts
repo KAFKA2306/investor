@@ -105,3 +105,35 @@ export const AlphaQualityOptimizerOutputSchema = z.object({
 export type AlphaQualityOptimizerOutput = z.infer<
   typeof AlphaQualityOptimizerOutputSchema
 >;
+
+/**
+ * AlphaQualityOptimizerConfigSchema
+ * Configuration for the AlphaQualityOptimizer agent.
+ * modelId: LLM model identifier for DSL generation and optimization
+ * metricsWeights: Weights for the four quality metrics (must sum close to 1.0)
+ */
+export const AlphaQualityOptimizerConfigSchema = z.object({
+  modelId: z.string().min(1, "Model ID must be non-empty"),
+  metricsWeights: z.object({
+    correlation: z
+      .number()
+      .min(0, "Correlation weight must be >= 0")
+      .max(1, "Correlation weight must be <= 1"),
+    constraint: z
+      .number()
+      .min(0, "Constraint weight must be >= 0")
+      .max(1, "Constraint weight must be <= 1"),
+    orthogonal: z
+      .number()
+      .min(0, "Orthogonal weight must be >= 0")
+      .max(1, "Orthogonal weight must be <= 1"),
+    backtest: z
+      .number()
+      .min(0, "Backtest weight must be >= 0")
+      .max(1, "Backtest weight must be <= 1"),
+  }),
+});
+
+export type AlphaQualityOptimizerConfig = z.infer<
+  typeof AlphaQualityOptimizerConfigSchema
+>;
