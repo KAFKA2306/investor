@@ -37,3 +37,12 @@ ts-agent/data/*.png
 # Large data files
 edinet2dataset/data/
 edinet2dataset/edinet_corpus/
+llm/*/models/
+llm/*/downloads/
+llm/*/.venv/
+*.safetensors
+*.bin
+*.pt
+*.gguf
+*.awq
+ts-agent/data/
