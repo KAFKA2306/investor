@@ -256,11 +256,11 @@ tasks:
           while true; do
             cycle=$((cycle+1));
             run_id="uqtl_$(date +%Y%m%dT%H%M%S)_${cycle}";
-            before_count=$(find logs/unified -maxdepth 1 -type f -name "log_*.json" 2>/dev/null | wc -l | tr -d " ");
+            before_count=$(find -L logs/unified -maxdepth 1 -type f -name "log_*.json" 2>/dev/null | wc -l | tr -d " ");
             before_plot_ts=$(f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi);
             echo "[loop] cycle=${cycle} run_id=${run_id} channel=${input_channel} nl_input_len=${#nl_input} started_at=$(date -Is)";
             if UQTL_RUN_ID="$run_id" UQTL_LOOP_ITERATION="$cycle" UQTL_INPUT_CHANNEL="$input_channel" UQTL_NL_INPUT="$nl_input" task run:newalphasearch:cycle; then
-              after_count=$(find logs/unified -maxdepth 1 -type f -name "log_*.json" 2>/dev/null | wc -l | tr -d " ");
+              after_count=$(find -L logs/unified -maxdepth 1 -type f -name "log_*.json" 2>/dev/null | wc -l | tr -d " ");
               after_plot_ts=$(f=$(ls -1t ts-agent/data/VERIF_*.png 2>/dev/null | head -n1); if [ -n "$f" ]; then stat -c %Y "$f"; else echo 0; fi);
               if [ "$after_count" -le "$before_count" ]; then
                 echo "[loop] cycle=${cycle} status=fail reason=no_new_logs before=${before_count} after=${after_count}";

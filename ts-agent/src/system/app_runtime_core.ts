@@ -408,7 +408,7 @@ export abstract class BaseAgent {
     // ついでにイベントも発行しちゃうよっ！✨
     this.emitEvent("OUTCOME_GENERATED", {
       strategyId: validated.strategyId,
-      score: validated.reasoningScore,
+      score: validated.reasoningScore ?? 0,
       isProductionReady: validated.stability?.isProductionReady ?? false,
     });
 
@@ -425,6 +425,30 @@ export abstract class BaseAgent {
     fn: () => Promise<T>,
   ): Promise<T> {
     return withTelemetry(this.constructor.name, name, fn);
+  }
+
+  /**
+   * 🛠️ スキルを検索して実行するよっ！✨
+   */
+  public async useSkill<T = any, R = any>(name: string, args: T): Promise<R> {
+    const { skillRegistry } = await import("../skills/registry.ts");
+    const skill = skillRegistry.getSkill(name);
+    if (!skill) {
+      throw new Error(`Skill not found: ${name} 😡`);
+    }
+
+    logger.info(`[${this.constructor.name}] Using skill: ${name} 🚀`);
+    // スキーマチェックもしちゃうよ！🛡️
+    const validatedArgs = skill.schema.parse(args);
+    return await skill.execute(validatedArgs);
+  }
+
+  /**
+   * 📂 使えるスキルの一覧を表示するよっ！
+   */
+  public async listAvailableSkills(): Promise<string[]> {
+    const { skillRegistry } = await import("../skills/registry.ts");
+    return skillRegistry.listSkills().map((s) => `${s.name}: ${s.description}`);
   }
 }
 
