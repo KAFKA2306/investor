@@ -22,6 +22,9 @@ edinet2dataset/.env
 .venv/
 *module*
 
+# Git worktrees (isolated development workspaces)
+.worktrees/
+
 # Verification plot offline wheelhouse/lock artifacts
 !ts-agent/vendor/
 !ts-agent/vendor/wheels/
