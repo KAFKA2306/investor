@@ -1,0 +1,8 @@
+{
+  "id": "remote:github:K-Dense-AI/claude-scientific-skills/uspto-database",
+  "tool": "claude",
+  "installed_name": "uspto-database",
+  "type": "remote",
+  "handle": "K-Dense-AI/claude-scientific-skills/uspto-database",
+  "source": "github"
+}

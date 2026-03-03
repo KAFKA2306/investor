@@ -1,0 +1,8 @@
+{
+  "id": "remote:github:K-Dense-AI/claude-scientific-skills/alpha-vantage",
+  "tool": "claude",
+  "installed_name": "alpha-vantage",
+  "type": "remote",
+  "handle": "K-Dense-AI/claude-scientific-skills/alpha-vantage",
+  "source": "github"
+}

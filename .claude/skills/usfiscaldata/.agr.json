@@ -1,0 +1,8 @@
+{
+  "id": "remote:github:K-Dense-AI/claude-scientific-skills/usfiscaldata",
+  "tool": "claude",
+  "installed_name": "usfiscaldata",
+  "type": "remote",
+  "handle": "K-Dense-AI/claude-scientific-skills/usfiscaldata",
+  "source": "github"
+}

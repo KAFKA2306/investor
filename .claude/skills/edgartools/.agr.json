@@ -1,0 +1,8 @@
+{
+  "id": "remote:github:K-Dense-AI/claude-scientific-skills/edgartools",
+  "tool": "claude",
+  "installed_name": "edgartools",
+  "type": "remote",
+  "handle": "K-Dense-AI/claude-scientific-skills/edgartools",
+  "source": "github"
+}
