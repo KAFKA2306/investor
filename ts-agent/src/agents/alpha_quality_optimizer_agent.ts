@@ -18,6 +18,7 @@ import {
   buildQwenAlphaDSLPrompt,
   generateAlphaDSLWithQwen,
 } from "./prompts/qwen_alpha_dsl_prompt.ts";
+import { validateDSL } from "./validators/dsl_validator.ts";
 
 /**
  * AlphaQualityOptimizerAgent
@@ -64,6 +65,10 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
    * Implementation flow:
    * 1. Build Qwen prompt with market context (volatility, symbols)
    * 2. Call Qwen LLM to generate optimized DSL
+   * 2.5. STRICT VALIDATION: Validate DSL with repair loop (Never Fallback to Claude)
+   *      - Rejects invalid functions/factors
+   *      - Attempts simple repairs (e.g., "alpha =" prefix)
+   *      - Throws error if unrepairable (fail fast, no API fallback)
    * 3. Extract factors from DSL
    * 4. Compute all 4 metrics:
    *    - Correlation Score: factor correlation with returns
@@ -96,11 +101,39 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
     );
 
     // Step 2: Generate optimized DSL using Qwen LLM
-    const optimizedDSL = await generateAlphaDSLWithQwen(
+    let optimizedDSL = await generateAlphaDSLWithQwen(
       qwenPrompt,
       this.config.modelId,
     );
     logger.info(`[${this.agentName}] Generated optimized DSL: ${optimizedDSL}`);
+
+    // Step 2.5: CRITICAL VALIDATION - Strict DSL validation with repair (Never Fallback)
+    const validation = validateDSL(optimizedDSL);
+    if (!validation.valid && !validation.repaired) {
+      logger.error(
+        `[${this.agentName}] DSL validation failed and unrepairable:`,
+        {
+          originalDSL: optimizedDSL,
+          errors: validation.errors,
+        },
+      );
+      // NEVER fallback to Claude API - throw error and fail fast
+      throw new Error(
+        `Invalid DSL from Qwen (unrepairable): ${validation.errors.join("; ")}`,
+      );
+    }
+
+    if (validation.repaired) {
+      logger.warn(`[${this.agentName}] DSL auto-repaired:`, {
+        original: optimizedDSL,
+        repaired: validation.repaired,
+      });
+      optimizedDSL = validation.repaired;
+    } else {
+      logger.debug(
+        `[${this.agentName}] DSL validation passed (no repairs needed)`,
+      );
+    }
 
     // Step 3: Extract factors from DSL
     const dslFactors = extractFactorsFromDSL(optimizedDSL);
