@@ -188,7 +188,6 @@ export enum AlphaStatus {
 
 export enum EvidenceSource {
   QUANT_BACKTEST = "QUANT_BACKTEST",
-  LINGUISTIC_ONLY = "LINGUISTIC_ONLY",
 }
 
 export const Ohlc6Schema = z.object({
@@ -351,7 +350,6 @@ export const StandardOutcomeSchema = z.object({
   timestamp: z.string().datetime(),
   summary: z.string(),
   reasoning: z.string().optional(),
-  reasoningScore: z.number().min(0).max(1).optional(),
   strategicReasoning: StrategicReasoningSchema.optional(),
   alphaScreening: AlphaScreeningSchema.optional(),
   modelRegistryStatus: z.string().optional(),

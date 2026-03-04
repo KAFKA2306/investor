@@ -392,40 +392,34 @@ export class AlphaKnowledgebase {
       this.postgresRepos &&
       core.config.database?.canonicalDb?.dualWriteEnabled
     ) {
-      try {
-        const instrumentId = await this.ensureInstrument(input.symbol);
-        // source_document も作っておいてあげるねっ！💖
-        await core.postgres?.query(
-          `
-          INSERT INTO ingest.source_document (source_doc_id, provider, external_id, instrument_id, filed_at, title)
-          VALUES ($1, $2, $3, $4, $5::timestamptz, $6)
-          ON CONFLICT(source_doc_id) DO UPDATE SET
-            instrument_id = EXCLUDED.instrument_id,
-            filed_at = EXCLUDED.filed_at,
-            title = EXCLUDED.title
-          `,
-          [
-            input.docId,
-            input.source,
-            input.docId,
-            instrumentId,
-            input.filedAt,
-            input.title,
-          ],
-        );
-        await this.postgresRepos.documents.upsertDocument({
-          documentId: input.docId,
-          sourceDocId: input.docId,
+      const instrumentId = await this.ensureInstrument(input.symbol);
+      // source_document も作っておいてあげるねっ！💖
+      await core.postgres?.query(
+        `
+        INSERT INTO ingest.source_document (source_doc_id, provider, external_id, instrument_id, filed_at, title)
+        VALUES ($1, $2, $3, $4, $5::timestamptz, $6)
+        ON CONFLICT(source_doc_id) DO UPDATE SET
+          instrument_id = EXCLUDED.instrument_id,
+          filed_at = EXCLUDED.filed_at,
+          title = EXCLUDED.title
+        `,
+        [
+          input.docId,
+          input.source,
+          input.docId,
           instrumentId,
-          docType: input.source,
-          filedAt: input.filedAt,
-          title: input.title,
-        });
-      } catch (error) {
-        logger.warn(
-          `[AlphaKnowledgebase] Postgres dual-write failed for document ${input.docId}: ${String(error)}`,
-        );
-      }
+          input.filedAt,
+          input.title,
+        ],
+      );
+      await this.postgresRepos.documents.upsertDocument({
+        documentId: input.docId,
+        sourceDocId: input.docId,
+        instrumentId,
+        docType: input.source,
+        filedAt: input.filedAt,
+        title: input.title,
+      });
     }
   }
 
@@ -472,21 +466,15 @@ export class AlphaKnowledgebase {
       this.postgresRepos &&
       core.config.database?.canonicalDb?.dualWriteEnabled
     ) {
-      try {
-        await this.postgresRepos.documents.upsertSection({
-          sectionId,
-          documentId: input.docId,
-          sectionName: input.sectionName,
-          content: input.content,
-          sentiment: input.sentiment,
-          riskTermCount: input.riskTermCount,
-          aiTermCount: input.aiTermCount,
-        });
-      } catch (error) {
-        logger.warn(
-          `[AlphaKnowledgebase] Postgres dual-write failed for section ${sectionId}: ${String(error)}`,
-        );
-      }
+      await this.postgresRepos.documents.upsertSection({
+        sectionId,
+        documentId: input.docId,
+        sectionName: input.sectionName,
+        content: input.content,
+        sentiment: input.sentiment,
+        riskTermCount: input.riskTermCount,
+        aiTermCount: input.aiTermCount,
+      });
     }
   }
 
@@ -556,23 +544,17 @@ export class AlphaKnowledgebase {
       this.postgresRepos &&
       core.config.database?.canonicalDb?.dualWriteEnabled
     ) {
-      try {
-        for (const row of rows) {
-          const instrumentId = await this.ensureInstrument(row.symbol);
-          await this.postgresRepos.signals.upsertSignal({
-            signalId: row.signalId,
-            instrumentId,
-            tradingDate: row.date,
-            combinedAlpha: row.combinedAlpha,
-            riskDelta: row.riskDelta,
-            pead1d: row.pead1d,
-            pead5d: row.pead5d,
-          });
-        }
-      } catch (error) {
-        logger.warn(
-          `[AlphaKnowledgebase] Postgres dual-write failed for signals: ${String(error)}`,
-        );
+      for (const row of rows) {
+        const instrumentId = await this.ensureInstrument(row.symbol);
+        await this.postgresRepos.signals.upsertSignal({
+          signalId: row.signalId,
+          instrumentId,
+          tradingDate: row.date,
+          combinedAlpha: row.combinedAlpha,
+          riskDelta: row.riskDelta,
+          pead1d: row.pead1d,
+          pead5d: row.pead5d,
+        });
       }
     }
   }
@@ -623,33 +605,27 @@ export class AlphaKnowledgebase {
       this.postgresRepos &&
       core.config.database?.canonicalDb?.dualWriteEnabled
     ) {
-      try {
-        for (const row of rows) {
-          const instrumentId = await this.ensureInstrument(row.symbol);
-          await this.postgresRepos.features.upsertFeatureVersion({
-            featureName: "edinet_event",
-            version: row.featureVersion,
-            formula: "migrated_from_sqlite",
-          });
-          await this.postgresRepos.features.upsertEventFeature({
-            eventFeatureId: row.eventId,
-            sourceDocId: row.docId,
-            instrumentId,
-            filedAt: row.filedAt,
-            featureName: "edinet_event",
-            featureVersion: row.featureVersion,
-            riskDelta: row.riskDelta,
-            sentiment: row.sentiment,
-            aiExposure: row.aiExposure,
-            kgCentrality: row.kgCentrality,
-            correctionFlag: row.correctionFlag,
-            correctionCount90d: row.correctionCount90d,
-          });
-        }
-      } catch (error) {
-        logger.warn(
-          `[AlphaKnowledgebase] Postgres dual-write failed for event features: ${String(error)}`,
-        );
+      for (const row of rows) {
+        const instrumentId = await this.ensureInstrument(row.symbol);
+        await this.postgresRepos.features.upsertFeatureVersion({
+          featureName: "edinet_event",
+          version: row.featureVersion,
+          formula: "migrated_from_sqlite",
+        });
+        await this.postgresRepos.features.upsertEventFeature({
+          eventFeatureId: row.eventId,
+          sourceDocId: row.docId,
+          instrumentId,
+          filedAt: row.filedAt,
+          featureName: "edinet_event",
+          featureVersion: row.featureVersion,
+          riskDelta: row.riskDelta,
+          sentiment: row.sentiment,
+          aiExposure: row.aiExposure,
+          kgCentrality: row.kgCentrality,
+          correctionFlag: row.correctionFlag,
+          correctionCount90d: row.correctionCount90d,
+        });
       }
     }
   }
@@ -719,33 +695,27 @@ export class AlphaKnowledgebase {
       core.postgres &&
       core.config.database?.canonicalDb?.dualWriteEnabled
     ) {
-      try {
-        for (const row of rows) {
-          await core.postgres.query(
-            `
-            INSERT INTO feature.signal_gate_decision (signal_id, gate_name, trading_date, passed, threshold_text, actual_value, reason)
-            VALUES ($1, $2, $3::date, $4, $5, $6, $7)
-            ON CONFLICT(signal_id, gate_name) DO UPDATE SET
-              trading_date = EXCLUDED.trading_date,
-              passed = EXCLUDED.passed,
-              threshold_text = EXCLUDED.threshold_text,
-              actual_value = EXCLUDED.actual_value,
-              reason = EXCLUDED.reason
-            `,
-            [
-              row.signalId,
-              row.gateName,
-              row.date,
-              row.passed,
-              row.threshold,
-              row.actualValue,
-              row.reason,
-            ],
-          );
-        }
-      } catch (error) {
-        logger.warn(
-          `[AlphaKnowledgebase] Postgres dual-write failed for gate decisions: ${String(error)}`,
+      for (const row of rows) {
+        await core.postgres.query(
+          `
+          INSERT INTO feature.signal_gate_decision (signal_id, gate_name, trading_date, passed, threshold_text, actual_value, reason)
+          VALUES ($1, $2, $3::date, $4, $5, $6, $7)
+          ON CONFLICT(signal_id, gate_name) DO UPDATE SET
+            trading_date = EXCLUDED.trading_date,
+            passed = EXCLUDED.passed,
+            threshold_text = EXCLUDED.threshold_text,
+            actual_value = EXCLUDED.actual_value,
+            reason = EXCLUDED.reason
+          `,
+          [
+            row.signalId,
+            row.gateName,
+            row.date,
+            row.passed,
+            row.threshold,
+            row.actualValue,
+            row.reason,
+          ],
         );
       }
     }
@@ -814,21 +784,15 @@ export class AlphaKnowledgebase {
       this.postgresRepos &&
       core.config.database?.canonicalDb?.dualWriteEnabled
     ) {
-      try {
-        await this.postgresRepos.evaluation.upsertBacktestRun({
-          runId: input.runId,
-          strategyId: input.strategyId,
-          fromDate: input.fromDate,
-          toDate: input.toDate,
-          sharpe: input.sharpe,
-          totalReturn: input.totalReturn,
-          maxDrawdown: input.maxDrawdown,
-        });
-      } catch (error) {
-        logger.warn(
-          `[AlphaKnowledgebase] Postgres dual-write failed for backtest run ${input.runId}: ${String(error)}`,
-        );
-      }
+      await this.postgresRepos.evaluation.upsertBacktestRun({
+        runId: input.runId,
+        strategyId: input.strategyId,
+        fromDate: input.fromDate,
+        toDate: input.toDate,
+        sharpe: input.sharpe,
+        totalReturn: input.totalReturn,
+        maxDrawdown: input.maxDrawdown,
+      });
     }
   }
 

@@ -26,18 +26,6 @@ const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-5-nano";
 const DEFAULT_BASE_URL =
   process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
 
-const fallbackTheme = (): ThemeProposal => ({
-  theme: "Adaptive Regime Cross-Signal",
-  hypothesis:
-    "Regime transition and microstructure divergence jointly improve short-horizon alpha detection.",
-  featureSignature: ["macro_iip", "macro_cpi", "volume", "close"],
-  noveltyRationale:
-    "Fallback theme used because remote proposal was unavailable.",
-  ideaHashHint: "fallback_adaptive_regime_cross_signal",
-  model: DEFAULT_MODEL,
-  source: "FALLBACK",
-});
-
 const extractOutputText = (responseJson: unknown): string => {
   if (!responseJson || typeof responseJson !== "object") return "";
   const record = responseJson as Record<string, unknown>;
@@ -63,11 +51,18 @@ const extractOutputText = (responseJson: unknown): string => {
 };
 
 const normalizeFeatureSignature = (items: unknown): string[] => {
-  if (!Array.isArray(items)) return [];
-  return items
+  if (!Array.isArray(items)) {
+    throw new Error("normalizeFeatureSignature: items must be an array");
+  }
+  const result = items
     .map((x) => (typeof x === "string" ? x.trim().toLowerCase() : ""))
     .filter((x): x is string => x.length > 0)
     .slice(0, 8);
+
+  if (result.length === 0) {
+    throw new Error("normalizeFeatureSignature: No valid features found");
+  }
+  return result;
 };
 
 export class OpenAIThemeProvider {
@@ -81,7 +76,9 @@ export class OpenAIThemeProvider {
 
   public async propose(input: ThemeProposalInput): Promise<ThemeProposal> {
     if (!this.isEnabled()) {
-      return fallbackTheme();
+      throw new Error(
+        "OpenAIThemeProvider is disabled: OPENAI_API_KEY is missing.",
+      );
     }
 
     const systemPrompt =

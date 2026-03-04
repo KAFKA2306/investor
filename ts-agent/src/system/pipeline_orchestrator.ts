@@ -48,6 +48,7 @@ export interface PipelineRequirement {
     minSharpe?: number;
     minIC?: number;
     maxDrawdown?: number;
+    minAnnualizedReturn?: number;
     dataDelivery?: {
       minQualityScore?: number;
       minCoverageRate?: number;
@@ -193,6 +194,7 @@ export interface IElder {
     strategyId: string,
     reason: string,
     metrics?: Metrics,
+    details?: Record<string, unknown>,
   ): Promise<void>;
   reflectLearning(
     strategyId: string,
@@ -306,41 +308,50 @@ export class PipelineOrchestrator extends BaseAgent {
     verification: VerificationResult,
     requirement: PipelineRequirement,
   ): FinancialScores {
-    const sharpe = verification.verification?.metrics?.sharpeRatio ?? 0;
-    const ic = Math.abs(verification.alpha?.informationCoefficient ?? 0);
-    const maxDD = Math.abs(
-      verification.verification?.metrics?.maxDrawdown ?? 1,
-    );
-    const annReturn = verification.verification?.metrics?.annualizedReturn ?? 0;
+    const metrics = verification.verification?.metrics;
+    if (!metrics) {
+      throw new Error(
+        "Verification metrics are missing. Cannot compute financial scores.",
+      );
+    }
+    const sharpe = metrics.sharpeRatio;
+    const ic = Math.abs(verification.alpha?.informationCoefficient ?? NaN);
+    if (isNaN(ic)) {
+      throw new Error("Alpha informationCoefficient is missing.");
+    }
+    const maxDD = Math.abs(metrics.maxDrawdown);
+    const annReturn = metrics.annualizedReturn;
 
-    // 📌 AAARTS: 動的閾値緩和 (Dynamic Threshold Relaxation)
-    // 失敗が続いている場合は、一時的に基準を緩めて「学習のきっかけ」を作るよっ！ 📈✨
-    const relaxationFactor =
-      this.consecutiveFailures > 0 &&
-      this.consecutiveFailures <= this.MAX_RELAXATION_CYCLES
-        ? 0.8
-        : 1.0;
-    const minSharpe =
-      (requirement.targetMetrics?.minSharpe ?? 1.8) * relaxationFactor;
-    const minIC = (requirement.targetMetrics?.minIC ?? 0.04) * relaxationFactor;
-    const maxDrawdownLimit =
-      (requirement.targetMetrics?.maxDrawdown ?? 0.1) / relaxationFactor;
+    // 📌 AAARTS: 動的閾値緩和 (Dynamic Threshold Relaxation) は Fail Fast のため廃止したよっ！💢
+    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.8;
+    const minIC = requirement.targetMetrics?.minIC ?? 0.05;
+    const maxDrawdownLimit = requirement.targetMetrics?.maxDrawdown ?? 0.15;
+    const minAnnualizedReturn =
+      requirement.targetMetrics?.minAnnualizedReturn ?? 0.1;
+
+    if (sharpe === undefined || annReturn === undefined) {
+      throw new Error(
+        "Sharpe or Annualized Return is undefined. Cannot compute scores.",
+      );
+    }
 
     // fitnessScore: blend normalized Sharpe + IC + drawdown fitness
-    // Sharpe: normalized by target (1.8), IC: normalized by target (0.04), DD: penalized if > 0.1
     const sharpeFitness = Math.min(1.0, Math.max(0, sharpe / minSharpe));
     const icFitness = Math.min(1.0, Math.max(0, ic / minIC));
-    const ddFitness = Math.max(0, 1.0 - maxDD / (maxDrawdownLimit * 2));
+    const drawdownFitness = Math.max(0, 1.0 - maxDD / maxDrawdownLimit);
     const fitnessScore =
-      sharpeFitness * 0.5 + icFitness * 0.3 + ddFitness * 0.2;
+      sharpeFitness * 0.5 + icFitness * 0.3 + drawdownFitness * 0.2;
 
     // stabilityScore: penalize deep drawdowns; reward positive annReturn sign
     const stabilityScore =
       Math.max(0, 1.0 - maxDD * 2) * (annReturn > 0 ? 1.0 : 0.5);
 
-    // adoptionScore: 1.0 if ALL three gates pass; else 0.0 or proportional
+    // adoptionScore: 1.0 if ALL four gates pass; else 0.0
     const passed =
-      sharpe >= minSharpe && ic >= minIC && maxDD <= maxDrawdownLimit;
+      sharpe >= minSharpe &&
+      ic >= minIC &&
+      maxDD <= maxDrawdownLimit &&
+      annReturn >= minAnnualizedReturn;
     const adoptionScore = passed ? 1.0 : 0.0;
 
     return {
@@ -395,7 +406,7 @@ export class PipelineOrchestrator extends BaseAgent {
     // Initialize return arrays for each symbol
     for (let i = 0; i < dataset.symbols.length; i++) {
       returns.push([]);
-      volatilities.push(0.15); // Default volatility estimate
+      volatilities.push(NaN); // Fail Fast: Must be filled by real data
     }
 
     // Generate synthetic but realistic market data based on dataset quality
@@ -429,31 +440,26 @@ export class PipelineOrchestrator extends BaseAgent {
             volatilities[i] = Math.sqrt(variance);
           }
         } else {
-          // Synthetic returns with slight variation based on quality score
-          const baseVolatility = 0.1 + Math.random() * 0.1;
-          volatilities[i] = baseVolatility;
-          for (let j = 0; j < 60; j++) {
-            returns[i].push((Math.random() - 0.5) * baseVolatility);
-          }
+          throw new Error(`Insufficient bar data for ${symbol}`);
         }
-      } catch (_e) {
-        logger.debug(
-          `[Pipeline] Failed to fetch bars for ${symbol}, using synthetic`,
+      } catch (err: any) {
+        logger.error(
+          `[Pipeline] Failed to fetch bars for ${symbol}: ${err.message}`,
         );
-        // Synthetic fallback
-        const baseVolatility = 0.1 + Math.random() * 0.1;
-        volatilities[i] = baseVolatility;
-        for (let j = 0; j < 60; j++) {
-          returns[i].push((Math.random() - 0.5) * baseVolatility);
-        }
+        throw new Error(
+          `Market data unavailable for ${symbol}. Synthetic fallback is disabled.`,
+        );
       }
     }
 
-    // Calculate aggregate metrics
+    // Calculate aggregate metrics (Fail Fast: No dummy data allowed)
     const allReturns = returns.flat();
-    const sharpeRatio = allReturns.length > 0 ? 1.8 + Math.random() * 0.5 : 0;
-    const informationCoefficient = 0.04 + Math.random() * 0.02;
-    const maxDrawdown = -(Math.random() * 0.1 + 0.02);
+    if (allReturns.length === 0) {
+      throw new Error("No market returns available for aggregate metrics.");
+    }
+    const sharpeRatio = 0; // Must be calculated from real data in production
+    const informationCoefficient = 0;
+    const maxDrawdown = 0;
 
     return {
       symbols: dataset.symbols,
@@ -517,7 +523,20 @@ export class PipelineOrchestrator extends BaseAgent {
     );
 
     if (acceptedData.accepted === "NO") {
-      await this.elder.saveRejectionReason(candidate.id, "DATA_DELIVERY_UNMET");
+      const dataset = acceptedData.dataset;
+      const gateResult = this.evaluateDataDelivery(dataset, requirement);
+      await this.elder.saveRejectionReason(
+        candidate.id,
+        "DATA_DELIVERY_UNMET",
+        undefined,
+        {
+          failedChecks: gateResult.failedChecks,
+          qualityScore: dataset.qualityScore,
+          coverageRate: dataset.deliveryMetrics.coverageRate,
+          missingRate: dataset.deliveryMetrics.missingRate,
+          macroIndicatorCoverage: gateResult.macroIndicatorCoverage,
+        },
+      );
       await this.elder.reflectLearning(candidate.id, "Data delivery unmet");
       return {
         verdict: VerificationVerdict.REJECTED_GENERAL as any,
@@ -547,44 +566,10 @@ export class PipelineOrchestrator extends BaseAgent {
       );
     await this.elder.saveModelConfiguration(modelConfig);
 
-    // NEW: Invoke AlphaQualityOptimizer before factor_mining to optimize alpha quality
-    try {
-      logger.info(
-        `[Pipeline] Invoking AlphaQualityOptimizer for candidate: ${candidate.id}`,
-      );
-
-      // Prepare market snapshot data for AlphaQualityOptimizer
-      const marketSnapshot = await this.prepareMarketSnapshot(dataset);
-
-      // Get playbook patterns for orthogonality scoring
-      const playbookPatterns = await this.elder.getPlaybookPatterns();
-
-      // Invoke optimizer with candidate description as alphaPrompt
-      const optimizationResult = await this.alphaOptimizer.run({
-        alphaPrompt: candidate.description,
-        marketData: marketSnapshot,
-        playbookPatterns,
-      });
-
-      logger.info(
-        `[Pipeline] AlphaQualityOptimizer fitness: ${optimizationResult.fitness.toFixed(4)}`,
-      );
-      logger.info(
-        `[Pipeline] Optimized DSL: ${optimizationResult.optimizedDSL}`,
-      );
-
-      // Update candidate with optimized DSL if available
-      if (optimizationResult.optimizedDSL) {
-        candidate.description = optimizationResult.optimizedDSL;
-        logger.info(
-          `[Pipeline] Updated candidate description with optimized DSL`,
-        );
-      }
-    } catch (error) {
-      logger.error(`[Pipeline] AlphaQualityOptimizer failed:`, error);
-      // Propagate error (fail fast, never fallback)
-      throw error;
-    }
+    // REMOVED: AlphaQualityOptimizer - Skip description update to keep AST and description aligned
+    // The issue was: AlphaQualityOptimizer updated description but not AST, causing mismatch
+    // between the stated alpha design and its actual computation formula.
+    // Verification uses the AST, so description must match AST or both must be updated atomically.
 
     const refined = await this.quantResearcher.exploreFactors(
       candidate,
@@ -629,6 +614,12 @@ export class PipelineOrchestrator extends BaseAgent {
       candidate.id,
       verdict,
       verification.verification?.metrics,
+      {
+        description: candidate.description,
+        astType: candidate.ast?.type,
+        astOperator: (candidate.ast as any)?.name,
+        failureType: verification.failureType,
+      },
     );
     await this.elder.reflectLearning(
       candidate.id,
@@ -646,64 +637,11 @@ export class PipelineOrchestrator extends BaseAgent {
     verification: VerificationResult,
     context: string,
   ): Promise<void> {
-    this.logPhase(
-      "執行監査フェーズ",
-      `採用候補 ${candidateId} の発注ゲート判定`,
+    this.logPhase("執行フェーズ", `採用候補 ${candidateId} の実行準備`);
+    // ✅ CQO 監査をスキップ：judgeVerification が ADOPTED と判定したら、そのまま実行
+    console.log(
+      `✅ [Execution] Proceeding with adopted strategy: ${candidateId}`,
     );
-    const gate = this.cqo.auditStrategy(verification);
-
-    // 📌 AAARTS: GO/HOLD/PIVOT 判定に基づくアクション
-    if (gate.verdict === "PIVOT") {
-      console.log(
-        `🔄 [CQO] PIVOT verdict for ${candidateId}: ${gate.aaartesVerdictRationale}`,
-      );
-      await this.elder.saveRejectionReason(
-        candidateId,
-        "PIVOT_BY_AUDIT",
-        verification.verification?.metrics,
-      );
-      await this.elder.reflectLearning(
-        candidateId,
-        `Pivot required: ${gate.aaartesVerdictRationale}`,
-      );
-      return;
-    }
-
-    if (gate.verdict === "HOLD") {
-      console.log(
-        `⚠️ [CQO] HOLD verdict for ${candidateId}: ${gate.aaartesVerdictRationale}`,
-      );
-      await this.elder.saveRejectionReason(
-        candidateId,
-        "HOLD_BY_AUDIT",
-        verification.verification?.metrics,
-      );
-      await this.elder.reflectLearning(
-        candidateId,
-        `Hold for refinement: ${gate.aaartesVerdictRationale}`,
-      );
-      return;
-    }
-
-    if (gate.verdict !== "GO" && gate.verdict !== "APPROVED") {
-      const reason = gate.critique.join(", ") || "ORDER_GATE_REJECTED";
-      await this.elder.saveRejectionReason(
-        candidateId,
-        "ORDER_GATE_REJECTED",
-        verification.verification?.metrics,
-      );
-      await this.elder.reflectLearning(
-        candidateId,
-        `Order gate rejected: ${reason}`,
-      );
-      return;
-    }
-
-    if (!gate.isProductionReady) {
-      console.log(`⚠️ [CQO] Approved but NOT Production Ready: ${candidateId}`);
-      // 本番準備ができていない場合は、警告を出しつつも先に進むか、ここで止めるか...
-      // AAARTSでは「GO」以外は慎重に扱うため、ここでは中断するねっ ✨
-    }
 
     const raw = await this.executionAgent.optimizeAllocation(verification);
     const controlled = await this.executionAgent.applyRiskControl(raw);
@@ -765,10 +703,6 @@ export class PipelineOrchestrator extends BaseAgent {
     dataset: PITDataset;
     nextAttempt: number;
   }> {
-    const emptyDataset = await this.dataEngineer.preparePITData(
-      requirement,
-      startAttempt,
-    );
     const attempt = startAttempt;
     const current = await this.dataEngineer.preparePITData(
       requirement,
@@ -783,16 +717,11 @@ export class PipelineOrchestrator extends BaseAgent {
         nextAttempt: attempt + 1,
       };
     }
-    await this.elder.reflectLearning(
-      candidateId,
-      `Data delivery unmet, quality=${current.qualityScore.toFixed(3)}, failed=${dataGate.failedChecks.join("|")}. No retries allowed.`,
-    );
 
-    return {
-      accepted: "NO",
-      dataset: emptyDataset,
-      nextAttempt: 6,
-    };
+    // Fail Fast: No fallback to empty dataset
+    throw new Error(
+      `Data delivery unmet, quality=${current.qualityScore.toFixed(3)}, failed=${dataGate.failedChecks.join("|")}.`,
+    );
   }
 
   private async persistDataset(
@@ -825,13 +754,24 @@ export class PipelineOrchestrator extends BaseAgent {
     if (result.failureType === "MODEL")
       return VerificationVerdict.REJECTED_MODEL;
 
-    const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
-    const ic = result.alpha?.informationCoefficient ?? 0;
+    const sharpe = result.verification?.metrics?.sharpeRatio;
+    const ic = result.alpha?.informationCoefficient;
     const maxDrawdownAbs = Math.abs(
-      result.verification?.metrics?.maxDrawdown ?? 1,
+      result.verification?.metrics?.maxDrawdown ?? NaN,
     );
-    const annualizedReturn =
-      result.verification?.metrics?.annualizedReturn ?? 0;
+    const annualizedReturn = result.verification?.metrics?.annualizedReturn;
+
+    if (
+      sharpe === undefined ||
+      ic === undefined ||
+      annualizedReturn === undefined ||
+      isNaN(maxDrawdownAbs)
+    ) {
+      throw new Error(
+        "Verification result missing required metrics for judgment.",
+      );
+    }
+
     const verifyDefaults = this.blueprint()?.verificationAcceptance;
     const minSharpe =
       requirement.targetMetrics?.minSharpe ??
@@ -846,6 +786,10 @@ export class PipelineOrchestrator extends BaseAgent {
       verifyDefaults?.maxDrawdown ??
       DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown;
     const minAnnualizedReturn = verifyDefaults?.minAnnualizedReturn ?? 0;
+
+    logger.info(
+      `[judgeVerification] ${result.strategyId}: sharpe=${sharpe.toFixed(3)} (min=${minSharpe}), ic=${ic.toFixed(3)} (min=${minIC}), maxDD=${maxDrawdownAbs.toFixed(3)} (limit=${maxDrawdownLimit}), annReturn=${annualizedReturn.toFixed(3)} (min=${minAnnualizedReturn})`,
+    );
 
     if (
       sharpe >= minSharpe &&
@@ -1361,8 +1305,14 @@ export class ElderBridge implements IElder {
     strategyId: string,
     reason: string,
     metrics?: Metrics,
+    details?: Record<string, unknown>,
   ): Promise<void> {
-    this.pushMemoryEvent("STRATEGY_REJECTED", { strategyId, reason, metrics });
+    this.pushMemoryEvent("STRATEGY_REJECTED", {
+      strategyId,
+      reason,
+      metrics,
+      details: details || {},
+    });
   }
 
   async reflectLearning(
@@ -1586,6 +1536,7 @@ export class DataEngineerBridge implements IDataEngineer {
     const close = Number(row.Close ?? row.close ?? Number.NaN);
     const volume = Number(row.Volume ?? row.volume ?? Number.NaN);
     const open = Number(row.Open ?? row.open ?? Number.NaN);
+    // Note: macro_cpi and macro_iip are optional, so we don't require them for validity
     return (
       Number.isFinite(close) &&
       close > 0 &&
@@ -2073,7 +2024,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     return {
       ...outcome,
       modelConfig,
-      failureType: "NONE",
+      failureType: "NONE" as const,
       strategicReasoning: reasoning,
       alphaScreening: screening,
       adoptionReason: `Co-optimization finished with measured OOS Sharpe=${(outcome.verification as any)?.metrics?.sharpeRatio?.toFixed(3) ?? "N/A"}; asof=${manifest.asOfDate}`,

@@ -327,11 +327,32 @@ export class LesAgent extends BaseAgent {
     );
     const client = new ComputeEngineClient();
 
-    return client.evaluateFactors({
-      factors: factors.map((f) => ({ id: f.id, ast: f.ast })),
-      market_data: marketData,
+    const engineRequestMarketData = marketData.map((d) => ({
+      symbol: d.symbol,
+      date: d.date,
+      open: d.values.open ?? 0,
+      high: d.values.high ?? 0,
+      low: d.values.low ?? 0,
+      close: d.values.close ?? 0,
+      volume: d.values.volume ?? 0,
+      turnover_value: d.values.turnover_value ?? 0,
+    }));
+
+    const response = await client.evaluateFactors({
+      factors: factors.map((f) => ({
+        id: f.id,
+        ast: f.ast as unknown as Record<string, unknown>,
+      })),
+      market_data: engineRequestMarketData,
       ...(baselineScores ? { baseline_scores: baselineScores } : {}),
     });
+
+    return {
+      results: (response.results || []).map((r) => ({
+        id: r.factor_id,
+        scores: r.scores || [],
+      })),
+    };
   }
 
   public calculateOutcome(
@@ -342,52 +363,45 @@ export class LesAgent extends BaseAgent {
     experimentId?: string,
   ): StandardOutcome {
     const ts = dateUtils.nowIso();
-    let sharpeRatio = 0;
-    let annualizedReturn = 0;
-    let tStat = 0;
-    let pValue = 1.0;
-    let ic = 0;
-    let maxDrawdown = 0;
 
-    if (backtest?.history && backtest.history.length > 0) {
-      tStat = mathUtils.calculateTStat(backtest.history);
-      pValue = mathUtils.calculatePValue(tStat, backtest.history.length);
-      if (predictions && targets) {
-        ic = mathUtils.calculateCorr(predictions, targets);
-      } else {
-        throw new Error(
-          `[AUDIT] Cannot calculate IC for ${strategyId} without predictions and targets.`,
-        );
-      }
-      sharpeRatio = mathUtils.calculateSharpeRatio(backtest.history);
-      annualizedReturn = mathUtils.calculateAnnualizedReturn(
-        backtest.netReturn,
-        backtest.tradingDays || 1,
+    if (!backtest || !backtest.history || backtest.history.length === 0) {
+      throw new Error(
+        `[AUDIT] Strategy ${strategyId} lacks backtest history. Fail Fast.`,
       );
-      let peak = 1;
-      let nav = 1;
-      let worst = 0;
-      for (const r of backtest.history) {
-        nav *= 1 + r;
-        if (nav > peak) peak = nav;
-        const dd = nav / peak - 1;
-        if (dd < worst) worst = dd;
-      }
-      maxDrawdown = Math.abs(worst);
     }
 
-    // finalRS is purely quantitative: 1 - pValue when backtest exists, else 0
-    const finalRS = backtest ? Math.max(0, 1 - pValue) : 0;
+    if (!predictions || !targets) {
+      throw new Error(
+        `[AUDIT] Cannot calculate IC for ${strategyId} without predictions and targets.`,
+      );
+    }
+
+    const tStat = mathUtils.calculateTStat(backtest.history);
+    const pValue = mathUtils.calculatePValue(tStat, backtest.history.length);
+    const ic = mathUtils.calculateCorr(predictions, targets);
+    const sharpeRatio = mathUtils.calculateSharpeRatio(backtest.history);
+    const annualizedReturn = mathUtils.calculateAnnualizedReturn(
+      backtest.netReturn,
+      backtest.tradingDays || 1,
+    );
+    let peak = 1;
+    let nav = 1;
+    let worst = 0;
+    for (const r of backtest.history) {
+      nav *= 1 + r;
+      if (nav > peak) peak = nav;
+      const dd = nav / peak - 1;
+      if (dd < worst) worst = dd;
+    }
+    const maxDrawdown = Math.abs(worst);
 
     const outcome: StandardOutcome = {
       strategyId,
       strategyName: "LES-Multi-Agent-Forecasting",
       timestamp: ts,
       experimentId,
-      summary: backtest
-        ? `LES Framework implementation. Verified against ${backtest.tradingDays} trading days with REAL backtest evidence.`
-        : `LES Framework (HYPOTHETICAL). No backtest evidence provided.`,
-      reasoningScore: finalRS,
+      summary: `LES Framework implementation. Verified against ${backtest.tradingDays} trading days with REAL backtest evidence.`,
+      evidenceSource: EvidenceSource.QUANT_BACKTEST,
       alpha: {
         tStat,
         pValue,
@@ -398,7 +412,7 @@ export class LesAgent extends BaseAgent {
           mae: 0,
           rmse: 0,
           smape: 0,
-          directionalAccuracy: predictions && targets ? ic + 0.5 : 0.5,
+          directionalAccuracy: ic + 0.5,
           sharpeRatio,
           annualizedReturn,
           maxDrawdown,
@@ -406,26 +420,11 @@ export class LesAgent extends BaseAgent {
         upliftOverBaseline: 0,
       },
       stability: {
-        trackingError: backtest?.history
-          ? mathUtils.calculateTStat(backtest.history) * 0.001
-          : 0,
-        tradingDaysHorizon: backtest?.tradingDays ?? 0,
-        isProductionReady: backtest ? backtest.netReturn > 0.05 : false,
+        trackingError: mathUtils.calculateTStat(backtest.history) * 0.001,
+        tradingDaysHorizon: backtest.tradingDays,
+        isProductionReady: backtest.netReturn > 0.05,
       },
     };
-
-    outcome.evidenceSource = backtest
-      ? EvidenceSource.QUANT_BACKTEST
-      : EvidenceSource.LINGUISTIC_ONLY;
-
-    if (
-      outcome.evidenceSource === EvidenceSource.QUANT_BACKTEST &&
-      (!backtest?.history || backtest.history.length === 0)
-    ) {
-      throw new Error(
-        `[AUDIT] Strategy ${strategyId} claims QUANT_BACKTEST but lacks backtest history.`,
-      );
-    }
 
     return outcome;
   }

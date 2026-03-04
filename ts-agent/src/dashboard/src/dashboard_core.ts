@@ -140,7 +140,6 @@ export const AlphaDiscoveryPayloadSchema = z.object({
   date: z.string().regex(/^\d{8}$/),
   generatedAt: z.string().datetime(),
   stage: z.literal("DISCOVERY_PRECHECK"),
-  scoreType: z.literal("LINGUISTIC_PRECHECK"),
   evidence: z.object({
     sampleSize: z.number().int().positive(),
     selectedCount: z.number().int().nonnegative(),
