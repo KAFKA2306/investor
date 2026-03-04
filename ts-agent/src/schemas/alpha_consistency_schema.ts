@@ -82,6 +82,13 @@ export function extractVariablesFromDescription(
 /**
  * Validate that description and AST are consistent
  * Returns a detailed report of mismatches
+ *
+ * Logic (from AAARTS design spec):
+ * - Extract variables from description text
+ * - Extract variables from AST
+ * - Check if both sets are equal for strict consistency
+ * - Collect mismatched variables (union of missing and extra)
+ * - Generate [AUDIT] error message if inconsistent
  */
 export function validateAlphaCandidateConsistency(
   description: string,
@@ -90,6 +97,7 @@ export function validateAlphaCandidateConsistency(
   isConsistent: boolean;
   descriptionVars: string[];
   astVars: string[];
+  mismatchVars: string[];
   missingInAST: string[];
   extraInAST: string[];
   errorMessage?: string;
@@ -106,22 +114,29 @@ export function validateAlphaCandidateConsistency(
   // Variables in AST but not in description
   const extraInAST = astVars.filter((v) => !descVarSet.has(v));
 
+  // Combined mismatch variables (per spec)
+  const mismatchVars = Array.from(new Set([...missingInAST, ...extraInAST]));
+
   // Strict check: if description mentions a specific variable,
   // AST must include it. However, AST can have extra variables
   // (e.g., if AST is more granular than description suggests).
   const isConsistent = missingInAST.length === 0;
 
+  // Generate [AUDIT] error message per Fail Fast philosophy
+  const errorMessage = isConsistent
+    ? undefined
+    : `[AUDIT] Alpha description-AST mismatch: description mentions [${missingInAST.join(
+        ", ",
+      )}] but AST does not include them`;
+
   return {
     isConsistent,
     descriptionVars: descVars,
     astVars: astVars,
+    mismatchVars,
     missingInAST,
     extraInAST,
-    errorMessage: isConsistent
-      ? undefined
-      : `Description mentions [${missingInAST.join(
-          ", ",
-        )}] but AST does not include them`,
+    errorMessage,
   };
 }
 
