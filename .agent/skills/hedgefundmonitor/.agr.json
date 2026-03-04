@@ -1,0 +1,8 @@
+{
+  "id": "remote:github:K-Dense-AI/claude-scientific-skills/hedgefundmonitor",
+  "tool": "antigravity",
+  "installed_name": "hedgefundmonitor",
+  "type": "remote",
+  "handle": "K-Dense-AI/claude-scientific-skills/hedgefundmonitor",
+  "source": "github"
+}
