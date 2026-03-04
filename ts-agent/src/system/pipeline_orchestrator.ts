@@ -802,6 +802,80 @@ export class PipelineOrchestrator extends BaseAgent {
     return VerificationVerdict.REJECTED_GENERAL;
   }
 
+  /**
+   * Phase 3: Strict Validation with NaN Detection (AAARTS Task 5)
+   *
+   * Validates metrics for final acceptance before backtest execution.
+   * Implements two-phase validation:
+   * - Phase 3a: Data integrity check (NaN detection)
+   * - Phase 3b: Strict threshold validation using config values
+   *
+   * Thresholds from config.pipelineBlueprint.verificationAcceptance:
+   * - minSharpe: 1.8 (no runtime relaxation)
+   * - minIC: 0.04 (no runtime relaxation)
+   * - maxDrawdown: 0.10 (no runtime relaxation)
+   *
+   * @param metrics Object with sharpe, ic, maxDrawdown fields
+   * @returns true if all checks pass
+   * @throws Error with [AUDIT] prefix if any check fails
+   */
+  private judgeVerificationStrict(metrics: {
+    sharpe: number;
+    ic: number;
+    maxDrawdown: number;
+  }): boolean {
+    // Phase 3a: Detect NaN in metrics (critical data integrity check)
+    if (
+      isNaN(metrics.sharpe) ||
+      isNaN(metrics.ic) ||
+      isNaN(metrics.maxDrawdown)
+    ) {
+      throw new Error(
+        `[AUDIT] Metrics contain NaN - data integrity failure. ` +
+          `Sharpe=${metrics.sharpe}, IC=${metrics.ic}, DD=${metrics.maxDrawdown}`,
+      );
+    }
+
+    // Phase 3b: Apply strict thresholds from config
+    const config = this.blueprint()?.verificationAcceptance;
+
+    // Extract config thresholds (config is the source of truth, never relax at runtime)
+    const minSharpe =
+      config?.minSharpe ?? DEFAULT_EVALUATION_CRITERIA.performance.minSharpe;
+    const minIC = config?.minIC ?? DEFAULT_EVALUATION_CRITERIA.alpha.minIC;
+    const maxDrawdown =
+      config?.maxDrawdown ??
+      DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown;
+
+    // Validation: Sharpe Ratio
+    if (metrics.sharpe < minSharpe) {
+      throw new Error(
+        `[AUDIT] Insufficient Sharpe: ${metrics.sharpe.toFixed(3)} < ${minSharpe.toFixed(3)}`,
+      );
+    }
+
+    // Validation: Information Coefficient
+    if (metrics.ic < minIC) {
+      throw new Error(
+        `[AUDIT] Weak information coefficient: ${metrics.ic.toFixed(3)} < ${minIC.toFixed(3)}`,
+      );
+    }
+
+    // Validation: Maximum Drawdown
+    if (metrics.maxDrawdown > maxDrawdown) {
+      throw new Error(
+        `[AUDIT] Excessive drawdown: ${metrics.maxDrawdown.toFixed(3)} > ${maxDrawdown.toFixed(3)}`,
+      );
+    }
+
+    // All checks passed
+    logger.info(
+      `[judgeVerificationStrict] All Phase 3 checks passed. Sharpe=${metrics.sharpe.toFixed(3)}, IC=${metrics.ic.toFixed(3)}, DD=${metrics.maxDrawdown.toFixed(3)}`,
+    );
+
+    return true; // All checks passed
+  }
+
   private evaluateDataDelivery(
     dataset: PITDataset,
     requirement: PipelineRequirement,

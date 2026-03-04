@@ -117,9 +117,9 @@ pipelineBlueprint:
     validationDays: 63
     forwardDays: 63
   verificationAcceptance:
-    minSharpe: 0.0
-    minIC: 0.0
-    maxDrawdown: 2.0
+    minSharpe: 1.8
+    minIC: 0.04
+    maxDrawdown: 0.10
     minAnnualizedReturn: -1.0
   executionConstraints:
     maxPositionWeight: 0.12
