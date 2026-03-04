@@ -25,13 +25,9 @@ export class MarketMonitor {
    * 現在の相場レジームやボラティリティを取得するよっ！📈
    */
   public async getCurrentState(): Promise<SystemStateSnapshot> {
-    // 実際の実装は DB や外部 API から取得するけど、今はデフォルト値を返すねっ
-    return {
-      regime: "STABLE",
-      volatility: "LOW",
-      driftAlerts: 0,
-      updatedAt: new Date().toISOString(),
-    };
+    throw new Error(
+      "[AUDIT] MarketMonitor.getCurrentState: No real-time data available. Fail Fast.",
+    );
   }
 
   /**
@@ -44,9 +40,16 @@ export class MarketMonitor {
     const threshold = core.config.pipelineBlueprint?.driftRetraining;
     if (!threshold) return { detected: false, severity: "LOW" };
 
-    const te = Number(report.metrics.trackingError ?? 0);
-    const mdd = Math.abs(Number(report.metrics.maxDrawdown ?? 0));
-    const winRate = Number(report.metrics.winRate ?? 1);
+    if (report.metrics.trackingError === undefined)
+      throw new Error("[AUDIT] missing trackingError");
+    if (report.metrics.maxDrawdown === undefined)
+      throw new Error("[AUDIT] missing maxDrawdown");
+    if (report.metrics.winRate === undefined)
+      throw new Error("[AUDIT] missing winRate");
+
+    const te = Number(report.metrics.trackingError);
+    const mdd = Math.abs(Number(report.metrics.maxDrawdown));
+    const winRate = Number(report.metrics.winRate);
 
     const detected =
       te > threshold.maxTrackingError ||

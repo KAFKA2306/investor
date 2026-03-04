@@ -20,25 +20,18 @@ export class OutcomeManager {
    * 標準レポートを可愛くバリデーションして永続化するよっ！📝✨
    */
   public persist(outcome: StandardOutcome): void {
-    try {
-      const validated = StandardOutcomeSchema.parse(outcome);
+    const validated = StandardOutcomeSchema.parse(outcome);
 
-      writeCanonicalLog({
-        schema: "investor.investment-outcome.v1",
-        generatedAt: validated.timestamp || dateUtils.nowIso(),
-        report: validated,
-      });
+    writeCanonicalLog({
+      schema: "investor.investment-outcome.v1",
+      generatedAt: validated.timestamp || dateUtils.nowIso(),
+      report: validated,
+    });
 
-      logger.info(
-        `📝 [${this.agentName}] StandardOutcome persisted: ${validated.strategyId}`,
-        { strategyId: validated.strategyId },
-      );
-    } catch (error) {
-      logger.error(
-        `💥 [${this.agentName}] Failed to persist StandardOutcome: ${String(error)}`,
-      );
-      throw error;
-    }
+    logger.info(
+      `📝 [${this.agentName}] StandardOutcome persisted: ${validated.strategyId}`,
+      { strategyId: validated.strategyId },
+    );
   }
 
   /**

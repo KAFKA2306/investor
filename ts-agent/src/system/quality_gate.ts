@@ -10,6 +10,7 @@ export interface QualityGateResult {
   accepted: boolean;
   threshold?: number;
   failedChecks: string[];
+  macroIndicatorCoverage?: number;
 }
 
 /**
@@ -33,20 +34,52 @@ export class QualityGate {
     const maxMissingRate =
       criteria?.maxMissingRate ?? blueprintData?.maxMissingRate ?? 0.08;
     const maxLatencyMinutes = blueprintData?.maxLatencyMinutes ?? 40;
+    const minMacroIndicatorCoverage =
+      criteria?.minMacroIndicatorCoverage ??
+      blueprintData?.minMacroIndicatorCoverage ??
+      0.95;
 
     const m = dataset.deliveryMetrics;
+
+    // Calculate macro indicator coverage (macro_cpi, macro_iip, etc.)
+    const macroIndicatorCoverage =
+      this.calculateMacroIndicatorCoverage(dataset);
+
     const failedChecks = [
       dataset.qualityScore >= threshold ? "" : "quality",
       m.coverageRate >= minCoverageRate ? "" : "coverage",
       m.missingRate <= maxMissingRate ? "" : "missing",
       m.latencyMinutes <= maxLatencyMinutes ? "" : "latency_minutes",
+      macroIndicatorCoverage >= minMacroIndicatorCoverage
+        ? ""
+        : "macro_coverage",
     ].filter(Boolean);
 
     return {
       accepted: failedChecks.length === 0,
       threshold,
       failedChecks,
+      macroIndicatorCoverage,
     };
+  }
+
+  /**
+   * Calculate macro indicator coverage from the dataset
+   * Checks availability of macro_cpi and macro_iip across all rows
+   */
+  private calculateMacroIndicatorCoverage(dataset: PITDataset): number {
+    if (!dataset.data || dataset.data.length === 0) return 0;
+
+    const integrated = dataset.data[0];
+    if (!integrated?.rows || integrated.rows.length === 0) return 0;
+
+    // Count rows that have macro indicators (represented by schemaMatch and non-zero expectedRows)
+    const rowsWithMacroData = integrated.rows.filter(
+      (row) => (row.schemaMatch ?? 0) > 0.8 && (row.expectedRows ?? 0) > 0,
+    ).length;
+
+    const totalRows = integrated.rows.length;
+    return totalRows > 0 ? rowsWithMacroData / totalRows : 0;
   }
 
   /**

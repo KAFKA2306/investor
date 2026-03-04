@@ -37,9 +37,18 @@ export function evaluateFactor(
       case "activist_bias":
         return currentBar.LargeHolderCount ?? 0;
       case "macro_iip":
-        return currentBar.MacroIIP ?? 0;
+        // Return NaN if macro_iip is missing (instead of defaulting to 0)
+        if (currentBar.MacroIIP === undefined || currentBar.MacroIIP === null) {
+          return Number.NaN;
+        }
+        return currentBar.MacroIIP;
       case "macro_cpi":
-        return currentBar.MacroCPI ?? 0;
+        // Return NaN if macro_cpi is missing (instead of defaulting to 0)
+        // This ensures invalid rows are detected during backtest
+        if (currentBar.MacroCPI === undefined || currentBar.MacroCPI === null) {
+          return Number.NaN;
+        }
+        return currentBar.MacroCPI;
       case "segment_sentiment":
         return currentBar.SegmentSentiment ?? 0;
       case "ai_exposure":

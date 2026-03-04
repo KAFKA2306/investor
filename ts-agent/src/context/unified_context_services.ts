@@ -52,7 +52,7 @@ export class ContextPlaybook {
   addBullet(
     bullet: Omit<AceBullet, "id" | "helpful_count" | "harmful_count">,
   ): string {
-    const id = `ctx-${Math.random().toString(36).substring(2, 10)}`;
+    const id = `ctx-${crypto.randomUUID().split("-")[0]}`;
     const newBullet: AceBullet = {
       ...bullet,
       id,
@@ -109,8 +109,10 @@ export class ContextPlaybook {
       if (metaId !== metadataId) continue;
       if (feedback === "HELPFUL") {
         bullet.helpful_count += 1;
-      } else {
+      } else if (feedback === "HARMFUL") {
         bullet.harmful_count += 1;
+      } else {
+        throw new Error(`[AUDIT] Unknown feedback type: ${feedback}`);
       }
       bullet.updated_at = new Date().toISOString();
       bullet.metadata = {
@@ -296,7 +298,7 @@ export class MemoryCenter {
     stmt.run({
       $id:
         (event.id as string | undefined) ||
-        `evt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        `evt_${Date.now()}_${crypto.randomUUID().split("-")[0]}`,
       $ts: (event.timestamp as string | undefined) || new Date().toISOString(),
       $type: event.type as string,
       $agent: (event.agentId as string | undefined) || null,
