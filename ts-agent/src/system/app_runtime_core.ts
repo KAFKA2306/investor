@@ -60,6 +60,7 @@ const ConfigSchema = z.object({
     ai: z.object({
       enabled: z.boolean(),
       model: z.string().optional(),
+      apiKey: z.string().optional(),
     }),
     python: z
       .object({
@@ -215,19 +216,42 @@ class Core {
   public readonly eventStore: EventStore;
 
   public static loadDefaultConfigYaml(): unknown {
-    const configPath = join(import.meta.dir, "..", "config", "default.yaml");
+    const configPath = join(
+      process.cwd(),
+      "ts-agent",
+      "src",
+      "config",
+      "default.yaml",
+    );
+    if (!existsSync(configPath)) {
+      const altPath = join(process.cwd(), "src", "config", "default.yaml");
+      if (existsSync(altPath)) return yaml.load(readFileSync(altPath, "utf8"));
+      throw new Error(`Config file not found at ${configPath}`);
+    }
     return yaml.load(readFileSync(configPath, "utf8"));
   }
 
   constructor() {
+    // .env ファイルを自力でパースして注入するよっ！✨
+    const envPath = join(process.cwd(), ".env");
+    if (existsSync(envPath)) {
+      const envContent = readFileSync(envPath, "utf8");
+      for (const line of envContent.split("\n")) {
+        const [key, ...vals] = line.split("=");
+        if (key && vals.length > 0) {
+          const val = vals.join("=").trim();
+          if (!process.env[key.trim()]) {
+            process.env[key.trim()] = val;
+          }
+        }
+      }
+    }
+
     this.config = this.loadConfig();
-    // 歴史を刻むための EventStore くんを準備するよっ！📜✨
     this.eventStore = eventStore;
-    // db や cache は後で可愛く繋いであげるから待っててねっ！🎀
     this.db = null;
     this.cache = null;
 
-    // Postgres くんの準備もしておくねっ！🐘💎
     const pgCfg = buildCanonicalDbConfig(this.config);
     this.postgres = pgCfg.enabled ? new PostgresClient(pgCfg) : null;
   }
