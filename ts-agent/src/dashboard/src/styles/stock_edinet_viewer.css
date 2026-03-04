@@ -1,0 +1,246 @@
+.stock-edinet-viewer {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-panel);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
+/* Stocks Panel */
+.stocks-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.stocks-panel .panel-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.stocks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.stock-item {
+  padding: 0.75rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stock-item:hover {
+  background: rgba(var(--brand-rgb), 0.05);
+  border-color: var(--brand);
+}
+
+.stock-item.selected {
+  background: rgba(var(--brand-rgb), 0.15);
+  border-color: var(--brand);
+  font-weight: 600;
+}
+
+.stock-symbol {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--brand);
+  font-family: monospace;
+  margin-bottom: 0.25rem;
+}
+
+.stock-info {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stock-name {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.stock-position {
+  font-size: 0.7rem;
+}
+
+.stock-return {
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.stock-return.positive {
+  color: #22c55e;
+}
+
+.stock-return.negative {
+  color: #ef4444;
+}
+
+.empty-message {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+/* Disclosure Panel */
+.disclosure-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.disclosure-header {
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--brand);
+}
+
+.disclosure-header h2 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.5rem;
+  color: var(--ink);
+}
+
+.disclosure-date {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.disclosure-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.disclosure-section {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border-left: 4px solid var(--brand);
+}
+
+.disclosure-section h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.disclosure-section.risks {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.disclosure-section.risks h4 {
+  color: #f59e0b;
+}
+
+.section-content {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* Lists */
+.metrics-list,
+.products-list,
+.risks-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  list-style: disc;
+}
+
+.metric-item,
+.product-item,
+.risk-item {
+  margin: 0.5rem 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.risk-item {
+  color: #d97706;
+}
+
+/* Empty and Loading States */
+.empty-disclosure,
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.empty-disclosure p,
+.loading-state p {
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .stock-edinet-viewer {
+    grid-template-columns: 1fr;
+  }
+
+  .stocks-panel {
+    max-height: 200px;
+  }
+
+  .stocks-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 0.5rem;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .stock-edinet-viewer {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .stocks-panel {
+    padding: 0.75rem;
+  }
+
+  .disclosure-section {
+    padding: 0.75rem;
+  }
+
+  .stocks-list {
+    display: flex;
+    overflow-x: auto;
+    flex-direction: row;
+  }
+
+  .stock-item {
+    min-width: 80px;
+  }
+}

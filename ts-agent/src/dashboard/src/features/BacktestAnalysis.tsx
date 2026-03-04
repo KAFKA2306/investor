@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { AlphaValidationResults } from "../components/AlphaValidationResults";
 import { DrawdownChart } from "../components/DrawdownChart";
 import { MetricCard } from "../components/MetricCard";
 import { RawDataToggle } from "../components/RawDataToggle";
@@ -72,6 +73,11 @@ export const BacktestAnalysis: React.FC<BacktestAnalysisProps> = ({
     <div className="main">
       <div className="section-head">
         <h2>バックテスト詳細解析 📊✨</h2>
+      </div>
+
+      <div className="panel section">
+        <h3 className="quick-title">✨ アルファ品質ゲート検証</h3>
+        <AlphaValidationResults verificationData={verificationData} />
       </div>
 
       <div className="hero panel hero-uqtl">
