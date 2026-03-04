@@ -2059,7 +2059,14 @@ export class QuantResearcherBridge implements IQuantResearcher {
     );
 
     if (scores.length > 0) {
-      // 📌 Bug 3修正: シンボルごとにグループ化してからリターン計算
+      // 📌 Bug 3修正 (拡張): シンボル×日付でグループ化してスコアとリターンを対応
+      // スコアを symbol|date キーでマッピング
+      const scoresBySymbolDate = new Map<string, number>();
+      for (const scoreEntry of scores) {
+        const key = `${scoreEntry.symbol}|${(scoreEntry as any).date || scoreEntry.symbol}`;
+        scoresBySymbolDate.set(key, scoreEntry.score);
+      }
+
       // Symbol別にcomputeInputsをグループ化
       const inputsBySymbol = new Map<string, ComputeMarketData[]>();
       for (const input of computeInputs) {
@@ -2069,23 +2076,27 @@ export class QuantResearcherBridge implements IQuantResearcher {
         inputsBySymbol.get(input.symbol)!.push(input);
       }
 
-      // スコアをシンボル別に処理してリターンを計算
-      for (const scoreEntry of scores) {
-        const symbolBars = inputsBySymbol.get(scoreEntry.symbol);
-        if (!symbolBars || symbolBars.length < 2) continue;
+      // シンボル別に処理してリターンを計算
+      for (const [symbol, bars] of inputsBySymbol) {
+        if (bars.length < 2) continue;
 
         // シンボル内でのリターン計算（シンボル境界を跨がない）
-        for (let i = 0; i < symbolBars.length - 1; i++) {
-          const currPrice = symbolBars[i]!.values.close;
-          const nextPrice = symbolBars[i + 1]!.values.close;
+        for (let i = 0; i < bars.length - 1; i++) {
+          const currBar = bars[i]!;
+          const nextBar = bars[i + 1]!;
+          const currPrice = currBar.values.close;
+          const nextPrice = nextBar.values.close;
           if (!nextPrice || !currPrice) continue;
 
+          // スコアを日付で取得（日付情報がない場合はフォールバック）
+          const scoreKey = `${symbol}|${currBar.date}`;
+          const score = scoresBySymbolDate.get(scoreKey) ?? 0;
+
           const ret = (nextPrice - currPrice) / currPrice;
-          // 📌 Bug 2修正: s.score (オブジェクトのscoreプロパティ)を使用
-          predictions.push(scoreEntry.score);
+          predictions.push(score);
           targets.push(ret);
           // シンプルなロング/ショートを想定
-          const strategyRet = scoreEntry.score > 0 ? ret : -ret;
+          const strategyRet = score > 0 ? ret : -ret;
           dailyReturns.push(strategyRet);
         }
       }

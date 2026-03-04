@@ -40,7 +40,7 @@ export interface FactorComputeResult {
     net_return: number;
     signals_count: number;
   };
-  scores?: { symbol: string; score: number }[];
+  scores?: { symbol: string; date: string; score: number }[];
 }
 
 export interface ComputeResponse {
