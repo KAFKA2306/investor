@@ -32,7 +32,8 @@ export type SignalGateDecisionInput = {
   reason: string;
 };
 
-export class FeatureRepository extends BaseRepository {
+export class FeatureRepository extends BaseRepository<{ id: string }> {
+  protected readonly table = "feature.feature_version";
   public async upsertFeatureVersion(input: FeatureVersionInput): Promise<void> {
     await this.executeUpsert({
       table: "feature.feature_version",

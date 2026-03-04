@@ -19,7 +19,8 @@ export type SignalOutcomeInput = {
   measuredAt?: string;
 };
 
-export class EvaluationRepository extends BaseRepository {
+export class EvaluationRepository extends BaseRepository<{ id: string }> {
+  protected readonly table = "eval.backtest_run";
   public async upsertBacktestRun(input: BacktestRunInput): Promise<void> {
     await this.executeUpsert({
       table: "eval.backtest_run",

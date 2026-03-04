@@ -27,7 +27,8 @@ export type CanonicalLogEnvelopeInput = {
   lineage?: Record<string, unknown> | null;
 };
 
-export class EventRepository extends BaseRepository {
+export class EventRepository extends BaseRepository<{ id: string }> {
+  protected readonly table = "obs.event";
   public async appendEvent(input: CanonicalEventInput): Promise<void> {
     await this.executeUpsert({
       table: "obs.event",
