@@ -49,27 +49,15 @@ export function extractVariablesFromDescription(
     match = rankPattern.exec(description);
   }
 
-  // Pattern: variable * constant, variable + constant, etc.
+  // Pattern: specific known variables or patterns (macro_*, sentiment, etc.)
   const varPattern =
-    /\b(macro_\w+|volume|close|open|high|low|sentiment|exposure|centrality|[a-z_]+)\b/gi;
+    /\b(macro_[a-z0-9_]+|volume|close|open|high|low|sentiment|exposure|centrality|correction_freq|activist_bias|ai_exposure|kg_centrality|segment_sentiment)\b/gi;
   let varMatch: RegExpExecArray | null = varPattern.exec(description);
   while (varMatch !== null) {
     const varName = varMatch[1].toLowerCase();
-    // Filter out common keywords and function names
+    // Filter out common words that might be used as adjectives in descriptions
     if (
-      ![
-        "and",
-        "or",
-        "the",
-        "with",
-        "using",
-        "rank",
-        "blend",
-        "reversal",
-        "combined",
-        "momentum",
-        "volatility",
-      ].includes(varName)
+      !["low", "high", "open", "close", "volume", "sentiment"].includes(varName)
     ) {
       variables.add(varName);
     }
