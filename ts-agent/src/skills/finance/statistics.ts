@@ -21,7 +21,7 @@ export const calculateSharpeSkill: Skill = {
     const mean =
       returns.reduce((a: number, b: number) => a + b, 0) / returns.length;
     const variance =
-      returns.reduce((a: number, b: number) => a + Math.pow(b - mean, 2), 0) /
+      returns.reduce((a: number, b: number) => a + (b - mean) ** 2, 0) /
       returns.length;
     const stdDev = Math.sqrt(variance);
     if (stdDev === 0) return 0;
@@ -46,7 +46,7 @@ export const calculateTStatSkill: Skill = {
     const mean =
       returns.reduce((a: number, b: number) => a + b, 0) / returns.length;
     const variance =
-      returns.reduce((a: number, b: number) => a + Math.pow(b - mean, 2), 0) /
+      returns.reduce((a: number, b: number) => a + (b - mean) ** 2, 0) /
       returns.length;
     const stdDev = Math.sqrt(variance);
     if (stdDev === 0) return 0;

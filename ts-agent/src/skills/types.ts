@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 /**
  * 💡 スキルの入力を定義するメタデータの型だよ！
