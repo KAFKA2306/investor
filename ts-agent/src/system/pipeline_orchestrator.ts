@@ -774,19 +774,18 @@ export class PipelineOrchestrator extends BaseAgent {
     }
 
     const verifyDefaults = this.blueprint()?.verificationAcceptance;
+    if (!verifyDefaults) {
+      throw new Error(
+        "[AUDIT] Verification config (pipelineBlueprint.verificationAcceptance) is missing. Cannot proceed without explicit thresholds.",
+      );
+    }
+
     const minSharpe =
-      requirement.targetMetrics?.minSharpe ??
-      verifyDefaults?.minSharpe ??
-      DEFAULT_EVALUATION_CRITERIA.performance.minSharpe;
-    const minIC =
-      requirement.targetMetrics?.minIC ??
-      verifyDefaults?.minIC ??
-      DEFAULT_EVALUATION_CRITERIA.alpha.minIC;
+      requirement.targetMetrics?.minSharpe ?? verifyDefaults.minSharpe;
+    const minIC = requirement.targetMetrics?.minIC ?? verifyDefaults.minIC;
     const maxDrawdownLimit =
-      requirement.targetMetrics?.maxDrawdown ??
-      verifyDefaults?.maxDrawdown ??
-      DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown;
-    const minAnnualizedReturn = verifyDefaults?.minAnnualizedReturn ?? 0;
+      requirement.targetMetrics?.maxDrawdown ?? verifyDefaults.maxDrawdown;
+    const minAnnualizedReturn = verifyDefaults.minAnnualizedReturn ?? 0;
 
     logger.info(
       `[judgeVerification] ${result.strategyId}: sharpe=${sharpe.toFixed(3)} (min=${minSharpe}), ic=${ic.toFixed(3)} (min=${minIC}), maxDD=${maxDrawdownAbs.toFixed(3)} (limit=${maxDrawdownLimit}), annReturn=${annualizedReturn.toFixed(3)} (min=${minAnnualizedReturn})`,
@@ -839,14 +838,16 @@ export class PipelineOrchestrator extends BaseAgent {
 
     // Phase 3b: Apply strict thresholds from config
     const config = this.blueprint()?.verificationAcceptance;
+    if (!config) {
+      throw new Error(
+        "[AUDIT] Verification config (pipelineBlueprint.verificationAcceptance) is missing. Cannot proceed without explicit thresholds.",
+      );
+    }
 
     // Extract config thresholds (config is the source of truth, never relax at runtime)
-    const minSharpe =
-      config?.minSharpe ?? DEFAULT_EVALUATION_CRITERIA.performance.minSharpe;
-    const minIC = config?.minIC ?? DEFAULT_EVALUATION_CRITERIA.alpha.minIC;
-    const maxDrawdown =
-      config?.maxDrawdown ??
-      DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown;
+    const minSharpe = config.minSharpe;
+    const minIC = config.minIC;
+    const maxDrawdown = config.maxDrawdown;
 
     // Validation: Sharpe Ratio
     if (metrics.sharpe < minSharpe) {
@@ -955,8 +956,8 @@ export class PipelineOrchestrator extends BaseAgent {
       forbiddenZones: history.forbiddenZones,
       constraints: activeConstraints,
       evaluationCriteria: {
-        minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe ?? 1.8,
-        minIC: this.blueprint()?.verificationAcceptance?.minIC ?? 0.04,
+        minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe,
+        minIC: this.blueprint()?.verificationAcceptance?.minIC,
       },
     });
 
@@ -981,10 +982,9 @@ export class PipelineOrchestrator extends BaseAgent {
       id: `req-agentic-${crypto.randomUUID().slice(0, 8)}`,
       description: missionMd.slice(0, 1000),
       targetMetrics: {
-        minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe ?? 1.8,
-        minIC: this.blueprint()?.verificationAcceptance?.minIC ?? 0.04,
-        maxDrawdown:
-          this.blueprint()?.verificationAcceptance?.maxDrawdown ?? 0.1,
+        minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe,
+        minIC: this.blueprint()?.verificationAcceptance?.minIC,
+        maxDrawdown: this.blueprint()?.verificationAcceptance?.maxDrawdown,
       },
       universe,
     };
@@ -1318,9 +1318,14 @@ export class ElderBridge implements IElder {
     const maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
     const verifyDefaults =
       core.config.pipelineBlueprint?.verificationAcceptance;
-    const minSharpe = verifyDefaults?.minSharpe ?? 1.8;
-    const minIC = verifyDefaults?.minIC ?? 0.04;
-    const maxDrawdownLimit = verifyDefaults?.maxDrawdown ?? 0.1;
+    if (!verifyDefaults) {
+      throw new Error(
+        "[AUDIT] Verification config (pipelineBlueprint.verificationAcceptance) is missing. Cannot proceed without explicit thresholds.",
+      );
+    }
+    const minSharpe = verifyDefaults.minSharpe;
+    const minIC = verifyDefaults.minIC;
+    const maxDrawdownLimit = verifyDefaults.maxDrawdown;
 
     const passed =
       sharpe >= minSharpe && ic >= minIC && maxDD <= maxDrawdownLimit;
