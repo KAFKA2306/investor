@@ -26,6 +26,11 @@ See `DATA_STRUCTURE.md` for the unified architecture mappings.
 - **Naming**: `snake_case.ts` (files), `PascalCase` (classes), `camelCase` (vars).
 - **Agents**: Extend `BaseAgent` and implement `run()`.
 - **Validation**: Use Zod schemas in `src/schemas/`.
+- **CDD (Crash-Driven Development)**:
+    - **No `try-catch`**: prohibited in business logic; let errors cascade.
+    - **No Defensive Returns**: never return `null`/`false` to hide failures.
+    - **Infrastructure Resilience**: retries/timeouts belong in `Makefile`/Docker/K8s only.
+    - **Stack Traces**: treat as the inviolable ground truth; never suppress.
 - **Commits**: Follow Conventional Commits (`feat:`, `fix:`, etc.).
 
 ---

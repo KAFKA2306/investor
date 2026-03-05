@@ -2,6 +2,15 @@
  * ダッシュボード設定の一元管理
  */
 
+export const TAB_IDS = {
+  EVIDENCE: "evidence",
+  INSPECTOR: "inspector",
+  RESEARCH: "research",
+  HEALTH: "health",
+  BACKTEST: "backtest",
+  STOCKS: "stocks",
+} as const;
+
 export const DASHBOARD_CONFIG = {
   api: {
     port: Number(import.meta.env.VITE_API_PORT ?? 8787),

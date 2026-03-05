@@ -61,6 +61,7 @@ const ConfigSchema = z.object({
       enabled: z.boolean(),
       model: z.string().optional(),
       apiKey: z.string().optional(),
+      apiKeyEnv: z.string().optional(),
     }),
     python: z
       .object({
@@ -216,35 +217,33 @@ class Core {
   public readonly eventStore: EventStore;
 
   public static loadDefaultConfigYaml(): unknown {
-    const configPath = join(
-      process.cwd(),
-      "ts-agent",
-      "src",
-      "config",
-      "default.yaml",
-    );
-    if (!existsSync(configPath)) {
-      const altPath = join(process.cwd(), "src", "config", "default.yaml");
-      if (existsSync(altPath)) return yaml.load(readFileSync(altPath, "utf8"));
-      throw new Error(`Config file not found at ${configPath}`);
-    }
-    return yaml.load(readFileSync(configPath, "utf8"));
+    // Use import.meta.dir for reliable path resolution (PathRegistry pattern)
+    const configPath = join(import.meta.dir, "..", "config", "default.yaml");
+    const content = readFileSync(configPath, "utf8");
+    return yaml.load(content);
   }
 
   constructor() {
-    // .env ファイルを自力でパースして注入するよっ！✨
+    // Load .env from repo root if present
+    // .env is optional: credentials may be set via system environment instead
     const envPath = join(process.cwd(), ".env");
-    if (existsSync(envPath)) {
+    try {
       const envContent = readFileSync(envPath, "utf8");
       for (const line of envContent.split("\n")) {
-        const [key, ...vals] = line.split("=");
+        const trimmedLine = line.trim();
+        if (!trimmedLine || trimmedLine.startsWith("#")) continue;
+        const [key, ...vals] = trimmedLine.split("=");
         if (key && vals.length > 0) {
+          const k = key.trim();
           const val = vals.join("=").trim();
-          if (!process.env[key.trim()]) {
-            process.env[key.trim()] = val;
+          if (!process.env[k]) {
+            process.env[k] = val;
           }
         }
       }
+    } catch (err) {
+      // .env is optional - may be set via system environment
+      if ((err as any)?.code !== "ENOENT") throw err;
     }
 
     this.config = this.loadConfig();
@@ -291,11 +290,18 @@ class Core {
     envKey?: string,
   ): string {
     const p = this.config.providers[provider] as any;
-    if (p?.[key]) return p[key];
-    if (envKey) {
-      const val = this.getEnv(envKey);
+    if (!p) return "";
+
+    // 1. 設定ファイル内の *Env 指定を最優先するよっ！✨
+    const dynamicEnvKey = p[`${key}Env` as any] || envKey;
+    if (dynamicEnvKey) {
+      const val = this.getEnv(dynamicEnvKey);
       if (val) return val;
     }
+
+    // 2. 直接値が書いてある場合はそれを使うんだもんっ！✨
+    if (p[key]) return p[key];
+
     return "";
   }
 

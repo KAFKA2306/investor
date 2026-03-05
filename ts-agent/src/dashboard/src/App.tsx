@@ -1,10 +1,12 @@
 import type React from "react";
 import { useState } from "react";
+import { TAB_IDS } from "./config";
 import { BacktestAnalysis } from "./features/BacktestAnalysis";
 import { DataInspector } from "./features/DataInspector";
 import { EvidenceRoom } from "./features/EvidenceRoom";
 import { ResearchLog } from "./features/ResearchLog";
 import { StatusBar } from "./features/StatusBar";
+import { StockAnalysis } from "./features/StockAnalysis";
 import { SystemHealth } from "./features/SystemHealth";
 import { useDashboardData } from "./hooks/useDashboardData";
 
@@ -21,7 +23,7 @@ const App: React.FC = () => {
     refresh,
   } = useDashboardData();
 
-  const [activeTab, setActiveTab] = useState("evidence");
+  const [activeTab, setActiveTab] = useState(TAB_IDS.EVIDENCE);
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
@@ -102,34 +104,37 @@ const App: React.FC = () => {
       />
 
       <div style={{ marginTop: "1rem" }}>
-        {activeTab === "evidence" && (
+        {activeTab === TAB_IDS.EVIDENCE && (
           <EvidenceRoom
             verificationData={verificationData}
             alphaDiscovery={activeAlphaPayloads}
             onNavigate={handleNavigate}
           />
         )}
-        {activeTab === "inspector" && (
+        {activeTab === TAB_IDS.INSPECTOR && (
           <DataInspector verificationData={verificationData} />
         )}
-        {activeTab === "research" && (
+        {activeTab === TAB_IDS.RESEARCH && (
           <ResearchLog
             alphaDiscovery={alphaByDate}
             activeDate={activeDate}
             onSelectDate={setActiveDate}
           />
         )}
-        {activeTab === "health" && (
+        {activeTab === TAB_IDS.HEALTH && (
           <SystemHealth
             qualityGate={activeQualityGate}
             history={qualityGateByDate}
           />
         )}
-        {activeTab === "backtest" && (
+        {activeTab === TAB_IDS.BACKTEST && (
           <BacktestAnalysis
             verificationData={verificationData}
             historicalOutcomes={unifiedByDate}
           />
+        )}
+        {activeTab === TAB_IDS.STOCKS && (
+          <StockAnalysis verificationData={verificationData} />
         )}
       </div>
     </div>

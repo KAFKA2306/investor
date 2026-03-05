@@ -40,7 +40,7 @@ const parseArgs = (): CliArgs => {
   const args = parseCliArgs(process.argv.slice(2));
   const sourcePath = resolve(
     getStringArg(args, "--source-path") ??
-      `${paths.verificationRoot}/macro_indicators_map.json`,
+    `${paths.verificationRoot}/macro_indicators_map.json`,
   );
   const window = Math.max(3, Math.trunc(getNumberArg(args, "--window", 12)));
   const from = getStringArg(args, "--from");
@@ -71,8 +71,8 @@ const determineRegime = (
 
 const generateMacroSourceFile = async (sourcePath: string): Promise<void> => {
   const estat = new EstatProvider();
-  const IIP_ID = "0003435161";
-  const CPI_ID = "0003427107";
+  const IIP_ID = "0004015803"; // 2020 Base
+  const CPI_ID = "0003427113"; // 2020 Base
 
   type EstatValue = { "@time": string; $: string };
   type EstatResponse = {
@@ -90,17 +90,55 @@ const generateMacroSourceFile = async (sourcePath: string): Promise<void> => {
     key: "MacroIIP" | "MacroCPI",
     out: Record<string, MacroPoint>,
   ) => {
-    const values = data.GET_STATS_DATA?.STATISTICAL_DATA?.DATA_INF?.VALUE ?? [];
+    const gsd = data.GET_STATS_DATA;
+    if (!gsd) return;
+
+    // Build time mapping from metadata included in response
+    const classObjsRaw = gsd.STATISTICAL_DATA?.CLASS_INF?.CLASS_OBJ ?? [];
+    const classObjs = Array.isArray(classObjsRaw) ? classObjsRaw : [classObjsRaw];
+    const timeObj = classObjs.find((c: any) => c["@id"] === "time");
+    const timeClasses = Array.isArray(timeObj?.CLASS)
+      ? timeObj.CLASS
+      : [timeObj?.CLASS].filter(Boolean);
+
+    const timeMap: Record<string, string> = {};
+    for (const tc of timeClasses) {
+      const name = tc["@name"];
+      // Handle both "202502" and "2025年02月" formats
+      const m = name.match(/(\d{4})[年-]?(\d{1,2})[月]?/);
+      if (m) {
+        const year = m[1];
+        const month = m[2].padStart(2, "0");
+        timeMap[tc["@code"]] = `${year}-${month}-01`;
+      }
+    }
+
+    const values = gsd.STATISTICAL_DATA?.DATA_INF?.VALUE ?? [];
+    console.log(`[${key}] Total records: ${values.length}`);
+
+    let matchCount = 0;
     for (const v of values) {
-      const timeCode = v["@time"];
-      if (typeof timeCode !== "string" || timeCode.length < 6) continue;
-      const year = timeCode.slice(0, 4);
-      const month = timeCode.slice(4, 6);
-      const date = `${year}-${month}-01`;
+      // Filter for specific indicators
+      if (key === "MacroIIP") {
+        if (v["@cat01"] !== "0001000") continue;
+      } else if (key === "MacroCPI") {
+        if (
+          v["@cat01"] !== "0001" ||
+          v["@area"] !== "00000" ||
+          v["@tab"] !== "1"
+        )
+          continue;
+      }
+      matchCount += 1;
+
+      const date = timeMap[v["@time"]];
+      if (!date) continue;
+
       const row = out[date] ?? {};
       row[key] = Number(v.$) || 0;
       out[date] = row;
     }
+    console.log(`[${key}] Matched records: ${matchCount}, Final mapped: ${Object.keys(out).length}`);
   };
 
   const macroMap: Record<string, MacroPoint> = {};

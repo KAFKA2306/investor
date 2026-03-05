@@ -1,4 +1,5 @@
 import type React from "react";
+import { TAB_IDS } from "../config";
 
 interface StatusBarProps {
   status: "active" | "emergency";
@@ -33,11 +34,12 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   onKill,
 }) => {
   const tabs = [
-    { id: "evidence", label: "証拠のお部屋✨" },
-    { id: "inspector", label: "データ調査しちゃうもんっ！🔍" },
-    { id: "research", label: "研究のきろくっ！📝" },
-    { id: "health", label: "システムの健康診断🏥" },
-    { id: "backtest", label: "解析するよっ！📊" },
+    { id: TAB_IDS.EVIDENCE, label: "証拠のお部屋✨" },
+    { id: TAB_IDS.INSPECTOR, label: "データ調査しちゃうもんっ！🔍" },
+    { id: TAB_IDS.RESEARCH, label: "研究のきろくっ！📝" },
+    { id: TAB_IDS.HEALTH, label: "システムの健康診断🏥" },
+    { id: TAB_IDS.BACKTEST, label: "解析するよっ！📊" },
+    { id: TAB_IDS.STOCKS, label: "銘柄分析📈" },
   ];
 
   const hasFingerprints = Boolean(commitHash);
