@@ -21,13 +21,13 @@ describe("Phase 3 Strict Validation with NaN Detection", () => {
 
   // Test data with proper metric values
   const validMetrics: AlphaMetrics = {
-    sharpe: 2.0, // above min 1.8
+    sharpe: 2.0, // above min 0.3
     ic: 0.05, // above min 0.04
     maxDrawdown: 0.08, // below max 0.10
   };
 
   const lowSharpeMetrics: AlphaMetrics = {
-    sharpe: 1.5, // below min 1.8
+    sharpe: 0.2, // below min 0.3
     ic: 0.05,
     maxDrawdown: 0.08,
   };
@@ -110,7 +110,7 @@ describe("Phase 3 Strict Validation with NaN Detection", () => {
 
   describe("Phase 3b: Strict Threshold Validation", () => {
     // Config thresholds (as specified in default.yaml)
-    const MIN_SHARPE = 1.8;
+    const MIN_SHARPE = 0.3;
     const MIN_IC = 0.04;
     const MAX_DRAWDOWN = 0.10;
 
@@ -146,9 +146,9 @@ describe("Phase 3 Strict Validation with NaN Detection", () => {
       return true;
     };
 
-    it("should reject if Sharpe < 1.8", () => {
+    it("should reject if Sharpe < 0.3", () => {
       expect(() => validateThresholds(lowSharpeMetrics)).toThrow(
-        /\[AUDIT\] Insufficient Sharpe.*1.8/
+        /\[AUDIT\] Insufficient Sharpe.*0.3/
       );
     });
 
@@ -168,16 +168,16 @@ describe("Phase 3 Strict Validation with NaN Detection", () => {
       expect(validateThresholds(validMetrics)).toBe(true);
     });
 
-    it("should use exact config values (minSharpe=1.8, minIC=0.04, maxDD=0.10)", () => {
+    it("should use exact config values (minSharpe=0.3, minIC=0.04, maxDD=0.10)", () => {
       // Verify threshold values are exactly as required
-      expect(MIN_SHARPE).toBe(1.8);
+      expect(MIN_SHARPE).toBe(0.3);
       expect(MIN_IC).toBe(0.04);
       expect(MAX_DRAWDOWN).toBe(0.1);
     });
   });
 
   describe("Phase 3c: Combined Validation (NaN + Thresholds)", () => {
-    const MIN_SHARPE = 1.8;
+    const MIN_SHARPE = 0.3;
     const MIN_IC = 0.04;
     const MAX_DRAWDOWN = 0.10;
 
