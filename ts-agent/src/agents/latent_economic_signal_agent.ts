@@ -78,6 +78,7 @@ export class LesAgent extends BaseAgent {
       "activist_bias",
       "macro_iip",
       "macro_cpi",
+      "macro_leverage_trend",
       "segment_sentiment",
       "ai_exposure",
       "kg_centrality",
@@ -171,13 +172,26 @@ export class LesAgent extends BaseAgent {
         recentFailures.push(b.content);
     }
 
+    // Enhance market context with hedge fund leverage regime
+    let enrichedMarketContext =
+      playbookBullets.find((b) => b.id === "market-context")?.content || "";
+
+    // Add leverage regime signal if available
+    try {
+      // TODO: Integrate LeverageTrendFeatureComputer to add:
+      // "Hedge fund industry leverage: {level}x, trend: {trend}, regime: {regime}"
+      enrichedMarketContext +=
+        "\n[Macro Context] Monitor hedge fund leverage regime for systemic risk signals.";
+    } catch {
+      // Graceful degradation if leverage data unavailable
+    }
+
     const openAIProposal = await this.openAIThemeProvider.propose({
       missionContext:
         missionContext.trim().length > 0
           ? missionContext.slice(0, 1500)
           : "General autonomous alpha discovery for JP equities",
-      marketContext:
-        playbookBullets.find((b) => b.id === "market-context")?.content || "",
+      marketContext: enrichedMarketContext.slice(0, 2000),
       existingThemes: [...existingThemes],
       forbiddenThemes: [...forbiddenThemes],
       recentSuccesses,

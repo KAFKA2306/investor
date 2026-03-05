@@ -49,6 +49,16 @@ export function evaluateFactor(
           return Number.NaN;
         }
         return currentBar.MacroCPI;
+      case "macro_leverage_trend":
+        // Hedge fund industry leverage trend (QoQ % change)
+        // Return NaN if missing to maintain data quality
+        if (
+          currentBar.MacroLeverageTrend === undefined ||
+          currentBar.MacroLeverageTrend === null
+        ) {
+          return Number.NaN;
+        }
+        return currentBar.MacroLeverageTrend;
       case "segment_sentiment":
         return currentBar.SegmentSentiment ?? 0;
       case "ai_exposure":

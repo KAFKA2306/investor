@@ -40,7 +40,7 @@ const parseArgs = (): CliArgs => {
   const args = parseCliArgs(process.argv.slice(2));
   const sourcePath = resolve(
     getStringArg(args, "--source-path") ??
-    `${paths.verificationRoot}/macro_indicators_map.json`,
+      `${paths.verificationRoot}/macro_indicators_map.json`,
   );
   const window = Math.max(3, Math.trunc(getNumberArg(args, "--window", 12)));
   const from = getStringArg(args, "--from");
@@ -95,7 +95,9 @@ const generateMacroSourceFile = async (sourcePath: string): Promise<void> => {
 
     // Build time mapping from metadata included in response
     const classObjsRaw = gsd.STATISTICAL_DATA?.CLASS_INF?.CLASS_OBJ ?? [];
-    const classObjs = Array.isArray(classObjsRaw) ? classObjsRaw : [classObjsRaw];
+    const classObjs = Array.isArray(classObjsRaw)
+      ? classObjsRaw
+      : [classObjsRaw];
     const timeObj = classObjs.find((c: any) => c["@id"] === "time");
     const timeClasses = Array.isArray(timeObj?.CLASS)
       ? timeObj.CLASS
@@ -138,7 +140,9 @@ const generateMacroSourceFile = async (sourcePath: string): Promise<void> => {
       row[key] = Number(v.$) || 0;
       out[date] = row;
     }
-    console.log(`[${key}] Matched records: ${matchCount}, Final mapped: ${Object.keys(out).length}`);
+    console.log(
+      `[${key}] Matched records: ${matchCount}, Final mapped: ${Object.keys(out).length}`,
+    );
   };
 
   const macroMap: Record<string, MacroPoint> = {};
