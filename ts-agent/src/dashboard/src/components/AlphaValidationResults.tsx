@@ -105,8 +105,8 @@ export const AlphaValidationResults: React.FC<AlphaValidationResultsProps> = ({
         <div className="failure-section">
           <h3>Validation Issues</h3>
           <ul className="failure-list">
-            {validation.failureMessages.map((message, idx) => (
-              <li key={`${message}-${idx}`} className="failure-item">
+            {validation.failureMessages.map((message) => (
+              <li key={message} className="failure-item">
                 {message}
               </li>
             ))}
