@@ -1,5 +1,8 @@
 import { join, resolve } from "node:path";
-import { calculatePerformanceMetrics } from "../pipeline/evaluate/evaluation_metrics_core.ts";
+import {
+  calculateCorrelation,
+  calculatePerformanceMetrics,
+} from "../pipeline/evaluate/evaluation_metrics_core.ts";
 import {
   getNumberArg,
   getStringArg,
@@ -72,6 +75,11 @@ async function run(): Promise<void> {
   console.log(`📊 Performance Proof for ${targetSymbols.length} symbols...`);
   const gateway = await MarketdataLocalGateway.create(targetSymbols);
   const dailyPnl: Record<string, number[]> = {};
+  // TODO(human): IC計算用 - シグナルと実現リターンのペアを収集
+  const signalReturnPairs: { signals: number[]; returns: number[] } = {
+    signals: [],
+    returns: [],
+  };
 
   for (const symbol of targetSymbols) {
     const barsRaw = await gateway.getBarsAll(symbol);
@@ -100,12 +108,25 @@ async function run(): Promise<void> {
 
       if (!dailyPnl[filingDate]) dailyPnl[filingDate] = [];
       dailyPnl[filingDate].push(signalValue * nextReturn);
+
+      // IC計算用 - シグナル・リターンペアを記録
+      signalReturnPairs.signals.push(signalValue);
+      signalReturnPairs.returns.push(nextReturn);
     }
   }
 
   const sortedDates = Object.keys(dailyPnl).sort();
   const pnlSeries = sortedDates.map((d) => mean(dailyPnl[d] ?? [0]));
   const metrics = calculatePerformanceMetrics(pnlSeries);
+
+  // IC を実際に計算
+  const calculatedIc =
+    signalReturnPairs.signals.length > 0
+      ? calculateCorrelation(
+          signalReturnPairs.signals,
+          signalReturnPairs.returns,
+        )
+      : 0;
 
   const fromRaw = sortedDates[0] || "20230101";
   const toRaw = sortedDates[sortedDates.length - 1] || "20251231";
@@ -167,7 +188,7 @@ async function run(): Promise<void> {
     benchmarkCum: new Array(sortedDates.length).fill(0),
     individualData,
     metrics: {
-      ic: 0.05,
+      ic: calculatedIc,
       sharpe: metrics.sharpe,
       maxDD: metrics.maxDrawdown,
       totalReturn: metrics.cumulativeReturn,
