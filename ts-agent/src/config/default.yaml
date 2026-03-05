@@ -82,6 +82,7 @@ providers:
   ai:
     enabled: true
     model: gpt-5-nano
+    apiKeyEnv: OPENAI_API_KEY
   python:
     uvPath: /root/.local/bin/uv
 

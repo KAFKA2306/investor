@@ -66,9 +66,19 @@ const normalizeFeatureSignature = (items: unknown): string[] => {
 };
 
 export class OpenAIThemeProvider {
-  private readonly apiKey = process.env.OPENAI_API_KEY;
+  private readonly apiKey: string;
   private readonly model = core.config.providers.ai.model || DEFAULT_MODEL;
   private readonly baseUrl = DEFAULT_BASE_URL;
+
+  constructor() {
+    this.apiKey = core.getProviderCredential("ai", "apiKey", "OPENAI_API_KEY");
+    logger.info(
+      `🤖 [OpenAIThemeProvider] Initialized with model: ${this.model}`,
+    );
+    logger.info(
+      `🔑 [OpenAIThemeProvider] API Key present: ${Boolean(this.apiKey)}`,
+    );
+  }
 
   public isEnabled(): boolean {
     return Boolean(this.apiKey);
