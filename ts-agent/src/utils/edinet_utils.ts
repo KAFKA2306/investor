@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { paths } from "./path_registry.ts";
+import { paths } from "../system/path_registry.ts";
 
 /**
  * 書類IDを生成するよっ！📄✨

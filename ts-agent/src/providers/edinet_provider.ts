@@ -13,6 +13,13 @@ import { SqliteHttpCache } from "./cache_providers.ts";
 import { requestJson } from "./http_json_client.ts";
 import { ProviderConfigError, ProviderHttpError } from "./provider_errors.ts";
 
+export {
+  type EdinetDocument,
+  type EdinetDocumentListResponse,
+  EdinetDocumentSchema,
+  type EdinetDocumentType,
+};
+
 export const isAnnualReport = (doc: EdinetDocument): boolean =>
   doc.docTypeCode === "030";
 
@@ -310,7 +317,7 @@ export class EdinetProvider {
             ORDER BY date DESC
             LIMIT 1
         `;
-    const result = this.cache.db
+    const result = this.cache.rawDb
       .query(sql)
       .get(`%"secCode":"${secCode5}"%`) as { date: string } | null;
     return result?.date ?? null;
