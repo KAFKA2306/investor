@@ -23,6 +23,10 @@ export class SqliteHttpCache {
     this.ensureSchema();
   }
 
+  public get rawDb(): Database {
+    return this.db;
+  }
+
   private ensureSchema(): void {
     this.db.run(`
       CREATE TABLE IF NOT EXISTS http_cache (
@@ -52,9 +56,8 @@ export class SqliteHttpCache {
       if (!isStale) {
         return { payload: JSON.parse(row.value), cached: true };
       }
-      throw new Error(
-        `HTTP Cache: Data for ${url} is stale and stale fallback is disabled.`,
-      );
+      // Stale cache detected: fetch fresh data from source
+      // Never fallback to stale data - let fresh fetch happen below
     }
 
     const response = await fetch(url, { headers });
