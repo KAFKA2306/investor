@@ -75,7 +75,8 @@ async function run(): Promise<void> {
   console.log(`📊 Performance Proof for ${targetSymbols.length} symbols...`);
   const gateway = await MarketdataLocalGateway.create(targetSymbols);
   const dailyPnl: Record<string, number[]> = {};
-  // TODO(human): IC計算用 - シグナルと実現リターンのペアを収集
+  // IC (Information Coefficient) 計算用 - シグナル値と実現リターンのペアを収集して相関係数を計算
+  // IC = correlation(signalValue, nextReturn) で、シグナル予測力を定量化
   const signalReturnPairs: { signals: number[]; returns: number[] } = {
     signals: [],
     returns: [],
@@ -109,7 +110,7 @@ async function run(): Promise<void> {
       if (!dailyPnl[filingDate]) dailyPnl[filingDate] = [];
       dailyPnl[filingDate].push(signalValue * nextReturn);
 
-      // IC計算用 - シグナル・リターンペアを記録
+      // シグナル・リターンペアを記録 (相関係数計算用)
       signalReturnPairs.signals.push(signalValue);
       signalReturnPairs.returns.push(nextReturn);
     }
@@ -119,7 +120,9 @@ async function run(): Promise<void> {
   const pnlSeries = sortedDates.map((d) => mean(dailyPnl[d] ?? [0]));
   const metrics = calculatePerformanceMetrics(pnlSeries);
 
-  // IC を実際に計算
+  // Information Coefficient: シグナル値と実現リターンの相関係数
+  // 高い IC = シグナルが実現リターンを強く予測 → 優れたアルファ
+  // 低い IC や負の IC = シグナル予測力が弱い / 逆向き → アルファの質が低い
   const calculatedIc =
     signalReturnPairs.signals.length > 0
       ? calculateCorrelation(
