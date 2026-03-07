@@ -1,15 +1,11 @@
 ---
 name: finmcp-analyst-workflows
 description: >
-  Run real-time benchmarks that evaluate AI trading agent autonomy across live
-  markets (US equities, Chinese equities, crypto) using a contamination-free
-  evaluation protocol. Invoke this skill when the task involves: testing an AI
-  agent's live trading decision-making, building or updating a real-time
-  leaderboard of AI trader performance, verifying agent actions against live news
-  sources, measuring profitability and risk management under live market
-  conditions, designing anti-data-contamination evaluation protocols, or running
-  finmcp analyst workflows. If the user asks to "validate", "benchmark", or
-  "test" an AI trader in real or near-real market conditions — invoke this skill.
+  MANDATORY TRIGGER: Invoke for real-time AI trader evaluation tasks across live
+  markets (US/CN/crypto), including autonomy benchmarking, leaderboard updates,
+  live-news validation, contamination-free protocol design, and risk/profit
+  performance checks. If the request asks to validate, benchmark, or test an AI
+  trader in real or near-real conditions, this skill must be used.
 ---
 
 # 🎀 AI-Trader リアルタイム検証スキル 🎀

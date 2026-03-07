@@ -1,17 +1,11 @@
 ---
 name: edinet-dataset-builder
 description: >
-  Download, parse, and structure Japanese corporate disclosure filings from
-  EDINET (Electronic Disclosure for Investors' NeTwork) into machine-learning-
-  ready datasets for tasks such as earnings forecast, fraud detection, and
-  industry classification. Invoke this skill when the task involves:
-  bulk-downloading yuho (有価証券報告書) or other EDINET document types, parsing
-  XBRL or TSV financial statement data (BS/PL/CF), building labeled datasets for
-  quant ML models from EDINET content, extracting Japanese financial report text
-  for LLM processing, or replicating the EDINET-Bench benchmark. If the user
-  mentions "EDINET", "有価証券報告書", "Japanese SEC filings", "XBRL", "financial
-  statement extraction", or wants to build a Japanese equity fundamental dataset
-  — this skill applies immediately.
+  MANDATORY TRIGGER: Invoke for any EDINET-related workflow, including Japanese
+  filing download, XBRL/TSV parsing, financial statement extraction, dataset
+  labeling, and EDINET-Bench replication. If the request mentions EDINET,
+  有価証券報告書, Japanese filings, XBRL, or fundamental dataset building, this
+  skill must be used immediately.
 ---
 
 # 🎀 EDINET Dataset Builder 開発スキル 🎀

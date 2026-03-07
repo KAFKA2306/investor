@@ -1,15 +1,11 @@
 ---
 name: env-management
 description: >
-  Enforce strict environment variable and project configuration management for
-  this quant system. Invoke this skill BEFORE any task that involves: reading or
-  writing .env files; adding or rotating API keys (FRED_API_KEY, EDINET_API_KEY,
-  J-Quants tokens, OpenAI/Anthropic keys); setting paths or model names in
-  config/default.yaml; hardcoding any credential, URL, or path in source code;
-  or debugging "key not found" / "config missing" errors. If you are about to
-  touch environment configuration in any form — even just to read a value — this
-  skill is mandatory. Never access .env directly; use this skill to determine the
-  safe procedure first.
+  MANDATORY TRIGGER: Invoke BEFORE any task that reads, writes, or debugs
+  environment and config values (.env, API keys, model names, base URLs, path
+  config, or credential lookups). If the request mentions OPENAI_API_KEY,
+  OPENAI_BASE_URL, FRED_API_KEY, EDINET_API_KEY, J-Quants tokens, missing key,
+  config error, or any secrets/path change, this skill must be used first.
 ---
 
 # 🎀 Environment Management Skill (MANDATORY HOOK) 🎀
@@ -45,4 +41,3 @@ description: >
 - **環境変数名の統一**: `UQTL_` プレフィックスなどを付けて、他のシステムと混ざらないようにしようねっ！✨
 
 ✨ 掟を守って、安全でピカピカな開発環境を作ろうねっ！🎀👑✨
-

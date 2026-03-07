@@ -1,16 +1,11 @@
 ---
 name: fred-economic-data
 description: >
-  Fetch and analyze macroeconomic time-series data from the FRED (Federal
-  Reserve Economic Data) API, covering GDP, CPI, unemployment rate, interest
-  rates, yield curves, PCE, and 800,000+ other series. Invoke this skill
-  whenever the task involves: querying a FRED series by ID, retrieving macro
-  indicators for regime detection or factor research, comparing current vs
-  historical economic conditions, aligning economic release calendars with
-  backtest periods, or integrating macro signals into the quant pipeline. Even
-  if the user simply says "get GDP data", "check the yield curve", "pull
-  inflation numbers", or "what are interest rates doing" — invoke this skill
-  before fetching anything.
+  MANDATORY TRIGGER: Invoke for any request involving FRED macro data, including
+  GDP, CPI, unemployment, rates, yield curve, PCE, economic calendars, regime
+  detection, or macro features for quant models. If the user asks for FRED
+  series IDs, macro time-series pulls, or historical/current macro comparisons,
+  this skill must be used before any data fetch.
 ---
 
 # 🎀 FRED Economic Data アクセススキル 🎀

@@ -1,17 +1,10 @@
 ---
 name: fail-fast-coding-rules
 description: >
-  Enforce Crash-Driven Development (CDD) coding rules for this quant system: no
-  try-catch in business logic, no defensive null/false returns, errors must
-  cascade with full stack traces, and all retry/timeout resilience belongs in
-  infrastructure (Makefile/Docker/K8s), not application code. Invoke this skill
-  BEFORE writing any new function or module, implementing error handling of any
-  kind, reviewing code for exception handling correctness, debugging a silent
-  failure or missing stack trace, or any time you are about to write try-catch,
-  except, a fallback return value, or a logger.error() that swallows an
-  exception. This skill is mandatory whenever new TypeScript or Python code is
-  being written or modified in this repository. If you spot try-catch in business
-  logic during a code review — invoke this skill immediately before commenting.
+  MANDATORY TRIGGER: Invoke BEFORE writing or reviewing any TypeScript/Python
+  logic that could add error handling behavior. If the task includes try-catch,
+  except, fallback return values, silent failure, retry-in-app, or stack trace
+  loss concerns, this skill must be used to enforce crash-driven rules.
 ---
 
 # ✨ Fail Fast ぜったい遵守の鉄の掟 ✨

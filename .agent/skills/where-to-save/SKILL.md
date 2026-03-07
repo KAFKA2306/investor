@@ -1,16 +1,11 @@
 ---
 name: where-to-save
 description: >
-  Determine the correct storage path for any file, dataset, log, or artifact in
-  this quant system, enforcing the rule that all paths must go through
-  PathRegistry (ts-agent/src/system/path_registry.ts) and all heavy data must
-  land on the D-drive (/mnt/d/investor_all_cached_data/). Invoke this skill
-  BEFORE writing any file, choosing where to save output, storing CSVs, JSONs,
-  or SQLite databases, or any time code references a filesystem path. If you are
-  about to write a string like "/mnt/d/...", "/home/kafka/...", or any
-  hardcoded path in TypeScript or Python source code — stop and invoke this
-  skill first. Also invoke it when auditing existing code for hardcoded paths or
-  when adding a new data category that needs a registry entry.
+  MANDATORY TRIGGER: Invoke BEFORE any file write or path decision (CSV/JSON/DB/
+  logs/artifacts) and before any code change that touches filesystem paths. If a
+  request includes save location, output directory, hardcoded path, or new data
+  category, this skill must be used to enforce PathRegistry and D-drive storage
+  rules.
 ---
 
 # 🎀 Where to Save くんの鉄の掟スキルだよっ！ ✨
