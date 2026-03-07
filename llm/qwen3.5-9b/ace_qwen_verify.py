@@ -15,7 +15,12 @@ def run_ace_qwen() -> dict:
 
     llm = LLM(
         model=model_path,
-        gpu_memory_utilization=0.8,
+        gpu_memory_utilization=0.9,
+        max_model_len=4096,
+        enforce_eager=True,
+        limit_mm_per_prompt={"image": 0, "video": 0},
+        enable_chunked_prefill=False,
+        max_num_seqs=1,
     )
 
     system_prompt = "You are an autonomous quant idea generator. Return only valid JSON matching the requested schema."
@@ -37,7 +42,7 @@ Return exactly one JSON object following this schema:
 {json.dumps(schema, indent=2)}
 """
 
-    prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{user_prompt}<|im_end|>\n<|im_start|>assistant\n"
+    prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{user_prompt}<|im_end|>\n<|im_start|>assistant\n<think>\n</think>\n"
     sampling_params = SamplingParams(temperature=0.7, max_tokens=1024, stop=["<|im_end|>"])
 
     outputs = llm.generate([prompt], sampling_params)

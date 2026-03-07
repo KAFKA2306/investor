@@ -1,0 +1,29 @@
+name: Smoke
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Setup Task
+        uses: arduino/setup-task@v2
+
+      - name: Setup
+        run: task setup
+
+      - name: Run smoke checks
+        run: task smoke
