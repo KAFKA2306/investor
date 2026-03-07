@@ -8,7 +8,6 @@ import { FeatureRepository } from "../db/repos/feature_repository.ts";
 import { SignalRepository } from "../db/repos/signal_repository.ts";
 import { core } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
-import { logger } from "../utils/logger.ts";
 
 export type KnowledgeDocumentInput = {
   docId: string;
@@ -813,10 +812,10 @@ export class AlphaKnowledgebase {
         LIMIT ?
       `)
       .all(query, Math.max(1, limit)) as {
-      docId: string;
-      sectionName: string;
-      rank: number;
-    }[];
+        docId: string;
+        sectionName: string;
+        rank: number;
+      }[];
   }
 
   public getCounts(): Record<string, number> {
@@ -887,15 +886,15 @@ export class AlphaKnowledgebase {
         toDate ?? null,
         toDate ?? null,
       ) as {
-      signalId: string;
-      symbol: string;
-      date: string;
-      combinedAlpha: number | null;
-      riskDelta: number | null;
-      pead1d: number | null;
-      pead5d: number | null;
-      nextReturn: number | null;
-    }[];
+        signalId: string;
+        symbol: string;
+        date: string;
+        combinedAlpha: number | null;
+        riskDelta: number | null;
+        pead1d: number | null;
+        pead5d: number | null;
+        nextReturn: number | null;
+      }[];
 
     return rows
       .map((row) => ({
@@ -988,20 +987,20 @@ export class AlphaKnowledgebase {
         toDate ?? null,
         toDate ?? null,
       ) as Array<{
-      signalId: string;
-      symbol: string;
-      date: string;
-      combinedAlpha: number | null;
-      riskDelta: number | null;
-      pead1d: number | null;
-      pead5d: number | null;
-      nextReturn: number | null;
-      correctionFlag: number | null;
-      correctionCount90d: number | null;
-      regimeId: string | null;
-      entryClose: number | null;
-      entryVolume: number | null;
-    }>;
+        signalId: string;
+        symbol: string;
+        date: string;
+        combinedAlpha: number | null;
+        riskDelta: number | null;
+        pead1d: number | null;
+        pead5d: number | null;
+        nextReturn: number | null;
+        correctionFlag: number | null;
+        correctionCount90d: number | null;
+        regimeId: string | null;
+        entryClose: number | null;
+        entryVolume: number | null;
+      }>;
 
     return rows
       .map((row) => ({
@@ -1043,14 +1042,14 @@ export class AlphaKnowledgebase {
         WHERE signal_id = ?
       `)
       .get(signalId) as {
-      signalId: string;
-      symbol: string;
-      date: string;
-      combinedAlpha: number | null;
-      riskDelta: number | null;
-      pead1d: number | null;
-      pead5d: number | null;
-    } | null;
+        signalId: string;
+        symbol: string;
+        date: string;
+        combinedAlpha: number | null;
+        riskDelta: number | null;
+        pead1d: number | null;
+        pead5d: number | null;
+      } | null;
 
     const lineage = this.db
       .query(`
@@ -1063,10 +1062,10 @@ export class AlphaKnowledgebase {
         ORDER BY source_doc_id ASC, source_section ASC
       `)
       .all(signalId) as Array<{
-      sourceDocId: string;
-      sourceSection: string;
-      modelVersion: string;
-    }>;
+        sourceDocId: string;
+        sourceSection: string;
+        modelVersion: string;
+      }>;
 
     const primaryDocId = lineage[0]?.sourceDocId ?? null;
 
@@ -1074,7 +1073,7 @@ export class AlphaKnowledgebase {
       primaryDocId === null
         ? null
         : (this.db
-            .query(`
+          .query(`
               SELECT
                 doc_id AS docId,
                 source,
@@ -1083,7 +1082,7 @@ export class AlphaKnowledgebase {
               FROM documents
               WHERE doc_id = ?
             `)
-            .get(primaryDocId) as {
+          .get(primaryDocId) as {
             docId: string;
             source: string;
             filedAt: string;
@@ -1094,7 +1093,7 @@ export class AlphaKnowledgebase {
       primaryDocId === null
         ? null
         : (this.db
-            .query(`
+          .query(`
               SELECT
                 event_id AS eventId,
                 feature_version AS featureVersion,
@@ -1105,7 +1104,7 @@ export class AlphaKnowledgebase {
               ORDER BY filed_at DESC
               LIMIT 1
             `)
-            .get(primaryDocId) as {
+          .get(primaryDocId) as {
             eventId: string;
             featureVersion: string;
             correctionFlag: number;
@@ -1125,12 +1124,12 @@ export class AlphaKnowledgebase {
         ORDER BY gate_name ASC
       `)
       .all(signalId) as Array<{
-      gateName: string;
-      passed: number;
-      threshold: string;
-      actualValue: number | null;
-      reason: string;
-    }>;
+        gateName: string;
+        passed: number;
+        threshold: string;
+        actualValue: number | null;
+        reason: string;
+      }>;
 
     const backtestRuns = this.db
       .query(`
@@ -1153,37 +1152,37 @@ export class AlphaKnowledgebase {
         LIMIT 20
       `)
       .all(signalId) as Array<{
-      runId: string;
-      strategyId: string;
-      fromDate: string;
-      toDate: string;
-      sharpe: number | null;
-      totalReturn: number | null;
-      maxDrawdown: number | null;
-      createdAt: string;
-    }>;
+        runId: string;
+        strategyId: string;
+        fromDate: string;
+        toDate: string;
+        sharpe: number | null;
+        totalReturn: number | null;
+        maxDrawdown: number | null;
+        createdAt: string;
+      }>;
 
     return {
       signal: signal
         ? {
-            signalId: signal.signalId,
-            symbol: signal.symbol,
-            date: signal.date,
-            combinedAlpha: Number(signal.combinedAlpha ?? 0),
-            riskDelta: Number(signal.riskDelta ?? 0),
-            pead1d: Number(signal.pead1d ?? 0),
-            pead5d: Number(signal.pead5d ?? 0),
-          }
+          signalId: signal.signalId,
+          symbol: signal.symbol,
+          date: signal.date,
+          combinedAlpha: Number(signal.combinedAlpha ?? 0),
+          riskDelta: Number(signal.riskDelta ?? 0),
+          pead1d: Number(signal.pead1d ?? 0),
+          pead5d: Number(signal.pead5d ?? 0),
+        }
         : null,
       lineage,
       sourceDocument,
       eventFeature: eventFeature
         ? {
-            eventId: eventFeature.eventId,
-            featureVersion: eventFeature.featureVersion,
-            correctionFlag: eventFeature.correctionFlag > 0,
-            correctionCount90d: Number(eventFeature.correctionCount90d ?? 0),
-          }
+          eventId: eventFeature.eventId,
+          featureVersion: eventFeature.featureVersion,
+          correctionFlag: eventFeature.correctionFlag > 0,
+          correctionCount90d: Number(eventFeature.correctionCount90d ?? 0),
+        }
         : null,
       gateDecisions: gateDecisions.map((row) => ({
         gateName: row.gateName,

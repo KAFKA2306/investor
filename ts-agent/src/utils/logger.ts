@@ -13,7 +13,7 @@ type LogContext = Record<string, string | number | boolean>;
 
 class Logger {
   private currentLevel: LogLevel =
-    process.env.LOG_LEVEL?.toUpperCase() === "DEBUG"
+    (globalThis as any).process?.env?.LOG_LEVEL?.toUpperCase() === "DEBUG"
       ? LogLevel.DEBUG
       : LogLevel.INFO;
   private defaultContext: LogContext = {};
@@ -33,25 +33,33 @@ class Logger {
     return `[${ts}] [${level}] ${message}${ctxStr}`;
   }
 
-  public debug(message: string, context?: LogContext, ...args: any[]): void {
+  public debug(
+    message: string,
+    context?: LogContext,
+    ...args: unknown[]
+  ): void {
     if (this.currentLevel <= LogLevel.DEBUG) {
       console.debug(this.format("DEBUG", message, context), ...args);
     }
   }
 
-  public info(message: string, context?: LogContext, ...args: any[]): void {
+  public info(message: string, context?: LogContext, ...args: unknown[]): void {
     if (this.currentLevel <= LogLevel.INFO) {
       console.info(this.format("INFO", message, context), ...args);
     }
   }
 
-  public warn(message: string, context?: LogContext, ...args: any[]): void {
+  public warn(message: string, context?: LogContext, ...args: unknown[]): void {
     if (this.currentLevel <= LogLevel.WARN) {
       console.warn(this.format("WARN", message, context), ...args);
     }
   }
 
-  public error(message: string, context?: LogContext, ...args: any[]): void {
+  public error(
+    message: string,
+    context?: LogContext,
+    ...args: unknown[]
+  ): void {
     if (this.currentLevel <= LogLevel.ERROR) {
       console.error(this.format("ERROR", message, context), ...args);
     }
