@@ -48,47 +48,42 @@ export class MarketDataEnricher {
     const from = startDate || dates[0];
     const to = endDate || dates[dates.length - 1];
 
-    try {
-      // Fetch leverage trend data
-      const leverageFeatures = await this.leverageComputer.compute(from, to);
+    // Fetch leverage trend data
+    const leverageFeatures = await this.leverageComputer.compute(from, to);
 
-      // Create lookup map
-      const leverageMap = new Map<string, number | null>();
-      for (const feature of leverageFeatures) {
-        leverageMap.set(feature.date, feature.leverage_trend_qtd);
-      }
-
-      // Forward-fill leverage trend for daily bars
-      let lastValue: number | null = null;
-      const enriched: EnrichedMarketData[] = [];
-
-      for (const bar of bars) {
-        const date = bar.date as unknown as string;
-        const barDate =
-          typeof date === "string"
-            ? date
-            : new Date(bar.timestamp as unknown as number)
-                .toISOString()
-                .split("T")[0];
-
-        let leverage = leverageMap.get(barDate);
-        if (leverage === undefined) {
-          leverage = lastValue; // Forward-fill
-        }
-
-        lastValue = leverage ?? null;
-
-        enriched.push({
-          ...bar,
-          macro_leverage_trend: leverage ?? undefined,
-        });
-      }
-
-      return enriched;
-    } catch (error) {
-      console.warn(`⚠️ [MarketDataEnricher] Failed to enrich with leverage: ${error}`);
-      return bars as EnrichedMarketData[];
+    // Create lookup map
+    const leverageMap = new Map<string, number | null>();
+    for (const feature of leverageFeatures) {
+      leverageMap.set(feature.date, feature.leverage_trend_qtd);
     }
+
+    // Forward-fill leverage trend for daily bars
+    let lastValue: number | null = null;
+    const enriched: EnrichedMarketData[] = [];
+
+    for (const bar of bars) {
+      const date = bar.date as unknown as string;
+      const barDate =
+        typeof date === "string"
+          ? date
+          : new Date(bar.timestamp as unknown as number)
+              .toISOString()
+              .split("T")[0];
+
+      let leverage = leverageMap.get(barDate);
+      if (leverage === undefined) {
+        leverage = lastValue; // Forward-fill
+      }
+
+      lastValue = leverage ?? null;
+
+      enriched.push({
+        ...bar,
+        macro_leverage_trend: leverage ?? undefined,
+      });
+    }
+
+    return enriched;
   }
 
   /**
@@ -116,20 +111,16 @@ export class MarketDataEnricher {
       };
     }
 
-    try {
-      // Fetch latest leverage data
-      const latest = await this.leverageComputer.getLatest();
-      const leverage = latest?.leverage_trend_qtd ?? null;
+    // Fetch latest leverage data
+    const latest = await this.leverageComputer.getLatest();
+    const leverage = latest?.leverage_trend_qtd ?? null;
 
-      this.leverageCache.set(barDate, leverage);
+    this.leverageCache.set(barDate, leverage);
 
-      return {
-        ...bar,
-        ...(leverage !== null && { macro_leverage_trend: leverage }),
-      };
-    } catch {
-      return bar as EnrichedMarketData;
-    }
+    return {
+      ...bar,
+      ...(leverage !== null && { macro_leverage_trend: leverage }),
+    };
   }
 
   /**

@@ -71,11 +71,7 @@ export class OpenAIThemeProvider {
   private readonly baseUrl = DEFAULT_BASE_URL;
 
   constructor() {
-    this.apiKey = core.getProviderCredential(
-      "ai",
-      "apiKey",
-      "OPENAI_API_KEY",
-    );
+    this.apiKey = core.getProviderCredential("ai", "apiKey", "OPENAI_API_KEY");
     logger.info(
       `🤖 [OpenAIThemeProvider] Initialized with model: ${this.model}`,
     );
@@ -95,19 +91,28 @@ export class OpenAIThemeProvider {
       );
     }
 
-    const systemPrompt =
-      "You are an autonomous quant idea generator. Return only valid JSON matching the requested schema.";
+    const isRiskOff = input.marketContext.includes("RISK_OFF");
+    const systemPrompt = [
+      "You are an autonomous quant alpha idea generator specializing in Japanese equities.",
+      "You receive live hedge fund leverage signals from OFR SEC Form PF data.",
+      "Leverage regime rules:",
+      "- If the market context contains RISK_OFF or DELEVERAGING, you MUST include 'macro_leverage_trend' in featureSignature.",
+      "- If the market context contains RISK_ON, prefer momentum and growth features; macro_leverage_trend is optional.",
+      "- Always generate hypotheses that are falsifiable and grounded in the available feature columns.",
+      "Return only valid JSON matching the requested schema. No prose, no markdown.",
+    ].join("\n");
     const userPrompt = [
-      "Generate exactly one novel alpha exploration theme for Japanese equities.",
-      "Avoid overlap with forbidden themes and reduce duplication with existing themes.",
-      "Keep hypothesis concise and falsifiable.",
+      // OFR macro context first so the LLM reads regime signals before anything else
+      `[Live Macro Context - OFR SEC Form PF]\n${input.marketContext}`,
+      "",
+      `[Task] Generate exactly one novel alpha exploration theme for Japanese equities.`,
+      `Current risk mode: ${isRiskOff ? "RISK_OFF — emphasize reversal, defensive, and low-beta signals" : "RISK_ON — momentum and growth signals preferred"}`,
       `Mission: ${input.missionContext}`,
-      `Market Context: ${input.marketContext}`,
-      `Existing Themes: ${input.existingThemes.join(", ") || "none"}`,
-      `Forbidden Themes: ${input.forbiddenThemes.join(", ") || "none"}`,
+      `User Intent: ${input.userIntent?.trim() || "none"}`,
+      `Existing Themes (avoid duplication): ${input.existingThemes.join(", ") || "none"}`,
+      `Forbidden Themes (never use): ${input.forbiddenThemes.join(", ") || "none"}`,
       `Recent Successes: ${input.recentSuccesses.join(" | ") || "none"}`,
       `Recent Failures: ${input.recentFailures.join(" | ") || "none"}`,
-      `User Intent: ${input.userIntent?.trim() || "none"}`,
       `Input Channel: ${input.inputChannel?.trim() || "none"}`,
     ].join("\n");
 
@@ -156,7 +161,7 @@ export class OpenAIThemeProvider {
     };
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60_000);
+    const timeout = setTimeout(() => controller.abort(), 300_000); // 300s
 
     logger.debug("🤖 [LLM Request Body]", {
       body: JSON.stringify(body, null, 2),
@@ -209,5 +214,54 @@ export class OpenAIThemeProvider {
       model: this.model,
       source: "OPENAI",
     };
+  }
+
+  public async chat(systemPrompt: string, userPrompt: string): Promise<string> {
+    if (!this.isEnabled()) {
+      throw new Error(
+        "OpenAIThemeProvider is disabled: OPENAI_API_KEY is missing.",
+      );
+    }
+
+    const body = {
+      model: this.model,
+      input: [
+        {
+          role: "system",
+          content: [{ type: "input_text", text: systemPrompt }],
+        },
+        {
+          role: "user",
+          content: [{ type: "input_text", text: userPrompt }],
+        },
+      ],
+    };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 300_000);
+
+    const response = await fetch(`${this.baseUrl}/responses`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const reason = await response.text();
+      throw new Error(`OpenAI response failed: ${response.status} ${reason}`);
+    }
+
+    const json = (await response.json()) as unknown;
+    const outputText = extractOutputText(json);
+    if (!outputText) {
+      throw new Error("OpenAI response missing output_text");
+    }
+
+    clearTimeout(timeout);
+    return outputText;
   }
 }
