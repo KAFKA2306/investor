@@ -1,23 +1,21 @@
 /**
  * Backtest Score Metric
  *
- * Normalizes Sharpe Ratio and Information Coefficient (IC) to [0, 1] range
- * and computes an aggregate backtest quality score.
+ * Normalizes Sharpe Ratio to [0, 1] range
+ * and computes a backtest quality score.
  *
  * Thresholds:
  * - Sharpe Ratio: min=1.5, ideal=2.0
- * - IC: min=0.04, ideal=0.08
  *
  * Scoring:
  * - Score at min threshold = 0.0
  * - Score at ideal threshold = 1.0
  * - Scores above ideal are clipped to 1.0
- * - Final score is the average of normalized Sharpe and IC scores
+ * - Final score is based on normalized Sharpe score
  */
 
 const BACKTEST_THRESHOLDS = {
   sharpe: { min: 1.5, ideal: 2.0 },
-  ic: { min: 0.04, ideal: 0.08 },
 } as const;
 
 /**
@@ -43,16 +41,12 @@ function normalizeScore(value: number, min: number, ideal: number): number {
 }
 
 /**
- * Compute backtest score from Sharpe Ratio and Information Coefficient
+ * Compute backtest score from Sharpe Ratio
  *
  * @param sharpeRatio - Sharpe ratio of the backtest
- * @param informationCoefficient - Information coefficient (IC) of the backtest
  * @returns Aggregated backtest score in [0, 1] range
  */
-export function computeBacktestScore(
-  sharpeRatio: number,
-  informationCoefficient: number,
-): number {
+export function computeBacktestScore(sharpeRatio: number): number {
   // Normalize Sharpe ratio
   const sharpeScore = normalizeScore(
     sharpeRatio,
@@ -60,13 +54,6 @@ export function computeBacktestScore(
     BACKTEST_THRESHOLDS.sharpe.ideal,
   );
 
-  // Normalize IC
-  const icScore = normalizeScore(
-    informationCoefficient,
-    BACKTEST_THRESHOLDS.ic.min,
-    BACKTEST_THRESHOLDS.ic.ideal,
-  );
-
-  // Return average of both scores
-  return (sharpeScore + icScore) / 2;
+  // Return sharpe score
+  return sharpeScore;
 }

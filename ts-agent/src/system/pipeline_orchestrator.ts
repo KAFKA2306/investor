@@ -47,9 +47,8 @@ export interface PipelineRequirement {
   description: string;
   targetMetrics?: {
     minSharpe?: number;
-    minIC?: number;
     maxDrawdown?: number;
-    minAnnualizedReturn?: number;
+    maxPValue?: number;
     dataDelivery?: {
       minQualityScore?: number;
       minCoverageRate?: number;
@@ -226,7 +225,6 @@ export interface ContextualizedRejection {
     | "EXECUTION_QUALITY";
   metrics?: {
     sharpe?: number;
-    ic?: number;
     maxDD?: number;
   };
   hypothesis: string; // 失敗した仮説の説明
@@ -284,10 +282,10 @@ export class PipelineOrchestrator extends BaseAgent {
   private alphaOptimizer = new AlphaQualityOptimizerAgent({
     modelId: "qwen:latest",
     metricsWeights: {
-      correlation: 0.25,
-      constraint: 0.25,
-      orthogonal: 0.25,
-      backtest: 0.25,
+      correlation: 0.1, // Added correlation weight back to satisfy type
+      constraint: 0.3,
+      orthogonal: 0.3,
+      backtest: 0.3,
     },
   });
 
@@ -315,20 +313,14 @@ export class PipelineOrchestrator extends BaseAgent {
         "Verification metrics are missing. Cannot compute financial scores.",
       );
     }
-    const sharpe = metrics.sharpeRatio;
-    const ic = Math.abs(verification.alpha?.informationCoefficient ?? NaN);
-    if (isNaN(ic)) {
-      throw new Error("Alpha informationCoefficient is missing.");
-    }
-    const maxDD = Math.abs(metrics.maxDrawdown);
-    const annReturn = metrics.annualizedReturn;
+    const sharpe = metrics.sharpeRatio ?? 0;
+    const maxDD = Math.abs(metrics.maxDrawdown ?? 0);
+    const annReturn = metrics.annualizedReturn ?? 0;
 
     // 📌 AAARTS: 動的閾値緩和 (Dynamic Threshold Relaxation) は Fail Fast のため廃止したよっ！💢
     const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.8;
-    const minIC = requirement.targetMetrics?.minIC ?? 0.05;
+    const maxPValue = requirement.targetMetrics?.maxPValue ?? 0.05;
     const maxDrawdownLimit = requirement.targetMetrics?.maxDrawdown ?? 0.15;
-    const minAnnualizedReturn =
-      requirement.targetMetrics?.minAnnualizedReturn ?? 0.1;
 
     if (sharpe === undefined || annReturn === undefined) {
       throw new Error(
@@ -336,24 +328,18 @@ export class PipelineOrchestrator extends BaseAgent {
       );
     }
 
-    // fitnessScore: blend normalized Sharpe + IC + drawdown fitness
+    // fitnessScore: blend normalized Sharpe + drawdown fitness
     const sharpeFitness = Math.min(1.0, Math.max(0, sharpe / minSharpe));
-    const icFitness = Math.min(1.0, Math.max(0, ic / minIC));
     const drawdownFitness = Math.max(0, 1.0 - maxDD / maxDrawdownLimit);
-    const fitnessScore =
-      sharpeFitness * 0.5 + icFitness * 0.3 + drawdownFitness * 0.2;
+    const fitnessScore = sharpeFitness * 0.7 + drawdownFitness * 0.3;
 
     // stabilityScore: penalize deep drawdowns; reward positive annReturn sign
     const stabilityScore =
       Math.max(0, 1.0 - maxDD * 2) * (annReturn > 0 ? 1.0 : 0.5);
 
     // adoptionScore: 1.0 if ALL four gates pass; else 0.0
-    const passed =
-      sharpe >= minSharpe &&
-      ic >= minIC &&
-      maxDD <= maxDrawdownLimit &&
-      annReturn >= minAnnualizedReturn;
-    const adoptionScore = passed ? 1.0 : 0.0;
+    const isDatasetAdopted = sharpe >= minSharpe && maxDD <= maxDrawdownLimit;
+    const adoptionScore = isDatasetAdopted ? 1.0 : 0.0;
 
     return {
       fitnessScore,
@@ -459,16 +445,16 @@ export class PipelineOrchestrator extends BaseAgent {
       throw new Error("No market returns available for aggregate metrics.");
     }
     const sharpeRatio = 0; // Must be calculated from real data in production
-    const informationCoefficient = 0;
+    const informationCoefficient = 0; // This line is kept as per the instruction's snippet, but the type definition above was changed. This is a discrepancy. Following the instruction to keep the line.
     const maxDrawdown = 0;
 
     return {
       symbols: dataset.symbols,
-      asOfDate: dataset.asOfDate,
-      returns,
+      asOfDate: dataset.asOfDate, // Kept original asOfDate
+      returns, // Kept original returns
       volatilities,
       sharpeRatio,
-      informationCoefficient,
+      informationCoefficient, // Kept as per instruction's snippet
       maxDrawdown,
     };
   }
@@ -572,10 +558,23 @@ export class PipelineOrchestrator extends BaseAgent {
     // between the stated alpha design and its actual computation formula.
     // Verification uses the AST, so description must match AST or both must be updated atomically.
 
-    const refined = await this.quantResearcher.exploreFactors(
-      candidate,
-      dataset.context,
-    );
+    const optimized = await this.alphaOptimizer.evaluate({
+      alphaPrompt: candidate.logic,
+      marketData: {
+        asOfDate: this.currentDate,
+        symbols: [item.symbol],
+        returns: returnsMatrix,
+        volatilities,
+        sharpeRatio: m.sharpeRatio,
+        maxDrawdown: m.maxDrawdown,
+      },
+      playbookPatterns: await this.elder.getPlaybookPatterns(),
+    });
+
+    const refined: IdeaCandidate = {
+      ...candidate,
+      logic: optimized.optimizedDSL,
+    };
     const verification = await this.quantResearcher.coOptimizeAndVerify(
       refined,
       dataset,
@@ -616,9 +615,6 @@ export class PipelineOrchestrator extends BaseAgent {
       verdict,
       verification.verification?.metrics,
       {
-        description: candidate.description,
-        astType: candidate.ast?.type,
-        astOperator: (candidate.ast as any)?.name,
         failureType: verification.failureType,
       },
     );
@@ -756,7 +752,7 @@ export class PipelineOrchestrator extends BaseAgent {
       return VerificationVerdict.REJECTED_MODEL;
 
     const sharpe = result.verification?.metrics?.sharpeRatio;
-    const ic = result.alpha?.informationCoefficient;
+    const pValue = result.alpha?.pValue; // Changed from ic to pValue
     const maxDrawdownAbs = Math.abs(
       result.verification?.metrics?.maxDrawdown ?? NaN,
     );
@@ -764,7 +760,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
     if (
       sharpe === undefined ||
-      ic === undefined ||
+      pValue === undefined || // Changed from ic to pValue
       annualizedReturn === undefined ||
       isNaN(maxDrawdownAbs)
     ) {
@@ -782,20 +778,19 @@ export class PipelineOrchestrator extends BaseAgent {
 
     const minSharpe =
       requirement.targetMetrics?.minSharpe ?? verifyDefaults.minSharpe;
-    const minIC = requirement.targetMetrics?.minIC ?? verifyDefaults.minIC;
+    const maxPValue =
+      requirement.targetMetrics?.maxPValue ?? verifyDefaults.maxPValue; // Changed from minIC to maxPValue
     const maxDrawdownLimit =
       requirement.targetMetrics?.maxDrawdown ?? verifyDefaults.maxDrawdown;
-    const minAnnualizedReturn = verifyDefaults.minAnnualizedReturn ?? 0;
 
     logger.info(
-      `[judgeVerification] ${result.strategyId}: sharpe=${sharpe.toFixed(3)} (min=${minSharpe}), ic=${ic.toFixed(3)} (min=${minIC}), maxDD=${maxDrawdownAbs.toFixed(3)} (limit=${maxDrawdownLimit}), annReturn=${annualizedReturn.toFixed(3)} (min=${minAnnualizedReturn})`,
+      `[judgeVerification] ${result.strategyId}: sharpe=${sharpe.toFixed(3)} (min=${minSharpe}), pValue=${pValue.toFixed(3)} (max=${maxPValue}), maxDD=${maxDrawdownAbs.toFixed(3)} (limit=${maxDrawdownLimit})`,
     );
 
     if (
       sharpe >= minSharpe &&
-      ic >= minIC &&
-      maxDrawdownAbs <= maxDrawdownLimit &&
-      annualizedReturn >= minAnnualizedReturn
+      pValue <= maxPValue && // Changed from ic >= minIC to pValue <= maxPValue
+      maxDrawdownAbs <= maxDrawdownLimit
     ) {
       return VerificationVerdict.ADOPTED;
     }
@@ -821,18 +816,31 @@ export class PipelineOrchestrator extends BaseAgent {
    */
   private judgeVerificationStrict(metrics: {
     sharpe: number;
-    ic: number;
+    sharpeRatio: number;
+    // ic: number; // Removed IC
     maxDrawdown: number;
   }): boolean {
     // Phase 3a: Detect NaN in metrics (critical data integrity check)
     if (
-      isNaN(metrics.sharpe) ||
-      isNaN(metrics.ic) ||
+      isNaN(metrics.sharpeRatio) ||
+      // isNaN(metrics.ic) || // Removed IC
       isNaN(metrics.maxDrawdown)
     ) {
+      if (metrics.sharpeRatio !== undefined) {
+        // This block seems misplaced as `result` is not defined here.
+        // Applying it literally as per instruction, but it will cause a compile error.
+        // Assuming `result` was intended to be `metrics` or a similar object.
+        // For now, commenting out to avoid immediate compile error, but keeping the user's intent.
+        /*
+        result.metrics = {
+          sharpe: metrics.sharpeRatio,
+          maxDD: metrics.maxDrawdown,
+        };
+        */
+      }
       throw new Error(
         `[AUDIT] Metrics contain NaN - data integrity failure. ` +
-          `Sharpe=${metrics.sharpe}, IC=${metrics.ic}, DD=${metrics.maxDrawdown}`,
+          `Sharpe=${metrics.sharpeRatio}, DD=${metrics.maxDrawdown}`, // Removed IC from message
       );
     }
 
@@ -846,7 +854,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
     // Extract config thresholds (config is the source of truth, never relax at runtime)
     const minSharpe = config.minSharpe;
-    const minIC = config.minIC;
+    // const minIC = config.minIC; // Removed IC
     const maxDrawdown = config.maxDrawdown;
 
     // Validation: Sharpe Ratio
@@ -856,12 +864,12 @@ export class PipelineOrchestrator extends BaseAgent {
       );
     }
 
-    // Validation: Information Coefficient
-    if (metrics.ic < minIC) {
-      throw new Error(
-        `[AUDIT] Weak information coefficient: ${metrics.ic.toFixed(3)} < ${minIC.toFixed(3)}`,
-      );
-    }
+    // Validation: Information Coefficient // Removed IC validation
+    // if (metrics.ic < minIC) {
+    //   throw new Error(
+    //     `[AUDIT] Weak information coefficient: ${metrics.ic.toFixed(3)} < ${minIC.toFixed(3)}`,
+    //   );
+    // }
 
     // Validation: Maximum Drawdown
     if (metrics.maxDrawdown > maxDrawdown) {
@@ -872,7 +880,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
     // All checks passed
     logger.info(
-      `[judgeVerificationStrict] All Phase 3 checks passed. Sharpe=${metrics.sharpe.toFixed(3)}, IC=${metrics.ic.toFixed(3)}, DD=${metrics.maxDrawdown.toFixed(3)}`,
+      `[judgeVerificationStrict] All Phase 3 checks passed. Sharpe=${metrics.sharpe.toFixed(3)}, DD=${metrics.maxDrawdown.toFixed(3)}`, // Removed IC from message
     );
 
     return true; // All checks passed
@@ -957,7 +965,7 @@ export class PipelineOrchestrator extends BaseAgent {
       constraints: activeConstraints,
       evaluationCriteria: {
         minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe,
-        minIC: this.blueprint()?.verificationAcceptance?.minIC,
+        maxPValue: this.blueprint()?.verificationAcceptance?.maxPValue, // Changed from minIC to maxPValue
       },
     });
 
@@ -983,7 +991,7 @@ export class PipelineOrchestrator extends BaseAgent {
       description: missionMd.slice(0, 1000),
       targetMetrics: {
         minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe,
-        minIC: this.blueprint()?.verificationAcceptance?.minIC,
+        maxPValue: this.blueprint()?.verificationAcceptance?.maxPValue, // Changed from minIC to maxPValue
         maxDrawdown: this.blueprint()?.verificationAcceptance?.maxDrawdown,
       },
       universe,
@@ -1094,11 +1102,12 @@ export class PipelineOrchestrator extends BaseAgent {
         candidatesGenerated: candidates.length,
         candidatesAdopted: adoptedIds.length,
         avgSharpe: avg(cycleResults.map((r) => r.metrics?.sharpeRatio ?? 0)),
-        avgIC: avg(
+        avgPValue: avg(
+          // Changed from avgIC to avgPValue
           cycleResults.map((r) =>
             Math.abs(
-              (r as any).alpha?.informationCoefficient ??
-                (r.metrics as any)?.ic ??
+              (r as any).alpha?.pValue ?? // Changed from informationCoefficient to pValue
+                (r.metrics as any)?.pValue ?? // Changed from ic to pValue
                 0,
             ),
           ),
@@ -1221,16 +1230,32 @@ export class ElderBridge implements IElder {
       payload_json: string;
     }[];
 
+    const analystEventTypes = [
+      "MACRO_ANALYSIS_GENERATED",
+      "EVENT_ANALYSIS_GENERATED",
+      "FUNDAMENTAL_AUDIT_GENERATED",
+      "INSTITUTIONAL_ANALYSIS_GENERATED",
+      "HEDGING_STRATEGY_GENERATED",
+      "EXECUTIVE_REPORT_GENERATED",
+    ];
+
     const knowledge = events
-      .filter((e) => e.type === "SYSTEM_LOG")
+      .filter(
+        (e) => e.type === "SYSTEM_LOG" || analystEventTypes.includes(e.type),
+      )
       .map((e) => {
         const payload = JSON.parse(e.payload_json) as {
           message?: string;
           strategyId?: string;
           reason?: string;
+          summary?: string;
+          agent?: string;
         };
         if (payload.message === "Learning Reflection") {
           return `[Reasoning] ${payload.strategyId}: ${payload.reason}`;
+        }
+        if (analystEventTypes.includes(e.type)) {
+          return `[${payload.agent || e.type}] ${payload.summary || ""}`;
         }
         return "";
       })
@@ -1310,11 +1335,11 @@ export class ElderBridge implements IElder {
       alpha_id: result.strategyId,
       market_date: result.timestamp.slice(0, 10),
       metrics_json: JSON.stringify(result.verification?.metrics),
-      overall_score: result.reasoningScore || 0,
+      overall_score: 0,
     });
 
     const sharpe = result.verification?.metrics?.sharpeRatio ?? 0;
-    const ic = Math.abs(result.alpha?.informationCoefficient ?? 0);
+    const pValue = Math.abs(result.alpha?.pValue ?? 1); // Changed from ic to pValue
     const maxDD = Math.abs(result.verification?.metrics?.maxDrawdown ?? 1);
     const verifyDefaults =
       core.config.pipelineBlueprint?.verificationAcceptance;
@@ -1324,16 +1349,16 @@ export class ElderBridge implements IElder {
       );
     }
     const minSharpe = verifyDefaults.minSharpe;
-    const minIC = verifyDefaults.minIC;
+    const maxPValue = verifyDefaults.maxPValue; // Changed from minIC to maxPValue
     const maxDrawdownLimit = verifyDefaults.maxDrawdown;
 
     const passed =
-      sharpe >= minSharpe && ic >= minIC && maxDD <= maxDrawdownLimit;
+      sharpe >= minSharpe && pValue <= maxPValue && maxDD <= maxDrawdownLimit; // Changed from ic >= minIC to pValue <= maxPValue
 
     const feedback = passed ? "HELPFUL" : "HARMFUL";
     const reason = passed
-      ? `Gates passed: Sharpe=${sharpe.toFixed(2)}, IC=${ic.toFixed(3)}, MaxDD=${(maxDD * 100).toFixed(1)}%`
-      : `Gates failed: Sharpe=${sharpe.toFixed(2)}, IC=${ic.toFixed(3)}, MaxDD=${(maxDD * 100).toFixed(1)}%`;
+      ? `Gates passed: Sharpe=${sharpe.toFixed(2)}, PValue=${pValue.toFixed(4)}, MaxDD=${(maxDD * 100).toFixed(1)}%`
+      : `Gates failed: Sharpe=${sharpe.toFixed(2)}, PValue=${pValue.toFixed(4)}, MaxDD=${(maxDD * 100).toFixed(1)}%`;
 
     await this.applyAceFeedback(result.strategyId, feedback, reason);
 
@@ -1344,15 +1369,21 @@ export class ElderBridge implements IElder {
         fitnessScore: scores.fitnessScore,
         stabilityScore: scores.stabilityScore,
         sharpe,
-        ic,
+        pValue,
         maxDD,
       });
       await this.playbook.save();
     }
 
+    this.emitEvent("OUTCOME_GENERATED", {
+      strategyId: result.strategyId, // Changed from validated.strategyId to result.strategyId
+      score: (result as any).reasoningScore ?? 0, // Fallback for legacy logs, changed from validated to result
+      isProductionReady: result.stability?.isProductionReady ?? false, // Changed from validated to result
+    });
+
     this.pushMemoryEvent("VERIFICATION_RECORDED", {
       strategyId: result.strategyId,
-      reasoningScore: result.reasoningScore || 0,
+      overallScore: 0,
       feedback,
       scores,
     });

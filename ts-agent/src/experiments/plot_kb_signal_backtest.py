@@ -10,6 +10,8 @@ from urllib.parse import parse_qs, urlparse
 import matplotlib.pyplot as plt
 import numpy as np
 
+DB_PATH = "alpha_knowledgebase.sqlite"
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -308,13 +310,23 @@ def make_plot(events, daily, args):
 
     months = sorted(set(monthly_sources.keys()) | set(tradable_days_by_month.keys()))
     month_x = np.arange(len(months))
-    metadata_counts = np.array([monthly_sources[m]["metadata"] for m in months], dtype=float)
-    indexed_counts = np.array([monthly_sources[m]["indexed"] for m in months], dtype=float)
+    metadata_counts = np.array(
+        [monthly_sources[m]["metadata"] for m in months], dtype=float
+    )
+    indexed_counts = np.array(
+        [monthly_sources[m]["indexed"] for m in months], dtype=float
+    )
     xbrl_counts = np.array([monthly_sources[m]["xbrl"] for m in months], dtype=float)
-    tradable_days = np.array([tradable_days_by_month.get(m, 0) for m in months], dtype=float)
-    signal_days = np.array([len(signal_days_by_month.get(m, set())) for m in months], dtype=float)
+    tradable_days = np.array(
+        [tradable_days_by_month.get(m, 0) for m in months], dtype=float
+    )
+    signal_days = np.array(
+        [len(signal_days_by_month.get(m, set())) for m in months], dtype=float
+    )
     with np.errstate(divide="ignore", invalid="ignore"):
-        tradable_ratio = np.where(signal_days > 0, tradable_days / signal_days * 100.0, 0.0)
+        tradable_ratio = np.where(
+            signal_days > 0, tradable_days / signal_days * 100.0, 0.0
+        )
 
     fig = plt.figure(figsize=(16, 10))
     gs = fig.add_gridspec(2, 2, hspace=0.33, wspace=0.20)
@@ -347,9 +359,19 @@ def make_plot(events, daily, args):
         ax1.set_xticklabels([months[i] for i in ticks], rotation=45, ha="right")
 
     ax2 = fig.add_subplot(gs[0, 1])
-    ax2.plot(month_x, tradable_ratio, color="#c0392b", linewidth=2.2, marker="o", label="Tradable ratio (%)")
+    ax2.plot(
+        month_x,
+        tradable_ratio,
+        color="#c0392b",
+        linewidth=2.2,
+        marker="o",
+        label="Tradable ratio (%)",
+    )
     ax2.set_ylabel("Tradable Day Ratio (%)")
-    ax2.set_ylim(0, max(100, float(np.nanmax(tradable_ratio) + 5)) if len(tradable_ratio) else 100)
+    ax2.set_ylim(
+        0,
+        max(100, float(np.nanmax(tradable_ratio) + 5)) if len(tradable_ratio) else 100,
+    )
     ax2.set_title("Monthly Tradable-Day Ratio")
     ax2b = ax2.twinx()
     ax2b.bar(month_x, tradable_days, color="#95a5a6", alpha=0.35, label="Tradable days")
@@ -364,12 +386,33 @@ def make_plot(events, daily, args):
         ax2.set_xticklabels([months[i] for i in ticks], rotation=45, ha="right")
 
     ax3 = fig.add_subplot(gs[1, 0])
-    ax3.plot(x, strategy_curve * 100, linewidth=2.3, color="#1b9e77", label="Cumulative return (%)")
-    ax3.plot(x, bench_curve * 100, linewidth=1.3, linestyle="--", color="#4d4d4d", alpha=0.8, label="Cross-section mean (%)")
+    ax3.plot(
+        x,
+        strategy_curve * 100,
+        linewidth=2.3,
+        color="#1b9e77",
+        label="Cumulative return (%)",
+    )
+    ax3.plot(
+        x,
+        bench_curve * 100,
+        linewidth=1.3,
+        linestyle="--",
+        color="#4d4d4d",
+        alpha=0.8,
+        label="Cross-section mean (%)",
+    )
     ax3.set_ylabel("Cumulative Return (%)")
     ax3.set_title("Performance: CumRet + 20d Rolling Sharpe")
     ax3b = ax3.twinx()
-    ax3b.plot(x, sharpe20, linewidth=1.8, color="#8e44ad", alpha=0.85, label="Rolling Sharpe (20d)")
+    ax3b.plot(
+        x,
+        sharpe20,
+        linewidth=1.8,
+        color="#8e44ad",
+        alpha=0.85,
+        label="Rolling Sharpe (20d)",
+    )
     ax3b.axhline(0, color="#8e44ad", linewidth=1, alpha=0.3)
     ax3b.set_ylabel("Sharpe (20d)")
     h1, l1 = ax3.get_legend_handles_labels()
@@ -392,9 +435,9 @@ def make_plot(events, daily, args):
         [
             f"Days: {len(daily)}",
             f"Sharpe: {metrics['sharpe']:.3f}",
-            f"CumRet: {metrics['cumulative_return']*100:.2f}%",
-            f"WinRate: {metrics['win_rate']*100:.1f}%",
-            f"MaxDD: {metrics['max_drawdown']*100:.2f}%",
+            f"CumRet: {metrics['cumulative_return'] * 100:.2f}%",
+            f"WinRate: {metrics['win_rate'] * 100:.1f}%",
+            f"MaxDD: {metrics['max_drawdown'] * 100:.2f}%",
             f"TopK={args.top_k} MinSig/day={args.min_signals_per_day}",
             f"TradeLag={args.trade_lag_days}d",
         ]
@@ -436,9 +479,7 @@ def make_plot(events, daily, args):
 def main():
     args = parse_args()
     conn = sqlite3.connect(args.db_path)
-    events = fetch_events(
-        conn, args.from_date, args.to_date, args.trade_lag_days
-    )
+    events = fetch_events(conn, args.from_date, args.to_date, args.trade_lag_days)
     conn.close()
 
     if len(events) == 0:

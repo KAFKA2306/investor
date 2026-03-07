@@ -2,7 +2,7 @@
 name = "finance-investor-workspace"
 version = "0.1.0"
 description = "Root workspace for finance investor projects"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     "matplotlib",
     "numpy",
@@ -14,7 +14,21 @@ dependencies = [
     "anthropic",
     "backoff",
     "pdfminer.six",
-    "pandas>=3.0.1",
+    "pandas",
+    "pyqlib",
+    "pydantic",
+    "pyyaml",
+    "pyright",
+    "ruff",
+    "autoawq",
+    "huggingface-hub[cli]",
+    "transformers",
+    "accelerate",
+    "compressed-tensors",
+    "vllm",
+    "torch",
+    "torchvision",
+    "pillow",
 ]
 
 [project.optional-dependencies]
@@ -42,8 +56,9 @@ dev = [
     "scikit-learn",
 ]
 
+
 [tool.uv]
 managed = true
 
 [tool.uv.workspace]
-members = ["ts-agent", "edinet2dataset"]
+members = ["ts-agent"]

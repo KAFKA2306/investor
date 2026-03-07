@@ -1,13 +1,8 @@
 default_source = "github"
 tools = ["claude", "antigravity"]
 dependencies = [
-    {handle = "K-Dense-AI/claude-scientific-skills/alpha-vantage", type = "skill"},
-    {handle = "K-Dense-AI/claude-scientific-skills/edgartools", type = "skill"},
     {handle = "K-Dense-AI/claude-scientific-skills/fred-economic-data", type = "skill"},
-    {handle = "K-Dense-AI/claude-scientific-skills/hedgefundmonitor", type = "skill"},
-    {handle = "K-Dense-AI/claude-scientific-skills/usfiscaldata", type = "skill"},
-    {handle = "K-Dense-AI/claude-scientific-skills/uspto-database", type = "skill"},
-]
+ ]
 
 [[source]]
 name = "github"

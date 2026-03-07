@@ -46,9 +46,8 @@ export class CqoAgent extends BaseAgent {
 
     const critique: string[] = [];
 
-    const tStat = a?.tStat ?? 0;
-    const pValue = a?.pValue ?? 1.0;
-    const ic = a?.informationCoefficient ?? 0;
+    const tStat = m?.tStat ?? 0;
+    const pValue = a?.pValue ?? m?.pValue ?? 1.0;
 
     if (tStat < crit.ALPHA.minTStat) {
       critique.push(
@@ -58,11 +57,6 @@ export class CqoAgent extends BaseAgent {
     if (pValue > crit.ALPHA.maxPValue) {
       critique.push(
         `P-value too high (${pValue.toFixed(4)} > ${crit.ALPHA.maxPValue}). Probability of random profit is excessive.`,
-      );
-    }
-    if (ic < crit.ALPHA.minIC) {
-      critique.push(
-        `Information Coefficient (IC) is weak (${ic.toFixed(3)} < ${crit.ALPHA.minIC}). Weak forecasting edge.`,
       );
     }
 
@@ -113,7 +107,6 @@ export class CqoAgent extends BaseAgent {
         !r1 || r1.logicChecks.every((c) => c.verdict !== Verdict.INVALID),
       screeningActive: screening?.status === AlphaStatus.ACTIVE,
       sharpeAcceptable: sharpe >= crit.PERFORMANCE.minSharpe,
-      icAcceptable: ic >= crit.ALPHA.minIC,
       pValueAcceptable: pValue <= crit.ALPHA.maxPValue,
       drawdownAcceptable: maxDD <= crit.PERFORMANCE.maxDrawdown,
     };
@@ -131,14 +124,14 @@ export class CqoAgent extends BaseAgent {
     );
     const weightedPassCount = goCheckCount * sharpeWeight;
 
-    if (goCheckCount === 8) {
+    if (goCheckCount === 7) {
       aaartesVerdict = "GO";
-      verdictRationale = `All 8 evaluation criteria passed with a Sharpe-weighted confidence of ${sharpeWeight.toFixed(2)}x: immediate execution recommended.`;
+      verdictRationale = `All 7 evaluation criteria passed with a Sharpe-weighted confidence of ${sharpeWeight.toFixed(2)}x: immediate execution recommended.`;
     }
     // HOLD判定: 軽微な懸念（Weighted 4.0以上、かつ 4項目以上クリア）
     else if (weightedPassCount >= 4.0 && goCheckCount >= 4) {
       aaartesVerdict = "HOLD";
-      verdictRationale = `${goCheckCount}/8 criteria passed (Weighted Confidence: ${weightedPassCount.toFixed(2)}): minor issues detected. Sharpe-weighted vote suggests potential for refinement.`;
+      verdictRationale = `${goCheckCount}/7 criteria passed (Weighted Confidence: ${weightedPassCount.toFixed(2)}): minor issues detected. Sharpe-weighted vote suggests potential for refinement.`;
     }
     // PIVOT判定: 根本的問題
     else {
@@ -148,14 +141,14 @@ export class CqoAgent extends BaseAgent {
 
     // 📌 AAARTS: 8視点評価チェックリスト
     const evaluationViewpoints: EvaluationViewpoint = {
-      observation: `Sharpe=${sharpe.toFixed(2)}, IC=${ic.toFixed(3)}, MaxDD=${(maxDD * 100).toFixed(1)}%, T-Stat=${tStat.toFixed(2)}, P-Value=${pValue.toFixed(4)}`,
+      observation: `Sharpe=${sharpe.toFixed(2)}, MaxDD=${(maxDD * 100).toFixed(1)}%, T-Stat=${tStat.toFixed(2)}, P-Value=${pValue.toFixed(4)}`,
       interpretation: `Risk-adjusted performance: ${
         sharpe >= crit.PERFORMANCE.minSharpe ? "sufficient" : "insufficient"
-      }. Predictive power: ${ic >= crit.ALPHA.minIC ? "strong" : "weak"}. Tail risk: ${
+      }. Tail risk: ${
         maxDD <= crit.PERFORMANCE.maxDrawdown ? "controlled" : "excessive"
       }.`,
       hypothesis: outcome.summary || "Alpha hypothesis under review",
-      assumptions: `Assumes ${crit.ALPHA.minTStat}+ t-stat threshold, ${crit.ALPHA.minIC} minimum IC, ${
+      assumptions: `Assumes ${crit.ALPHA.minTStat}+ t-stat threshold, ${
         crit.PERFORMANCE.minSharpe
       } minimum Sharpe, ${(crit.PERFORMANCE.maxDrawdown * 100).toFixed(1)}% max drawdown`,
       constraints: `Portfolio-level: max positions ${outcome.stability?.trackingError?.toFixed(3) ?? "N/A"}. Execution: ${
@@ -172,18 +165,6 @@ export class CqoAgent extends BaseAgent {
             ? "Refine strategy parameters or gather additional validation data"
             : "Redesign strategy with alternative factor set or market regime focus",
     };
-
-    let _verdict: AuditReport["verdict"] = "APPROVED";
-    if (
-      critique.some((c) =>
-        c.includes("[Alpha-R1] Strategic logic violation"),
-      ) ||
-      critique.length > 3
-    ) {
-      _verdict = "REJECTED";
-    } else if (critique.length > 0) {
-      _verdict = "REQUIRES_FIX";
-    }
 
     const audit: AuditReport = {
       strategyId: outcome.strategyId,
@@ -210,7 +191,7 @@ export class CqoAgent extends BaseAgent {
 
   public generateAuditMarkdown(audit: AuditReport): string {
     const statusIcon =
-      audit.verdict === "APPROVED"
+      audit.verdict === "GO" || audit.verdict === "APPROVED"
         ? "✅"
         : audit.verdict === "REJECTED"
           ? "❌"

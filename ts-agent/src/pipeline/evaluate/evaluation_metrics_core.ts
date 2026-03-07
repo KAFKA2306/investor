@@ -29,7 +29,6 @@ export const EvaluationResultSchema = z.object({
   volatility: z.number(),
   profitFactor: z.number().optional(),
   informationRatio: z.number().optional(),
-  informationCoefficient: z.number().optional(),
 });
 
 export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
@@ -93,9 +92,6 @@ export function evaluate(
     profitFactor:
       grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 99 : 0,
     informationRatio,
-    informationCoefficient: predictions
-      ? calculateCorrelation(predictions.predicted, predictions.actual)
-      : undefined,
   });
 }
 

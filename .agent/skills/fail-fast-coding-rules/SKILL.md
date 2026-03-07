@@ -1,53 +1,46 @@
 ---
 name: fail-fast-coding-rules
-description: 妥協と甘えを一切許さない「Fail Fast」の精神に基づいた、最強のクオンツ投資システムのコーディングスタイル。エラーは隠さず、即座に死に、正直なシステムを保つための鉄の掟。
+description: >
+  Enforce Crash-Driven Development (CDD) coding rules for this quant system: no
+  try-catch in business logic, no defensive null/false returns, errors must
+  cascade with full stack traces, and all retry/timeout resilience belongs in
+  infrastructure (Makefile/Docker/K8s), not application code. Invoke this skill
+  BEFORE writing any new function or module, implementing error handling of any
+  kind, reviewing code for exception handling correctness, debugging a silent
+  failure or missing stack trace, or any time you are about to write try-catch,
+  except, a fallback return value, or a logger.error() that swallows an
+  exception. This skill is mandatory whenever new TypeScript or Python code is
+  being written or modified in this repository. If you spot try-catch in business
+  logic during a code review — invoke this skill immediately before commenting.
 ---
 
 # ✨ Fail Fast ぜったい遵守の鉄の掟 ✨
 
-このスキルは、システムの信頼性を極限まで高め、市場の荒波の中でも「嘘をつかない」正直なエージェントであるための行動指針だよっ！💖
+システムの信頼性を極限まで高め、市場の荒波の中でも「嘘をつかない」正直なエージェントであるための行動指針だよっ！💖 ✨
 
-## 🤖 基本原則 (Core Principles) 🎀
+## 🚀 いつ使うの？ (When to use)
+- 新しいビジネスロジックやアルゴリズムを実装するとき！💻
+- コードレビューでエラー処理の妥当性をチェックするとき 🔍
+- システムのデバッグを容易にし、根本原因を爆速で特定したいとき 🔥
 
-1. **即死・即断・即決 (Die Instantly)**
-   - 何かおかしいと思ったら、即座に例外を投げてシステムを止めること！
-   - ビジネスロジックでの `try-catch` によるエラー隠蔽は **大罪** だよっ！💢
+## 📖 使い方 (How to use)
 
-2. **例外の連鎖 (Cascading Errors)**
-   - すべての予期せぬ例外は、そのまま上に突き抜けさせること！
-   - スタックトレースはフィルタリングせず、完全な状態で出力するよ。
+### 実装のゴール
+- **入力**: 実装したい機能やロジック。
+- **手順**: 
+    1. 期待される正常系をストレートに書く！✨
+    2. エラーをキャッチして握りつぶしちゃダメ！❌
+    3. 異常が発生したら、そのまま潔くクラッシュさせる。
+- **出力**: 失敗が隠蔽されず、スタックトレースが明確なコード。
 
-3. **防御的プログラミングの禁止 (No Defensive Returns)**
-   - 失敗を隠すために `None`, `False`, `empty`, エラーコードを返さないでっ！
-   - 正直に「クラッシュ」するのが、次世代のクオンツエンジニアなんだもんっ。
+## 🛡️ 鉄の掟 (Strict Rules)
 
-4. **責務の完全分離 (Separation of Concerns)**
-   - **アプリ層**: ビジネスロジックのみ。リトライやタイムアウトは書かないよ。
-   - **インフラ層**: `Makefile` や Docker 等で回復性（Resilience）を担保するよ。
+1. **即死・即断・即決 (Die Instantly)**: おかしいと思ったら即座に例外を投げること！握りつぶすのは大罪だよっ！💢
+2. **`try-catch` の禁止**: ビジネスロジック内での `try-catch` によるエラー隠蔽は絶対にダメ！めっ！だよっ！🛡️
+3. **防御的プログラミングの排除**: `None` や `null` を返して「何となく動いてる」ふりをするのは、次世代のクオンツにはふさわしくないんだもんっ！❌
 
-## 🛠️ 具体的なコーディング例 📝
+## 🎀 ベストプラクティス
+- **責務の分離**: アプリ層はロジックに集中、リトライや回復はインフラ層（Makefile/Docker）に任せるのがハッピーの秘訣だよっ！🌈
+- **明確なエラーメッセージ**: 例外を投げるときは、原因がすぐにわかるメッセージを添えてねっ！💎
 
-### ❌ CDD 違反コード (The Weak)
-```typescript
-async function fetchData(id: string) {
-  try {
-    const res = await api.get(id);
-    return res.data;
-  } catch (e) {
-    logger.error("Failed...", e); // エラーを隠蔽しちゃう
-    return null; // 静かに失敗を返すのはダメ！
-  }
-}
-```
-
-### ✅ CDD 準拠コード (The Strong)
-```typescript
-async function fetchData(id: string) {
-  const res = await api.get(id); // 失敗したらここで潔くクラッシュ！🔥
-  return res.data;
-}
-```
-
-## 🎀 エージェントさんへの誓いっ ✨
-- スタックトレースこそが唯一無二の真実だと信じてねっ！
-- 捏造された安らぎよりも、剥き出しの真実（クラッシュ）を愛するんだよっ！💖🌈👑
+✨ クラッシュこそが情報の宝庫！真実を愛するエンジニアになろうねっ！🎀👑✨

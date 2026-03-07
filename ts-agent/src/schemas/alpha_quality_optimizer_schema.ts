@@ -13,10 +13,6 @@ export const MarketSnapshotSchema = z.object({
     .array(z.number().nonnegative("Volatility must be non-negative"))
     .min(1),
   sharpeRatio: z.number(),
-  informationCoefficient: z
-    .number()
-    .min(-1, "IC must be >= -1")
-    .max(1, "IC must be <= 1"),
   maxDrawdown: z
     .number()
     .min(0, "MaxDrawdown must be >= 0")

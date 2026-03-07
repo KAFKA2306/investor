@@ -1,8 +1,0 @@
-{
-  "id": "remote:github:K-Dense-AI/claude-scientific-skills/usfiscaldata",
-  "tool": "antigravity",
-  "installed_name": "usfiscaldata",
-  "type": "remote",
-  "handle": "K-Dense-AI/claude-scientific-skills/usfiscaldata",
-  "source": "github"
-}

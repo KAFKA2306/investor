@@ -73,13 +73,17 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
    * 3. Extract factors from DSL
    * 4. Compute all 4 metrics:
    *    - Correlation Score: factor correlation with returns
-   *    - Constraint Score: Sharpe, IC, MaxDrawdown compliance
+   *    - Constraint Score: Sharpe and MaxDrawdown compliance
    *    - Orthogonality Score: uniqueness vs playbook patterns
    *    - Backtest Score: aggregate backtest quality
    * 5. Aggregate fitness as weighted sum of 4 metrics
    * 6. Return output with detailed report
    */
-  async run(
+  async run(): Promise<void> {
+    logger.info(`[${this.agentName}] Optimizer standing by...`);
+  }
+
+  async evaluate(
     input: AlphaQualityOptimizerInput,
   ): Promise<AlphaQualityOptimizerOutput> {
     const startTime = performance.now();
@@ -129,7 +133,7 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
         `[${this.agentName}] DSL validation failed and unrepairable:`,
         {
           originalDSL: optimizedDSL,
-          errors: validation.errors,
+          errors: validation.errors.join(", "),
         },
       );
       // NEVER fallback to Claude API - throw error and fail fast
@@ -170,10 +174,8 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Correlation Score: ${correlationScore.toFixed(4)}`,
     );
 
-    // 4.2 Constraint Score: evaluate Sharpe, IC, and MaxDrawdown thresholds
     const constraintScore = computeConstraintScore({
       sharpeRatio: input.marketData.sharpeRatio,
-      informationCoefficient: input.marketData.informationCoefficient,
       maxDrawdown: input.marketData.maxDrawdown,
     });
     logger.debug(
@@ -189,11 +191,8 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
       `[${this.agentName}] Orthogonality Score: ${orthogonalityScore.toFixed(4)}`,
     );
 
-    // 4.4 Backtest Score: aggregate Sharpe and IC into single quality metric
-    const backtestScore = computeBacktestScore(
-      input.marketData.sharpeRatio,
-      input.marketData.informationCoefficient,
-    );
+    // 4.4 Backtest Score: evaluate Sharpe ratio
+    const backtestScore = computeBacktestScore(input.marketData.sharpeRatio);
     logger.debug(
       `[${this.agentName}] Backtest Score: ${backtestScore.toFixed(4)}`,
     );

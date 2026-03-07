@@ -28,6 +28,7 @@ export type PathRegistry = {
   uqtlSqlite: string;
   memorySqlite: string;
   alphaKnowledgebaseSqlite: string;
+  ofrHfmSqlite: string;
 
   // EDINET specific
   edinetCacheSqlite: string;
@@ -104,6 +105,7 @@ export function buildPathRegistry(): PathRegistry {
     uqtlSqlite: join(cacheRoot, "uqtl.sqlite"),
     memorySqlite: join(cacheRoot, "memory.sqlite"),
     alphaKnowledgebaseSqlite: join(cacheRoot, "alpha_knowledgebase.sqlite"),
+    ofrHfmSqlite: join(cacheRoot, "ofr_hfm.sqlite"),
     unifiedLogDir: join(logsRoot, "unified"),
     edinetCacheSqlite: join(edinetRoot, "cache.sqlite"),
     edinetSearchSqlite: join(edinetRoot, "search.sqlite"),

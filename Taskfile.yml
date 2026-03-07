@@ -38,6 +38,33 @@ tasks:
     cmds:
       - task: qa
 
+  check:python:
+    desc: Python ruff + type check
+    cmds:
+      - task: ruff:format
+      - task: ruff:check
+      - task: ty:check
+
+  ruff:format:
+    desc: Run ruff format
+    cmds:
+      - uv run ruff format .
+
+  ruff:check:
+    desc: Run ruff check
+    cmds:
+      - uv run ruff check . --fix
+
+  ty:check:
+    desc: Run type check
+    cmds:
+      - uv run pyright
+
+  allocation:run:
+    desc: Run the portfolio allocator
+    cmds:
+      - uv run python main.py
+
   qa:fast:
     desc: lint
     dir: "{{.TS_DIR}}"

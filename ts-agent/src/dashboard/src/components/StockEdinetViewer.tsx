@@ -201,7 +201,7 @@ export const StockEdinetViewer: React.FC<StockEdinetViewerProps> = ({
                     <h4>主要財務指標</h4>
                     <ul className="metrics-list">
                       {current.edinetInsights.financialMetrics.map(
-                        (metric, idx) => (
+                        (metric, _idx) => (
                           <li key={metric} className="metric-item">
                             {metric}
                           </li>
@@ -217,7 +217,7 @@ export const StockEdinetViewer: React.FC<StockEdinetViewerProps> = ({
                     <h4>主要製品・サービス</h4>
                     <ul className="products-list">
                       {current.edinetInsights.mainProducts.map(
-                        (product, idx) => (
+                        (product, _idx) => (
                           <li key={product} className="product-item">
                             {product}
                           </li>
@@ -233,7 +233,7 @@ export const StockEdinetViewer: React.FC<StockEdinetViewerProps> = ({
                     <h4>⚠️ リスク・課題</h4>
                     <ul className="risks-list">
                       {current.edinetInsights.risksAndChallenges.map(
-                        (risk, idx) => (
+                        (risk, _idx) => (
                           <li key={risk} className="risk-item">
                             {risk}
                           </li>

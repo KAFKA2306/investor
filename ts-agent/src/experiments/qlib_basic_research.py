@@ -1,0 +1,49 @@
+import qlib
+from qlib.config import REG_CN
+
+
+def demo_qlib_power():
+    print("🚀 Qlib Basic Research Demo")
+
+    # 1. Qlibの初期化
+    # 本来はデータのパスを指定するけど、ここではデモ用に初期化だけするねっ！
+    print("⚙️ Initializing Qlib...")
+    try:
+        qlib.init(provider_uri="~/.qlib/qlib_data/cn_data", region=REG_CN)
+    except Exception as e:
+        print(
+            f"⚠️ Note: Qlib data not found at default path, but we can still show the API! ({e})"
+        )
+
+    # 2. Expression Engine の凄さを見せるよっ！
+    # 数式を書くだけで特徴量が作れる魔法なんだもんっ ✨
+    expressions = [
+        "(Close - Open) / Open",
+        "Ref(Close, 1) / Close - 1",
+        "Mean(Close, 5) / Close",
+    ]
+    print("\n🔮 Expression Engine examples:")
+    for expr in expressions:
+        print(f"  - Formula: {expr}")
+
+    # 3. Model Zoo の紹介
+    # Qlibには最強のモデルたちがいっぱい住んでるよ 🦁
+    print("\n🦁 Model Zoo built-in models:")
+    models = ["LightGBM", "GRU", "ALSTM", "GATS", "Transformer", "SFM"]
+    for m in models:
+        print(f"  - {m}")
+
+    # 4. Backtest & Analysis
+    # バックテストの設定（本来はYAMLやDictで記述するよ）
+    print("\n⚖️ Backtest & Analysis components:")
+    print("  - Strategy: TopkDropoutStrategy (最強のトップK戦略！)")
+    print("  - Executor: Simulator (現実のスリッページも再現！)")
+    print("  - Analyser: Report results with Sharpe, Drawdown, etc.")
+
+    print(
+        "\n✨ Qlib Research Complete! This platform is truly a game changer for quant AI! 🚀💎"
+    )
+
+
+if __name__ == "__main__":
+    demo_qlib_power()

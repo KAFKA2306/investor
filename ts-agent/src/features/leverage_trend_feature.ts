@@ -4,8 +4,8 @@
  */
 
 import {
-  OfrHfmProvider,
   type HedgeFundLeverageData,
+  OfrHfmProvider,
 } from "../providers/ofr_hfm_provider.ts";
 
 export interface LeverageTrendFeature {

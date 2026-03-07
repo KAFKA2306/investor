@@ -1,9 +1,9 @@
-import base64
 import json
 import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 
 def compute_rolling_ic(individual_data: dict, dates: list, window: int = 30) -> list:
     """Cross-sectional IC per date, then 30-day rolling mean."""
@@ -15,8 +15,7 @@ def compute_rolling_ic(individual_data: dict, dates: list, window: int = 30) -> 
         prices_t = [individual_data[s]["prices"][t] for s in symbols]
         prices_t1 = [individual_data[s]["prices"][t + 1] for s in symbols]
         returns_t1 = [
-            (p1 - p0) / p0 if p0 > 0 else 0.0
-            for p0, p1 in zip(prices_t, prices_t1)
+            (p1 - p0) / p0 if p0 > 0 else 0.0 for p0, p1 in zip(prices_t, prices_t1)
         ]
         f = np.array(factors_t, dtype=float)
         r = np.array(returns_t1, dtype=float)
@@ -51,16 +50,17 @@ def generate_schema_driven_plot():
         # スクリプトの場所から '../../data' を探すよっ！🎀
         script_dir = os.path.dirname(os.path.abspath(__file__))
         verification_dir = os.path.abspath(os.path.join(script_dir, "..", "..", "data"))
-    
+
     json_path = os.path.join(verification_dir, "standard_verification_data.json")
     if not os.path.exists(json_path):
-        raise FileNotFoundError(f"Verification data not found: {json_path}. Please check VERIFICATION_DIR or the data file existence.")
+        raise FileNotFoundError(
+            f"Verification data not found: {json_path}. Please check VERIFICATION_DIR or the data file existence."
+        )
 
     with open(json_path, "r") as f:
         data = json.load(f)
 
     dates = data["dates"]
-    strat_name = data["strategyName"]
     strat_id = data["strategyId"]
     strat_desc = data["description"]
     gen_at = data["generatedAt"]
@@ -95,12 +95,20 @@ def generate_schema_driven_plot():
     ax1.plot(dates, ic_arr, color="purple", linewidth=1.5, label="Rolling IC (30d)")
     ax1.axhline(0, color="gray", linewidth=0.8, linestyle="--")
     ax1.fill_between(
-        dates, ic_arr, 0,
-        where=(ic_arr >= 0), color="purple", alpha=0.15,
+        dates,
+        ic_arr,
+        0,
+        where=(ic_arr >= 0),
+        color="purple",
+        alpha=0.15,
     )
     ax1.fill_between(
-        dates, ic_arr, 0,
-        where=(ic_arr < 0), color="red", alpha=0.15,
+        dates,
+        ic_arr,
+        0,
+        where=(ic_arr < 0),
+        color="red",
+        alpha=0.15,
     )
     ax1.set_title(f"Panel 2: {ly['panel2Title']}", fontsize=12)
     ax1.set_ylabel("IC")
@@ -121,17 +129,22 @@ def generate_schema_driven_plot():
     ax3 = fig.add_subplot(gs[3], sharex=ax0)
     s_cum = np.array(strat_cum)[:n_dates]
     b_cum = np.array(bench_cum)[:n_dates]
+    ax3.plot(dates, s_cum, color="green", linewidth=3, label=ly["legendStrategy"])
     ax3.plot(
-        dates, s_cum, color="green", linewidth=3, label=ly["legendStrategy"]
-    )
-    ax3.plot(
-        dates, b_cum,
-        color="black", linestyle="--", alpha=0.6, label=ly["legendBenchmark"],
+        dates,
+        b_cum,
+        color="black",
+        linestyle="--",
+        alpha=0.6,
+        label=ly["legendBenchmark"],
     )
     ax3.fill_between(
-        dates, s_cum, b_cum,
+        dates,
+        s_cum,
+        b_cum,
         where=(s_cum >= b_cum),
-        color="green", alpha=0.1,
+        color="green",
+        alpha=0.1,
     )
     ax3.set_title(f"Panel 4: {ly['panel4Title']}", fontsize=14, fontweight="bold")
     ax3.set_ylabel(ly["yAxisReturn"])
@@ -161,18 +174,28 @@ def generate_schema_driven_plot():
     textstr = "\n".join(passport_lines)
     props = dict(boxstyle="round", facecolor="wheat", alpha=0.5)
     ax3.text(
-        0.02, 0.98, textstr,
-        transform=ax3.transAxes, fontsize=10,
-        verticalalignment="top", bbox=props, family="monospace",
+        0.02,
+        0.98,
+        textstr,
+        transform=ax3.transAxes,
+        fontsize=10,
+        verticalalignment="top",
+        bbox=props,
+        family="monospace",
     )
 
     # Footer Metadata
     audit = data["audit"]
-    fig.text(0.1, 0.04, f"Description: {strat_desc}", fontsize=9, style="italic", wrap=True)
     fig.text(
-        0.1, 0.02,
+        0.1, 0.04, f"Description: {strat_desc}", fontsize=9, style="italic", wrap=True
+    )
+    fig.text(
+        0.1,
+        0.02,
         f"Audit Trace: Commit {audit['commitHash'][:7]} | Env: {audit['environment']} | Schema: {data['schemaVersion']}",
-        fontsize=8, family="monospace", color="gray",
+        fontsize=8,
+        family="monospace",
+        color="gray",
     )
     fig.text(0.8, 0.02, f"Generated: {gen_at}", fontsize=8, family="monospace")
 

@@ -116,9 +116,8 @@ const ConfigSchema = z.object({
       verificationAcceptance: z
         .object({
           minSharpe: z.number(),
-          minIC: z.number(),
+          maxPValue: z.number(),
           maxDrawdown: z.number().min(0),
-          minAnnualizedReturn: z.number(),
         })
         .optional(),
       executionConstraints: z
@@ -438,7 +437,7 @@ export abstract class BaseAgent {
     // ついでにイベントも発行しちゃうよっ！✨
     this.emitEvent("OUTCOME_GENERATED", {
       strategyId: validated.strategyId,
-      score: validated.reasoningScore ?? 0,
+      score: (validated as any).reasoningScore ?? 0,
       isProductionReady: validated.stability?.isProductionReady ?? false,
     });
 

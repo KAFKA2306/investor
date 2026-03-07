@@ -1,0 +1,13 @@
+paths:
+  unified_logs: "logs/unified"
+  output_dir: "ts-agent/data"
+
+risk:
+  max_portfolio_volatility: 0.15
+  kelly_fraction: 0.5
+  default_stop_loss: 0.05
+
+allocation:
+  min_weight: 0.05
+  max_weight: 0.25
+  rebalance_threshold: 0.1

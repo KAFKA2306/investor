@@ -1,3 +1,4 @@
+import { LeverageTrendFeatureComputer } from "../features/leverage_trend_feature.ts";
 import { loadModelRegistry } from "../model_registry/model_registry_loader.ts";
 import { OpenAIThemeProvider } from "../providers/openai_theme_provider.ts";
 import {
@@ -9,6 +10,7 @@ import {
   type StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
+import { paths } from "../system/path_registry.ts";
 import type {
   AlphaFactor,
   BacktestResult,
@@ -22,6 +24,29 @@ import { PromptFactory } from "./prompt_factory.ts";
 
 export class LesAgent extends BaseAgent {
   private openAIThemeProvider = new OpenAIThemeProvider();
+
+  private async fetchLeverageRegime(): Promise<{
+    label: string;
+    isRiskOff: boolean;
+    defensiveCols: string[];
+  }> {
+    const computer = new LeverageTrendFeatureComputer(paths.ofrHfmSqlite);
+    const latest = await computer.getLatest();
+    if (!latest || latest.leverage_trend_qtd === null) {
+      return {
+        label: "UNKNOWN (no OFR data available)",
+        isRiskOff: false,
+        defensiveCols: [],
+      };
+    }
+    const trend = latest.leverage_trend_qtd;
+    const isRiskOff = latest.has_deleveraging || trend < -0.05;
+    const label = `${latest.leverage_regime} | trend_qtd=${trend.toFixed(3)} | leverage=${latest.leverage_level?.toFixed(1)}x | ${isRiskOff ? "DELEVERAGING ⚠️" : "STABLE/EXPANDING"}`;
+    const defensiveCols = isRiskOff
+      ? ["macro_leverage_trend", "correction_freq", "macro_cpi", "volume"]
+      : [];
+    return { label, isRiskOff, defensiveCols };
+  }
 
   public async generateAlphaFactors(
     playbookBullets: AceBullet[] = [],
@@ -69,19 +94,26 @@ export class LesAgent extends BaseAgent {
 
     const ops = ["DIV", "MUL", "SUB", "ADD", "SMA", "LAG"] as const;
     const cols = [
+      // Price & Volume (micro level)
       "close",
       "open",
       "high",
       "low",
       "volume",
+
+      // Governance & Structure
       "correction_freq",
       "activist_bias",
-      "macro_iip",
-      "macro_cpi",
-      "macro_leverage_trend",
-      "segment_sentiment",
-      "ai_exposure",
-      "kg_centrality",
+
+      // Macro Signals (different regimes)
+      "macro_iip", // Industrial production
+      "macro_cpi", // Inflation signal
+      "macro_leverage_trend", // Systemic risk (new)
+
+      // Market Structure & Sentiment
+      "segment_sentiment", // Market mood
+      "ai_exposure", // Tech/AI thematic
+      "kg_centrality", // Network importance
     ];
 
     const generateRandomAST = (
@@ -172,26 +204,40 @@ export class LesAgent extends BaseAgent {
         recentFailures.push(b.content);
     }
 
-    // Enhance market context with hedge fund leverage regime
+    const leverageCtx = await this.fetchLeverageRegime();
+    logger.info(`📊 LES: Leverage regime → ${leverageCtx.label}`);
+
+    // Enhance market context with macro signals and design constraints
     let enrichedMarketContext =
       playbookBullets.find((b) => b.id === "market-context")?.content || "";
 
-    // Add leverage regime signal if available
-    try {
-      // TODO: Integrate LeverageTrendFeatureComputer to add:
-      // "Hedge fund industry leverage: {level}x, trend: {trend}, regime: {regime}"
-      enrichedMarketContext +=
-        "\n[Macro Context] Monitor hedge fund leverage regime for systemic risk signals.";
-    } catch {
-      // Graceful degradation if leverage data unavailable
-    }
+    enrichedMarketContext += `
+[Macro Context - Live OFR SEC Form PF Data]
+- Hedge fund leverage regime: ${leverageCtx.label}
+- Sentiment vs fundamentals divergences in current environment
+- Abnormal correlations (e.g., gold+stocks, bonds+stocks)
+- Current risk mode: ${leverageCtx.isRiskOff ? "RISK_OFF — prioritize defensive/mean-reversion factors" : "RISK_ON — momentum and growth factors preferred"}
+
+[Factor Design Requirements]
+CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
+✓ Design factors with genuine price/volume/macro variation
+✓ Incorporate sentiment/sentiment divergence signals
+✓ Use macro_leverage_trend for regime-switching factors${leverageCtx.isRiskOff ? "\n✓ RISK_OFF REGIME: Emphasize reversal, defensive, and low-beta signals" : ""}
+✓ Create cross-asset signals (correlation-based)
+✓ Ensure non-trivial operator combinations (not just repetition)
+
+[Diversity Targets]
+- Each theme should explore distinct market angles
+- Avoid repeating previous failed themes
+- Mix micro (stock-level) and macro (regime-level) signals
+`;
 
     const openAIProposal = await this.openAIThemeProvider.propose({
       missionContext:
         missionContext.trim().length > 0
           ? missionContext.slice(0, 1500)
-          : "General autonomous alpha discovery for JP equities",
-      marketContext: enrichedMarketContext.slice(0, 2000),
+          : "Autonomous alpha discovery for JP equities with emphasis on non-trivial factor design",
+      marketContext: enrichedMarketContext.slice(0, 2500),
       existingThemes: [...existingThemes],
       forbiddenThemes: [...forbiddenThemes],
       recentSuccesses,
@@ -206,7 +252,21 @@ export class LesAgent extends BaseAgent {
       terms:
         openAIProposal.featureSignature.length > 0
           ? openAIProposal.featureSignature
-          : ["volume", "close", "macro_iip", "macro_cpi", "sentiment"],
+          : leverageCtx.isRiskOff
+            ? [
+                "macro_leverage_trend",
+                "correction_freq",
+                "macro_cpi",
+                "volume",
+                "close",
+              ]
+            : [
+                "volume",
+                "close",
+                "macro_iip",
+                "macro_cpi",
+                "segment_sentiment",
+              ],
     });
 
     const count = _options.count || 2;
@@ -386,13 +446,12 @@ export class LesAgent extends BaseAgent {
 
     if (!predictions || !targets) {
       throw new Error(
-        `[AUDIT] Cannot calculate IC for ${strategyId} without predictions and targets.`,
+        `[AUDIT] Cannot calculate directional metrics for ${strategyId} without predictions and targets.`,
       );
     }
 
     const tStat = mathUtils.calculateTStat(backtest.history);
     const pValue = mathUtils.calculatePValue(tStat, backtest.history.length);
-    const ic = mathUtils.calculateCorr(predictions, targets);
     const sharpeRatio = mathUtils.calculateSharpeRatio(backtest.history);
     const annualizedReturn = mathUtils.calculateAnnualizedReturn(
       backtest.netReturn,
@@ -419,14 +478,13 @@ export class LesAgent extends BaseAgent {
       alpha: {
         tStat,
         pValue,
-        informationCoefficient: ic,
       },
       verification: {
         metrics: {
           mae: 0,
           rmse: 0,
           smape: 0,
-          directionalAccuracy: ic + 0.5,
+          directionalAccuracy: 0.5, // Metric adjusted as IC is removed
           sharpeRatio,
           annualizedReturn,
           maxDrawdown,
@@ -447,7 +505,6 @@ export class LesAgent extends BaseAgent {
     ALPHA: {
       minTStat: DEFAULT_EVALUATION_CRITERIA.alpha.minTStat,
       maxPValue: DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue,
-      minIC: DEFAULT_EVALUATION_CRITERIA.alpha.minIC,
     },
     PERFORMANCE: {
       minSharpe: DEFAULT_EVALUATION_CRITERIA.performance.minSharpe,

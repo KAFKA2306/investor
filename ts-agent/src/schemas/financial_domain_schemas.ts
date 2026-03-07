@@ -92,6 +92,14 @@ export const EventTypeSchema = z.enum([
   "OUTCOME_GENERATED",
   "AUDIT_COMPLETED",
   "DOMAIN_PIVOTED",
+  "MACRO_ANALYSIS_GENERATED",
+  "MEAN_REVERSION_ANALYSIS_GENERATED",
+  "EVENT_ANALYSIS_GENERATED",
+  "FUNDAMENTAL_AUDIT_GENERATED",
+  "INSTITUTIONAL_ANALYSIS_GENERATED",
+  "HEDGING_STRATEGY_GENERATED",
+  "EXECUTIVE_REPORT_GENERATED",
+  "MEAN_REVERSION_ANALYSIS_GENERATED",
 ]);
 
 export type EventType = z.infer<typeof EventTypeSchema>;
@@ -304,9 +312,8 @@ export type StrategicReasoning = z.infer<typeof StrategicReasoningSchema>;
 export type AlphaScreening = z.infer<typeof AlphaScreeningSchema>;
 
 export const AlphaSignificanceSchema = z.object({
-  tStat: z.number().optional(),
   pValue: z.number().min(0).max(1).optional(),
-  informationCoefficient: z.number().min(-1).max(1).optional(),
+  tStat: z.number().optional(),
   factorStability: z.number().optional(),
   numerai: z
     .object({
@@ -508,7 +515,6 @@ export const SymbolTimeSeriesSchema = z.object({
   positions: z.array(z.number()),
 });
 export const VerificationMetricsSchema = z.object({
-  ic: z.number(),
   sharpe: z.number(),
   maxDD: z.number(),
   totalReturn: z.number(),
@@ -575,7 +581,6 @@ export const EvaluationCriteriaSchema = z.object({
   alpha: z.object({
     minTStat: z.number().default(2.0),
     maxPValue: z.number().default(0.05),
-    minIC: z.number().default(0.04),
   }),
   performance: z.object({
     minSharpe: z.number().default(1.8),
@@ -610,7 +615,7 @@ export const CycleSummarySchema = z.object({
   candidatesGenerated: z.number().int().nonnegative(),
   candidatesAdopted: z.number().int().nonnegative(),
   avgSharpe: z.number(),
-  avgIC: z.number(),
+  avgPValue: z.number(),
   avgFitness: z.number(),
   adoptedIds: z.array(z.string()),
   playbookBulletCount: z.number().int().nonnegative(),
