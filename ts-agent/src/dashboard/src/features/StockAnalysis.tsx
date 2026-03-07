@@ -32,33 +32,35 @@ export const StockAnalysis: React.FC<StockAnalysisProps> = ({
 }) => {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
 
-  if (!verificationData?.individualData) {
-    return <div className="empty">個別銘柄データが利用できません。</div>;
-  }
+  const symbols = useMemo(
+    () =>
+      verificationData?.individualData
+        ? Object.keys(verificationData.individualData).sort()
+        : [],
+    [verificationData],
+  );
 
-  const symbols = Object.keys(verificationData.individualData).sort();
   const activeSymbol = selectedSymbol || symbols[0];
-  const stockData = verificationData.individualData[activeSymbol];
-
-  if (!stockData) {
-    return <div className="empty">銘柄データが見つかりません。</div>;
-  }
+  const stockData = verificationData?.individualData?.[activeSymbol];
 
   // Prepare chart data combining price, factors, and positions
   const chartData = useMemo(
     () =>
-      stockData.dates.map((date, i) => ({
+      stockData?.dates.map((date, i) => ({
         date:
           date.length === 8 ? `${date.slice(4, 6)}-${date.slice(6, 8)}` : date,
         price: stockData.prices[i],
         factor: stockData.factors[i],
         position: stockData.positions[i],
-      })),
-    [activeSymbol, stockData],
+      })) ?? [],
+    [stockData],
   );
 
   // Calculate key statistics
   const { priceReturn, avgFactor, avgPosition, maxPosition } = useMemo(() => {
+    if (!stockData) {
+      return { priceReturn: 0, avgFactor: 0, avgPosition: 0, maxPosition: 0 };
+    }
     const pr =
       stockData.prices.length > 1
         ? ((stockData.prices[stockData.prices.length - 1] -
@@ -75,7 +77,15 @@ export const StockAnalysis: React.FC<StockAnalysisProps> = ({
     const mp = Math.max(...stockData.positions);
 
     return { priceReturn: pr, avgFactor: af, avgPosition: ap, maxPosition: mp };
-  }, [activeSymbol, stockData]);
+  }, [stockData]);
+
+  if (!verificationData?.individualData) {
+    return <div className="empty">個別銘柄データが利用できません。</div>;
+  }
+
+  if (!stockData) {
+    return <div className="empty">銘柄データが見つかりません。</div>;
+  }
 
   return (
     <div className="main">
@@ -131,30 +141,14 @@ export const StockAnalysis: React.FC<StockAnalysisProps> = ({
             {stockData.dates[stockData.dates.length - 1]}
           </p>
           <div className="uqtl-grid" style={{ marginTop: "1rem" }}>
-            <MetricCard
-              label="価格リターン"
-              value={priceReturn}
-              unit="%"
-              sourcePath={`individualData.${activeSymbol}.prices`}
-            />
+            <MetricCard label="価格リターン" value={priceReturn} unit="%" />
             <MetricCard
               label="平均ファクタースコア"
               value={avgFactor}
               unit=""
-              sourcePath={`individualData.${activeSymbol}.factors`}
             />
-            <MetricCard
-              label="平均ポジション"
-              value={avgPosition}
-              unit=""
-              sourcePath={`individualData.${activeSymbol}.positions`}
-            />
-            <MetricCard
-              label="最大ポジション"
-              value={maxPosition}
-              unit=""
-              sourcePath={`individualData.${activeSymbol}.positions`}
-            />
+            <MetricCard label="平均ポジション" value={avgPosition} unit="" />
+            <MetricCard label="最大ポジション" value={maxPosition} unit="" />
           </div>
         </div>
       </div>
