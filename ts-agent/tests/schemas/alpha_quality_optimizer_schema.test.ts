@@ -24,7 +24,6 @@ describe("MarketSnapshotSchema", () => {
       ],
       volatilities: [0.08, 0.12, 0.10],
       sharpeRatio: 2.1,
-      informationCoefficient: 0.05,
       maxDrawdown: 0.07,
     };
     const result = MarketSnapshotSchema.safeParse(validSnapshot);
@@ -38,7 +37,6 @@ describe("MarketSnapshotSchema", () => {
       returns: [[0.01, 0.02]],
       volatilities: [-0.08, 0.12],
       sharpeRatio: 1.5,
-      informationCoefficient: 0.03,
       maxDrawdown: 0.08,
     };
     const result = MarketSnapshotSchema.safeParse(invalidSnapshot);
@@ -52,26 +50,12 @@ describe("MarketSnapshotSchema", () => {
       returns: [[0.01]],
       volatilities: [0.08],
       sharpeRatio: 1.5,
-      informationCoefficient: 0.03,
       maxDrawdown: 0.08,
     };
     const result = MarketSnapshotSchema.safeParse(invalidSnapshot);
     expect(result.success).toBe(false);
   });
 
-  it("should reject IC outside [-1, 1] range", () => {
-    const invalidSnapshot = {
-      asOfDate: "2026-03-03",
-      symbols: ["1234"],
-      returns: [[0.01]],
-      volatilities: [0.08],
-      sharpeRatio: 1.5,
-      informationCoefficient: 1.5,
-      maxDrawdown: 0.08,
-    };
-    const result = MarketSnapshotSchema.safeParse(invalidSnapshot);
-    expect(result.success).toBe(false);
-  });
 
   it("should reject maxDrawdown outside [0, 1] range", () => {
     const invalidSnapshot = {
@@ -80,7 +64,6 @@ describe("MarketSnapshotSchema", () => {
       returns: [[0.01]],
       volatilities: [0.08],
       sharpeRatio: 1.5,
-      informationCoefficient: 0.03,
       maxDrawdown: 1.5,
     };
     const result = MarketSnapshotSchema.safeParse(invalidSnapshot);
@@ -200,7 +183,6 @@ describe("AlphaQualityOptimizerInputSchema", () => {
         returns: [[0.01, 0.02]],
         volatilities: [0.08, 0.12],
         sharpeRatio: 1.5,
-        informationCoefficient: 0.04,
         maxDrawdown: 0.08,
       },
     };
@@ -220,7 +202,6 @@ describe("AlphaQualityOptimizerInputSchema", () => {
         returns: [[0.01]],
         volatilities: [0.08],
         sharpeRatio: 1.5,
-        informationCoefficient: 0.03,
         maxDrawdown: 0.08,
       },
       playbookPatterns: [
@@ -250,7 +231,6 @@ describe("AlphaQualityOptimizerInputSchema", () => {
         returns: [[0.01]],
         volatilities: [0.08],
         sharpeRatio: 1.5,
-        informationCoefficient: 0.03,
         maxDrawdown: 0.08,
       },
     };
@@ -352,7 +332,6 @@ describe("Type exports", () => {
       returns: [[0.01]],
       volatilities: [0.08],
       sharpeRatio: 1.5,
-      informationCoefficient: 0.03,
       maxDrawdown: 0.08,
     };
     expect(snapshot.asOfDate).toBe("2026-03-03");

@@ -22,9 +22,9 @@ export type ThemeProposal = {
   source: "OPENAI" | "FALLBACK";
 };
 
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-5-nano";
-const DEFAULT_BASE_URL =
-  process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+const DEFAULT_MODEL = "gpt-5-nano";
+const DEFAULT_BASE_URL = "https://api.openai.com/v1";
+const DEFAULT_API_STYLE = "auto";
 
 const extractOutputText = (responseJson: unknown): string => {
   if (!responseJson || typeof responseJson !== "object") return "";
@@ -50,6 +50,31 @@ const extractOutputText = (responseJson: unknown): string => {
   return "";
 };
 
+const extractChatCompletionsText = (responseJson: unknown): string => {
+  if (!responseJson || typeof responseJson !== "object") return "";
+  const record = responseJson as Record<string, unknown>;
+  const choices = record.choices;
+  if (!Array.isArray(choices) || choices.length === 0) return "";
+  const first = choices[0];
+  if (!first || typeof first !== "object") return "";
+  const message = (first as Record<string, unknown>).message;
+  if (!message || typeof message !== "object") return "";
+  const content = (message as Record<string, unknown>).content;
+  if (typeof content === "string" && content.trim().length > 0) {
+    return content;
+  }
+  if (!Array.isArray(content)) return "";
+  const parts: string[] = [];
+  for (const part of content) {
+    if (!part || typeof part !== "object") continue;
+    const text = (part as Record<string, unknown>).text;
+    if (typeof text === "string" && text.trim().length > 0) {
+      parts.push(text);
+    }
+  }
+  return parts.join("").trim();
+};
+
 const normalizeFeatureSignature = (items: unknown): string[] => {
   if (!Array.isArray(items)) {
     throw new Error("normalizeFeatureSignature: items must be an array");
@@ -65,15 +90,32 @@ const normalizeFeatureSignature = (items: unknown): string[] => {
   return result;
 };
 
+const extractJsonObjectText = (text: string): string => {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start < 0 || end < start) {
+    throw new Error("OpenAI response did not contain a JSON object");
+  }
+  return text.slice(start, end + 1);
+};
+
 export class OpenAIThemeProvider {
   private readonly apiKey: string;
-  private readonly model = core.config.providers.ai.model || DEFAULT_MODEL;
-  private readonly baseUrl = DEFAULT_BASE_URL;
+  private readonly model =
+    core.getEnv("OPENAI_MODEL") ||
+    core.config.providers.ai.model ||
+    DEFAULT_MODEL;
+  private readonly baseUrl = core.getEnv("OPENAI_BASE_URL") || DEFAULT_BASE_URL;
+  private readonly apiStyle =
+    core.getEnv("OPENAI_API_STYLE") || DEFAULT_API_STYLE;
 
   constructor() {
     this.apiKey = core.getProviderCredential("ai", "apiKey", "OPENAI_API_KEY");
     logger.info(
       `🤖 [OpenAIThemeProvider] Initialized with model: ${this.model}`,
+    );
+    logger.info(
+      `🔌 [OpenAIThemeProvider] API style: ${this.resolveApiStyle()}`,
     );
     logger.info(
       `🔑 [OpenAIThemeProvider] API Key present: ${Boolean(this.apiKey)}`,
@@ -82,6 +124,18 @@ export class OpenAIThemeProvider {
 
   public isEnabled(): boolean {
     return Boolean(this.apiKey);
+  }
+
+  private resolveApiStyle(): "responses" | "chat_completions" {
+    if (this.apiStyle === "responses") {
+      return "responses";
+    }
+    if (this.apiStyle === "chat_completions") {
+      return "chat_completions";
+    }
+    return this.baseUrl.includes("api.openai.com")
+      ? "responses"
+      : "chat_completions";
   }
 
   public async propose(input: ThemeProposalInput): Promise<ThemeProposal> {
@@ -116,7 +170,31 @@ export class OpenAIThemeProvider {
       `Input Channel: ${input.inputChannel?.trim() || "none"}`,
     ].join("\n");
 
-    const body = {
+    const schema = {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "theme",
+        "hypothesis",
+        "featureSignature",
+        "noveltyRationale",
+        "ideaHashHint",
+      ],
+      properties: {
+        theme: { type: "string" },
+        hypothesis: { type: "string" },
+        featureSignature: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 1,
+          maxItems: 8,
+        },
+        noveltyRationale: { type: "string" },
+        ideaHashHint: { type: "string" },
+      },
+    };
+    const apiStyle = this.resolveApiStyle();
+    const responsesBody = {
       model: this.model,
       input: [
         {
@@ -133,47 +211,45 @@ export class OpenAIThemeProvider {
           type: "json_schema",
           name: "alpha_theme_proposal",
           strict: true,
-          schema: {
-            type: "object",
-            additionalProperties: false,
-            required: [
-              "theme",
-              "hypothesis",
-              "featureSignature",
-              "noveltyRationale",
-              "ideaHashHint",
-            ],
-            properties: {
-              theme: { type: "string" },
-              hypothesis: { type: "string" },
-              featureSignature: {
-                type: "array",
-                items: { type: "string" },
-                minItems: 1,
-                maxItems: 8,
-              },
-              noveltyRationale: { type: "string" },
-              ideaHashHint: { type: "string" },
-            },
-          },
+          schema,
         },
       },
+    };
+    const chatCompletionsBody = {
+      model: this.model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: `${userPrompt}\n\nReturn exactly one valid JSON object matching this schema:\n${JSON.stringify(schema)}`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 1024,
     };
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 300_000); // 300s
 
     logger.debug("🤖 [LLM Request Body]", {
-      body: JSON.stringify(body, null, 2),
+      body: JSON.stringify(
+        apiStyle === "responses" ? responsesBody : chatCompletionsBody,
+        null,
+        2,
+      ),
     });
 
-    const response = await fetch(`${this.baseUrl}/responses`, {
+    const endpoint =
+      apiStyle === "responses" ? "/responses" : "/chat/completions";
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(
+        apiStyle === "responses" ? responsesBody : chatCompletionsBody,
+      ),
       signal: controller.signal,
     });
     if (!response.ok) {
@@ -184,11 +260,17 @@ export class OpenAIThemeProvider {
     logger.debug("🤖 [LLM Response JSON]", {
       json: JSON.stringify(json, null, 2),
     });
-    const outputText = extractOutputText(json);
+    const outputText =
+      apiStyle === "responses"
+        ? extractOutputText(json)
+        : extractChatCompletionsText(json);
     if (!outputText) {
       throw new Error("OpenAI response missing output_text");
     }
-    const parsed = JSON.parse(outputText) as Record<string, unknown>;
+    const parsed = JSON.parse(extractJsonObjectText(outputText)) as Record<
+      string,
+      unknown
+    >;
     const theme = String(parsed.theme || "").trim();
     const hypothesis = String(parsed.hypothesis || "").trim();
     const noveltyRationale = String(parsed.noveltyRationale || "").trim();
@@ -223,7 +305,8 @@ export class OpenAIThemeProvider {
       );
     }
 
-    const body = {
+    const apiStyle = this.resolveApiStyle();
+    const responsesBody = {
       model: this.model,
       input: [
         {
@@ -236,17 +319,30 @@ export class OpenAIThemeProvider {
         },
       ],
     };
+    const chatCompletionsBody = {
+      model: this.model,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.7,
+      max_tokens: 1024,
+    };
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 300_000);
 
-    const response = await fetch(`${this.baseUrl}/responses`, {
+    const endpoint =
+      apiStyle === "responses" ? "/responses" : "/chat/completions";
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${this.apiKey}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(
+        apiStyle === "responses" ? responsesBody : chatCompletionsBody,
+      ),
       signal: controller.signal,
     });
 
@@ -256,7 +352,10 @@ export class OpenAIThemeProvider {
     }
 
     const json = (await response.json()) as unknown;
-    const outputText = extractOutputText(json);
+    const outputText =
+      apiStyle === "responses"
+        ? extractOutputText(json)
+        : extractChatCompletionsText(json);
     if (!outputText) {
       throw new Error("OpenAI response missing output_text");
     }

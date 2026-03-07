@@ -25,7 +25,6 @@ describe("AlphaQualityOptimizerAgent", () => {
       returns: [[0.01, 0.02], [0.015, 0.025]],
       volatilities: [0.08, 0.12],
       sharpeRatio: 1.8,
-      informationCoefficient: 0.05,
       maxDrawdown: 0.08,
     },
     playbookPatterns: [
@@ -58,7 +57,7 @@ describe("AlphaQualityOptimizerAgent", () => {
 
   it("should execute run() and return valid output", async () => {
     const agent = new AlphaQualityOptimizerAgent(testConfig);
-    const result = await agent.run(testInput);
+    const result = await agent.evaluate(testInput);
 
     // Verify output structure
     expect(result).toBeDefined();
@@ -74,7 +73,7 @@ describe("AlphaQualityOptimizerAgent", () => {
 
   it("should return output that passes Zod validation", async () => {
     const agent = new AlphaQualityOptimizerAgent(testConfig);
-    const result = await agent.run(testInput);
+    const result = await agent.evaluate(testInput);
 
     const validation = AlphaQualityOptimizerOutputSchema.safeParse(result);
     expect(validation.success).toBe(true);
@@ -87,13 +86,13 @@ describe("AlphaQualityOptimizerAgent", () => {
   it("should log information when running", async () => {
     const agent = new AlphaQualityOptimizerAgent(testConfig);
     // Simply verify that run() executes without throwing
-    const result = await agent.run(testInput);
+    const result = await agent.evaluate(testInput);
     expect(result).toBeDefined();
   });
 
   it("should produce detailed report with all required metrics", async () => {
     const agent = new AlphaQualityOptimizerAgent(testConfig);
-    const result = await agent.run(testInput);
+    const result = await agent.evaluate(testInput);
 
     expect(result.detailedReport).toBeDefined();
     expect(result.detailedReport.correlationScore).toBeGreaterThanOrEqual(0);
@@ -121,7 +120,7 @@ describe("AlphaQualityOptimizerAgent", () => {
       playbookPatterns: [],
     };
 
-    const result = await agent.run(inputWithoutPatterns);
+    const result = await agent.evaluate(inputWithoutPatterns);
     expect(result).toBeDefined();
     expect(result.fitness).toBeGreaterThanOrEqual(0);
     expect(result.fitness).toBeLessThanOrEqual(1);
@@ -138,13 +137,12 @@ describe("AlphaQualityOptimizerAgent", () => {
         returns: [[0.01, 0.02, 0.015, 0.025]],
         volatilities: [0.12],
         sharpeRatio: 1.9,
-        informationCoefficient: 0.055,
         maxDrawdown: 0.08,
       },
       playbookPatterns: [{ factorSet: ["momentum"], fitnessScore: 0.5 }],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Verify all 4 metrics are computed and in valid range
     expect(result.detailedReport.correlationScore).toBeGreaterThanOrEqual(0);
@@ -186,7 +184,6 @@ describe("AlphaQualityOptimizerAgent", () => {
         returns: [[0.02, 0.03, 0.02, 0.04], [0.015, 0.025, 0.018, 0.035]],
         volatilities: [0.15, 0.12],
         sharpeRatio: 2.5,
-        informationCoefficient: 0.08,
         maxDrawdown: 0.06,
       },
       playbookPatterns: [
@@ -194,7 +191,7 @@ describe("AlphaQualityOptimizerAgent", () => {
       ],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // High-quality alpha should have decent scores across all metrics
     expect(result.detailedReport.constraintScore).toBeGreaterThan(0.5);
@@ -213,13 +210,12 @@ describe("AlphaQualityOptimizerAgent", () => {
         returns: [[0.001, 0.0005, 0.0008]],
         volatilities: [0.05],
         sharpeRatio: 0.8,
-        informationCoefficient: 0.01,
         maxDrawdown: 0.15,
       },
       playbookPatterns: [{ factorSet: ["momentum"], fitnessScore: 0.5 }],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Weak alpha should have lower constraint score
     expect(result.detailedReport.constraintScore).toBeLessThan(0.8);

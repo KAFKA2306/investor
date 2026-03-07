@@ -226,6 +226,7 @@ export interface ContextualizedRejection {
   metrics?: {
     sharpe?: number;
     maxDD?: number;
+    pValue?: number; // Correctly placed inside metrics
   };
   hypothesis: string; // 失敗した仮説の説明
   avoidanceHint: string; // 次サイクルへの回避ヒント
@@ -381,7 +382,6 @@ export class PipelineOrchestrator extends BaseAgent {
     returns: number[][];
     volatilities: number[];
     sharpeRatio: number;
-    informationCoefficient: number;
     maxDrawdown: number;
   }> {
     // Prepare market data snapshot for AlphaQualityOptimizer
@@ -444,8 +444,6 @@ export class PipelineOrchestrator extends BaseAgent {
     if (allReturns.length === 0) {
       throw new Error("No market returns available for aggregate metrics.");
     }
-    const sharpeRatio = 0; // Must be calculated from real data in production
-    const informationCoefficient = 0; // This line is kept as per the instruction's snippet, but the type definition above was changed. This is a discrepancy. Following the instruction to keep the line.
     const maxDrawdown = 0;
 
     return {
@@ -453,8 +451,7 @@ export class PipelineOrchestrator extends BaseAgent {
       asOfDate: dataset.asOfDate, // Kept original asOfDate
       returns, // Kept original returns
       volatilities,
-      sharpeRatio,
-      informationCoefficient, // Kept as per instruction's snippet
+      sharpeRatio: 0,
       maxDrawdown,
     };
   }
@@ -558,22 +555,16 @@ export class PipelineOrchestrator extends BaseAgent {
     // between the stated alpha design and its actual computation formula.
     // Verification uses the AST, so description must match AST or both must be updated atomically.
 
+    const marketData = await this.prepareMarketSnapshot(dataset);
     const optimized = await this.alphaOptimizer.evaluate({
-      alphaPrompt: candidate.logic,
-      marketData: {
-        asOfDate: this.currentDate,
-        symbols: [item.symbol],
-        returns: returnsMatrix,
-        volatilities,
-        sharpeRatio: m.sharpeRatio,
-        maxDrawdown: m.maxDrawdown,
-      },
+      alphaPrompt: candidate.description,
+      marketData,
       playbookPatterns: await this.elder.getPlaybookPatterns(),
     });
 
     const refined: IdeaCandidate = {
       ...candidate,
-      logic: optimized.optimizedDSL,
+      description: optimized.optimizedDSL,
     };
     const verification = await this.quantResearcher.coOptimizeAndVerify(
       refined,
@@ -826,18 +817,6 @@ export class PipelineOrchestrator extends BaseAgent {
       // isNaN(metrics.ic) || // Removed IC
       isNaN(metrics.maxDrawdown)
     ) {
-      if (metrics.sharpeRatio !== undefined) {
-        // This block seems misplaced as `result` is not defined here.
-        // Applying it literally as per instruction, but it will cause a compile error.
-        // Assuming `result` was intended to be `metrics` or a similar object.
-        // For now, commenting out to avoid immediate compile error, but keeping the user's intent.
-        /*
-        result.metrics = {
-          sharpe: metrics.sharpeRatio,
-          maxDD: metrics.maxDrawdown,
-        };
-        */
-      }
       throw new Error(
         `[AUDIT] Metrics contain NaN - data integrity failure. ` +
           `Sharpe=${metrics.sharpeRatio}, DD=${metrics.maxDrawdown}`, // Removed IC from message
@@ -964,8 +943,12 @@ export class PipelineOrchestrator extends BaseAgent {
       forbiddenZones: history.forbiddenZones,
       constraints: activeConstraints,
       evaluationCriteria: {
-        minSharpe: this.blueprint()?.verificationAcceptance?.minSharpe,
-        maxPValue: this.blueprint()?.verificationAcceptance?.maxPValue, // Changed from minIC to maxPValue
+        minSharpe:
+          this.blueprint()?.verificationAcceptance?.minSharpe ??
+          DEFAULT_EVALUATION_CRITERIA.performance.minSharpe,
+        maxPValue:
+          this.blueprint()?.verificationAcceptance?.maxPValue ??
+          DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue,
       },
     });
 
@@ -1375,10 +1358,16 @@ export class ElderBridge implements IElder {
       await this.playbook.save();
     }
 
-    this.emitEvent("OUTCOME_GENERATED", {
-      strategyId: result.strategyId, // Changed from validated.strategyId to result.strategyId
-      score: (result as any).reasoningScore ?? 0, // Fallback for legacy logs, changed from validated to result
-      isProductionReady: result.stability?.isProductionReady ?? false, // Changed from validated to result
+    core.eventStore.appendEvent({
+      id: crypto.randomUUID(),
+      timestamp: dateUtils.nowIso(),
+      type: "OUTCOME_GENERATED",
+      agentId: "ElderBridge",
+      payload: {
+        strategyId: result.strategyId,
+        score: (result as any).reasoningScore ?? 0,
+        isProductionReady: result.stability?.isProductionReady ?? false,
+      },
     });
 
     this.pushMemoryEvent("VERIFICATION_RECORDED", {
@@ -1458,23 +1447,23 @@ export class ElderBridge implements IElder {
     const sharpeMatch = reason.match(
       /Sharpe=([0-9.]+)|sharpe[^0-9]*([0-9.]+)/i,
     );
-    const icMatch = reason.match(/IC=([0-9.]+)|ic[^0-9]*([0-9.]+)/i);
+    const pValueMatch = reason.match(
+      /PValue=([0-9.]+)|pValue[^0-9]*([0-9.]+)/i,
+    );
+    const pValue = pValueMatch
+      ? Number(pValueMatch[1] || pValueMatch[2])
+      : providedMetrics?.pValue;
     const maxDDMatch = reason.match(/MaxDD=([0-9.]+)|maxDD[^0-9]*([0-9.]+)/i);
 
     const sharpe = sharpeMatch
       ? Number(sharpeMatch[1] || sharpeMatch[2])
       : providedMetrics?.sharpeRatio;
-    let ic = icMatch
-      ? Number(icMatch[1] || icMatch[2])
-      : providedMetrics?.informationCoefficient;
     let maxDD = maxDDMatch
       ? Number(maxDDMatch[1] || maxDDMatch[2])
       : providedMetrics?.maxDrawdown;
 
-    // Fallback and Absolute Value Correctness
-    if (ic === undefined && providedMetrics?.ic !== undefined)
-      ic = providedMetrics.ic;
-    if (ic !== undefined) ic = Math.abs(ic);
+    // Absolute Value Correctness
+    if (maxDD !== undefined) maxDD = Math.abs(maxDD);
     if (maxDD !== undefined) maxDD = Math.abs(maxDD);
 
     let failureReason: ContextualizedRejection["reason"] = "DATA_FAILURE";
@@ -1497,11 +1486,14 @@ export class ElderBridge implements IElder {
       hypothesis = `Insufficient risk-adjusted returns (Sharpe=${sharpe.toFixed(2)}): factor lacks consistency`;
       avoidanceHint =
         "Explore mean-reverting or momentum strategies with different lookback windows";
-    } else if (reason.includes("IC") && ic !== undefined && ic < 0.04) {
-      failureReason = "IC_ZERO";
-      hypothesis = `Information coefficient too low (IC=${ic.toFixed(3)}): weak predictive power`;
-      avoidanceHint =
-        "Increase feature dimensionality or add regime-conditional terms";
+    } else if (
+      reason.includes("PValue") &&
+      pValue !== undefined &&
+      pValue > 0.05
+    ) {
+      failureReason = "IC_ZERO"; // Keeping IC_ZERO as legacy rejection type for now
+      hypothesis = `P-Value too high (PValue=${pValue.toFixed(4)}): lack of statistical significance`;
+      avoidanceHint = "Increase data volume or refine factor persistence";
     } else if (reason.includes("MaxDD") && maxDD !== undefined && maxDD > 0.1) {
       failureReason = "HIGH_DRAWDOWN";
       hypothesis = `Maximum drawdown too high (${(maxDD * 100).toFixed(1)}%): tail risk unmanaged`;
@@ -1536,10 +1528,10 @@ export class ElderBridge implements IElder {
     return {
       reason: failureReason,
       metrics:
-        sharpe !== undefined || ic !== undefined || maxDD !== undefined
+        sharpe !== undefined || pValue !== undefined || maxDD !== undefined
           ? {
               sharpe,
-              ic,
+              pValue,
               maxDD,
             }
           : undefined,

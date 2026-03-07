@@ -5,6 +5,7 @@ import { serve } from "bun";
 import { MemoryCenter } from "../context/unified_context_services.ts";
 import { mirrorEventToCanonical } from "../db/adapters/canonical_bridge.ts";
 import { bootstrapCanonicalDb } from "../db/bootstrap.ts";
+import { core } from "../system/app_runtime_core.ts";
 import { paths } from "../system/path_registry.ts";
 
 interface WorkflowMeta {
@@ -48,7 +49,7 @@ const tsAgentRoot = resolve(repoRoot, "ts-agent");
 const textEncoder = new TextEncoder();
 const commandControlCharsPattern = /[;&|`<>$()]/;
 const simplePathArgPattern = /^[./\w-]+$/;
-const apiToken = (process.env.UQTL_API_TOKEN ?? "").trim();
+const apiToken = (core.getEnv("UQTL_API_TOKEN") ?? "").trim();
 
 const jsonHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -296,7 +297,7 @@ const listTimeSeriesViews = async (): Promise<TimeSeriesView[]> => {
 const isSafeFileName = (file: string, ext: ".png" | ".csv"): boolean =>
   file === basename(file) && extname(file).toLowerCase() === ext;
 
-const apiPort = Number(process.env.UQTL_API_PORT ?? "8787");
+const apiPort = Number(core.getEnv("UQTL_API_PORT") ?? "8787");
 console.log(`UQTL API Server listening on http://localhost:${apiPort}`);
 void bootstrapCanonicalDb().catch((error) => {
   console.warn(`[API] canonical DB bootstrap skipped: ${String(error)}`);

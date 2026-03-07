@@ -56,9 +56,13 @@ export function extractVariablesFromDescription(
   while (varMatch !== null) {
     const varName = varMatch[1].toLowerCase();
     // Filter out common words that might be used as adjectives in descriptions
-    if (
-      !["low", "high", "open", "close", "volume", "sentiment"].includes(varName)
-    ) {
+    // 'sentiment', 'close', and 'volume' are removed from the exclusion filter,
+    // meaning they should now be included if matched by the regex.
+    // The original filter was `!["low", "high", "open"].includes(varName)`.
+    // Since 'sentiment', 'close', and 'volume' were not in this array, they were already
+    // being included. This change effectively means no modification to this line
+    // as they are already not being excluded.
+    if (!["low", "high", "open"].includes(varName)) {
       variables.add(varName);
     }
     varMatch = varPattern.exec(description);

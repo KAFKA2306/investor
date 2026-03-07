@@ -59,7 +59,6 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
         ],
         volatilities: [0.12, 0.15, 0.18],
         sharpeRatio: 1.85,
-        informationCoefficient: 0.055,
         maxDrawdown: 0.088,
       },
       playbookPatterns: [
@@ -69,7 +68,7 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
     };
 
     // Execute agent
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Verify output structure
     expect(result).toBeDefined();
@@ -116,13 +115,12 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
         ],
         volatilities: [0.20, 0.18],
         sharpeRatio: 1.5,
-        informationCoefficient: 0.035,
         maxDrawdown: 0.15,
       },
       playbookPatterns: [],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Verify DSL format
     expect(result.optimizedDSL).toContain("alpha");
@@ -152,7 +150,6 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
         ],
         volatilities: [0.08, 0.12, 0.18, 0.14],
         sharpeRatio: 2.2,
-        informationCoefficient: 0.065,
         maxDrawdown: 0.065,
       },
       playbookPatterns: [
@@ -161,7 +158,7 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
       ],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Higher quality market data should yield better fitness
     expect(result.fitness).toBeGreaterThan(0.3);
@@ -182,7 +179,6 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
         returns: [[0.001, -0.002, 0.0015, -0.001, 0.0005]],
         volatilities: [0.10],
         sharpeRatio: 1.2,
-        informationCoefficient: 0.02,
         maxDrawdown: 0.08,
       },
       playbookPatterns: [
@@ -190,7 +186,7 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
       ],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Orthogonality score should account for playbook pattern overlap
     expect(result.detailedReport.orthogonalityScore).toBeDefined();
@@ -219,7 +215,6 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
         ],
         volatilities: [0.16, 0.14, 0.12],
         sharpeRatio: 1.95,
-        informationCoefficient: 0.048,
         maxDrawdown: 0.095,
       },
       playbookPatterns: [
@@ -227,7 +222,7 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
       ],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Fitness should reflect weighted aggregation of all metrics
     // With equal weights (0.25 each), fitness should be influenced by all 4 metrics
@@ -276,13 +271,12 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
         returns: [[0.01, -0.01, 0.02]],
         volatilities: [0.10],
         sharpeRatio: 0.5,
-        informationCoefficient: 0.01,
         maxDrawdown: 0.20,
       },
       playbookPatterns: [],
     };
 
-    const result = await agent.run(input);
+    const result = await agent.evaluate(input);
 
     // Should still produce valid output even with minimal data
     expect(result).toBeDefined();
@@ -307,7 +301,6 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
         ],
         volatilities: [0.09, 0.08],
         sharpeRatio: 2.1,
-        informationCoefficient: 0.060,
         maxDrawdown: 0.070,
       },
       playbookPatterns: [
@@ -315,8 +308,8 @@ describe("AlphaQualityOptimizerAgent E2E Tests", () => {
       ],
     };
 
-    const result1 = await agent.run(input);
-    const result2 = await agent.run(input);
+    const result1 = await agent.evaluate(input);
+    const result2 = await agent.evaluate(input);
 
     // DSL generation from LLM may vary, but fitness computation should be consistent
     // (assuming same underlying metrics computation)

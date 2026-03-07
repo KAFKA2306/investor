@@ -49,3 +49,6 @@ llm/*/.venv/
 *.gguf
 *.awq
 ts-agent/data/
+
+.gemini/
+gha-creds-*.json

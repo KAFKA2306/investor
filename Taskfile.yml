@@ -9,59 +9,66 @@ vars:
 
 tasks:
   default:
-    desc: タスク一覧
+    desc: list tasks
     cmds:
       - task --list-all
 
   deps:
-    desc: 依存関係をインストール
+    desc: install TS and dashboard dependencies
     cmds:
       - cmd: bun install
         dir: "{{.TS_DIR}}"
       - cmd: npm install
         dir: "{{.DASHBOARD_DIR}}"
 
+  setup:
+    desc: setup
+    cmds:
+      - task: deps
+      - task: python:uv:sync
+
   python:uv:sync:
-    desc: uv 環境同期
+    desc: sync Python environment with uv
     cmds:
       - bash -lc 'set -euo pipefail; cache_root="${TMPDIR:-/tmp}/ts-agent-cache"; uv_cache_dir="$cache_root/uv"; mkdir -p "$cache_root" "$uv_cache_dir"; UV_CACHE_DIR="$uv_cache_dir" XDG_CACHE_HOME="$cache_root" uv sync'
 
   qa:
-    desc: format + lint
+    desc: format and lint TS
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run format
       - bun run lint
 
   check:
-    desc: format + lint (Alias for qa)
+    desc: reliability gate
     cmds:
-      - task: qa
+      - task: lint
+      - task: test:ts
+      - task: check:python
 
   check:python:
-    desc: Python ruff + type check
+    desc: Python ruff and type check
     cmds:
-      - task: ruff:format
       - task: ruff:check
       - task: ty:check
 
   ruff:format:
-    desc: Run ruff format
+    desc: run ruff format
     cmds:
       - uv run ruff format .
 
   ruff:check:
-    desc: Run ruff check
+    desc: run ruff check
     cmds:
-      - uv run ruff check . --fix
+      - uv run ruff check .
 
   ty:check:
-    desc: Run type check
+    desc: run pyright
     cmds:
       - uv run pyright
 
   allocation:run:
-    desc: Run the portfolio allocator
+    desc: run the portfolio allocator
     cmds:
       - uv run python main.py
 
@@ -83,25 +90,50 @@ tasks:
     cmds:
       - bun run lint
 
+  validate:runtime:
+    desc: runtime config validation
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run validate:runtime
+
+  test:
+    desc: test
+    cmds:
+      - task: test:ts
+
+  test:ts:
+    desc: TS unit tests
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run test
+
+  smoke:
+    desc: workflow smoke checks
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run smoke:proof-layers
+      - bun run smoke:dynamic-universe
+      - bun run smoke:verification-contract
+
   api:
-    desc: API起動
+    desc: start API
     dir: "{{.TS_DIR}}"
     cmds:
       - UQTL_API_PORT={{.API_PORT}} bun run start:api
 
   ui:
-    desc: UI起動
+    desc: start UI
     dir: "{{.DASHBOARD_DIR}}"
     cmds:
       - npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}
 
   viewer:
-    desc: claude-code-viewer 起動（既定ポート 3400）
+    desc: start claude-code-viewer
     cmds:
       - claude-code-viewer --port {{.VIEWER_PORT}}
 
   view:
-    desc: API + UI 起動
+    desc: start API and UI
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -116,45 +148,56 @@ tasks:
           (cd {{.DASHBOARD_DIR}} && npm run dev -- --host 127.0.0.1 --port {{.UI_PORT}}) & ui_pid=$!;
           wait "$ui_pid"'
 
+  llm:local:qwen:
+    desc: start local Qwen server with vLLM
+    vars:
+      LLM_PORT: '{{default "8000" .LLM_PORT}}'
+      LLM_MODEL: '{{default "/home/kafka/finance/investor/llm/qwen3.5-9b/models/cyankiwi/Qwen3.5-9B-AWQ-BF16-INT4" .LLM_MODEL}}'
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          export LD_LIBRARY_PATH=/home/kafka/finance/investor/.venv/lib/python3.12/site-packages/nvidia/nvjitlink/lib:${LD_LIBRARY_PATH:-};
+          uv run vllm serve "{{.LLM_MODEL}}" --served-model-name "Qwen/Qwen3.5-9B" --host 127.0.0.1 --port "{{.LLM_PORT}}" --max-model-len 4096 --gpu-memory-utilization 0.9 --enforce-eager --max-num-seqs 1 --limit-mm-per-prompt '\''{"image":0,"video":0}'\'' --disable-log-stats'
+
   pipeline:orchestrate:
-    desc: 設計本流（sequence/simpleflowchart準拠）
+    desc: run verification JSON and main app
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run experiments:verification-json
       - bun run start
 
   pipeline:verify:
-    desc: API検証
+    desc: API verification
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run verify:api
 
   pipeline:discover:
-    desc: 因子探索
+    desc: alpha discovery
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run experiments:alpha-discovery
 
   pipeline:benchmark:
-    desc: 基礎ベンチマーク
+    desc: benchmark backtest
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run pipeline:backtest
 
   pipeline:analyze:
-    desc: モデル分析
+    desc: analyze factors
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run pipeline:ab
 
   pipeline:mine:
-    desc: マイニング
+    desc: mine factors
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run pipeline:mine
 
   pipeline:verification-plot:
-    desc: バックテスト結果を可視化 (Python)
+    desc: generate verification plot
     dir: "{{.TS_DIR}}"
     cmds:
       - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); rm -f "$v/standard_verification_data.json"'
@@ -164,7 +207,7 @@ tasks:
       - bash -lc 'v=$(bun -e "import { core } from \"./src/system/app_runtime_core.ts\"; console.log(core.config.paths.verification)"); f=$(uv run python3 -c "import json,sys;print(json.load(open(sys.argv[1]))[\"fileName\"])" "$v/standard_verification_data.json"); test -n "$f" && test -f "$v/$f"'
 
   pipeline:edinet-daily:
-    desc: EDINET日次フロー（features -> macro -> kb-build -> gated backtest）
+    desc: run EDINET daily pipeline
     dir: "{{.TS_DIR}}"
     vars:
       FROM: '{{default "2023-01-01" .FROM}}'
@@ -180,20 +223,20 @@ tasks:
       - bun run experiments:kb-backtest -- --with-gates --top-k {{.TOP_K}} --min-signals-per-day {{.MIN_SIGNALS}} --trade-lag-days {{.TRADE_LAG_DAYS}}
 
   pipeline:edinet-io-verify:
-    desc: EDINET I/O 契約検証（fail-fast）
+    desc: verify EDINET I/O
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run experiments:verify-edinet-io
 
   pipeline:edinet-io-repair:
-    desc: EDINET event_features 欠損修復 + 契約検証
+    desc: repair EDINET event features and verify I/O
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run experiments:repair-edinet-event-features
       - bun run experiments:verify-edinet-io
 
   pipeline:edinet-daily:strict:
-    desc: EDINET日次フロー + I/O契約ゲート
+    desc: run EDINET daily pipeline with I/O gate
     vars:
       FROM: '{{default "2023-01-01" .FROM}}'
       TO: '{{default "2025-12-31" .TO}}'
@@ -213,14 +256,13 @@ tasks:
       - task: pipeline:edinet-io-verify
 
   pipeline:proof-layers:
-    desc: 管理レイヤー実証（ユニバース動的解決 + 研究マニフェスト）
+    desc: run proof layer checks
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun -e 'import { DataPipelineRuntime } from "./src/system/data_pipeline_runtime.ts"; const r=new DataPipelineRuntime(); const u=r.resolveUniverse([],20); console.log(JSON.stringify({proof:"dynamic_universe", count:u.length, sample:u.slice(0,10)},null,2)); if(u.length===0) throw new Error("universe unresolved");'
-      - bun -e 'import { QuantResearchRuntime } from "./src/system/data_pipeline_runtime.ts"; const q=new QuantResearchRuntime(); const m=q.buildManifest(["1301","1332"],"20220831",0.8); console.log(JSON.stringify({proof:"quant_manifest", manifest:m, window:q.deriveVerificationWindow("20220831")},null,2));'
+      - bun run smoke:proof-layers
 
   run:newalphasearch:cycle:
-    desc: 自律アルファ探索の1サイクル（知能循環：theme更新 + 探索 + Audit）
+    desc: run one alpha search cycle
     cmds:
       - task: pipeline:proof-layers
       - task: pipeline:verify
@@ -231,7 +273,7 @@ tasks:
       - task: pipeline:mine
 
   run:newalphasearch:
-    desc: 自律アルファ探索（ループ必須。既定3サイクル）
+    desc: run alpha search loop
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -243,7 +285,7 @@ tasks:
           ALPHA_LOOP_MAX_CYCLES="$cycles" UQTL_INPUT_CHANNEL="$input_channel" UQTL_NL_INPUT="${UQTL_NL_INPUT:-}" UQTL_NL_INPUT_FILE="${UQTL_NL_INPUT_FILE:-}" task run:newalphasearch:loop'
 
   run:newalphasearch:nl:
-    desc: 自然言語入力つき自律アルファ探索（Task経路固定）
+    desc: run alpha search from natural language input
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -255,7 +297,7 @@ tasks:
           UQTL_NL_INPUT="$prompt" UQTL_INPUT_CHANNEL="${UQTL_INPUT_CHANNEL:-codex}" task run:newalphasearch'
 
   run:newalphasearch:loop:
-    desc: 自律アルファ探索を連続ループ実行（AAARTS：探索/Audit/ドメイン転換を各サイクルで実行）
+    desc: run alpha search loop with evidence gates
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -358,14 +400,14 @@ tasks:
           done'
 
   run:
-    desc: 本番同等の全実行（管理レイヤー実証 + パイプライン）
+    desc: run the main workflow
     cmds:
       - task: run:newalphasearch
       - task: pipeline:orchestrate
       - task: pipeline:benchmark
 
   run:quick:
-    desc: 高速実行（実証+検証+探索+ベンチ+監査プロット）
+    desc: run a quick workflow
     cmds:
       - task: pipeline:proof-layers
       - task: pipeline:verify
@@ -374,7 +416,7 @@ tasks:
       - task: pipeline:verification-plot
 
   jquants:warm-all:start:
-    desc: J-Quants日次バーを最小リクエストで全期間キャッシュ（完了までループ）
+    desc: start full J-Quants cache warm
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -385,7 +427,7 @@ tasks:
           echo "PID=$(cat /tmp/jquants_warm_until_finish.pid)"'
 
   jquants:warm-all:status:
-    desc: J-Quants全期間キャッシュジョブの状態確認
+    desc: show J-Quants warm status
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -412,17 +454,17 @@ tasks:
           fi'
 
   jquants:warm-all:log:
-    desc: J-Quants全期間キャッシュジョブのログ表示
+    desc: show J-Quants warm logs
     cmds:
       - bash -lc 'tail -n 120 /tmp/jquants_warm_until_finish.log'
 
   jquants:warm-all:stop:
-    desc: J-Quants全期間キャッシュジョブを停止
+    desc: stop J-Quants warm job
     cmds:
       - bash -lc 'if [ -f /tmp/jquants_warm_until_finish.pid ]; then kill "$(cat /tmp/jquants_warm_until_finish.pid)" 2>/dev/null || true; rm -f /tmp/jquants_warm_until_finish.pid; echo "stopped"; else echo "PID file not found"; fi'
 
   jquants:warm-all:guarantee:
-    desc: 同一条件2回実行で cache hitRate>=99% を保証判定
+    desc: assert J-Quants cache hit rate
     cmds:
       - cmd: >
           bash -lc 'set -euo pipefail;
@@ -451,19 +493,19 @@ tasks:
           uv run python3 -c "import json,sys; s=json.loads(sys.argv[1]); hit=float(s.get(\"hitRatePct\",0)); aborted=bool(s.get(\"abortedByRateLimit\",True)); print(json.dumps({\"ok\": (hit>=99 and not aborted), \"hitRatePct\": hit, \"abortedByRateLimit\": aborted}, ensure_ascii=False)); raise SystemExit(0 if (hit>=99 and not aborted) else 1)" "$summary"'
 
   db:test:
-    desc: Postgres くんと仲良くお話しできるか確認するテストだよっ！🛡️✨
+    desc: test Postgres connection
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run db:test
 
   db:migrate:
-    desc: SQLite の思い出データを Postgres くんに届けるお引っ越しスクリプトだよっ！🚚💖
+    desc: migrate database
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run db:migrate
 
   clean:logs:
-    desc: ログ掃除
+    desc: clean logs
     cmds:
       - rm -rf logs/unified/*
       - rm -rf ts-agent/logs/cache/*
