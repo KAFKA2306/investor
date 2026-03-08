@@ -1,0 +1,6 @@
+{
+    "markdown.extension.preview.autoShowPreviewToSide": true,
+    "autoMdPreview.enableAutoPreview": true,
+    "autoMdPreview.alwaysOpenInPrimaryEditor": true,
+    "autoMdPreview.closePreviewOnNonMarkdown": true
+}

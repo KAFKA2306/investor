@@ -29,6 +29,8 @@ dependencies = [
     "torch",
     "torchvision",
     "pillow",
+    "protobuf<5.0.0",
+    "setuptools>=80.10.2",
 ]
 
 [project.optional-dependencies]

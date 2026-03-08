@@ -157,7 +157,7 @@ tasks:
       - cmd: >
           bash -lc 'set -euo pipefail;
           export LD_LIBRARY_PATH=/home/kafka/finance/investor/.venv/lib/python3.12/site-packages/nvidia/nvjitlink/lib:${LD_LIBRARY_PATH:-};
-          uv run vllm serve "{{.LLM_MODEL}}" --served-model-name "Qwen/Qwen3.5-9B" --host 127.0.0.1 --port "{{.LLM_PORT}}" --max-model-len 4096 --gpu-memory-utilization 0.9 --enforce-eager --max-num-seqs 1 --limit-mm-per-prompt '\''{"image":0,"video":0}'\'' --disable-log-stats'
+          uv run vllm serve "{{.LLM_MODEL}}" --served-model-name "Qwen/Qwen3.5-9B" --host 127.0.0.1 --port "{{.LLM_PORT}}" --max-model-len 2048 --kv-cache-dtype fp8 --gpu-memory-utilization 0.82 --enforce-eager --max-num-seqs 1 --limit-mm-per-prompt '\''{"image":0,"video":0}'\'' --disable-log-stats'
 
   pipeline:orchestrate:
     desc: run verification JSON and main app
@@ -509,3 +509,10 @@ tasks:
     cmds:
       - rm -rf logs/unified/*
       - rm -rf ts-agent/logs/cache/*
+
+  research:qlib:benchmark:
+    desc: run Qlib benchmark with LightGBM
+    vars:
+      CSV_PATH: '{{default "ts-agent/data/qlib_export.csv" .CSV_PATH}}'
+    cmds:
+      - uv run python ts-agent/src/research/qlib_benchmark.py --csv {{.CSV_PATH}}
