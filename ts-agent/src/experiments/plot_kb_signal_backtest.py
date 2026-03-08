@@ -426,7 +426,9 @@ def make_plot(events, daily, args):
 
     ax4 = fig.add_subplot(gs[1, 1])
     ax4.plot(x, drawdown, color="#c0392b", linewidth=2.0, label="Drawdown (%)")
-    ax4.fill_between(x, drawdown, 0, where=drawdown <= 0, color="#e74c3c", alpha=0.25)
+    ax4.fill_between(
+        x, drawdown, 0, where=drawdown <= 0, color="#e74c3c", alpha=0.25  # type: ignore
+    )
     ax4.axhline(0, color="#666", linewidth=1)
     ax4.set_title("Underwater Curve (Drawdown)")
     ax4.set_xlabel("Date")

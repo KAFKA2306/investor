@@ -11,7 +11,10 @@ def evaluate_ast(ast: Dict[str, Any], df: pd.DataFrame) -> pd.Series:
     if node_type == "variable":
         name = ast.get("name")
         if name in df.columns:
-            return df[name]
+            res = df[name]
+            if isinstance(res, pd.Series):
+                return res
+            return res.iloc[:, 0] if isinstance(res, pd.DataFrame) else pd.Series(res)
         return pd.Series(0, index=df.index)
 
     if node_type == "constant":
@@ -29,14 +32,16 @@ def evaluate_ast(ast: Dict[str, Any], df: pd.DataFrame) -> pd.Series:
             window = (
                 right_ast.get("value", 5) if right_ast.get("type") == "constant" else 5
             )
-            return left.rolling(window=int(window), min_periods=1).mean()
+            res = left.rolling(window=int(window), min_periods=1).mean()
+            return res if isinstance(res, pd.Series) else pd.Series(res)
 
         if op == "LAG":
             right_ast = ast.get("right", {})
             periods = (
                 right_ast.get("value", 1) if right_ast.get("type") == "constant" else 1
             )
-            return left.shift(int(periods))
+            res = left.shift(int(periods))
+            return res if isinstance(res, pd.Series) else pd.Series(res)
 
         right_ast = ast.get("right")
         if right_ast is None:

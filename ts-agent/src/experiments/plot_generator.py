@@ -98,7 +98,7 @@ def generate_schema_driven_plot():
         dates,
         ic_arr,
         0,
-        where=(ic_arr >= 0),
+        where=(ic_arr >= 0),  # type: ignore
         color="purple",
         alpha=0.15,
     )
@@ -106,7 +106,7 @@ def generate_schema_driven_plot():
         dates,
         ic_arr,
         0,
-        where=(ic_arr < 0),
+        where=(ic_arr < 0),  # type: ignore
         color="red",
         alpha=0.15,
     )
@@ -142,7 +142,7 @@ def generate_schema_driven_plot():
         dates,
         s_cum,
         b_cum,
-        where=(s_cum >= b_cum),
+        where=(s_cum >= b_cum),  # type: ignore
         color="green",
         alpha=0.1,
     )
