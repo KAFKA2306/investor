@@ -168,6 +168,7 @@ export class OpenAIThemeProvider {
       `Recent Successes: ${input.recentSuccesses.join(" | ") || "none"}`,
       `Recent Failures: ${input.recentFailures.join(" | ") || "none"}`,
       `Input Channel: ${input.inputChannel?.trim() || "none"}`,
+      `[Formula Context] Formulas will use qlib expression syntax. Available columns: $close, $open, $high, $low, $volume, $macro_iip, $macro_cpi, $macro_leverage_trend, $segment_sentiment, $ai_exposure, $kg_centrality. Operators: Ref(col,N), Mean(col,N), Std(col,N), Corr(col1,col2,N), Rank(col). Select featureSignature columns that would appear in a meaningful formula like "(Mean($close,5)-Mean($close,20))/Std($close,20)".`,
     ].join("\n");
 
     const schema = {

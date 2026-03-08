@@ -5,7 +5,6 @@ import {
   type AceBullet,
   DEFAULT_EVALUATION_CRITERIA,
   EvidenceSource,
-  type FactorAST,
   type FactorGenerationOptions,
   type StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
@@ -92,92 +91,72 @@ export class LesAgent extends BaseAgent {
       }
     }
 
-    const ops = ["DIV", "MUL", "SUB", "ADD", "SMA", "LAG"] as const;
     const cols = [
-      // Price & Volume (micro level)
       "close",
       "open",
       "high",
       "low",
       "volume",
-
-      // Governance & Structure
       "correction_freq",
       "activist_bias",
-
-      // Macro Signals (different regimes)
-      "macro_iip", // Industrial production
-      "macro_cpi", // Inflation signal
-      "macro_leverage_trend", // Systemic risk (new)
-
-      // Market Structure & Sentiment
-      "segment_sentiment", // Market mood
-      "ai_exposure", // Tech/AI thematic
-      "kg_centrality", // Network importance
+      "macro_iip",
+      "macro_cpi",
+      "macro_leverage_trend",
+      "segment_sentiment",
+      "ai_exposure",
+      "kg_centrality",
     ];
 
-    const generateRandomAST = (
+    const generateQlibFormula = (
       depth: number,
       biasCols?: string[],
-      mutationStrength = 1.0,
-    ): FactorAST => {
-      if (
-        depth <= 0 ||
-        (depth === 1 && Math.random() > 0.6 * mutationStrength)
-      ) {
-        if (Math.random() > 0.2) {
-          const pool =
-            biasCols && biasCols.length > 0 && Math.random() > 0.5
-              ? biasCols
-              : cols;
-          return {
-            type: "variable",
-            name: mathUtils.pickOne(pool),
-          };
+    ): string => {
+      const pool =
+        biasCols && biasCols.length > 0 && Math.random() > 0.5
+          ? biasCols
+          : cols;
+      const pickCol = () => `$${mathUtils.pickOne(pool)}`;
+      const pickN = (min = 3, max = 20) =>
+        String(Math.floor(Math.random() * (max - min)) + min);
+
+      if (depth <= 0) return pickCol();
+
+      const op = mathUtils.pickOne([
+        "Ref",
+        "Mean",
+        "Std",
+        "Corr",
+        "ratio",
+        "zscore",
+      ] as const);
+      switch (op) {
+        case "Ref":
+          return `Ref(${pickCol()},${pickN()})`;
+        case "Mean":
+          return `Mean(${pickCol()},${pickN()})`;
+        case "Std":
+          return `Std(${pickCol()},${pickN()})`;
+        case "Corr":
+          return `Corr(${pickCol()},${pickCol()},${pickN()})`;
+        case "ratio": {
+          const a = generateQlibFormula(depth - 1, biasCols);
+          const b = generateQlibFormula(depth - 1, biasCols);
+          return `(${a})/(${b})`;
         }
-        return {
-          type: "constant",
-          value: Number((Math.random() * 5).toFixed(2)),
-        };
+        case "zscore": {
+          const col = pickCol();
+          const n = pickN();
+          return `(${col}-Mean(${col},${n}))/Std(${col},${n})`;
+        }
       }
-      const op = mathUtils.pickOne(ops);
-      if (op === "SMA" || op === "LAG") {
-        return {
-          type: "operator",
-          name: op,
-          left: generateRandomAST(depth - 1, biasCols, mutationStrength),
-          right: {
-            type: "constant",
-            value: Math.floor(Math.random() * 10) + 1,
-          },
-        };
-      }
-      return {
-        type: "operator",
-        name: op,
-        left: generateRandomAST(depth - 1, biasCols, mutationStrength),
-        right: generateRandomAST(depth - 1, biasCols, mutationStrength),
-      };
     };
 
-    const arithmeticCrossover = (
-      astX: FactorAST,
-      astY: FactorAST,
-      alpha = 0.5,
-    ): FactorAST => {
-      if (astX.type === "constant" && astY.type === "constant") {
-        return {
-          type: "constant",
-          value: Number(
-            (
-              (1 - alpha) * (astX.value || 0) +
-              alpha * (astY.value || 0)
-            ).toFixed(2),
-          ),
-        };
-      }
-      return Math.random() > 0.5 ? astX : astY;
-    };
+    const crossoverFormulas = (formulaA: string, formulaB: string): string =>
+      Math.random() > 0.5
+        ? `(${formulaA}+${formulaB})/2`
+        : Math.random() > 0.5
+          ? formulaA
+          : formulaB;
 
     const themes = [...PromptFactory.BASE_THEMES];
     if (missionContext.trim().length > 0) {
@@ -313,7 +292,7 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
       let generation = 1;
       let mutationType: AlphaFactor["mutationType"] = "NEW_SEED";
       let parentId: string | undefined;
-      let ast: FactorAST;
+      let formula: string;
 
       const bias = theme.terms.filter((t) => cols.includes(t));
 
@@ -326,30 +305,30 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
         if (dice < 0.4) {
           mutationType = "CROSSOVER";
           description = `[EVOLVED] Crossover: ${seed.content.split(":")[0]} [v${generation}]`;
-          const seedAst = seed.metadata?.ast as FactorAST | undefined;
-          const partnerAst = mathUtils.pickOne(seeds).metadata?.ast as
-            | FactorAST
+          const seedFormula = seed.metadata?.formula as string | undefined;
+          const partnerFormula = mathUtils.pickOne(seeds).metadata?.formula as
+            | string
             | undefined;
-          ast =
-            seedAst && partnerAst
-              ? arithmeticCrossover(seedAst, partnerAst)
-              : generateRandomAST(depth, bias);
+          formula =
+            seedFormula && partnerFormula
+              ? crossoverFormulas(seedFormula, partnerFormula)
+              : generateQlibFormula(depth, bias);
         } else if (gender === "MALE") {
           mutationType = "STRUCTURAL_SHIFT";
           description = `[EVOLVED] Shift (MALE): ${seed.content.split(":")[0]} [v${generation}]`;
-          ast = generateRandomAST(depth, bias, 1.5);
+          formula = generateQlibFormula(depth, bias);
         } else {
           mutationType = "POINT_MUTATION";
           description = `[EVOLVED] Fine-tune (FEMALE): ${seed.content.split(":")[0]} [v${generation}]`;
-          ast = generateRandomAST(depth, bias, 0.5);
+          formula = generateQlibFormula(depth, bias);
         }
       } else {
-        ast = generateRandomAST(depth, bias);
+        formula = generateQlibFormula(depth, bias);
       }
 
       candidates.push({
         id,
-        ast,
+        formula,
         description,
         reasoning:
           theme.name === openAIThemeName
@@ -415,7 +394,7 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
     const response = await client.evaluateFactors({
       factors: factors.map((f) => ({
         id: f.id,
-        ast: f.ast as unknown as Record<string, unknown>,
+        formula: f.formula,
       })),
       market_data: engineRequestMarketData,
       ...(baselineScores ? { baseline_scores: baselineScores } : {}),
