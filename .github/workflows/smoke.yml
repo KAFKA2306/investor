@@ -9,6 +9,13 @@ on:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    env:
+      UQTL_DATA_ROOT: ${{ github.workspace }}/data
+      UQTL_LOGS_ROOT: ${{ github.workspace }}/logs
+      UQTL_CACHE_ROOT: ${{ github.workspace }}/cache
+      UQTL_VERIFICATION_ROOT: ${{ github.workspace }}/verification
+      UQTL_EDINET_ROOT: ${{ github.workspace }}/edinet
+      UQTL_PREPROCESSED_ROOT: ${{ github.workspace }}/preprocessed
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,14 +31,8 @@ jobs:
 
       - name: Setup
         run: |
-          mkdir -p data logs
+          mkdir -p data logs cache verification edinet preprocessed
           task setup
-        env:
-          UQTL_DATA_ROOT: ${{ github.workspace }}/data
-          UQTL_LOGS_ROOT: ${{ github.workspace }}/logs
 
       - name: Run smoke checks
         run: task smoke
-        env:
-          UQTL_DATA_ROOT: ${{ github.workspace }}/data
-          UQTL_LOGS_ROOT: ${{ github.workspace }}/logs
