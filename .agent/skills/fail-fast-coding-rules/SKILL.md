@@ -7,33 +7,32 @@ description: >
   loss concerns, this skill must be used to enforce crash-driven rules.
 ---
 
-# ✨ Fail Fast ぜったい遵守の鉄の掟 ✨
+# Fail-Fast Coding Protocols (Crash-Driven Development)
 
-システムの信頼性を極限まで高め、市場の荒波の中でも「嘘をつかない」正直なエージェントであるための行動指針だよっ！💖 ✨
+This skill defines the operational standards for error handling, ensuring that failures are transparent, localized, and immediately actionable.
 
-## 🚀 いつ使うの？ (When to use)
-- 新しいビジネスロジックやアルゴリズムを実装するとき！💻
-- コードレビューでエラー処理の妥当性をチェックするとき 🔍
-- システムのデバッグを容易にし、根本原因を爆速で特定したいとき 🔥
+## 🚀 When to Use
+- When implementing new business logic, algorithms, or data transformations.
+- During code review to evaluate the validity of error-handling patterns.
+- When debugging system behavior to ensure root causes are identified rapidly.
 
-## 📖 使い方 (How to use)
+## 📖 Usage Instructions
 
-### 実装のゴール
-- **入力**: 実装したい機能やロジック。
-- **手順**: 
-    1. 期待される正常系をストレートに書く！✨
-    2. エラーをキャッチして握りつぶしちゃダメ！❌
-    3. 異常が発生したら、そのまま潔くクラッシュさせる。
-- **出力**: 失敗が隠蔽されず、スタックトレースが明確なコード。
+### Implementation Strategy
+- Input: Target functional logic.
+- Procedure: 
+    1. Implement the "happy path" cleanly and directly because complex nested logic is difficult to audit and verify.
+    2. DO NOT catch and suppress exceptions within the logic layer because suppressed errors hide the root cause and delay system recovery.
+    3. Allow the system to crash immediately upon encountering an invalid state because a visible crash is safer than a "silent" calculation error in quant trading.
+- Output: Transparent code where failures produce clear stack traces and actionable feedback.
 
-## 🛡️ 鉄の掟 (Strict Rules)
+## 🛡️ Strict Rules
 
-1. **即死・即断・即決 (Die Instantly)**: おかしいと思ったら即座に例外を投げること！握りつぶすのは大罪だよっ！💢
-2. **`try-catch` の禁止**: ビジネスロジック内での `try-catch` によるエラー隠蔽は絶対にダメ！めっ！だよっ！🛡️
-3. **防御的プログラミングの排除**: `None` や `null` を返して「何となく動いてる」ふりをするのは、次世代のクオンツにはふさわしくないんだもんっ！❌
+1.  DIE INSTANTLY: Throw exceptions immediately upon detecting an anomaly because data corruption must not propagate to the backtest or execution engine.
+2.  NO `try-catch` IN BUSINESS LOGIC: Prohibit the use of `try-catch` blocks to mask potential failures because filters belong in the infrastructure, not the domain logic.
+3.  REJECT DEFENSIVE FALLBACKS: Do not return "safe" defaults (e.g., `null`, `None`) to keep the system "running" because silent defaults create "Zombie Strategies" that lose money without reporting errors.
 
-## 🎀 ベストプラクティス
-- **責務の分離**: アプリ層はロジックに集中、リトライや回復はインフラ層（Makefile/Docker）に任せるのがハッピーの秘訣だよっ！🌈
-- **明確なエラーメッセージ**: 例外を投げるときは、原因がすぐにわかるメッセージを添えてねっ！💎
-
-✨ クラッシュこそが情報の宝庫！真実を愛するエンジニアになろうねっ！🎀👑✨
+## Best Practices
+- Separation of Concerns: Keep business logic pure; offload retries to the infrastructure layer because the domain layer should only focus on "what" to calculate, not "how" to recover from network drops.
+- Descriptive Exceptions: Always include the context when raising an exception because a stack trace without a "Why" is a waste of a developer's time.
+- Truth Over Smoothness: In quantitative finance, a crash is informative; a silent error is catastrophic because capital preservation depends on seeing the truth.

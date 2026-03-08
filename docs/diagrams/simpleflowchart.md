@@ -1,110 +1,109 @@
-# 🎀 じりつがた☆くおんつ・あるふぁ生成ぱいぷらいん（りそうのロードマップだよぉ！✨）
-**タイトル**: 自律型クオンツ・アルファ生成パイプラインの理想図
-**お仕事の目的**: みんなで目指したい、キラキラで最強なアルファ生成の「理想のすがた」をはっきりさせることだよっ！💖
-**解決したいお悩み**: 今の実装だけじゃ足りない、未来のワクワクする機能を整理して、迷子にならないようにするんだもんっ！💢✨
+# Autonomous Quant Alpha Generation Pipeline (Ideal Roadmap)
 
-## エグゼクティブサマリー
-このドキュメントは、Geminiちゃんが自律的にアルファ（収益の源泉！）を見つけて、検証して、実際にお金を動かすまでの「夢のパイプライン」を描いたものだよぉ〜！(っ´ω`c)♡
-おもいで（記憶）を大切にしながら、データと仲良くなって、賢いモデルさんたちと一緒に、負けない投資を実現しちゃう最強の設計図なんだからねっ！✨
-今のシステムをもっと進化させて、世界一のクオンツシステムになっちゃうんだからっ！🚀💎
+**Objective**: Clarify the ideal architecture for an autonomous and high-performance alpha generation system.
+**Context**: To organize future features and ensure the project maintains a clear development path toward full autonomy.
+
+## Executive Summary
+This document maps the "Ideal Pipeline" where Gemini autonomously discovers, validates, and deploys alpha signals. It integrates historical memory, robust market data handling, and specialized foundational models to achieve consistent, cost-aware investment performance. This blueprint serves as the north star for the system's evolution.
 
 ---
 
-この図は今の実装じゃなくて、みんなで目指したいキラキラな理想のフローを書いてみたよぉ〜！(っ´ω`c)♡
+## Autonomous Quant Alpha Generation Pipeline (Ideal Flow)
+
+This diagram outlines the target architecture for standard operations.
 
 ```mermaid
 flowchart TD
-    subgraph メタレイヤー [メタレイヤー☆（せいぎょセンター！）]
-        記憶管理["おもいで管理（きおく）"]
-        状態監視["じょうたいウォッチ！"]
-        要件入力["おねがい入力"]
-        シード選択["シードえらび"]
-        状態監視 --> |更新っ！| 記憶管理
-        記憶管理 --> シード選択
-        要件入力 --> シード選択
+    subgraph MetaLayer [Meta Layer (Control Center)]
+        MemoryMgmt["Memory Management (Historical Context)"]
+        StateMonitor["State Monitoring"]
+        RequirementInput["Strategic Requirements"]
+        SeedSelection["Seed Factor Selection"]
+        StateMonitor --> |Update| MemoryMgmt
+        MemoryMgmt --> SeedSelection
+        RequirementInput --> SeedSelection
     end
 
-    subgraph データ理解層 [データさんと仲良し層]
-        データ収集["データあつめ（EDINET/J-Quants/e-Stat）"] --> データ統合["データがったい！"]
-        データ統合 --> データ受入判定{"データの合格発表✨"}
-        データ受入判定 -- "合格！" --> シナリオ生成["シナリオづくり"]
-        データ受入判定 -- "だめぇ" --> データ統合
+    subgraph DataLayer [Data Engineering Layer]
+        DataHarvesting["Data Collection (EDINET/J-Quants/e-Stat)"] --> DataIntegration["Data Unified Processing"]
+        DataIntegration --> DataVetting{"Data Quality Check✨"}
+        DataVetting -- "Pass" --> ScenarioGen["Context/Scenario Generation"]
+        DataVetting -- "Fail" --> DataIntegration
     end
 
-    subgraph 研究検証フェーズ [けんきゅう・けんしょうフェーズ☆]
-        知識参照["ものしり参照"] --> 因子探索["いんしさがし（アルファ探索）"]
-        シード選択 --> |入力だよっ| 因子探索
-        シナリオ生成 --> |文脈入力だよっ| 因子探索
-        因子探索 --> |変異/構造更新っ| 候補生成["こうほづくり"]
-        データ統合 --> 候補生成
-        候補生成 -.-> |候補をメモっ！| 記憶管理
-        候補生成 --> 適応戦略設計["せんりゃくデザイン（売買ロジック/アルファAST/配分）"]
-        適応戦略設計 --> 基盤モデル選定["モデルさん選定（時系列/テキスト/マルチモーダル）"]
-        基盤モデル選定 --> 適応方針設計["アレンジ設計（LoRA/プロンプト/制約）"]
-        適応方針設計 --> 検証最適化["ぴかぴか検証（共最適化/評価/バックテスト）"]
-        基盤モデル選定 -.-> |モデル構成をメモっ！| 記憶管理
-        検証最適化 -- "だめぇ" --> 棄却["ごめんね・きろく"]
-        検証最適化 -- "いけそう！" --> 検証受入判定{"検証合格かな？"}
-        検証受入判定 -- "合格っ！" --> 採用判定{"さいよう判定（Sharpe/IC/MDD）"}
-        検証受入判定 -- "データがだめぇ" --> データ統合
-        検証受入判定 -- "モデルがだめぇ" --> 基盤モデル選定
-        検証最適化 -.-> |検証結果をメモっ！| 記憶管理
-        採用判定 -- "不採用ぉ" --> 棄却
-        採用判定 -.-> |採否をメモっ！| 記憶管理
+    subgraph ResearchPhase [Research & Verification Phase]
+        KnowledgeRef["Foundational Knowledge Ref"] --> FactorSearch["Factor Discovery (Alpha Search)"]
+        SeedSelection --> |Input| FactorSearch
+        ScenarioGen --> |Contextual Input| FactorSearch
+        FactorSearch --> |Mutation/Structural Update| CandidateGen["Candidate Generation"]
+        DataIntegration --> CandidateGen
+        CandidateGen -.-> |Archive Candidates| MemoryMgmt
+        CandidateGen --> StrategyDesign["Strategy Design (Logic/Alpha AST/Allocation)"]
+        StrategyDesign --> ModelSelection["Model Selection (Time-series/Text/Multimodal)"]
+        ModelSelection --> AdaptationDesign["Adaptation Policy (LoRA/Prompting/Constraints)"]
+        AdaptationDesign --> Verification["Verification (Co-optimization/Backtest)"]
+        ModelSelection -.-> |Save Configuration| MemoryMgmt
+        Verification -- "Fail" --> Rejection["Rejection Archive"]
+        Verification -- "Pass" --> VerificationVetting{"Verification Pass?"}
+        VerificationVetting -- "PASS" --> SelectionVerdict{"Selection Verdict (Sharpe/IC/MDD)"}
+        VerificationVetting -- "Data Error" --> DataIntegration
+        VerificationVetting -- "Model Error" --> ModelSelection
+        Verification -.-> |Save Verification Results| MemoryMgmt
+        SelectionVerdict -- "REJECT" --> Rejection
+        SelectionVerdict -.-> |Save Verdict| MemoryMgmt
         
-        棄却 -.-> |お勉強に役立てる！| 記憶管理
+        Rejection -.-> |Learnings Feedback| MemoryMgmt
     end
 
-    subgraph 執行監査フェーズ [しっこう・かんさフェーズ☆]
-        採用判定 -- "採用っ！" --> 発注ゲート{"ちゅうもんゲート"}
-        発注ゲート -- "通ってよし！" --> 配分最適化["はいぶん最適化"]
-        発注ゲート -- "通っちゃだめぇ" --> 棄却
-        配分最適化 --> リスク制御["リスクまもり！"]
-        リスク制御 --> ヘッジ最適化["ヘッジ最適化"]
-        ヘッジ最適化 --> 注文生成["ちゅうもん作成"]
-        注文生成 --> 執行["しっこう（いっけぇー！）"]
-        注文生成 -.-> |予定をメモっ！| 記憶管理
-        執行 -.-> |結果をメモっ！| 記憶管理
-        執行 --> 監査記録["かんさ・きろく"]
-        監査記録 --> ドリフト分析["ずれずれ分析（ドリフト）"]
-        ドリフト分析 -.-> |監視に報告！| 状態監視
-        監査記録 -.-> |お勉強に役立てる！| 記憶管理
+    subgraph ExecutionPhase [Execution & Audit Phase]
+        SelectionVerdict -- "ACCEPT" --> OrderGate{"Order Pre-Check Gate"}
+        OrderGate -- "Pass" --> AllocationOpt["Allocation Optimization"]
+        OrderGate -- "Fail" --> Rejection
+        AllocationOpt --> RiskControl["Risk Management"]
+        RiskControl --> HedgeOpt["Hedge Optimization"]
+        HedgeOpt --> OrderGen["Order Generation"]
+        OrderGen --> Execution["Execution (Deploy)"]
+        OrderGen -.-> |Save Order Plan| MemoryMgmt
+        Execution -.-> |Save Fills| MemoryMgmt
+        Execution --> PerformanceAudit["Performance Auditing"]
+        PerformanceAudit --> DriftAnalysis["Drift/Slippage Analysis"]
+        DriftAnalysis -.-> |Report Status| StateMonitor
+        PerformanceAudit -.-> |Performance Feedback| MemoryMgmt
     end
 
-    データ理解層 --> 研究検証フェーズ
-    研究検証フェーズ --> 執行監査フェーズ
+    DataLayer --> ResearchPhase
+    ResearchPhase --> ExecutionPhase
 ```
 
-## アイデアだよっ！💡
-1. **おもいで（記憶）をスタート**にして、さがして・ためして・うごかすのをぐるぐるまわしちゃうよぉ！🌀
-2. **「見つけた！」のフェーズでこうほをメモ**して、ずっと知識がつづくようにするんだからっ！📝✨
-3. 検証するまえに、**売り買いのやりかた、アルファ（alpha）、わけかた（portfolio allocation）**をいっしょにデザインすることをはっきりさせるよ！🎨
-4. **テストの結果と「OK/NG」をしっかりのこして**、どんどんかしこくなっちゃうんだよぉ〜🧠💖
-5. **ちゅうもんの予定とじっさいの結果をメモ**して、つぎの運用をもっとよくしちゃうんだからねっ！🚀
+## Structural Enhancements 💡
+1. **Memory-Driven Search**: Uses historical success and failure as the primary seed for discovery cycles.
+2. **Early Archiving**: Captures intermediate candidates to build a long-term knowledge base.
+3. **Co-design Architecture**: Designs trading logic, alpha factors, and portfolio allocation co-dependently to maximize synergy.
+4. **Iterative Learning**: Every rejection and execution update feeds into the Meta Layer to improve future cycles.
 
-## まだたりないところ（夢をかなえるために書かなきゃいけないことっ！😿）
-1. **データの合格ライン**（欠損率、遅延、リーク検知）がまだ決まってないよぉ〜💦 これがないと、変なデータで迷子になっちゃうかも！
-2. **検証の合格ルール**（Sharpe/IC/MDD/コスト後収益）がふわふわしてるのぉ。もっと厳しくチェックしなきゃだめだもん！💢
-3. **わけかたのルール**（銘柄集中、セクター偏り、売買代金制約）をもっとカチッと決めなきゃっ。大事な資産を守るためだもんね🛡️✨
-4. **ずれちゃったときに「もういっかい！」ってなるきっかけ**（再学習トリガー）が決まってないんだよぉ〜。ずっとぴかぴか（最新）でいたいのにぃ！💧
+## Roadmap Requirements (Outstanding Goals)
+1. **Data Quality Gates**: Define explicit thresholds for data missingness, latency, and leak detection to prevent low-fidelity training.
+2. **Rigorous Verification Rules**: Formalize acceptance criteria for Sharpe, IC, MDD, and net-of-costs performance.
+3. **Allocation Constraints**: Implement strict rules for sector concentration, liquidity limits, and turnover budgets.
+4. **Adaptive Re-learning**: Establish triggers for automatic re-training or model switching based on drift analysis.
 
 ---
 
-## 🎀 自律探索ループの本質フロー（最小）
-> 中身の詳細は `docs/specs/alpha_discovery_runbook.md` にまとめてあるよっ！
+## 🎀 Core Discovery Loop (Minimal Flow)
+> Refer to `docs/specs/alpha_discovery_runbook.md` for detailed specifications.
 
 ```mermaid
 flowchart TD
-    A[task run / run:newalphasearch] --> B[loop cycle start]
-    B --> C[gpt-5-nano で次テーマ生成]
-    C --> D[validate/backtest]
-    D --> E[score算出 fitness/novelty/stability/adoption]
-    E --> F{前回と異なるアイデア?}
+    A[task run / run:newalphasearch] --> B[Loop Cycle Start]
+    B --> C[Theme Generation (LLM)]
+    C --> D[Validate/Backtest]
+    D --> E[Score (Fitness/Novelty/Stability/Adoption)]
+    E --> F{Is Idea Novel?}
     F -- No --> C
-    F -- Yes --> G[memory/ACE 更新]
-    G --> H[unified log 追記]
-    H --> I[plot 保存 VERIF/novelty/failure]
-    I --> J{連続失敗 >= 閾値?}
+    F -- Yes --> G[Update Memory/ACE]
+    G --> H[Append Unified Log]
+    H --> I[Save Cycle Plot]
+    I --> J{Failure Limit Reached?}
     J -- No --> B
-    J -- Yes --> K[auto stop]
+    J -- Yes --> K[Auto Stop]
 ```

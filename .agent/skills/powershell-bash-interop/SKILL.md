@@ -14,10 +14,10 @@ description: >
 Prevent PowerShell from mutating Bash syntax.
 
 ## Hard Rules
-- Do not embed complex Bash directly in PowerShell double-quoted command strings.
-- Do not rely on backslash escaping for Bash `$` in PowerShell.
-- Do not keep Bash `$(...)` substitutions inside PowerShell-parsed strings.
-- For multi-line Bash, always write a script file first and execute it from WSL.
+- Do not embed complex Bash directly in PowerShell double-quoted command strings because PowerShell will attempt to interpolate variables like `$HOME` or `$(...)` before passing them to Bash.
+- Do not rely on backslash escaping for Bash `$` in PowerShell because nested escaping rules are inconsistent across PowerShell versions and lead to "broken" shell scripts.
+- Do not keep Bash `$(...)` substitutions inside PowerShell-parsed strings because the outer shell will execute the substitution locally instead of inside the target environment.
+- For multi-line Bash, always write a script file first and execute it from WSL because file-based handoff avoids all shell-quoting edge cases and provides a clean audit trail.
 
 ## Safe Patterns
 

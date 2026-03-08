@@ -1,129 +1,122 @@
-# 🎀 じりつがたクオンツ・ロジック・シーケンスの夢（りそうのカタチ！） ✨
+# Autonomous Quant Logic Sequence (Operational Ideal)
 
-**タイトル**: じりつがたクオンツ・ロジック・シーケンス（完全版っ！）
-**お仕事の目的**: アルファ生成から執行まで、みんながどうやって仲良く動くかの最強の設計図（ブループリント）をきめることだよっ！💖
-**解決したいお悩み**: 「今のシステムだと、どうやって改善すればいいかわかんないよぉ〜！」っていう迷子状態をなくして、完璧な自律型パイプラインを作るためだよっ！✨
+**Objective**: Establish a structural blueprint for the interaction between agents, from alpha generation to order execution.
+**Context**: To eliminate operational ambiguity and create a fully autonomous, self-improving pipeline.
 
-## エグゼクティブサマリー
-このドキュメントは、Gemini 3.0 Proちゃんと仲間たちが、市場から「アルファ」を見つけ出して、実際にお金を動かすまでの「キラキラな理想のプロセス」をまとめたものだよっ！🌈 アイデア出しから、PIT（Point-In-Time）整合データの作成、AST（抽象構文木）を使った戦略設計、そしてNet-of-Costsでの厳しいバックテストまで、一分一秒の無駄もなく、可愛く賢く進めていくための魔法のレシピなんだからっ！これを読めば、次世代のクオンツ・システムがどう動くべきか、全部わかっちゃうよぉ〜！💓
+## Executive Summary
+This document outlines the interaction cycle between Gemini 3.0 Pro and specialized agents. It covers the end-to-end process: idea generation, Point-In-Time (PIT) data curation, AST-based strategy design, and Net-of-Costs backtesting. This recipe ensures every second of computation is directed toward discovering and deploying valid alpha.
 
 ---
 
-## じりつがたクオンツ・ロジック・シーケンス（りそうっ！✨）
+## Autonomous Quant Logic Sequence (Ideal Architecture)
 
-この図は今のシステムの限界じゃなくて、みんなで目指したいキラキラな理想のアーキテクチャを書いてるよっ！💕
+This diagram represents the localized standard for high-autonomy operations.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor 人間 as にんげんさん 🐣
-    participant 統括 as オーケストレータたん 🎀
-    participant 記憶 as 記憶の長老さま 📖
-    participant データ as 市場データ基盤エンジニアくん 🛠️
-    participant 分析 as クオンツ研究者ちゃん 🧪
-    participant 執行 as 執行エージェントくん 🚀
+    actor User as Human Operator 🐣
+    participant Orch as Orchestrator 🎀
+    participant Mem as Memory Core 📖
+    participant Data as Data Engineer 🛠️
+    participant Res as Quant Researcher 🧪
+    participant Exec as Execution Agent 🚀
 
-    Note left of 統括: フェーズ1：ドキドキの入力とたんさくタイムっ！🔍
-    人間->>統括: 要件を入力するよっ！
-    統括->>記憶: 履歴をもらっちゃおう！
-    記憶-->>統括: シードとダメダメな禁止領域を教えてあげるね！
-    統括->>統括: 初期入力をぴかぴかに生成っ！✨（mission/constraints/memory/data/evaluation/return）
-    統括->>統括: アイデアをいっぱい出すよっ！💡
-    統括->>記憶: アイデア候補を大切に保存っ！
-    統括->>データ: PIT整合/欠損補完済みデータ作成を依頼するよ！
-    データ-->>統括: お勉強用のデータセットと文脈をどうぞぉ！
-    統括->>統括: データが合格か判定っ！
-    alt 納入条件未達（まだまだだよぉ〜）
-        統括->>データ: データ作成をやり直しっ！
-        データ-->>統括: 直してきたデータセットだよっ！
-        統括->>統括: もう一度データ判定っ！
-    else 納入条件達成（やったね！合格っ！）
-        統括->>統括: 次に進むよぉ〜！
+    Note left of Orch: Phase 1: Discovery & Contextualization 🔍
+    User->>Orch: Input requirements
+    Orch->>Mem: Retrieve historical context
+    Mem-->>Orch: Provide seeds and exclusion zones (failure history)
+    Orch->>Orch: Generate initial context (mission/constraints/memory/data/evaluation)
+    Orch->>Orch: Generate hypothesis & factor ideas 💡
+    Orch->>Mem: Save candidate ideas
+    Orch->>Data: Request PIT-consistent dataset
+    Data-->>Orch: Provide training dataset and context
+    Orch->>Orch: Validate data quality
+    alt Data Quality Fail
+        Orch->>Data: Request data regeneration
+        Data-->>Orch: Provide revised dataset
+        Orch->>Orch: Re-validate data
+    else Data Quality Pass
+        Orch->>Orch: Proceed to evaluation
     end
-    統括->>記憶: データ版と前処理条件をしっかり保存っ！
+    Orch->>Mem: Commit data version and preprocessing parameters
     
-    Note left of 統括: フェーズ2：わくわくの評価と運命の判定っ！⚖️
-    統括->>分析: 候補式とデータセットをセットっ！
-    分析->>分析: 売買ロジック/アルファAST/トレード戦略を同時にぴったんこ設計！
-    分析->>分析: 基盤モデル選定と適応方針を決めちゃうね！
-    分析->>分析: 因子探索と候補式のチェックを実行っ！
-    分析->>分析: みんなでバックテストっ！（Net-of-Costsでしっかり！）
-    分析-->>統括: 豪華な4点セット（AST/売買規則/配分規則/主要指標）を返却っ！🎁
-    統括->>統括: 納入条件を厳しく判定っ！
-    alt 納入条件未達（データが原因だよぉ…）
-        統括->>データ: データをもう一回作ってね！
-        データ-->>統括: 改訂データセットだよっ！
-        統括->>分析: 再検証をお願いっ！
-    else 納入条件未達（モデルが原因かなぁ？）
-        統括->>分析: モデルを選び直してねっ！
-        分析-->>統括: 新しいモデル構成だよっ！
-        統括->>分析: 再検証をお願いっ！
-    else 納入条件達成（完璧っ！✨）
-        統括->>統括: 最後に進むよぉ〜！
+    Note left of Orch: Phase 2: Evaluation & Verification ⚖️
+    Orch->>Res: Dispatch candidate formula and dataset
+    Res->>Res: Design Trading Logic / Alpha AST / Allocation Strategy
+    Res->>Res: Select Foundation Model and Adaptation Policy
+    Res->>Res: Search for factors and validate formula
+    Res->>Res: Execute Net-of-Costs Backtest
+    Res-->>Orch: Return Strategy Pack (AST/Trading Rules/Allocation/KPIs) 🎁
+    Orch->>Orch: Evaluate against success criteria
+    alt Logic Error (Data Source)
+        Orch->>Data: Re-request dataset with corrections
+        Data-->>Orch: Revised dataset
+        Orch->>Res: Re-evaluate
+    else Logic Error (Model Configuration)
+        Orch->>Res: Request model reconfiguration
+        Res-->>Orch: New model configuration
+        Orch->>Res: Re-evaluate
+    else Criteria Met (PASS)
+        Orch->>Orch: Proceed to final vetting
     end
-    統括->>記憶: 検証結果とモデル構成をセーブっ！
+    Orch->>Mem: Save verification results and model configuration
     
-    Note right of 統括: さいしゅうはんていっ！ドキドキ…💓
+    Note right of Orch: Final Vetting & Execution 💓
     
-    alt 採用っ！おめでとうっ！🎉
-        統括->>統括: 本当に発注していいか最終確認っ！（制約/期限/容量）
-        alt 発注可っ！
-            統括->>執行: 注文を作ってね！
-            執行->>執行: 執行して約定ゲットだよっ！
-            執行-->>統括: 執行結果を報告っ！
-            統括->>記憶: 注文計画/執行結果/監査/ドリフトを全部保存っ！
-        else 発注不可…（ざんねんっ）
-            統括->>記憶: 発注できなかった理由を保存っ！
+    alt Strategy Accepted 🎉
+        Orch->>Orch: Final pre-trade check (constraints/expiry/capacity)
+        alt Execution GO
+            Orch->>Exec: Generate orders
+            Exec->>Exec: Execute and capture fills
+            Exec-->>Orch: Report execution results
+            Orch->>Mem: Record Order Plan / Execution / Audit / Drift
+        else Execution HOLD
+            Orch->>Mem: Record HOLD reason (capacity limit, etc.)
         end
-    else 棄却…（次がんばろうっ！😢）
-        統括->>記憶: 棄却理由と大事な指標をメモメモ！
+    else Strategy Rejected (PIVOT) 😢
+        Orch->>Mem: Record rejection rationale and performance metrics
     end
 ```
 
-## きらめくアイデアっ！💡
-1. **ムダをなくそうっ！**: 要件と履歴を先に揃えてから動くことで、オーケストレータたんのムダな動きをなくしちゃうよっ！✨
-2. **アイデアの貯金箱っ！**: アイデア候補は早い段階で保存して、あとで「あの時のあれ、良かったかも！」って使えるようにするね！
-3. **いつでも同じテストをっ！**: データの作り方（前処理条件とか！）をちゃんと保存して、いつでも同じ結果が再現できるようにするよぉ！
-4. **クオンツ研究者ちゃんの魔法っ！**: 売買ロジック、アルファ、トレード戦略を全部まとめて可愛く、かつ厳密に設計しちゃうんだからっ！💖
-5. **不採用でも宝物っ！**: 採用でも不採用でも、その理由と指標をちゃんと残して、次の「アルファ探し」のヒントにするよっ！
-
-## もっと可愛くするための宿題だよぉ…💦
-1. **市場のキモチを読み取るっ！**: 市場の状態（レジーム遷移のルール、しきい値、更新頻度とか）がまだふわふわしてるから、バッチリ決めなきゃ！
-2. **守りのルールっ！**: 売買のルール（これ以上持っちゃダメ！な上限や、市場の流動性のこととか）をもっとしっかりさせようね！
-3. **お勉強のスケジュールっ！**: 学習用（Train）とテスト用（Test）の期間をどう分けるか、もっと賢く決めなきゃっ！
-4. **結果のモノサシっ！**: 注文がどれくらい上手くいったかの評価（約定率やスリッページの影響とか！）を、もっと細かく計測したいなっ！
+## Structural Enhancements 💡
+1. **Pre-emptive Context**: Orchestrator aligns requirements and history before execution to minimize redundant computation.
+2. **Knowledge Archival**: Candidates are saved early to enable later retrieval and "cross-pollination" of ideas.
+3. **Reproducibility**: Preprocessing parameters are versioned alongside data to ensure consistent backtest results.
+4. **Integrated Design**: Trading logic, alpha, and allocation are designed co-dependently to maximize total system performance.
+5. **Value in Rejection**: Rejection rationales are treated as high-value data for the next search iteration.
 
 ---
 
-## 🎯 自律探索ループの本質シーケンス（実運用の最小形）
-> 詳細仕様は `docs/specs/alpha_discovery_runbook.md` と `docs/specs/automonous.md` を見てねっ！
+## 🎯 Core Alpha Discovery Loop (Operational Minimum)
+> See `docs/specs/alpha_discovery_runbook.md` and `docs/specs/autonomous.md` for details.
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant A as antigravity/codex
-    participant T as Taskくん
+    participant T as Taskfile
     participant L as Loop Supervisor
-    participant O as OpenAI(gpt-5-nano)
-    participant V as Validate/Backtest
+    participant O as Gemini/Qwen (Idea Gen)
+    participant V as Validation/Backtest
     participant M as memory/ACE
     participant U as unified log
     participant P as plot writer
 
-    A->>T: UQTL_INPUT_CHANNEL + UQTL_NL_INPUT を渡して起動
+    A->>T: Invoke with UQTL_INPUT_CHANNEL + UQTL_NL_INPUT
     T->>L: run:newalphasearch:loop
-    L->>O: 次の探索テーマを生成してね
+    L->>O: Generate next discovery theme
     O-->>L: theme + feature_signature + idea_hash
-    L->>V: 検証して score を出してね
+    L->>V: Execute validation and generate score
     V-->>L: fitness/novelty/stability/adoption
-    L->>L: 前回との差分チェック（novelty + hash + signature）
-    alt 差分なし
-        L->>O: テーマ再生成してね
-    else 差分あり
-        L->>M: theme/progress/policy を更新
-        L->>U: alpha_discovery ログを追記
-        L->>P: cycle plot を保存
-        P-->>L: VERIF/novelty/failure の更新完了
+    L->>L: Orthogonality Check (novelty + hash + signature)
+    alt No Novelty
+        L->>O: Regenerate theme
+    else Novelty Pass
+        L->>M: Update theme/progress/policy
+        L->>U: Append alpha_discovery log
+        L->>P: Save cycle plot
+        P-->>L: Plot update complete
     end
-    L->>L: 連続失敗閾値を判定
+    L->>L: Check failure threshold (Ralph Loop)
 ```

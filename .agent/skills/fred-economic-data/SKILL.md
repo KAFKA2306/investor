@@ -8,33 +8,32 @@ description: >
   this skill must be used before any data fetch.
 ---
 
-# 🎀 FRED Economic Data アクセススキル 🎀
+# FRED Economic Data Access Skill
 
-世界中の 800,000 以上の経済時系列データ（GDP、失業率、インフレ率など）を爆速で取得し、マクロ分析を極めるためのスキルだよっ！💖 ✨
+This skill enables rapid access to over 800,000 economic time-series data points (GDP, unemployment, inflation, etc.) from FRED for comprehensive macro analysis.
 
-## 🚀 いつ使うの？ (When to use)
-- GDP、CPI、金利などの最新のマクロ経済指標を取得したいとき！📈
-- 過去の経済データと比較して、市場のレジーム（状態）を分析したいとき 🔍
-- 経済指標の発表スケジュールを確認して、トレードのタイミングを計りたいとき 📅
+## 🚀 When to Use
+- When fetching the latest macro-economic indicators (e.g., GDP, CPI, interest rates).
+- When analyzing market regimes by comparing historical economic data.
+- When monitoring economic release schedules to time trading strategies.
 
-## 📖 使い方 (How to use)
+## 📖 Usage Instructions
 
-### 経済データの取得
-- **入力**: シリーズID（GDP, UNRATE など）、期間、変換方法（pch: 前期比など）。
-- **手順**: 
-    1. `FRED_API_KEY` を環境変数にセット！🤫
-    2. `FREDQuery` クラスを使って、目的のシリーズをクエリ。✨
-    3. 必要に応じて、周波数の集約やヴィンテージデータの取得を行うよ。
-- **出力**: 日時と値がペアになった構造化された時系列データ。
+### Economic Data Retrieval
+- Input: Series ID, observation period, and transformation method.
+- Procedure: 
+    1. Ensure `FRED_API_KEY` is set in the environment because missing credentials will cause the data fetch to fail.
+    2. Use the `FREDQuery` class to query the desired series because centralized access logic ensures consistent error handling and rate limit compliance.
+    3. Perform frequency aggregation as required because macro indicators must be aligned with equity market timeframes (e.g., daily) for correlation analysis.
+- Output: Structured time-series data containing date-value pairs.
 
-## 🛡️ 鉄の掟 (Strict Rules)
+## 🛡️ Strict Rules
 
-1. **API Key の管理**: キーは絶対にハードコードしない！環境変数 `FRED_API_KEY` を経由してねっ！めっ！だよっ！💢
-2. **レート制限の遵守**: 短時間にリクエストを送りすぎないこと。`FREDQuery` のリトライ機能を信じてね 🛡️
-3. **データの欠損処理**: 欠損値（"." など）が含まれる可能性があるから、必ずバリデーションを挟もうねっ！💎
+1.  API Key Management: NEVER hardcode the API key; access it via environment variables because source code is shared and security must be preserved.
+2.  Rate Limit Compliance: Do not exceed FRED API request limits because being blacklisted from FRED will disable the entire macro research pipeline.
+3.  Data Validation: Proactively handle missing or malformed data because FRED datasets often contain "placeholder" characters like "." that crash standard numerical parsers.
 
-## 🎀 ベストプラクティス
-- **レジームスイッチの検知**: インフレ率や金利の変化を捉えて、投資戦略をダイナミックに切り替えるのがハッピーへの近道だよっ！🌈
-- **グラフ化**: Matplotlib などを使って可視化することで、経済の大きな流れを直感的に掴もうねっ！📊
-
-✨ 膨大なマクロの海から、真のアルファを見つけ出そうねっ！🎀👑✨
+## Best Practices
+- Regime Switch Detection: Capture shifts in inflation or interest rates because global macro regimes are the primary driver of market-wide risk.
+- Visualization: Use descriptive plotting to visualize macro trends because human-in-the-loop verification is required for high-stakes investment decisions.
+- Data Fidelity: Prefer PIT (Point-In-Time) data for realistic backtesting because revised economic data (e.g., GDP revisions) creates look-ahead bias if used carelessly.

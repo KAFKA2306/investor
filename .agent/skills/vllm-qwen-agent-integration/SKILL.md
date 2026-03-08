@@ -14,9 +14,9 @@ Replace OpenAI endpoint dependency in agent workflows with local vLLM Qwen3.5-9B
 - `OpenAIThemeProvider` supports OpenAI-compatible endpoint switching.
 
 ## Integration Contract
-- Keep provider class usage unchanged in agents.
-- Switch backend by environment only.
-- Use OpenAI-compatible API surface (`/v1/chat/completions` or `/v1/responses`) based on provider style.
+- Keep provider class usage unchanged in agents because modifying core agent logic for every backend change introduces regression risks and technical debt.
+- Switch backend by environment only because hardcoded provider names prevent seamless switching between Local GPU and Cloud Fallbacks.
+- Use OpenAI-compatible API surface because this allows us to leverage standard SDKs and existing prompt templates without redesign.
 
 ## Required Environment
 Set in repo-root `.env`:

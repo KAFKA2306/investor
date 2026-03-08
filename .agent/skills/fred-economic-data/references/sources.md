@@ -24,7 +24,7 @@ Sources in FRED represent the organizations that produce economic data. Examples
 
 Get all sources of economic data.
 
-**URL:** `https://api.stlouisfed.org/fred/sources`
+URL: `https://api.stlouisfed.org/fred/sources`
 
 ### Required Parameters
 
@@ -105,7 +105,7 @@ response = requests.get(
 
 Get a specific source of economic data.
 
-**URL:** `https://api.stlouisfed.org/fred/source`
+URL: `https://api.stlouisfed.org/fred/source`
 
 ### Required Parameters
 
@@ -160,7 +160,7 @@ response = requests.get(
 
 Get the releases for a source.
 
-**URL:** `https://api.stlouisfed.org/fred/source/releases`
+URL: `https://api.stlouisfed.org/fred/source/releases`
 
 ### Required Parameters
 

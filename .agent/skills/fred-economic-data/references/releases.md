@@ -30,7 +30,7 @@ Releases have scheduled publication dates and may contain multiple related serie
 
 Get all releases of economic data.
 
-**URL:** `https://api.stlouisfed.org/fred/releases`
+URL: `https://api.stlouisfed.org/fred/releases`
 
 ### Required Parameters
 
@@ -99,7 +99,7 @@ response = requests.get(
 
 Get release dates for all releases of economic data.
 
-**URL:** `https://api.stlouisfed.org/fred/releases/dates`
+URL: `https://api.stlouisfed.org/fred/releases/dates`
 
 ### Required Parameters
 
@@ -120,7 +120,7 @@ Get release dates for all releases of economic data.
 | `sort_order` | string | desc | asc or desc |
 | `include_release_dates_with_no_data` | string | false | true or false |
 
-**Note:** These dates reflect when data sources publish information, not necessarily when data becomes available on FRED.
+Note: These dates reflect when data sources publish information, not necessarily when data becomes available on FRED.
 
 ### Example
 
@@ -173,7 +173,7 @@ response = requests.get(
 
 Get a specific release of economic data.
 
-**URL:** `https://api.stlouisfed.org/fred/release`
+URL: `https://api.stlouisfed.org/fred/release`
 
 ### Required Parameters
 
@@ -229,7 +229,7 @@ response = requests.get(
 
 Get release dates for a specific release.
 
-**URL:** `https://api.stlouisfed.org/fred/release/dates`
+URL: `https://api.stlouisfed.org/fred/release/dates`
 
 ### Required Parameters
 
@@ -289,7 +289,7 @@ response = requests.get(
 
 Get the series on a release.
 
-**URL:** `https://api.stlouisfed.org/fred/release/series`
+URL: `https://api.stlouisfed.org/fred/release/series`
 
 ### Required Parameters
 
@@ -386,7 +386,7 @@ response = requests.get(
 
 Get the sources for a release.
 
-**URL:** `https://api.stlouisfed.org/fred/release/sources`
+URL: `https://api.stlouisfed.org/fred/release/sources`
 
 ### Required Parameters
 
@@ -447,7 +447,7 @@ response = requests.get(
 
 Get the tags for a release.
 
-**URL:** `https://api.stlouisfed.org/fred/release/tags`
+URL: `https://api.stlouisfed.org/fred/release/tags`
 
 ### Required Parameters
 
@@ -491,7 +491,7 @@ response = requests.get(
 
 Get related tags for a release.
 
-**URL:** `https://api.stlouisfed.org/fred/release/related_tags`
+URL: `https://api.stlouisfed.org/fred/release/related_tags`
 
 ### Required Parameters
 
@@ -520,7 +520,7 @@ Get related tags for a release.
 
 Get release table trees for a release.
 
-**URL:** `https://api.stlouisfed.org/fred/release/tables`
+URL: `https://api.stlouisfed.org/fred/release/tables`
 
 ### Required Parameters
 

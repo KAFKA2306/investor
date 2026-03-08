@@ -29,7 +29,7 @@ Tags are attributes assigned to series that help categorize and discover data. T
 
 Get FRED tags with optional filtering.
 
-**URL:** `https://api.stlouisfed.org/fred/tags`
+URL: `https://api.stlouisfed.org/fred/tags`
 
 ### Required Parameters
 
@@ -142,7 +142,7 @@ response = requests.get(
 
 Get related FRED tags for one or more specified tags.
 
-**URL:** `https://api.stlouisfed.org/fred/related_tags`
+URL: `https://api.stlouisfed.org/fred/related_tags`
 
 ### Required Parameters
 
@@ -236,7 +236,7 @@ response = requests.get(
 
 Get the series matching all specified tags.
 
-**URL:** `https://api.stlouisfed.org/fred/tags/series`
+URL: `https://api.stlouisfed.org/fred/tags/series`
 
 ### Required Parameters
 

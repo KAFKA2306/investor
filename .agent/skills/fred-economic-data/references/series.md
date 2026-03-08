@@ -21,7 +21,7 @@ Series endpoints provide access to economic data series metadata and observation
 
 Get metadata for an economic data series.
 
-**URL:** `https://api.stlouisfed.org/fred/series`
+URL: `https://api.stlouisfed.org/fred/series`
 
 ### Required Parameters
 
@@ -91,9 +91,9 @@ response = requests.get(
 
 ## fred/series/observations
 
-Get observations (data values) for an economic data series. **Most commonly used endpoint.**
+Get observations (data values) for an economic data series. Most commonly used endpoint.
 
-**URL:** `https://api.stlouisfed.org/fred/series/observations`
+URL: `https://api.stlouisfed.org/fred/series/observations`
 
 ### Required Parameters
 
@@ -210,7 +210,7 @@ response = requests.get(
 
 Get the categories for an economic data series.
 
-**URL:** `https://api.stlouisfed.org/fred/series/categories`
+URL: `https://api.stlouisfed.org/fred/series/categories`
 
 ### Required Parameters
 
@@ -249,7 +249,7 @@ response = requests.get(
 
 Get the release for an economic data series.
 
-**URL:** `https://api.stlouisfed.org/fred/series/release`
+URL: `https://api.stlouisfed.org/fred/series/release`
 
 ### Required Parameters
 
@@ -292,7 +292,7 @@ response = requests.get(
 
 Search for economic data series by keywords.
 
-**URL:** `https://api.stlouisfed.org/fred/series/search`
+URL: `https://api.stlouisfed.org/fred/series/search`
 
 ### Required Parameters
 
@@ -377,7 +377,7 @@ response = requests.get(
 
 Get the FRED tags for a series.
 
-**URL:** `https://api.stlouisfed.org/fred/series/tags`
+URL: `https://api.stlouisfed.org/fred/series/tags`
 
 ### Required Parameters
 
@@ -425,7 +425,7 @@ response = requests.get(
 
 Get economic data series sorted by when observations were updated.
 
-**URL:** `https://api.stlouisfed.org/fred/series/updates`
+URL: `https://api.stlouisfed.org/fred/series/updates`
 
 ### Required Parameters
 
@@ -444,7 +444,7 @@ Get economic data series sorted by when observations were updated.
 | `start_time` | string | - | YYYYMMDDHhmm format |
 | `end_time` | string | - | YYYYMMDDHhmm format |
 
-**Note:** Results are restricted to series updated within the last two weeks.
+Note: Results are restricted to series updated within the last two weeks.
 
 ### Example
 
@@ -466,7 +466,7 @@ response = requests.get(
 
 Get the vintage dates for a series (dates when data was revised).
 
-**URL:** `https://api.stlouisfed.org/fred/series/vintagedates`
+URL: `https://api.stlouisfed.org/fred/series/vintagedates`
 
 ### Required Parameters
 
@@ -518,7 +518,7 @@ response = requests.get(
 
 Get the tags for a series search.
 
-**URL:** `https://api.stlouisfed.org/fred/series/search/tags`
+URL: `https://api.stlouisfed.org/fred/series/search/tags`
 
 ### Required Parameters
 
@@ -546,7 +546,7 @@ Get the tags for a series search.
 
 Get related tags for a series search.
 
-**URL:** `https://api.stlouisfed.org/fred/series/search/related_tags`
+URL: `https://api.stlouisfed.org/fred/series/search/related_tags`
 
 ### Required Parameters
 

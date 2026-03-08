@@ -30,7 +30,7 @@ GeoFRED provides regional economic data for mapping and geographic analysis:
 
 Get geographic shape files in GeoJSON format for mapping.
 
-**URL:** `https://api.stlouisfed.org/geofred/shapes/file`
+URL: `https://api.stlouisfed.org/geofred/shapes/file`
 
 ### Required Parameters
 
@@ -149,7 +149,7 @@ fig.show()
 
 Get meta information for a regional data series.
 
-**URL:** `https://api.stlouisfed.org/geofred/series/group`
+URL: `https://api.stlouisfed.org/geofred/series/group`
 
 ### Required Parameters
 
@@ -208,7 +208,7 @@ response = requests.get(
 | `min_date` | Earliest available date |
 | `max_date` | Latest available date |
 
-**Note:** This endpoint only works with FRED series that have associated geographic data.
+Note: This endpoint only works with FRED series that have associated geographic data.
 
 ---
 
@@ -216,7 +216,7 @@ response = requests.get(
 
 Get regional data for a specific series.
 
-**URL:** `https://api.stlouisfed.org/geofred/series/data`
+URL: `https://api.stlouisfed.org/geofred/series/data`
 
 ### Required Parameters
 
@@ -233,7 +233,7 @@ Get regional data for a specific series.
 | `date` | string | most recent | YYYY-MM-DD |
 | `start_date` | string | - | YYYY-MM-DD |
 
-**Note:** XML format is unavailable for county-level data.
+Note: XML format is unavailable for county-level data.
 
 ### Example
 
@@ -287,7 +287,7 @@ response = requests.get(
 
 Get regional data using a series group ID. This is the most flexible endpoint for regional data.
 
-**URL:** `https://api.stlouisfed.org/geofred/regional/data`
+URL: `https://api.stlouisfed.org/geofred/regional/data`
 
 ### Required Parameters
 

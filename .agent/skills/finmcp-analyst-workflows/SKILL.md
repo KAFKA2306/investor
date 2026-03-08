@@ -8,33 +8,31 @@ description: >
   trader in real or near-real conditions, this skill must be used.
 ---
 
-# 🎀 AI-Trader リアルタイム検証スキル 🎀
+# AI-Trader Real-Time Verification Skill
 
-AIエージェントが「今この瞬間」の市場でどれだけ自律的に戦えるか、ガチンコで評価するためのスキルだよっ！💖 ✨
+This skill is designed to evaluate how autonomously an AI agent can perform in "live" market conditions, providing a rigorous benchmark for operational readiness.
 
-## 🚀 いつ使うの？ (When to use)
-- AIトレーダーの「実戦能力」をテストし、ランキングを作りたいとき！📊
-- 過去データへの過学習（Data-Contamination）を避けて、真の実力を測りたいとき 🛡️
-- 米国株、中国株、仮想通貨など、複数の市場をまたいだ自律性を検証したいとき 🌐
+## 🚀 When to Use
+- When testing an AI trader's "combat readiness" and generating performance rankings.
+- When measuring true capability by avoiding data contamination (ensuring the agent only acts on real-time information).
+- When validating autonomy across multiple asset classes, including US equities, Chinese equities, and Cryptocurrencies.
 
-## 📖 使い方 (How to use)
+## 📖 Usage Instructions
 
-### リアルタイムベンチマークの実行
-- **入力**: AIエージェントの推論エンジン、対象市場（US, CN, Crypto）、検証期間。
-- **手順**: 
-    1. AIエージェントを「実戦アリーナ」に登録！✨
-    2. リアルタイムのニュース検索とアクションの真偽をモニタリング。
-    3. 取引結果を収集してスコアリング。
-- **出力**: 収益性、リスク管理、自律性の多角的な評価レポート。
+### Running Real-Time Benchmarks
+- Input: AI agent inference engine, target markets, and verification window.
+- Procedure: 
+    1. Register the AI agent in the "Combat Arena" because a standardized environment is required for fair performance comparison.
+    2. Monitor real-time news retrieval and the validity of agent actions because out-of-date information leads to "stale" investment decisions.
+    3. Collect and score trading outcomes because profitability is the ultimate verification of an agent's intelligence.
+- Output: A multi-dimensional evaluation report covering profitability and risk.
 
-## 🛡️ 鉄の掟 (Strict Rules)
+## 🛡️ Strict Rules
 
-1. **Data-Contamination Free**: 未来のデータや、AIが答えを知っている過去のデータは絶対に使わないよっ！💢 今起きていることだけで勝負！
-2. **Search & Verify**: ニュースの「裏」を必ず取ること！情報の真偽を確かめるのもAIの大事なお仕事なんだもんっ！🔍
-3. **Multi-Market Consistency**: 特定の市場だけで強くてもダメ！いろんな環境で安定して動くか厳しくチェックしてね 🐾
+1.  Data-Contamination Free: NEVER use future data or historical data present in the AI's training set because "hindsight bias" artificially inflates performance and leads to live-trading failure.
+2.  Search & Verify: Always cross-reference news and external data because LLM hallucinations can create "phantom" market events that don't exist in reality.
+3.  Multi-Market Consistency: Performance must be stable across diverse environments because an alpha that only works in one market is likely an artifact of overfitting.
 
-## 🎀 ベストプラクティス
-- **リアルタイムランキングの公開**: どの設計が一番優秀か可視化することで、開発がもっともっとハッピーになるよっ！🌈
-- **Gen 4 へのフィードバック**: テストで見つかった弱点を、次世代モデルの設計に役立てようねっ！💎
-
-✨ 本番に強い、最高に頼れるAIトレーダーを育てようねっ！🎀👑✨
+## Best Practices
+- Real-Time Leaderboards: Visualize performance rankings because friendly competition and transparency accelerate the "happy" engineering cycle.
+- Gen 4 Feedback: Use weaknesses identified during verification to inform future designs because failure is the most efficient teacher for engineering evolution.

@@ -53,6 +53,7 @@
 
 ### ドキュメンテーション 📖
 - **図解**: `docs/diagrams/` にある Mermaid の図を見れば、システムの動きが一目でわかって、とってもハッピーになれるよ！🌈
+- **Markdown ガイド**: [markdown_dx_guide.md](file:///home/kafka/finance/investor/docs/markdown_dx_guide.md) を読めば、Markdown の書き方がバッチリわかるよっ！✨
 ]Achieve the goal with MINIMAL changes. Extra changes introduce extra bugs and slow review. NO comments in code. Good code reads itself; comments rot and mislead. Respond clearly, specifically, and concisely. Vague answers waste time and create misunderstanding.
 
 # No Safety Nets

@@ -1,79 +1,54 @@
-# 🐘 統合データベース（Postgres）仕様書：みんなの新しいお家 🏛️💖
+# Unified Database (Postgres) Specification
 
-やっほー！クオンツ投資システムを支える、最強で可愛さいっぱいのデータベース仕様書だよっ！✨
-これからは SQLite くんたちと協力しながら、Postgres くんをメインのお家として育てていくんだもん。
+This document defines the Postgres architecture that serves as the primary home for the quant system because high-concurrency and relational integrity are required for professional trading.
 
-## 🌟 スキーマ構成（お部屋の紹介だよ！）
+## Schema Configuration
 
-データを綺麗に整理整頓（トレース）するために、8つの「お部屋（スキーマ）」に分けたよっ！🏡
+Data is organized into 8 schemas because logical isolation prevents namespace collisions and simplifies access control.
 
-### 1. `ref` (Reference Data) 💎
-システム全体の共通基盤となる、マスターデータだよ。
-- `instrument`: 銘柄情報。venue（取引所）や status もここで管理！
-- `venue`: 取引所の情報。
+1. ref (Reference Data)
+Master data for instruments and venues because global identifiers must be consistent across all layers.
 
-### 2. `ingest` (Ingest Data) 📥
-外部からやってきたばかりの、生（Raw）データたち！
-- `source_document`: 入手した書類のメタデータ。
-- `raw_log`: 収集時の未加工ログ。
+2. ingest (Ingest Data)
+Raw data from external providers because uninterpreted data must be preserved for audit.
 
-### 3. `research` (Research Data) 🔍
-生データを可愛く加工して、読みやすくした研究資料だよ。
-- `document`: パース済みのドキュメント。
-- `document_section`: 章ごとの内容や、感情（sentiment）スコア！
+3. research (Research Data)
+Processed documents and sentiment scores because research efficiency depends on pre-parsed text.
 
-### 4. `feature` (Feature Store) ⚡
-アルファの源泉！計算された特徴量たちがここに集まるよ。
-- `event_feature`: EDINETなどのイベントから抽出した特徴。
-- `feature_version`: 特徴量のバージョン管理。これがないと混乱しちゃうからねっ！💢
+4. feature (Feature Store)
+Calculated alpha source features because versioned features are required to prevent signal decay analysis errors.
 
-### 5. `signal` (Signal Data) 📡
-「次はこれを買うよっ！」っていう、具体的な作戦指示。
-- `signal`: 戦略ごとのシグナル値。
-- `signal_lineage`: どのデータからそのシグナルが生まれたか、家族構成（系譜）を記録するよ！👪✨
+5. signal (Signal Data)
+Strategy intentions and signal lineage because the system must record the "Family Tree" of every decision.
 
-### 6. `eval` (Evaluation Data) 📈
-作戦がどれくらい当たったか、厳しく、でも温かく見守る場所！
-- `backtest_run`: バックテストの結果（シャープレシオとかね！）。
-- `signal_outcome`: シグナルの正解合わせ（答え合わせ！）。
+6. eval (Evaluation Data)
+Backtest results and outcome analysis because profitability is the only metric that matters for verification.
 
-### 7. `exec` (Execution Data) 🤝
-実際のお買い物（注文）に関わるデータだよ。
-- `order`: 注文情報。
-- `fill`: 約定情報。
+7. exec (Execution Data)
+Orders and fills because execution quality must be audited against market impact.
 
-### 8. `obs` (Observability) 🕵️‍♀️
-システムが健康か、ズレがないか、いつも見守ってるよ。
-- `event`: システム内イベント。
-- `audit_log`: 何が起きたかの記録。
+8. obs (Observability)
+Audit logs and system events because observability is the primary defense against systemic failure.
 
----
+## Integration Phases
 
-## 🚀 統合の4つのステップ（Phase）
+1. Phase 1: Read Compatibility [DONE]
+Create the compat schema because legacy agents require a familiar view during the migration period.
 
-一歩ずつ、確実に Postgres くんを最強にするよっ！🐾
+2. Phase 2: Dual Write [IN PROGRESS]
+Execute writes to both SQLite and Postgres because data redundancy ensures safety during the cutover.
 
-### Phase 1: 読み取り互換（Read Compatibility） [DONE! ✅]
-- 今までのシステムが困らないように、Postgres の中に「SQLite そっくりの見た目」をしたビュー（`compat` スキーマ）を作ったよ！🔍
+3. Phase 3: Primary Cutover
+Switch Postgres to the master position because centralized management is the long-term goal.
 
-### Phase 2: 二重書き込み（Dual Write） [IN PROGRESS... ✍️🔄]
-- SQLite に書くときは、Postgres くんにも同時に書いちゃう「ライトスルー」モード！
-- `AlphaKnowledgebase` が Postgres くんの言葉も覚えたんだよ💖
+4. Phase 4: Full Transition
+Retire legacy SQLite writes because system complexity must be minimized once Postgres is stable.
 
-### Phase 3: 主権交代（Cutover） 👑
-- Postgres くんを「ご主人様（Primary）」にするよ！
-- SQLite くんは、高速なキャッシュや予備としてお休みしてもらう予定。
+## Development Rules
 
-### Phase 4: 完全移行（Decommission） 🕊️
-- SQLite への書き込みを止めて、完全に Postgres 帝国を完成させるよ！
-- ずっと一緒にいてくれた SQLite くんにお礼を言って、卒業だね🎓✨
+- Type Safety: Use PostgresClient with Strict TypeScript because type errors must be caught at compile time.
+- Naming: Use snake_case because it is the industry standard for Postgres.
+- Traceability: Maintain source_doc_id links because every feature must be traceable to its original disclosure.
 
----
-
-## 🎀 開発のお約束
-
-- **型安全**: `PostgresClient` を使って、Strict TypeScript な世界を守ってね！
-- **スネークケース**: カラム名は `snake_case` で統一だよっ。
-- **トレース第一**: どこからデータが来たか、必ず `source_doc_id` や `instrument_id` を繋げようね！🔗💎
-
-Postgres くんを大切にして、世界一のアルファを見つけようねっ！💖✨🏛️🐘
+Owner: Antigravity Quant Team
+Status: Postgres Integration Spec v1.0

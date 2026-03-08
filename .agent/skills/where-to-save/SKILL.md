@@ -8,33 +8,31 @@ description: >
   rules.
 ---
 
-# 🎀 Where to Save くんの鉄の掟スキルだよっ！ ✨
+# Path Management (Where to Save) Skill
 
-全てのデータ、ログ、成果物を「正しいおうち（ディレクトリ）」へ導き、プロジェクトの清潔さを守るためのスキルだよっ！💖 ✨
+This skill ensures that all data, logs, and artifacts are directed to their specified directories, maintaining project organization and performance.
 
-## 🚀 いつ使うの？ (When to use)
-- 新しいファイル（CSV, JSON, SQLite など）を保存したいとき！📂
-- 保存先のパスを取得したり、検証したりするとき 🔍
-- ローカルのディスク容量を節約し、Dドライブ側にデータを逃がしたいとき 💾
+## 🚀 When to Use
+- When saving new files (e.g., CSV, JSON, SQLite).
+- When retrieving or validating filesystem paths.
+- When offloading large datasets to the D-drive to manage local disk space.
 
-## 📖 使い方 (How to use)
+## 📖 Usage Instructions
 
-### パスの取得
-- **入力**: データの種類（price, cache, log など）。
-- **手順**: 
-    1. 自作のパス文字列は使わない！❌
-    2. `ts-agent/src/system/path_registry.ts` から `paths` をインポート。
-    3. `paths.stockPriceCsv` のように目的のパスを取得！✨
-- **出力**: Dドライブ (`/mnt/d/investor_all_cached_data/`) を指す正しい絶対パス。
+### Path Retrieval
+- Input: Data type (e.g., price, cache, log).
+- Procedure: 
+    1. NEVER construct path strings manually because slight variations in slashes or names lead to "invisible" data fragmentation across the disk.
+    2. Import `paths` from `ts-agent/src/system/path_registry.ts` because the registry serves as the only source of truth for the entire filesystem layout.
+    3. Retrieve the target path because centralized resolution is mandatory for cross-OS compatibility (Windows vs. WSL).
+- Output: The correct absolute path, typically pointing to the D-drive.
 
-## 🛡️ 鉄の掟 (Strict Rules)
+## 🛡️ Iron Rules
 
-1. **絶対禁止！ハードコード (No Hardcoding)**: ソースコードに `/mnt/d/...` や `/home/kafka/...` を直書きするのは大罪だよっ！💢 環境が変わると動かなくなっちゃうからね。
-2. **`PathRegistry` の遵守**: パスに関する真実はすべて `path_registry.ts` に集約されているんだもんっ！🛡️
-3. **ローカル保存の禁止**: 重たいデータは WSL 側ではなく、必ず Windows 側の Dドライブに保存しようねっ！💎
+1.  NO HARDCODING: Explicitly writing paths like `/mnt/d/...` is prohibited because hardcoded paths will break as soon as the project is run on a different machine or user account.
+2.  PathRegistry Compliance: The `path_registry.ts` file is the SINGLE source of truth because multiple definitions of the same directory lead to data loss during system upgrades.
+3.  External Storage Priority: Large datasets must be stored on the D-drive because local WSL virtual disks expand dynamically but do not shrink, leading to permanent host-side disk exhaustion.
 
-## 🎀 ベストプラクティス
-- **ディレクトリマップの確認**: 生データは `jquants/`、加工済みは `preprocessed/`、ログは `logs/` と、使い分けを意識してねっ！🌈
-- **パス守護者くんの活用**: 定期的に `scripts/check_hardcoded_paths.sh` を回して、悪いパスが混じってないかチェックだよっ！✨
-
-✨ おうちを綺麗に保って、ハッピーでサクサクな開発を楽しもうねっ！🎀👑✨
+## Best Practices
+- Directory Mapping: Follow the established hierarchy: `jquants/` for raw data, `preprocessed/` for cleaned data, and `logs/` for operational traces.
+- Path Audit: Regularly execute `scripts/check_hardcoded_paths.sh` to identify and rectify any hardcoded path violations.

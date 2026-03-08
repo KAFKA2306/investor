@@ -15,7 +15,7 @@ Categories endpoints provide access to the hierarchical organization of economic
 
 FRED organizes data in a hierarchical category structure. The root category has `category_id=0`.
 
-**Top-level categories (children of root):**
+Top-level categories (children of root):
 - Money, Banking, & Finance (32991)
 - Population, Employment, & Labor Markets (10)
 - National Accounts (32992)
@@ -31,7 +31,7 @@ FRED organizes data in a hierarchical category structure. The root category has 
 
 Get a category.
 
-**URL:** `https://api.stlouisfed.org/fred/category`
+URL: `https://api.stlouisfed.org/fred/category`
 
 ### Required Parameters
 
@@ -90,7 +90,7 @@ response = requests.get(
 
 Get child categories for a category.
 
-**URL:** `https://api.stlouisfed.org/fred/category/children`
+URL: `https://api.stlouisfed.org/fred/category/children`
 
 ### Required Parameters
 
@@ -141,7 +141,7 @@ response = requests.get(
 
 Get related categories for a category.
 
-**URL:** `https://api.stlouisfed.org/fred/category/related`
+URL: `https://api.stlouisfed.org/fred/category/related`
 
 ### Required Parameters
 
@@ -158,7 +158,7 @@ Get related categories for a category.
 | `realtime_start` | date | today | YYYY-MM-DD |
 | `realtime_end` | date | today | YYYY-MM-DD |
 
-**Note:** Related categories represent one-way relationships that exist outside the standard parent-child hierarchy. Most categories do not have related categories.
+Note: Related categories represent one-way relationships that exist outside the standard parent-child hierarchy. Most categories do not have related categories.
 
 ### Example
 
@@ -190,7 +190,7 @@ response = requests.get(
 
 Get the series in a category.
 
-**URL:** `https://api.stlouisfed.org/fred/category/series`
+URL: `https://api.stlouisfed.org/fred/category/series`
 
 ### Required Parameters
 
@@ -277,7 +277,7 @@ response = requests.get(
 
 Get the tags for a category.
 
-**URL:** `https://api.stlouisfed.org/fred/category/tags`
+URL: `https://api.stlouisfed.org/fred/category/tags`
 
 ### Required Parameters
 
@@ -346,7 +346,7 @@ response = requests.get(
 
 Get related tags for a category.
 
-**URL:** `https://api.stlouisfed.org/fred/category/related_tags`
+URL: `https://api.stlouisfed.org/fred/category/related_tags`
 
 ### Required Parameters
 

@@ -21,30 +21,30 @@ Use this skill to decide whether qlib belongs in the current task, where it fits
 - The user wants to benchmark custom signals or alpha outputs against qlib baselines.
 
 ## Current repo touchpoints
-- The primary market and macro ingestion path is TS-side in `ts-agent/src/providers/unified_market_data_gateway.ts`. Keep it as the source of truth for J-Quants, EDINET, and e-Stat access.
-- The factor expression layer is a lightweight AST evaluator in `ts-agent/src/pipeline/factor_mining/factor_compute_engine.ts`. Treat it as a custom research surface, not something qlib should replace directly.
-- The current backtest and signal evaluation flow is repo-specific and intentionally simple. Do not replace it wholesale just because qlib has a richer stack.
-- The EDINET and knowledgebase flow is differentiated project logic. Treat EDINET-derived features as custom inputs to qlib, not as something to force into stock examples.
+- **Data Exporter**: `ts-agent/src/io/qlib_exporter.ts` handles the bridge from TS computes to Qlib-ready CSV/Parquet.
+- **Custom Handler**: `ts-agent/src/research/qlib_handler.py` (`RepoDataHandler`) reads repo-specific exports into Qlib.
+- **Benchmark Script**: `ts-agent/src/research/qlib_benchmark.py` serves as the primary entry point for Python-side ML experiments.
+- **Model Registry**: `ts-agent/src/model_registry/models.json` registers `microsoft-qlib` as a recognized machine-learning-research platform.
+- **Task Runner**: `Taskfile.yml` includes `research:qlib:benchmark` for standardized execution.
 
 ## Recommended use of qlib
-- Use qlib as Python-side research infrastructure.
-- Build a custom DataHandler or dataset around repo-owned daily features.
-- Use qlib workflows to benchmark ML-based alphas against current heuristic or LLM-generated signals.
-- Use rolling or walk-forward evaluation as a secondary validation layer.
-- Keep qlib optional until it beats the current path on evidence.
+- Use qlib as Python-side research infrastructure because it provides industry-standard ML models and time-series cross-validation that are complex to reinvent in TS.
+- Build a custom DataHandler around repo-owned daily features because maintaining a single source of truth for market data prevents signal-vs-backtest discrepancies.
+- Use qlib workflows to benchmark ML-based alphas because comparing new ideas against established baselines (e.g., LightGBM) is the only way to prove functional value.
+- Use rolling or walk-forward evaluation as a secondary validation layer because fixed-window backtests are prone to overfitting and market-regime bias.
+- Keep qlib as a secondary research harness because the primary "Alpha Factory" remains centered on the autonomous TS loop.
 
 ## Do not use qlib for
-- Replacing J-Quants, EDINET, or e-Stat ingestion.
-- Replacing the TS orchestration and knowledgebase pipeline end-to-end.
-- Copying China-market assumptions or stock example configs without adapting them.
-- Starting with RL, portfolio optimization, or execution-heavy subsystems before the dataset and benchmark path works.
+- Replacing J-Quants, EDINET, or e-Stat ingestion because the existing TS gateway is already optimized for Japanese regulatory APIs and rate limits.
+- Replacing the TS orchestration end-to-end because the "Knowledgebase" logic is highly specialized for LLM-driven alpha mining.
+- Copying stock example configs without adaptation because market assumptions (e.g., fee structures, tick sizes) vary significantly between China and Japan.
 
-## Minimum integration path
-1. Expose repo-owned daily features in a Python-readable dataset.
-2. Define a custom qlib handler using market, macro, and EDINET-derived columns already produced by this repo.
-3. Run one benchmark model or workflow.
-4. Compare the result against the existing `kb-backtest` or pipeline benchmark path.
-5. Keep qlib as a secondary research harness unless it clearly wins on repeatable metrics.
+## Minimal integration path (Reference)
+1. Expose repo-owned daily features via `qlib_exporter.ts`.
+2. Configure `RepoDataHandler` in `qlib_handler.py` to map column names.
+3. Define qlib task config (LightGBM/XGBoost) in `qlib_benchmark.py`.
+4. Execute via `task research:qlib:benchmark`.
+5. Audit results using Qlib's `R.save_objects` and persistence layer.
 
 ## Decision rules
 - Prefer qlib when the task is dataset standardization, model benchmarking, or rolling evaluation.
@@ -58,4 +58,3 @@ Use this skill to decide whether qlib belongs in the current task, where it fits
 - State whether qlib should be used, partially used, or avoided for the specific task.
 - Anchor recommendations to the repo touchpoints above.
 - If proposing integration, default to a secondary Python benchmark path rather than replacing the current TS pipeline.
-

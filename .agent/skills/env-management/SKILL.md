@@ -8,36 +8,35 @@ description: >
   config error, or any secrets/path change, this skill must be used first.
 ---
 
-# 🎀 Environment Management Skill (MANDATORY HOOK) 🎀
+# Environment Management Skill (MANDATORY HOOK)
 
-環境変数を安全に守り、プロジェクトの設定を完璧に管理するためのスキルだよっ！💖 ✨
+This skill ensures the secure management of environment variables and project configurations.
 
-## 🚀 いつ使うの？ (When to use)
-- 新しい環境変数を定義したいとき！✨
-- APIキーやデータベースのパスワードなどの秘密（Secrets）を扱いたいとき 🤫
-- プロジェクトの共通設定（Non-secrets）を確認・変更したいとき 🌐
-- **重要**: 環境変数に関連する作業を始める前に、必ずこのスキルをフックしてねっ！💢✨
+## 🚀 When to Use
+- When defining new environment variables.
+- When handling secrets (e.g., API keys, database passwords).
+- When verifying or modifying global project configurations (Non-secrets).
+- IMPORTANT: This skill must be invoked BEFORE performing any work related to environment variables.
 
-## 📖 使い方 (How to use)
+## 📖 Usage Instructions
 
-### 秘密情報 (Secrets) の管理
-- **入力**: 新しいAPIキーなどの機密情報。
-- **手順**: `.env` を直接編集しちゃダメ！❌ `.env.example` を更新して、ユーザーに追記をお願いしてね 💖
-- **出力**: セキュアに設定された環境変数。
+### Secret Management
+- Input: New credentials or API keys.
+- Procedure: DO NOT edit `.env` directly; update `.env.example` and request user input because committing secrets to version control is a catastrophic security failure.
+- Output: Securely configured environment.
 
-### 共通設定 (Non-secrets) の管理
-- **入力**: モデル名、リスクパラメータ、ディレクトリパスなど。
-- **手順**: `config/default.yaml` に定義するよ！✨
-- **出力**: プロジェクト全体で一貫した設定。
+### Non-Secret (Configuration) Management
+- Input: Model names, risk parameters, directory paths, etc.
+- Procedure: Define these in `config/default.yaml` because centralized configuration ensures that the entire agent fleet operates under a unified set of rules.
+- Output: Integrated and consistent configuration across the project.
 
-## 🛡️ 鉄の掟 (Iron Rules)
+## 🛡️ Iron Rules
 
-1. **`.env` は絶対に閲覧禁止！❌**: `view_file` や `grep` で覗こうとしたら、めっ！だよっ！💢 機密情報をコンテキストに入れないのが鉄則！🔒
-2. **ハードコード禁止！**: ソースコードの中にパスやキーを直書きするのは大罪だよっ！必ず環境変数経由で使ってね 🐾
-3. **バリデーション**: 環境変数を読み取るときは、必ず存在チェックと型チェックを挟もうねっ！💎
+1.  NO PERSISTENT LOGGING OF SECRETS: Never print secrets to the console or logs because telemetry data is often stored in plain text and can be compromised.
+2.  NO HARDCODING: Never embed API keys or sensitive paths directly in source code because hardcoded values break environment portability and leak credentials.
+3.  VALIDATION: Always implement presence and type checks when loading configuration values because invalid configurations cause unpredictable system behavior and "silent" failures.
+4.  GIT HYGIENE: Ensure `.env` is listed in `.gitignore` and never committed because file leakage is the most common path for credential theft.
 
-## 🎀 ベストプラクティス
-- **ConfigSchema の活用**: TS/Bun なら Zod、Python なら Pydantic を使って、起動時に設定をガッチリ固めるのがハッピーになれるコツだよっ！🌈
-- **環境変数名の統一**: `UQTL_` プレフィックスなどを付けて、他のシステムと混ざらないようにしようねっ！✨
-
-✨ 掟を守って、安全でピカピカな開発環境を作ろうねっ！🎀👑✨
+## Best Practices
+- Config Schema: Use Zod or Pydantic to strictly validate configurations at runtime because type-safe configurations prevent logic errors before the application logic even starts.
+- Variable Naming: Use project-specific prefixes (e.g., `UQTL_`) to avoid namespace collisions because generic names may be overwritten by system environment variables.

@@ -9,16 +9,16 @@ description: MANDATORY TRIGGER: Invoke for any vLLM prompt/output integration ta
 Produce deterministic, parseable output from vLLM with minimum moving parts.
 
 ## Input Contract
-- Use explicit role blocks with model chat tokens.
-- End assistant prefix at the exact generation start point.
-- For Qwen3.5-style reasoning defaults, prepend `<think>\n</think>\n` when structured output is required.
-- Keep one request per run during debugging.
+- Use explicit role blocks with model chat tokens because mismatched templates lead to degradation in reasoning capability.
+- End assistant prefix at the exact generation start point because extra whitespace or tokens can trigger unwanted "thinking" artifacts in JSON output.
+- Prepend `<think>\n</think>\n` when structured output is required because this forces the model to skip verbose internal monologues and jump directly to the result.
+- Keep one request per run during debugging because high-concurrency errors are difficult to distinguish from single-prompt failures on 12GB VRAM cards.
 
 ## Output Contract
-- For JSON tasks, request exactly one JSON object.
-- Extract output by slicing from first `{` to last `}`.
-- Validate required keys immediately.
-- Raise on missing keys or parse failure.
+- For JSON tasks, request exactly one JSON object because multi-object outputs break simple slicing logic and increase parsing latency.
+- Extract output by slicing from first `{` to last `}` because LLMs often prepend or append conversational "chatter" that is not valid JSON.
+- Validate required keys immediately because "silent" missing data results in downstream logic calculating with undefined values.
+- Raise on missing keys or parse failure because an immediate crash is the only way to stop a corrupted alpha candidate from entering production.
 
 ## Standard Minimal Settings
 - Start with `max_num_seqs=1`.

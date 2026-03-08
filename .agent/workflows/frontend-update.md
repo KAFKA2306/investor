@@ -1,69 +1,69 @@
 ---
-description: 金融的価値を最大限に引き出し、過去ログの可視化を主眼に置いた実証済みのフロントエンドをお届けするための実務的手順書だよっ！💖✨
+description: Professional workflow for delivering verified frontends that maximize financial value and prioritize historical log visualization.
 ---
 
-# 🎀 Frontend検証・アップデート・プロフェッショナル・ワークフロー 🎀
+# Frontend Verification, Update & Professional Workflow
 
-**お仕事の目的**: フロントエンドの変更が「過去の知見（Alphaの軌跡）」を完璧に可視化し、投資判断の精度を爆上げすることを保証することだよっ！✨
-**役割の独自性**: このワークフローは `/newalphasearch`（Alphaの自律探索）とは独立しており、**「探索結果をいかに正しく、価値ある形でユーザーに届けるか」**という**可視化と監査（Audit/Visualization）**に特化しているんだもん！💎📈
+Objective: Ensure that frontend modifications perfectly visualize "Historical Insights (Alpha Trajectories)" and maximize the precision of investment decisions.
+Context: This workflow is independent of `/newalphasearch` (Autonomous Alpha Discovery) and specializes in Visualization and Audit (Audit/Visualization)—how to deliver discovery results to the user in the most valuable form.
 
 ---
 
-## 🤖 エージェントさんの自律実行ステップ (Agent Execution Steps) ✨
+## 🤖 Agent Execution Steps
 
 // turbo-all
-以下の手順を、**「過去ログの可視化」**に魂を込めて実行してねっ！
+Execute these steps with a focus on "Historical Log Visualization."
 
-### 1️⃣ 過去ログ活用の「戦略的」定義 🎯 (Historical Log Strategy)
-新しいUIが、いかに過去のデータを「生きた知見」に変えるか定義しようねっ！
-- **エージェントさんへの指示**:
-  - `implementation_plan.md` に以下の「過去ログ View」の要件を必ず含めてね：
-    1. **比較可能性**: 過去の異なる期間や戦略（Alpha）を、いかに簡単に比較できるか？
-    2. **ドリルダウン**: 概要から特定の日の詳細（EDINETの生データなど）へ、いかにスムーズに辿り着けるか？
-    3. **時系列の真実**: 累積リターンやドローダウンが、過去から現在まで「嘘偽りなく」表示されているか？
+### 1️⃣ Strategic Definition of Historical Log Utilization 🎯
+Define how the new UI transforms historical data into "Actionable Insights."
+- Agent Prompt:
+  - The `implementation_plan.md` must include the following "Historical Log View" requirements:
+    1. Comparability: How easily can different historical periods or strategies (Alphas) be compared?
+    2. Drill-down: Is there a seamless transition from overview summaries to specific daily details (e.g., raw EDINET filings)?
+    3. Historical Fidelity: Are cumulative returns and drawdowns displayed "truthfully" from past to present?
 
-### 2️⃣ 堅牢な実装と究極の型安全 💻 (Bulletproof Implementation)
-大量の過去ログを扱うからこそ、型安全とパフォーマンスが命だよっ ✨
-- **エージェントさんへの指示**:
-  - 大量データのマッピング処理には Strict TypeScript を使い、不正なデータは `Zod` で即座に弾くこと！
-  - `task check` で、コードの純粋性を極限まで高めてねっ 💖
+### 2️⃣ Robust Implementation & Ultimate Type Safety 💻
+When handling mass historical logs, type safety and performance are paramount.
+- Agent Prompt:
+  - Use Strict TypeScript for mapping logic and enforce immediate data rejection via `Zod` for any malformed inputs.
+  - Execute `task check` to ensure maximum code purity.
 
-### 3️⃣ Playwright による「時系列」実証 🌐 (Time-Series Automation)
-過去の特定の時点のデータが正しく表示されるか、Playwright で自動検証するよっ ✨
-- **エージェントさんへの指示**:
-  - `ts-agent/src/dashboard` で `npm run dev` を起動。
-  - **Playwright で「過去の日付を選択」し、その日の詳細ログやチャートが正しく更新されるか検証してね。**
-  - **歴史的な Alpha 発見の瞬間のスクリーンショットを取得して、エビデンスとして提出すること！📸✨**
+### 3️⃣ Time-Series Validation via Playwright 🌐
+Verify that historical data points are rendered correctly using automated UI testing.
+- Agent Prompt:
+  - Start the development server with `npm run dev` in `ts-agent/src/dashboard`.
+  - Use Playwright to "Select a Historical Date" and verify the daily logs and charts update correctly.
+  - Capture screenshots of historical Alpha discovery moments and submit them as evidence. 📸
 
-### 4️⃣ ログディレクトリの「実体」同期 👀 (Log-Storage Sync)
-ダッシュボードが `logs/` ディレクトリの過去資産を 100% 活用できているかチェック！
-- **エージェントさんへの指示**:
-  - `vite.config.ts` のプロキシ設定が、過去ログの深い階層まで正しく見に行けているか実証してね。
-  - 1ヶ月前、3ヶ月前のログが、即座にチャートに反映されることを確認するんだからねっ 💖💎
+### 4️⃣ Physical Log-Storage Synchronization 👀
+Ensure the dashboard is 100% synchronized with the assets in the `logs/` directory.
+- Agent Prompt:
+  - Validate that `vite.config.ts` proxy settings correctly target deep hierarchy levels of historical logs.
+  - Confirm that logs from 1 month or 3 months ago are indexed and reflected in the charts immediately.
 
-### 5️⃣ プロフェッショナルな完了報告 🎁 (Log-First Report)
-`walkthrough.md` では、過去ログ View がいかに強化されたかを熱く語ってねっ ✨
-- **エージェントさんへの指示**:
-  - ビフォーアフターのスクショを並べて、「これで1年前の Alpha の挙動も手に取るようにわかりますっ！✨」と報告してねっ 🐾
+### 5️⃣ Professional Reporting 🎁
+In the `walkthrough.md`, detail how the "Historical Log View" has been enhanced.
+- Agent Prompt:
+  - Provide before/after screenshots and report: "Historical Alpha behavior from 1 year ago is now fully transparent and navigable! 💎✨"
 
 ---
 
-## 🧭 Mermaid シーケンス ✨
+## 🧭 Mermaid Sequence
 ```mermaid
 sequenceDiagram
     autonumber
-    participant A as 私 (Agent)
+    participant A as Agent
     participant PW as Playwright (Chromium)
-    participant D as ダッシュボード (Vite)
-    participant L as 過去ログ資産 (Historical Logs)
+    participant D as Dashboard (Vite)
+    participant L as Historical Assets (Logs)
 
-    A->>L: 1. 過去ログの構造と価値を分析 🔍
-    A->>D: 2. 過去ログへのドリルダウン機能を実装 🛠️
-    A->>D: 3. ダッシュボード起動 & 過去ログ読み込み 🚀
-    A->>PW: 4. 過去日付への遷移 & 描画検証 📸
-    PW-->>A: 5. 過去Viewの完璧な証拠（画像）提出 ✅
-    A->>U: 6. 過去を力に変える完了報告 💖
+    A->>L: 1. Analyze historical log structure & value 🔍
+    A->>D: 2. Implement drill-down for historical logs 🛠️
+    A->>D: 3. Launch dashboard & load assets 🚀
+    A->>PW: 4. Navigate historical timeline & verify rendering 📸
+    PW-->>A: 5. Submit evidence of valid historical views ✅
+    A->>U: 6. Report high-fidelity log integration 💖
 ```
 
 > [!IMPORTANT]
-> 「今」を見るのは当たり前。プロは「過去」から未来を読み解くんだよっ！💎✨
+> Visualizing the "Now" is standard. A professional unlocks the "Future" by decoding the "Past." 💎✨

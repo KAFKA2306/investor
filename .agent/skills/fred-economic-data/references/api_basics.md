@@ -76,8 +76,8 @@ params = {
 
 ### FRED vs ALFRED
 
-- **FRED**: Shows current/most recent data values
-- **ALFRED**: Shows historical vintages and revisions of data
+- FRED: Shows current/most recent data values
+- ALFRED: Shows historical vintages and revisions of data
 
 Use real-time parameters to access ALFRED data through the same API endpoints.
 
@@ -123,12 +123,12 @@ Many endpoints support sorting:
 
 ### Error Response Format
 
-**XML:**
+XML:
 ```xml
 <error code="400" message="Bad Request. Variable api_key has not been set."/>
 ```
 
-**JSON:**
+JSON:
 ```json
 {
     "error_code": 400,

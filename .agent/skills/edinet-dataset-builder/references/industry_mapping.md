@@ -1,37 +1,38 @@
-# 🎀 ぎょうしゅをぎゅぎゅっと！16カテゴリー・マッピング ✨
+# Industry Sector Mapping: 33 Categories to 16
 
-**タイトル**: 33業種から16業種へのミラクル・マッピング！
-**お仕事の目的**: 分析の効率をあげるために、日本の複雑な業種区分をスマートに整理することだよっ！
-**解決したいお悩み**: 分類が細かすぎてデータがバラバラになっちゃう問題を、ちょうどいいサイズにまとめて解決！
-
-## エグゼクティブサマリー
-このドキュメントは、証券コード協議会がキメた「33業種」を、AIちゃんがもっと賢く分析できるように「16業種」にぎゅっとまとめる魔法のレシピだよっ！✨ `edinet2dataset` でこのマッピングを使うことで、データの偏りをなくして、最強の業種予測モデルを作れるようになるんだもんっ💖
+Objective: Standardize the complex 33-industry classification from the Securities Identification Code Committee into 16 optimized categories to improve model training efficiency and data balance.
 
 ---
 
-## ぎょうしゅの魔法のマッピング（33 -> 16） 🪄
-
-`edinet2dataset` くんでは、日本の証券コード協議会が定めた 33業種 を、もっと分析しやすくするために 16業種 にマッピングして使っているよっ！✨
-
-| 元の33業種 | マッピング後の16業種 |
-|:---|:---|
-| 水産・農林業, 食料品 | 食品 🍱 |
-| 鉱業, 石油・石炭製品, 電気・ガス業 | 電気・ガス・エネルギー資源 ⚡ |
-| 建設業, 金属製品, ガラス・土石製品 | 建設・資材 🏗️ |
-| 繊維製品, パルプ・紙, 化学 | 素材・化学 🧪 |
-| 医薬品 | 医薬品 💊 |
-| ゴム製品, 輸送用機器 | 自動車・輸送機 🚗 |
-| 鉄鋼, 非鉄金属 | 鉄鋼・非鉄 🔩 |
-| 機械 | 機械 ⚙️ |
-| 電気機器, 精密機器 | 電機・精密 💻 |
-| その他製品, 情報・通信業, サービス業 | 情報通信・サービスその他 🌐 |
-| 陸運業, 海運業, 空運業, 倉庫・運輸関連 | 運輸・物流 🚢 |
-| 卸売業 | 商社・卸売 📦 |
-| 小売業 | 小売 🛒 |
-| 銀行業 | 銀行 🏦 |
-| 証券、商品先物取引業, 保険業, その他金融業 | 金融(除く銀行) 💳 |
-| 不動産業 | 不動産 🏠 |
+## Executive Summary
+This document provides the "Magic Recipe" for mapping the official 33 industry sectors into 16 broader categories. This mapping is used by the `edinet2dataset` tool to eliminate data sparsity and create robust industry prediction models.
 
 ---
 
-このミラクル・マッピングを使うことで、業種予測タスクのデータセットをバランスよく、美しく作っているんだねっ！🎀✨ AIちゃんもこれで迷わずに、ばっちり学習できちゃうよっ！💎
+## Magic Mapping Table (33 -> 16) 🪄
+
+The following mapping is applied within the `edinet2dataset` pipeline to group Japanese industries into high-fidelity categories for AI analysis.
+
+| Original 33 Industries | Standardized 16 Industries |
+| :--- | :--- |
+| Fishery, Agriculture & Forestry, Foods | Foods 🍱 |
+| Mining, Oil & Coal Products, Electric Power & Gas | Energy & Utilities ⚡ |
+| Construction, Metal Products, Glass & Ceramics | Construction & Materials 🏗️ |
+| Textiles & Apparels, Pulp & Paper, Chemicals | Materials & Chemicals 🧪 |
+| Pharmaceutical | Pharmaceuticals 💊 |
+| Rubber Products, Transportation Equipment | Automotive & Transportation 🚗 |
+| Iron & Steel, Nonferrous Metals | Steel & Nonferrous 🔩 |
+| Machinery | Machinery ⚙️ |
+| Electric Appliances, Precision Instruments | Electronics & Precision 💻 |
+| Other Products, Info & Comm, Services | IT, Services & Others 🌐 |
+| Land Transportation, Marine Transportation, Air Transportation, Warehousing | Logistics & Transport 🚢 |
+| Wholesale Trade | Trading & Wholesale 📦 |
+| Retail Trade | Retail 🛒 |
+| Banks | Banking 🏦 |
+| Securities & Commodities, Insurance, Other Financials | Financials (Excl. Banks) 💳 |
+| Real Estate | Real Estate 🏠 |
+
+---
+
+## Implementation Details
+By applying this mapping, the system ensures that the dataset used for industry prediction tasks is balanced and representative, enabling the AI to learn sector-specific features without being overwhelmed by excessive granularity. ✨
