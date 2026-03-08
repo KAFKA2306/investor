@@ -783,12 +783,8 @@ name = "finance-investor-workspace"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "accelerate" },
     { name = "anthropic" },
-    { name = "autoawq" },
     { name = "backoff" },
-    { name = "compressed-tensors" },
-    { name = "huggingface-hub", extra = ["cli"] },
     { name = "loguru" },
     { name = "matplotlib" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'emscripten' or sys_platform == 'win32'" },
@@ -807,11 +803,7 @@ dependencies = [
     { name = "ruff" },
     { name = "setuptools", version = "80.10.2", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "setuptools", version = "82.0.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform != 'emscripten' and sys_platform != 'win32'" },
-    { name = "torch" },
-    { name = "torchvision" },
     { name = "tqdm" },
-    { name = "transformers" },
-    { name = "vllm" },
 ]
 
 [package.optional-dependencies]
@@ -835,6 +827,16 @@ inference = [
     { name = "torch" },
     { name = "transformers" },
 ]
+ml = [
+    { name = "accelerate" },
+    { name = "autoawq" },
+    { name = "compressed-tensors" },
+    { name = "huggingface-hub", extra = ["cli"] },
+    { name = "torch" },
+    { name = "torchvision" },
+    { name = "transformers" },
+    { name = "vllm" },
+]
 verification = [
     { name = "matplotlib" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'emscripten' or sys_platform == 'win32'" },
@@ -843,16 +845,16 @@ verification = [
 
 [package.metadata]
 requires-dist = [
-    { name = "accelerate" },
     { name = "accelerate", marker = "extra == 'inference'" },
+    { name = "accelerate", marker = "extra == 'ml'" },
     { name = "anthropic" },
-    { name = "autoawq" },
+    { name = "autoawq", marker = "extra == 'ml'" },
     { name = "backoff" },
     { name = "chronos-forecasting", marker = "extra == 'inference'" },
-    { name = "compressed-tensors" },
+    { name = "compressed-tensors", marker = "extra == 'ml'" },
     { name = "datasets", marker = "extra == 'dev'" },
     { name = "huggingface-hub", marker = "extra == 'inference'" },
-    { name = "huggingface-hub", extras = ["cli"] },
+    { name = "huggingface-hub", extras = ["cli"], marker = "extra == 'ml'" },
     { name = "japanize-matplotlib", marker = "extra == 'dev'" },
     { name = "loguru" },
     { name = "matplotlib" },
@@ -880,15 +882,15 @@ requires-dist = [
     { name = "scikit-learn", marker = "extra == 'dev'" },
     { name = "setuptools", specifier = ">=80.10.2" },
     { name = "timesfm", marker = "extra == 'inference'" },
-    { name = "torch" },
     { name = "torch", marker = "extra == 'inference'" },
-    { name = "torchvision" },
+    { name = "torch", marker = "extra == 'ml'" },
+    { name = "torchvision", marker = "extra == 'ml'" },
     { name = "tqdm" },
-    { name = "transformers" },
     { name = "transformers", marker = "extra == 'inference'" },
-    { name = "vllm" },
+    { name = "transformers", marker = "extra == 'ml'" },
+    { name = "vllm", marker = "extra == 'ml'" },
 ]
-provides-extras = ["verification", "inference", "dev"]
+provides-extras = ["ml", "verification", "inference", "dev"]
 
 [[package]]
 name = "fire"
