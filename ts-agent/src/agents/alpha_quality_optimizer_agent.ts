@@ -164,14 +164,11 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
 
     // 4.1 Correlation Score: measure correlation between factors and returns
     const returnsArray = input.marketData.returns[0] || [];
-    // TODO: In Task 8, replace with actual factor values extracted from market data
-    const mockFactorValues = [returnsArray];
-    const correlationScore = computeCorrelationScore(
-      mockFactorValues,
-      returnsArray,
-    );
+    // REAL DATA: Correlation should be 0 or calculated from actual factor extraction.
+    // We remove the misleading "mockFactorValues = [returnsArray]" which yielded a fake perfect correlation.
+    const correlationScore = 0.0;
     logger.debug(
-      `[${this.agentName}] Correlation Score: ${correlationScore.toFixed(4)}`,
+      `[${this.agentName}] Correlation Score: ${correlationScore.toFixed(4)} (Mock removed, awaiting real factor extraction)`,
     );
 
     const constraintScore = computeConstraintScore({

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import "../skills/index.ts";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
@@ -19,6 +20,7 @@ import {
   type UnifiedLog,
   UnifiedLogSchema,
 } from "../schemas/financial_domain_schemas.ts";
+import { skillRegistry } from "../skills/registry.ts";
 import { dateUtils } from "../utils/date_utils.ts";
 import { fsUtils } from "../utils/fs_utils.ts";
 import { logger } from "../utils/logger.ts";
@@ -196,15 +198,19 @@ export abstract class BaseAgent {
     return withTelemetry(this.constructor.name, name, fn);
   }
 
-  public async useSkill<T = any, R = any>(name: string, args: T): Promise<R> {
-    const { skillRegistry } = await import("../skills/registry.ts");
+  public async useSkill<TInput, TOutput>(
+    name: string,
+    args: TInput,
+  ): Promise<TOutput> {
     const skill = skillRegistry.getSkill(name);
     if (!skill) {
       throw new Error(`Skill not found: ${name}`);
     }
-    logger.info(`[${this.constructor.name}] Using skill: ${name}`);
+    logger.info(
+      `[${this.constructor.name}] Using skill: ${name} — ${skill.description}`,
+    );
     const validatedArgs = skill.schema.parse(args);
-    return await skill.execute(validatedArgs);
+    return (await skill.execute(validatedArgs)) as TOutput;
   }
 
   public async listAvailableSkills(): Promise<string[]> {

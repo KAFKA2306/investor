@@ -1,13 +1,30 @@
 export const QLIB_ALLOWED_COLUMNS = new Set([
-  "close", "open", "high", "low", "volume",
-  "correction_freq", "activist_bias",
-  "macro_iip", "macro_cpi", "macro_leverage_trend",
-  "segment_sentiment", "ai_exposure", "kg_centrality",
+  "close",
+  "open",
+  "high",
+  "low",
+  "volume",
+  "correction_freq",
+  "activist_bias",
+  "macro_iip",
+  "macro_cpi",
+  "macro_leverage_trend",
+  "segment_sentiment",
+  "ai_exposure",
+  "kg_centrality",
 ]);
 
 export const QLIB_ALLOWED_OPS = new Set([
-  "Ref", "Mean", "Std", "Corr", "Rank", "Log",
-  "Max", "Min", "Sum", "Abs",
+  "Ref",
+  "Mean",
+  "Std",
+  "Corr",
+  "Rank",
+  "Log",
+  "Max",
+  "Min",
+  "Sum",
+  "Abs",
 ]);
 
 export function validateQlibFormula(formula: string): {
@@ -18,8 +35,8 @@ export function validateQlibFormula(formula: string): {
     return { isValid: false, errorMessage: "[AUDIT] Empty formula" };
   }
 
-  const columnRefs = [...formula.matchAll(/\$(\w+)/g)].map(m => m[1]);
-  const unknownCols = columnRefs.filter(c => !QLIB_ALLOWED_COLUMNS.has(c));
+  const columnRefs = [...formula.matchAll(/\$(\w+)/g)].map((m) => m[1]);
+  const unknownCols = columnRefs.filter((c) => !QLIB_ALLOWED_COLUMNS.has(c));
   if (unknownCols.length > 0) {
     return {
       isValid: false,
@@ -27,8 +44,8 @@ export function validateQlibFormula(formula: string): {
     };
   }
 
-  const ops = [...formula.matchAll(/([A-Z][a-zA-Z]+)\(/g)].map(m => m[1]);
-  const unknownOps = ops.filter(op => !QLIB_ALLOWED_OPS.has(op));
+  const ops = [...formula.matchAll(/([A-Z][a-zA-Z]+)\(/g)].map((m) => m[1]);
+  const unknownOps = ops.filter((op) => !QLIB_ALLOWED_OPS.has(op));
   if (unknownOps.length > 0) {
     return {
       isValid: false,
