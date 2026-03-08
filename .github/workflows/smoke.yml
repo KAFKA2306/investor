@@ -23,7 +23,15 @@ jobs:
         uses: arduino/setup-task@v2
 
       - name: Setup
-        run: task setup
+        run: |
+          mkdir -p data logs
+          task setup
+        env:
+          UQTL_DATA_ROOT: ./data
+          UQTL_LOGS_ROOT: ./logs
 
       - name: Run smoke checks
         run: task smoke
+        env:
+          UQTL_DATA_ROOT: ./data
+          UQTL_LOGS_ROOT: ./logs
