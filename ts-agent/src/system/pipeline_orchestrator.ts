@@ -9,7 +9,7 @@ import {
 } from "../context/unified_context_services.ts";
 import { MarketdataDbCache } from "../providers/cache_providers.ts";
 import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
-import { validateAlphaCandidateConsistency } from "../schemas/alpha_consistency_schema.ts";
+import { validateQlibFormula } from "../schemas/alpha_consistency_schema.ts";
 import {
   type AceBullet,
   CanonicalLogKind,
@@ -1966,17 +1966,10 @@ export class QuantResearcherBridge implements IQuantResearcher {
     forbiddenZones.some((fz) => candidate.description.includes(fz)) &&
       console.log(`[QuantResearcher] Candidate overlaps with forbidden zone`);
 
-    // 🔍 Phase 1 Validation: Ensure description-AST consistency
-    const consistency = validateAlphaCandidateConsistency(
-      candidate.description,
-      candidate.ast as any,
-    );
-    if (!consistency.isConsistent) {
-      throw new Error(
-        `[AUDIT] ${consistency.errorMessage}\n` +
-          `Description vars: ${consistency.descriptionVars.join(", ")}\n` +
-          `AST vars: ${consistency.astVars.join(", ")}`,
-      );
+    // 🔍 Phase 1 Validation: Ensure qlib formula is valid
+    const consistency = validateQlibFormula(candidate.formula);
+    if (!consistency.isValid) {
+      throw new Error(consistency.errorMessage);
     }
     logger.info(
       `[QuantResearcher] Phase 1 consistency check passed for ${candidate.id}`,
