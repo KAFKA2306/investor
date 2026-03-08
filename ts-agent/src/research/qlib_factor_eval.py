@@ -17,6 +17,19 @@ def eval_formula(formula: str, df: pd.DataFrame) -> pd.Series:
         if pd.api.types.is_numeric_dtype(df[col]):
             ns[f"__{col}"] = df[col].astype(float)
 
+    # Known alpha columns that might be missing in small datasets/backtests
+    # We provide NaN Series for these to ensure the formula still evaluates
+    known_cols = [
+        "close", "open", "high", "low", "volume",
+        "correction_freq", "activist_bias",
+        "macro_iip", "macro_cpi", "macro_leverage_trend",
+        "segment_sentiment", "ai_exposure", "kg_centrality"
+    ]
+    for col in known_cols:
+        ns_key = f"__{col}"
+        if ns_key not in ns:
+            ns[ns_key] = pd.Series(np.nan, index=df.index)
+
     def _ref(s, n):  # type: ignore[return]
         return s.shift(int(n))
 
@@ -144,8 +157,11 @@ def evaluate_factors(request: dict) -> dict:
 
         ic = 0.0
         if len(pooled_signals) > 1:
-            ic = float(np.corrcoef(pooled_signals, pooled_returns)[0, 1])
-            if np.isnan(ic):
+            try:
+                ic = float(np.corrcoef(pooled_signals, pooled_returns)[0, 1])
+                if np.isnan(ic):
+                    ic = 0.0
+            except Exception:
                 ic = 0.0
 
         results.append({
