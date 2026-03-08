@@ -259,6 +259,9 @@ export function loadEnvironmentFile(
   envFilePath: string,
   target: EnvironmentMap = process.env,
 ): void {
+  if (!existsSync(envFilePath)) {
+    return;
+  }
   const envContent = readFileSync(envFilePath, "utf8");
   const parsed = parseEnvFile(envContent);
   for (const [key, value] of Object.entries(parsed)) {
