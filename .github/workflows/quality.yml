@@ -27,17 +27,17 @@ jobs:
           mkdir -p data logs
           task setup
         env:
-          UQTL_DATA_ROOT: ./data
-          UQTL_LOGS_ROOT: ./logs
+          UQTL_DATA_ROOT: ${{ github.workspace }}/data
+          UQTL_LOGS_ROOT: ${{ github.workspace }}/logs
 
       - name: Validate runtime config
         run: task validate:runtime
         env:
-          UQTL_DATA_ROOT: ./data
-          UQTL_LOGS_ROOT: ./logs
+          UQTL_DATA_ROOT: ${{ github.workspace }}/data
+          UQTL_LOGS_ROOT: ${{ github.workspace }}/logs
 
       - name: Run quality gate
         run: task check
         env:
-          UQTL_DATA_ROOT: ./data
-          UQTL_LOGS_ROOT: ./logs
+          UQTL_DATA_ROOT: ${{ github.workspace }}/data
+          UQTL_LOGS_ROOT: ${{ github.workspace }}/logs
