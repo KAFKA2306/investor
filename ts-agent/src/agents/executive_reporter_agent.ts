@@ -51,11 +51,11 @@ Ensure that your long/short ideas represent high-conviction opportunities.
         "✅ [ExecutiveReporterAgent] Executive report generated successfully!",
       );
 
-      console.log("\n" + "=".repeat(60));
+      console.log(`\n${"=".repeat(60)}`);
       console.log("🎁 WEEKLY EXECUTIVE BRIEFING 🎁");
       console.log("=".repeat(60));
       console.log(report);
-      console.log("=".repeat(60) + "\n");
+      console.log(`${"=".repeat(60)}\n`);
 
       this.emitEvent("EXECUTIVE_REPORT_GENERATED", {
         agent: "ExecutiveReporterAgent",

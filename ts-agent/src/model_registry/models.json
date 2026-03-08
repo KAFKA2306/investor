@@ -41,6 +41,16 @@
       "context7LibraryId": "/salesforce/uni2ts",
       "github": "https://github.com/SalesforceAIResearch/uni2ts",
       "arxiv": "https://arxiv.org/abs/2402.02592"
+    },
+    {
+      "id": "microsoft-qlib",
+      "vendor": "Microsoft",
+      "name": "Qlib",
+      "category": "machine-learning-research",
+      "tags": ["quantitative-investment", "ml-platform", "alpha-mining"],
+      "context7LibraryId": "/microsoft/qlib",
+      "github": "https://github.com/microsoft/qlib",
+      "arxiv": "https://arxiv.org/abs/2009.11189"
     }
   ]
 }

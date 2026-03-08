@@ -45,7 +45,7 @@ export const calculateCorrelation = mathUtils.calculateCorr;
 
 export function evaluate(
   logs: readonly DailyLog[],
-  predictions?: { predicted: number[]; actual: number[] },
+  _predictions?: { predicted: number[]; actual: number[] },
 ): EvaluationResult {
   const returns = logs.map((l) => l.strategyReturn);
   if (returns.length === 0)

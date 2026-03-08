@@ -42,11 +42,11 @@ Be skeptical of surface-level data and focus on cash flows, debt levels, and lon
 
     logger.info("✅ [FundamentalAuditAgent] Audit completed successfully!");
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
     console.log("💸 FUNDAMENTAL AUDIT REPORT 💸");
     console.log("=".repeat(50));
     console.log(report);
-    console.log("=".repeat(50) + "\n");
+    console.log(`${"=".repeat(50)}\n`);
 
     this.emitEvent("FUNDAMENTAL_AUDIT_GENERATED", {
       agent: "FundamentalAuditAgent",

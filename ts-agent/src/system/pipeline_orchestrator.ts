@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { AlphaQualityOptimizerAgent } from "../agents/alpha_quality_optimizer_agent.ts";
 import { StrategicReasonerAgent } from "../agents/alpha_r1_reasoner_agent.ts";
-import { CqoAgent } from "../agents/chief_quant_officer_agent.ts";
 import { LesAgent } from "../agents/latent_economic_signal_agent.ts";
 import { MissionAgent } from "../agents/mission_agent.ts";
 import {
@@ -27,6 +26,7 @@ import type {
   BacktestResult,
   ComputeMarketData,
 } from "../types/index.ts";
+import { dateUtils } from "../utils/date_utils.ts";
 import { logger } from "../utils/logger.ts";
 import { BaseAgent, core } from "./app_runtime_core.ts";
 import {
@@ -56,6 +56,7 @@ export interface PipelineRequirement {
       minLatencyScore?: number;
       minLeakFreeScore?: number;
       minSourceConsistency?: number;
+      minMacroIndicatorCoverage?: number;
     };
   };
   universe: string[];
@@ -213,7 +214,7 @@ export interface IStateMonitor {
   getCurrentState(): Promise<SystemStateSnapshot>;
 }
 
-// 📌 ACE 失敗文脈化: 失敗の詳細な分析を記録
+// 📌 ACE Failure Contextualization: Record detailed analysis of failures
 export interface ContextualizedRejection {
   reason:
     | "SHARPE_TOO_LOW"
@@ -228,8 +229,8 @@ export interface ContextualizedRejection {
     maxDD?: number;
     pValue?: number; // Correctly placed inside metrics
   };
-  hypothesis: string; // 失敗した仮説の説明
-  avoidanceHint: string; // 次サイクルへの回避ヒント
+  hypothesis: string; // Description of the failed hypothesis
+  avoidanceHint: string; // Avoidance hint for the next cycle
 }
 
 export interface IDataEngineer {
@@ -278,7 +279,6 @@ export interface IExecutionAgent {
 }
 
 export class PipelineOrchestrator extends BaseAgent {
-  private cqo = new CqoAgent();
   private missionAgent = new MissionAgent();
   private alphaOptimizer = new AlphaQualityOptimizerAgent({
     modelId: "qwen:latest",
@@ -290,7 +290,7 @@ export class PipelineOrchestrator extends BaseAgent {
     },
   });
 
-  // 📌 AAARTS: 連続失敗カウント（動的閾値緩和用）
+  // 📌 AAARTS: Consecutive failure count (for dynamic threshold relaxation)
   private consecutiveFailures = 0;
   private readonly MAX_RELAXATION_CYCLES = 3;
 
@@ -318,10 +318,16 @@ export class PipelineOrchestrator extends BaseAgent {
     const maxDD = Math.abs(metrics.maxDrawdown ?? 0);
     const annReturn = metrics.annualizedReturn ?? 0;
 
-    // 📌 AAARTS: 動的閾値緩和 (Dynamic Threshold Relaxation) は Fail Fast のため廃止したよっ！💢
-    const minSharpe = requirement.targetMetrics?.minSharpe ?? 1.8;
-    const maxPValue = requirement.targetMetrics?.maxPValue ?? 0.05;
-    const maxDrawdownLimit = requirement.targetMetrics?.maxDrawdown ?? 0.15;
+    // 📌 AAARTS: Dynamic Threshold Relaxation has been removed to enforce Fail Fast! 💢
+    const minSharpe =
+      requirement.targetMetrics?.minSharpe ??
+      DEFAULT_EVALUATION_CRITERIA.performance.minSharpe;
+    const _maxPValue =
+      requirement.targetMetrics?.maxPValue ??
+      DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue;
+    const maxDrawdownLimit =
+      requirement.targetMetrics?.maxDrawdown ??
+      DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown;
 
     if (sharpe === undefined || annReturn === undefined) {
       throw new Error(
@@ -496,7 +502,10 @@ export class PipelineOrchestrator extends BaseAgent {
     scores: FinancialScores | null;
     metrics: Metrics | null;
   }> {
-    this.logPhase("入力と探索", `候補 ${candidate.id} を記憶保存し評価開始`);
+    this.logPhase(
+      "Input & Exploration",
+      `Starting evaluation for candidate ${candidate.id}`,
+    );
     await this.elder.saveIdeaCandidate(candidate);
 
     let dataAttempt = 1;
@@ -537,7 +546,10 @@ export class PipelineOrchestrator extends BaseAgent {
 
     const _attempt = 1;
     console.log(`🎯 [Orchestrator] Single Shot: Processing ${candidate.id}`);
-    this.logPhase("評価と判定", `候補 ${candidate.id} のモデル・検証ループ`);
+    this.logPhase(
+      "Evaluation & Judgment",
+      `Model/Verification loop for candidate ${candidate.id}`,
+    );
 
     const modelConfig = await this.quantResearcher.selectFoundationModel(
       candidate,
@@ -580,7 +592,7 @@ export class PipelineOrchestrator extends BaseAgent {
     const verdict = this.judgeVerification(verification, requirement);
 
     if (verdict === VerificationVerdict.ADOPTED) {
-      // ✅ 成功時: 連続失敗カウントをリセット
+      // ✅ Success: Reset consecutive failure count
       this.consecutiveFailures = 0;
       await this.handleAdoptedCandidate(
         candidate.id,
@@ -594,13 +606,13 @@ export class PipelineOrchestrator extends BaseAgent {
       };
     }
 
-    // ❌ 失敗時: 連続失敗カウントを増加（上限あり）
+    // ❌ Failure: Increment consecutive failure count (with cap)
     this.consecutiveFailures = Math.min(
       this.consecutiveFailures + 1,
       this.MAX_RELAXATION_CYCLES,
     );
 
-    // リトライは禁止なんだもんっ！💢 即終了だよっ！
+    // Retries are forbidden! 💢 Immediate termination!
     await this.elder.saveRejectionReason(
       candidate.id,
       verdict,
@@ -625,8 +637,11 @@ export class PipelineOrchestrator extends BaseAgent {
     verification: VerificationResult,
     context: string,
   ): Promise<void> {
-    this.logPhase("執行フェーズ", `採用候補 ${candidateId} の実行準備`);
-    // ✅ CQO 監査をスキップ：judgeVerification が ADOPTED と判定したら、そのまま実行
+    this.logPhase(
+      "Execution Phase",
+      `Preparing execution for adoption candidate ${candidateId}`,
+    );
+    // ✅ Skip CQO Audit: If judgeVerification returns ADOPTED, proceed to execute
     console.log(
       `✅ [Execution] Proceeding with adopted strategy: ${candidateId}`,
     );
@@ -684,7 +699,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
   private async acquireAcceptedDataset(
     requirement: PipelineRequirement,
-    candidateId: string,
+    _candidateId: string,
     startAttempt: number,
   ): Promise<{
     accepted: "YES" | "NO";
@@ -753,7 +768,7 @@ export class PipelineOrchestrator extends BaseAgent {
       sharpe === undefined ||
       pValue === undefined || // Changed from ic to pValue
       annualizedReturn === undefined ||
-      isNaN(maxDrawdownAbs)
+      Number.isNaN(maxDrawdownAbs)
     ) {
       throw new Error(
         "Verification result missing required metrics for judgment.",
@@ -786,83 +801,6 @@ export class PipelineOrchestrator extends BaseAgent {
       return VerificationVerdict.ADOPTED;
     }
     return VerificationVerdict.REJECTED_GENERAL;
-  }
-
-  /**
-   * Phase 3: Strict Validation with NaN Detection (AAARTS Task 5)
-   *
-   * Validates metrics for final acceptance before backtest execution.
-   * Implements two-phase validation:
-   * - Phase 3a: Data integrity check (NaN detection)
-   * - Phase 3b: Strict threshold validation using config values
-   *
-   * Thresholds from config.pipelineBlueprint.verificationAcceptance:
-   * - minSharpe: 1.8 (no runtime relaxation)
-   * - minIC: 0.04 (no runtime relaxation)
-   * - maxDrawdown: 0.10 (no runtime relaxation)
-   *
-   * @param metrics Object with sharpe, ic, maxDrawdown fields
-   * @returns true if all checks pass
-   * @throws Error with [AUDIT] prefix if any check fails
-   */
-  private judgeVerificationStrict(metrics: {
-    sharpe: number;
-    sharpeRatio: number;
-    // ic: number; // Removed IC
-    maxDrawdown: number;
-  }): boolean {
-    // Phase 3a: Detect NaN in metrics (critical data integrity check)
-    if (
-      isNaN(metrics.sharpeRatio) ||
-      // isNaN(metrics.ic) || // Removed IC
-      isNaN(metrics.maxDrawdown)
-    ) {
-      throw new Error(
-        `[AUDIT] Metrics contain NaN - data integrity failure. ` +
-          `Sharpe=${metrics.sharpeRatio}, DD=${metrics.maxDrawdown}`, // Removed IC from message
-      );
-    }
-
-    // Phase 3b: Apply strict thresholds from config
-    const config = this.blueprint()?.verificationAcceptance;
-    if (!config) {
-      throw new Error(
-        "[AUDIT] Verification config (pipelineBlueprint.verificationAcceptance) is missing. Cannot proceed without explicit thresholds.",
-      );
-    }
-
-    // Extract config thresholds (config is the source of truth, never relax at runtime)
-    const minSharpe = config.minSharpe;
-    // const minIC = config.minIC; // Removed IC
-    const maxDrawdown = config.maxDrawdown;
-
-    // Validation: Sharpe Ratio
-    if (metrics.sharpe < minSharpe) {
-      throw new Error(
-        `[AUDIT] Insufficient Sharpe: ${metrics.sharpe.toFixed(3)} < ${minSharpe.toFixed(3)}`,
-      );
-    }
-
-    // Validation: Information Coefficient // Removed IC validation
-    // if (metrics.ic < minIC) {
-    //   throw new Error(
-    //     `[AUDIT] Weak information coefficient: ${metrics.ic.toFixed(3)} < ${minIC.toFixed(3)}`,
-    //   );
-    // }
-
-    // Validation: Maximum Drawdown
-    if (metrics.maxDrawdown > maxDrawdown) {
-      throw new Error(
-        `[AUDIT] Excessive drawdown: ${metrics.maxDrawdown.toFixed(3)} > ${maxDrawdown.toFixed(3)}`,
-      );
-    }
-
-    // All checks passed
-    logger.info(
-      `[judgeVerificationStrict] All Phase 3 checks passed. Sharpe=${metrics.sharpe.toFixed(3)}, DD=${metrics.maxDrawdown.toFixed(3)}`, // Removed IC from message
-    );
-
-    return true; // All checks passed
   }
 
   private evaluateDataDelivery(
@@ -931,7 +869,7 @@ export class PipelineOrchestrator extends BaseAgent {
     const nl = this.readNaturalLanguageInput();
     const missionPrompt = `Market Regime: ${state.regime}, Volatility: ${state.volatility}. Existing Seeds: ${history.seeds.join(", ")}. Forbidden: ${history.forbiddenZones.join(", ")}.${nl.text ? ` User focus: ${nl.text}` : ""}`;
 
-    // 📌 NL入力から特定のティッカー（4桁数字）があれば優先的に抽出するねっ！💎✨
+    // 📌 Prioritize extraction of specific tickers (4-digit numbers) from NL input! 💎✨
     const nlTickers = (nl.text.match(/\d{4}/g) || []).map((t) => `${t}.T`);
     const defaultUniverse = ["6501.T", "9501.T", "6701.T"];
     const activeConstraints =
@@ -954,8 +892,8 @@ export class PipelineOrchestrator extends BaseAgent {
 
     let universe = activeConstraints;
     const uniMatch =
-      missionMd.match(/ターゲット銘柄[:：]\s*(.*)/) ||
-      missionMd.match(/銘柄ユニバース[:：]\s*(.*)/);
+      missionMd.match(/Target Symbols[:：]\s*(.*)/) ||
+      missionMd.match(/Symbol Universe[:：]\s*(.*)/);
     if (uniMatch?.[1]) {
       universe = uniMatch[1]
         .split(/[、, ]/)
@@ -988,14 +926,17 @@ export class PipelineOrchestrator extends BaseAgent {
 
     let discoveryAttempts = 0;
     const maxDiscoveryAttempts = 3;
-    let consecutiveFailures = 0; // 📌 Ralph Loop: 連続失敗カウント
+    let consecutiveFailures = 0; // 📌 Ralph Loop: Consecutive failure count
 
     while (discoveryAttempts < maxDiscoveryAttempts) {
       discoveryAttempts++;
       console.log(
         `🔍 [Loop] Pulse Iteration ${discoveryAttempts}/${maxDiscoveryAttempts}`,
       );
-      this.logPhase("メタレイヤー", "状態監視・記憶参照・要件入力を更新");
+      this.logPhase(
+        "Meta Layer",
+        "Updating state monitoring, memory reference, and requirement input",
+      );
 
       const state = await this.stateMonitor.getCurrentState();
       console.log(
@@ -1008,7 +949,10 @@ export class PipelineOrchestrator extends BaseAgent {
       const requirement = await this.generateDynamicRequirement(state, history);
       console.log(`🎯 [Phase 5] Dynamic Mission: ${requirement.id}`);
 
-      this.logPhase("研究検証フェーズ", "候補生成と適応戦略設計を開始");
+      this.logPhase(
+        "Research & Verification",
+        "Starting candidate generation and adaptive strategy design",
+      );
       const cycleStart = new Date();
       const candidates = await this.generateHighLevelIdeas(
         requirement,
@@ -1039,7 +983,7 @@ export class PipelineOrchestrator extends BaseAgent {
           adoptedIds.push(candidates[ci].id);
       }
 
-      // 📌 Ralph Loop: 連続失敗を検知してドメイン再構築
+      // 📌 Ralph Loop: Detect consecutive failures and trigger domain re-initialization
       const allRejected = cycleResults.every(
         (r) => r.verdict !== VerificationVerdict.ADOPTED,
       );
@@ -1053,11 +997,11 @@ export class PipelineOrchestrator extends BaseAgent {
           console.log(
             `🔄 [Ralph Loop] Triggering domain re-initialization after ${consecutiveFailures} consecutive failures`,
           );
-          // TODO(human): Ralph Loop設定
-          // 以下の設計判断をユーザーに委ねる：
-          // 1. 連続失敗N回でリセット: 現在は2に設定
-          // 2. 新ドメインの選択方法: ランダム vs 最遠禁止区域逆方向 vs その他
-          // 3. リセット後の評価基準一時緩和の有無と緩和率
+          // TODO(human): Ralph Loop configuration
+          // Defer the following architectural decisions to the user:
+          // 1. Reset after N consecutive failures: Currently set to 2.
+          // 2. New domain selection method: Random vs. Opposite Direction of Forbidden Zones vs. Other.
+          // 3. Temporary relaxation of fitness criteria after reset.
           await this.missionAgent.pivotDomain({
             reason: "CONSECUTIVE_FAILURE",
             count: consecutiveFailures,
@@ -1066,7 +1010,7 @@ export class PipelineOrchestrator extends BaseAgent {
           consecutiveFailures = 0; // リセット
         }
       } else {
-        consecutiveFailures = 0; // 1つでも採用されたらカウントリセット
+        consecutiveFailures = 0; // Reset count if at least one candidate is adopted
       }
 
       const cycleScores = cycleResults
@@ -1420,7 +1364,7 @@ export class ElderBridge implements IElder {
     reason: string,
     metrics?: any,
   ): Promise<void> {
-    // 📌 ACE 失敗文脈化: 失敗原因を分析して詳細な学習記録を作成
+    // 📌 ACE Failure Contextualization: Analyze failure reason and create detailed learning record
     const contextualized = this.analyzeFailureContext(reason, metrics);
 
     console.log(
@@ -1443,7 +1387,7 @@ export class ElderBridge implements IElder {
     reason: string,
     providedMetrics?: any,
   ): ContextualizedRejection {
-    // 失敗文字列をパースして詳細な文脈情報を抽出
+    // Parse failure string and extract detailed contextual information
     const sharpeMatch = reason.match(
       /Sharpe=([0-9.]+)|sharpe[^0-9]*([0-9.]+)/i,
     );
@@ -1470,7 +1414,7 @@ export class ElderBridge implements IElder {
     let hypothesis = "Unknown failure mode";
     let avoidanceHint = "Review candidate design and data quality";
 
-    // 失敗理由をパターンマッチで判定
+    // Determine failure mode via pattern matching
     if (reason.includes("Data delivery")) {
       failureReason = "DATA_FAILURE";
       hypothesis =
@@ -2040,8 +1984,8 @@ export class QuantResearcherBridge implements IQuantResearcher {
 
     modelConfig.parameters.learningRate =
       this.quantEngine.selectLearningRate(retryMode);
-    // 🚧 [FIX] 新しいアルファを基に本当の評価を行うよっ！✨💎
-    // 評価用の市場データを可愛く集めるよっ！💹✨
+    // 🚧 [FIX] Perform real evaluation based on the new alpha! ✨💎
+    // Collect market data for evaluation! 💹✨
     const universe = await (this.quantEngine as any).resolveTargetSymbols(
       this.runtime,
       { symbols: dataset.symbols, limit: 20 },
@@ -2087,15 +2031,15 @@ export class QuantResearcherBridge implements IQuantResearcher {
     );
 
     if (scores.length > 0) {
-      // 📌 Bug 3修正 (拡張): シンボル×日付でグループ化してスコアとリターンを対応
-      // スコアを symbol|date キーでマッピング
+      // 📌 Bug 3 Fix (Extended): Group by symbol x date and map scores to returns
+      // Map scores with symbol|date key
       const scoresBySymbolDate = new Map<string, number>();
       for (const scoreEntry of scores) {
         const key = `${scoreEntry.symbol}|${(scoreEntry as any).date || scoreEntry.symbol}`;
         scoresBySymbolDate.set(key, scoreEntry.score);
       }
 
-      // Symbol別にcomputeInputsをグループ化
+      // Group computeInputs by symbol
       const inputsBySymbol = new Map<string, ComputeMarketData[]>();
       for (const input of computeInputs) {
         if (!inputsBySymbol.has(input.symbol)) {
@@ -2104,11 +2048,11 @@ export class QuantResearcherBridge implements IQuantResearcher {
         inputsBySymbol.get(input.symbol)!.push(input);
       }
 
-      // シンボル別に処理してリターンを計算
+      // Process by symbol to calculate returns
       for (const [symbol, bars] of inputsBySymbol) {
         if (bars.length < 2) continue;
 
-        // シンボル内でのリターン計算（シンボル境界を跨がない）
+        // Return calculation within symbol (does not cross symbol boundaries)
         for (let i = 0; i < bars.length - 1; i++) {
           const currBar = bars[i]!;
           const nextBar = bars[i + 1]!;
@@ -2116,14 +2060,14 @@ export class QuantResearcherBridge implements IQuantResearcher {
           const nextPrice = nextBar.values.close;
           if (!nextPrice || !currPrice) continue;
 
-          // スコアを日付で取得（日付情報がない場合はフォールバック）
+          // Retrieve score by date (fallback if no date info)
           const scoreKey = `${symbol}|${currBar.date}`;
           const score = scoresBySymbolDate.get(scoreKey) ?? 0;
 
           const ret = (nextPrice - currPrice) / currPrice;
           predictions.push(score);
           targets.push(ret);
-          // シンプルなロング/ショートを想定
+          // Assume simple long/short
           const strategyRet = score > 0 ? ret : -ret;
           dailyReturns.push(strategyRet);
         }

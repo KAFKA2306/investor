@@ -47,11 +47,11 @@ Be specific about instrument types and execution triggers.
       "✅ [RiskHedgingAgent] Hedging strategy designed successfully!",
     );
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
     console.log("🛡️ RISK HEDGING STRATEGY 🛡️");
     console.log("=".repeat(50));
     console.log(report);
-    console.log("=".repeat(50) + "\n");
+    console.log(`${"=".repeat(50)}\n`);
 
     this.emitEvent("HEDGING_STRATEGY_GENERATED", {
       agent: "RiskHedgingAgent",

@@ -44,11 +44,11 @@ Be mathematically rigorous in your reasoning.
 
     logger.info("✅ [MeanReversionAgent] Mean reversion analysis completed!");
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
     console.log("📈 MEAN REVERSION REPORT 📈");
     console.log("=".repeat(50));
     console.log(report);
-    console.log("=".repeat(50) + "\n");
+    console.log(`${"=".repeat(50)}\n`);
 
     this.emitEvent("MEAN_REVERSION_ANALYSIS_GENERATED", {
       agent: "MeanReversionAgent",

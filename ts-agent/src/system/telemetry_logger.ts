@@ -46,7 +46,7 @@ export function logMetric(args: {
 }
 
 /**
- * エラーを標準的な形式でかわいく記録するよっ！🛡️
+ * Records errors in a standard format! 🛡️
  */
 export function logError(args: {
   stage: string;
@@ -70,7 +70,7 @@ export function logError(args: {
 }
 
 /**
- * 処理の実行時間を測って記録するよっ！⏱️✨
+ * Measures and records the execution time of a process! ⏱️✨
  */
 export async function withTelemetry<T>(
   stage: string,

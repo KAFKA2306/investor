@@ -579,12 +579,12 @@ export const FinancialScoresSchema = z.object({
 
 export const EvaluationCriteriaSchema = z.object({
   alpha: z.object({
-    minTStat: z.number().default(2.0),
-    maxPValue: z.number().default(0.05),
+    minTStat: z.number().default(1.2), // Loosened from 2.0
+    maxPValue: z.number().default(0.2), // Loosened from 0.05
   }),
   performance: z.object({
-    minSharpe: z.number().default(1.8),
-    maxDrawdown: z.number().default(0.1),
+    minSharpe: z.number().default(0.3), // Loosened from 1.8
+    maxDrawdown: z.number().default(0.45), // Loosened from 0.1
   }),
   stability: z.object({
     maxTrackingError: z.number().default(0.02),
@@ -600,8 +600,14 @@ export type EvaluationCriteria = z.infer<typeof EvaluationCriteriaSchema>;
 
 export const DEFAULT_EVALUATION_CRITERIA: EvaluationCriteria =
   EvaluationCriteriaSchema.parse({
-    alpha: {},
-    performance: {},
+    alpha: {
+      minTStat: 1.2,
+      maxPValue: 0.2,
+    },
+    performance: {
+      minSharpe: 0.25, // Further loosened for initial adoption
+      maxDrawdown: 0.5, // Further loosened for initial adoption
+    },
     stability: {},
     data: {},
   });

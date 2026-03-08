@@ -7,7 +7,7 @@ import { dateUtils } from "../utils/date_utils.ts";
 import { logger } from "../utils/logger.ts";
 
 /**
- * ✨ 標準レポート（StandardOutcome）の管理マネージャー ✨
+ * ✨ Management Manager for Standard Reports (StandardOutcome) ✨
  */
 export class OutcomeManager {
   private agentName: string;
@@ -44,7 +44,7 @@ export class OutcomeManager {
   ): void {
     this.persist({
       strategyId,
-      strategyName: strategyId, // デフォルト
+      strategyName: strategyId, // Default
       timestamp: dateUtils.nowIso(),
       summary,
       ...extra,

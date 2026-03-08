@@ -45,7 +45,7 @@ export class SqliteHttpCache {
     url: string,
     headers: Record<string, string>,
     ttlMs: number,
-    options: { allowStale?: boolean } = {},
+    _options: { allowStale?: boolean } = {},
   ): Promise<{ payload: unknown; cached: boolean }> {
     const row = this.db
       .query("SELECT value, expires_at FROM http_cache WHERE key = ?")

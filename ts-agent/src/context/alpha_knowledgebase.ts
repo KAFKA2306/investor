@@ -189,11 +189,11 @@ export class AlphaKnowledgebase {
   constructor(dbPath?: string) {
     const targetPath = dbPath ?? paths.alphaKnowledgebaseSqlite;
 
-    // ディレクトリがないと SQLITE_CANTOPEN になっちゃうから、優しく作ってあげるねっ！🎀
+    // Create directory recursively to avoid SQLITE_CANTOPEN errors! 🎀
     mkdirSync(dirname(targetPath), { recursive: true });
 
     this.db = new Database(targetPath, { create: true });
-    // 他のプロセスが使ってるときのために、同時実行に強くするよっ！🛡️
+    // Enable WAL mode for better concurrency when other processes are using the DB! 🛡️
     this.db.run("PRAGMA journal_mode = WAL;");
 
     if (core.postgres) {
@@ -212,7 +212,7 @@ export class AlphaKnowledgebase {
   private async ensureInstrument(symbol: string): Promise<string> {
     if (!core.postgres) return symbol;
     const instrumentId = symbol;
-    // シンプルに symbol を ID としてお届けしちゃうねっ！💎
+    // Simply return the symbol as the ID! 💎
     await core.postgres.query(
       `
       INSERT INTO ref.instrument (instrument_id, symbol, venue, status)
@@ -392,7 +392,7 @@ export class AlphaKnowledgebase {
       core.config.database?.canonicalDb?.dualWriteEnabled
     ) {
       const instrumentId = await this.ensureInstrument(input.symbol);
-      // source_document も作っておいてあげるねっ！💖
+      // Also create source_document! 💖
       await core.postgres?.query(
         `
         INSERT INTO ingest.source_document (source_doc_id, provider, external_id, instrument_id, filed_at, title)

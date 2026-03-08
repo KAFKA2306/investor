@@ -95,6 +95,7 @@ const RuntimeConfigSchema = z
             maxLatencyMinutes: z.number().min(0),
             requireLeakFree: z.boolean(),
             minSourceConsistency: z.number().min(0).max(1),
+            minMacroIndicatorCoverage: z.number().min(0).max(1).optional(),
           })
           .optional(),
         researchDesign: z

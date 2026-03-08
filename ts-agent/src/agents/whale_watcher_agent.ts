@@ -38,11 +38,11 @@ Provide a clear comparison between the current and previous reporting periods.
 
     logger.info("✅ [WhaleWatcherAgent] Institutional analysis completed!");
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
     console.log("🐳 WHALE WATCHER REPORT 🐳");
     console.log("=".repeat(50));
     console.log(report);
-    console.log("=".repeat(50) + "\n");
+    console.log(`${"=".repeat(50)}\n`);
 
     this.emitEvent("INSTITUTIONAL_ANALYSIS_GENERATED", {
       agent: "WhaleWatcherAgent",

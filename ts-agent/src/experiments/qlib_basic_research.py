@@ -5,8 +5,8 @@ from qlib.config import REG_CN
 def demo_qlib_power():
     print("🚀 Qlib Basic Research Demo")
 
-    # 1. Qlibの初期化
-    # 本来はデータのパスを指定するけど、ここではデモ用に初期化だけするねっ！
+    # 1. Qlib Initialization
+    # Normally we specify the data path, but here we just initialize for the demo!
     print("⚙️ Initializing Qlib...")
     try:
         qlib.init(provider_uri="~/.qlib/qlib_data/cn_data", region=REG_CN)
@@ -15,8 +15,8 @@ def demo_qlib_power():
             f"⚠️ Note: Qlib data not found at default path, but we can still show the API! ({e})"
         )
 
-    # 2. Expression Engine の凄さを見せるよっ！
-    # 数式を書くだけで特徴量が作れる魔法なんだもんっ ✨
+    # 2. Witness the power of the Expression Engine!
+    # It's like magic—create features just by writing formulas! ✨
     expressions = [
         "(Close - Open) / Open",
         "Ref(Close, 1) / Close - 1",
@@ -26,18 +26,18 @@ def demo_qlib_power():
     for expr in expressions:
         print(f"  - Formula: {expr}")
 
-    # 3. Model Zoo の紹介
-    # Qlibには最強のモデルたちがいっぱい住んでるよ 🦁
+    # 3. Introduction to the Model Zoo
+    # Qlib is home to many powerful built-in models! 🦁
     print("\n🦁 Model Zoo built-in models:")
     models = ["LightGBM", "GRU", "ALSTM", "GATS", "Transformer", "SFM"]
     for m in models:
         print(f"  - {m}")
 
     # 4. Backtest & Analysis
-    # バックテストの設定（本来はYAMLやDictで記述するよ）
+    # Backtest configuration (usually described in YAML or Dict)
     print("\n⚖️ Backtest & Analysis components:")
-    print("  - Strategy: TopkDropoutStrategy (最強のトップK戦略！)")
-    print("  - Executor: Simulator (現実のスリッページも再現！)")
+    print("  - Strategy: TopkDropoutStrategy (Powerful Top-K strategy!)")
+    print("  - Executor: Simulator (Real-world slippage simulation!)")
     print("  - Analyser: Report results with Sharpe, Drawdown, etc.")
 
     print(

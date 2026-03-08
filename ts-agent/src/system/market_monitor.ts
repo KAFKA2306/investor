@@ -18,7 +18,7 @@ export interface DriftReport {
 }
 
 /**
- * ✨ 市場環境とシステムの健康状態を監視するサービス ✨
+ * ✨ Service to monitor market environment and system health ✨
  */
 export class MarketMonitor {
   /**

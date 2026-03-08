@@ -14,11 +14,11 @@ export interface QualityGateResult {
 }
 
 /**
- * ✨ 各種品質チェックを行うサービス ✨
+ * ✨ Service for various quality checks ✨
  */
 export class QualityGate {
   /**
-   * データのデリバリー品質（欠損や遅延）をチェックするよっ！📦
+   * Checks the quality of data delivery (missing or latency)! 📦
    */
   public evaluateDataDelivery(
     dataset: PITDataset,
@@ -83,7 +83,7 @@ export class QualityGate {
   }
 
   /**
-   * 執行の質（フィルレートやスリッページ）をチェックするよっ！💴
+   * Checks the quality of execution (fill rate and slippage)! 💴
    */
   public evaluateExecutionQuality(
     execution: ExecutionResult,
@@ -106,7 +106,7 @@ export class QualityGate {
   }
 
   /**
-   * ポジションの制約（ウェイトやターンオーバー）をチェックするよっ！🛡️
+   * Checks position constraints (weight and turnover)! 🛡️
    */
   public evaluateExecutionConstraints(plan: OrderPlan): QualityGateResult {
     const constraints = core.config.pipelineBlueprint?.executionConstraints ?? {

@@ -47,7 +47,7 @@ def compute_drawdown(strat_cum: list) -> list:
 def generate_schema_driven_plot():
     verification_dir = os.environ.get("VERIFICATION_DIR")
     if not verification_dir:
-        # スクリプトの場所から '../../data' を探すよっ！🎀
+        # Search for '../../data' relative to the script location! 🎀
         script_dir = os.path.dirname(os.path.abspath(__file__))
         verification_dir = os.path.abspath(os.path.join(script_dir, "..", "..", "data"))
 

@@ -42,11 +42,11 @@ Be precise with tickers and data points.
 
     logger.info("✅ [EventDrivenAnalystAgent] Event analysis completed!");
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
     console.log("🔥 EVENT-DRIVEN REPORT 🔥");
     console.log("=".repeat(50));
     console.log(report);
-    console.log("=".repeat(50) + "\n");
+    console.log(`${"=".repeat(50)}\n`);
 
     this.emitEvent("EVENT_ANALYSIS_GENERATED", {
       agent: "EventDrivenAnalystAgent",

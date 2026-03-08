@@ -48,11 +48,11 @@ Respond in a structured, professional, yet insightful manner.
     );
 
     // 成果をログに出力して、イベントも発行しちゃうね 💖
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
     console.log("🌟 MACRO ANALYSIS REPORT 🌟");
     console.log("=".repeat(50));
     console.log(report);
-    console.log("=".repeat(50) + "\n");
+    console.log(`${"=".repeat(50)}\n`);
 
     this.emitEvent("MACRO_ANALYSIS_GENERATED", {
       agent: "MacroTopDownAgent",

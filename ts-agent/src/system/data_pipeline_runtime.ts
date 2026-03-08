@@ -72,8 +72,8 @@ export class DataPipelineRuntime {
       const pred = (cols[predIdx] ?? "").replaceAll('"', "").trim();
       const uni = (cols[uniIdx] ?? "").replaceAll('"', "").trim();
 
-      // valueUtils.normalizers.toBool は無いので、cliArgs.parseBool を使うか、valueUtilsに足すべきでした
-      // ひとまず value_utils に parseBool を足したのでそれを使います
+      // valueUtils.normalizers.toBool was missing, so we should either use cliArgs.parseBool or add it to valueUtils.
+      // For now, I've added parseBool to value_utils, so use that.
       if (predIdx >= 0 && !valueUtils.normalizers.parseBool?.(pred)) continue;
       if (uniIdx >= 0 && !valueUtils.normalizers.parseBool?.(uni)) continue;
 
@@ -151,7 +151,7 @@ export class QuantResearchRuntime {
   }
 
   /**
-   * ターゲットとなる銘柄リストを可愛く解決するよっ！🌌✨
+   * Resolves the target symbol list! 🌌✨
    */
   public async resolveTargetSymbols(
     runtime: DataPipelineRuntime,
@@ -167,7 +167,7 @@ export class QuantResearchRuntime {
   }
 
   /**
-   * マーケットデータを読み込んで、綺麗に整地（正規化）するよっ！💹✨
+   * Loads market data and normalizes it! 💹✨
    */
   public async loadNormalizedBars(
     gateway: import("../providers/unified_market_data_gateway.ts").MarketdataLocalGateway,

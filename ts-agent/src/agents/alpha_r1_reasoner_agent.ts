@@ -31,15 +31,20 @@ export class StrategicReasonerAgent extends BaseAgent {
     const riskEvidence = `MaxDrawdown check: ${outcome.verification?.metrics?.maxDrawdown}.`;
 
     const hunterVerdict =
-      (outcome.alpha?.pValue ?? 1) < 0.05 ? Verdict.VALID : Verdict.UNCERTAIN;
-    const hunterEvidence = `P-Value: ${outcome.alpha?.pValue}.`;
-
-    const regimeVerdict =
-      marketContext.includes("BULL") &&
-      extractedClaim.toLowerCase().includes("momentum")
+      (outcome.alpha?.pValue ?? 1) < DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue
         ? Verdict.VALID
         : Verdict.UNCERTAIN;
-    const regimeEvidence = `Alignment with ${marketContext}.`;
+    const hunterEvidence = `P-Value: ${outcome.alpha?.pValue} (Target < ${DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue}).`;
+
+    const regimeVerdict =
+      (marketContext.includes("BULL") &&
+        extractedClaim.toLowerCase().includes("momentum")) ||
+      (marketContext.includes("BEAR") &&
+        extractedClaim.toLowerCase().includes("reversion")) ||
+      marketContext.includes("UNCERTAIN")
+        ? Verdict.VALID
+        : Verdict.UNCERTAIN;
+    const regimeEvidence = `Alignment with ${marketContext} for ${extractedClaim}.`;
 
     const logicChecks: StrategicReasoning["logicChecks"] = [
       {
@@ -90,13 +95,16 @@ export class StrategicReasonerAgent extends BaseAgent {
       "Alpha logic remains sound and performance is within expected range.";
     let score = reasoning.contextAlignment * 0.6 + (1 - pValue) * 0.4;
 
-    if (sharpe < 0.5 || pValue > 0.1) {
+    if (
+      sharpe < DEFAULT_EVALUATION_CRITERIA.performance.minSharpe ||
+      pValue > DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue * 1.5
+    ) {
       status = AlphaStatus.DECAYED;
-      reason = `[REJECTED] ${reasoning.rationale}`;
+      reason = `[REJECTED] Performance or Significance too low. ${reasoning.rationale}`;
       score *= 0.5;
-    } else if (reasoning.contextAlignment < 0.5) {
+    } else if (reasoning.contextAlignment < 0.3) {
       status = AlphaStatus.INACTIVE;
-      reason = `[INACTIVE] ${reasoning.rationale}`;
+      reason = `[INACTIVE] Specialist consensus too low. ${reasoning.rationale}`;
       score *= 0.8;
     }
 

@@ -6,13 +6,13 @@ import type {
 import { logger } from "../utils/logger.ts";
 
 /**
- * ✨ ポートフォリオの最適配分を担当する Allocator くん！ ✨
+ * ✨ Allocator handles optimal portfolio allocation! ✨
  */
 export class Allocator {
   private readonly log = logger.child({ component: "Allocator" });
 
   /**
-   * 与えられたリクエストに基づいて、ケリー基準（Kelly Criterion）で配分を計算するよっ！📊
+   * Calculates allocation based on the Kelly Criterion for the given request! 📊
    */
   public allocate(request: AllocationRequest): AllocationResult[] {
     this.log.info("Starting allocation calculation", {
@@ -46,10 +46,10 @@ export class Allocator {
   }
 
   /**
-   * ケリー基準の公式を使って、個別の重みを計算するよっ！📐
+   * Calculates individual weights using the Kelly Criterion formula! 📐
    * f* = (p * (b + 1) - 1) / b
-   * p: 成功確率 (confidence)
-   * b: 利益確定時リターン / 損切り時損失 (expected_return / volatility)
+   * p: Winning probability (confidence)
+   * b: Return at take-profit / Loss at stop-loss (expected_return / volatility)
    */
   private _calculateKelly(idea: InvestmentIdea): number {
     const p = idea.confidence;
@@ -75,12 +75,12 @@ export class Allocator {
       return 0;
     }
 
-    // オッズ b をリターン/リスクの比率として定義するよっ！
+    // Define odds 'b' as the return/risk ratio!
     const b = expectedReturn / volatility;
 
     if (b <= 0) {
       this.log.debug("Kelly b is <= 0", { ticker: idea.ticker, b });
-      return 0; // 期待リターンがプラスじゃないなら、賭けないのが正解だよっ！💢
+      return 0; // If expected return is not positive, it's correct not to bet! 💢
     }
 
     // ケリーの公式: f* = p - (1-p)/b
@@ -91,11 +91,11 @@ export class Allocator {
       b,
       kellyWeight,
     });
-    return Math.max(0, kellyWeight); // マイナスの重み（空売り）は今回は考慮しないよっ🛡️
+    return Math.max(0, kellyWeight); // Negative weights (short selling) are not considered here 🛡️
   }
 
   /**
-   * すべての重みの合計が 1.0 (100%) になるように調整するよっ！✨
+   * Normalize all weights so the total sum is 1.0 (100%)! ✨
    */
   private _normalize(
     results: AllocationResult[],

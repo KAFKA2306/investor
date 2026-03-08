@@ -3,10 +3,7 @@
  * Computes hedge fund industry leverage trend as a market risk regime indicator
  */
 
-import {
-  type HedgeFundLeverageData,
-  OfrHfmProvider,
-} from "../providers/ofr_hfm_provider.ts";
+import { OfrHfmProvider } from "../providers/ofr_hfm_provider.ts";
 
 export interface LeverageTrendFeature {
   date: string;

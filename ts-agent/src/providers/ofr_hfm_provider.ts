@@ -8,7 +8,6 @@
 
 import { SqliteHttpCache } from "./cache_providers.ts";
 import { requestJson } from "./http_json_client.ts";
-import { ProviderHttpError } from "./provider_errors.ts";
 
 export interface HedgeFundLeverageData {
   date: string;
@@ -47,7 +46,7 @@ export class OfrHfmProvider {
     const mnemonics = [
       "FPF-ALLQHF_GAVN10_LEVERAGERATIO_AVERAGE", // Top 10 funds
       "FPF-ALLQHF_GAVN11TO50_LEVERAGERATIO_AVERAGE", // Mid tier
-      "FPF-ALLQHF_GAVN51PLUS_LEVERAGERATIO_AVERAGE", // Small funds
+      "FPF-ALLQHF_GAVN51_LEVERAGERATIO_AVERAGE", // Small funds
     ];
 
     const results: Map<string, HedgeFundLeverageData> = new Map();
@@ -72,32 +71,16 @@ export class OfrHfmProvider {
           record.leverage_top10 = value;
         } else if (mnemonic.includes("GAVN11TO50")) {
           record.leverage_mid = value;
-        } else if (mnemonic.includes("GAVN51PLUS")) {
+        } else if (mnemonic.includes("GAVN51")) {
           record.leverage_small = value;
         }
       }
     }
 
-    // Also get overall leverage
-    const overallMnemonic = "FPF-ALLQHF_LEVERAGERATIO_AVERAGE";
-    const overallSeries = await this.getTimeseries(
-      overallMnemonic,
-      startDate,
-      endDate,
-    );
-
-    for (const [date, value] of overallSeries) {
-      if (!results.has(date)) {
-        results.set(date, {
-          date,
-          leverage_all: value,
-          leverage_top10: null,
-          leverage_mid: null,
-          leverage_small: null,
-          timestamp: new Date().toISOString(),
-        });
-      } else {
-        results.get(date)!.leverage_all = value;
+    // Use top10 as a proxy for 'leverage_all' if not explicitly set
+    for (const record of results.values()) {
+      if (record.leverage_all === null) {
+        record.leverage_all = record.leverage_top10;
       }
     }
 
