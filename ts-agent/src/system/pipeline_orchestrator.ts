@@ -1205,7 +1205,7 @@ export class ElderBridge implements IElder {
     this.memory.recordAlpha({
       id: candidate.id,
       experiment_id: candidate.requirementId,
-      ast_json: JSON.stringify(candidate.ast),
+      formula: candidate.formula,
       description: candidate.description,
       reasoning: candidate.reasoning,
       created_at: new Date().toISOString(),
@@ -2010,7 +2010,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     );
 
     const computeRes = await this.les.evaluateFactorsViaEngine(
-      [{ id: candidate.id, ast: candidate.ast } as any],
+      [{ id: candidate.id, formula: candidate.formula }],
       computeInputs,
     );
 

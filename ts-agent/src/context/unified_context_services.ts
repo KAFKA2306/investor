@@ -155,7 +155,7 @@ export interface ExperimentRecord {
 export interface AlphaRecord {
   id: string;
   experiment_id: string;
-  ast_json: string;
+  formula: string;
   description: string;
   reasoning: string;
   created_at: string;
@@ -191,7 +191,7 @@ export class MemoryCenter {
       CREATE TABLE IF NOT EXISTS alphas (
         id TEXT PRIMARY KEY,
         experiment_id TEXT NOT NULL,
-        ast_json TEXT NOT NULL,
+        formula TEXT NOT NULL,
         description TEXT NOT NULL,
         reasoning TEXT NOT NULL,
         created_at TEXT NOT NULL,
@@ -244,13 +244,13 @@ export class MemoryCenter {
 
   public recordAlpha(alpha: AlphaRecord) {
     const stmt = this.db.prepare(`
-      INSERT OR REPLACE INTO alphas (id, experiment_id, ast_json, description, reasoning, created_at)
-      VALUES ($id, $exp_id, $ast, $desc, $reasoning, $created_at)
+      INSERT OR REPLACE INTO alphas (id, experiment_id, formula, description, reasoning, created_at)
+      VALUES ($id, $exp_id, $formula, $desc, $reasoning, $created_at)
     `);
     stmt.run({
       $id: alpha.id,
       $exp_id: alpha.experiment_id,
-      $ast: alpha.ast_json,
+      $formula: alpha.formula,
       $desc: alpha.description,
       $reasoning: alpha.reasoning,
       $created_at: alpha.created_at,
@@ -310,7 +310,7 @@ export class MemoryCenter {
 
   public getRecentSuccesses(limit: number = 5): unknown[] {
     const stmt = this.db.prepare(`
-      SELECT a.id, a.description, a.ast_json, e.overall_score, e.metrics_json
+      SELECT a.id, a.description, a.formula, e.overall_score, e.metrics_json
       FROM alphas a
       JOIN evaluations e ON a.id = e.alpha_id
       WHERE e.overall_score > 0.05
@@ -322,7 +322,7 @@ export class MemoryCenter {
 
   public getRecentFailures(limit: number = 5): unknown[] {
     const stmt = this.db.prepare(`
-      SELECT a.id, a.description, a.ast_json, e.overall_score, e.metrics_json
+      SELECT a.id, a.description, a.formula, e.overall_score, e.metrics_json
       FROM alphas a
       JOIN evaluations e ON a.id = e.alpha_id
       WHERE e.overall_score < 0.01

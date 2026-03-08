@@ -25,11 +25,6 @@ type CliArgs = {
   quarantineOnly: boolean;
 };
 
-type IntelligencePoint = {
-  correctionFlag: number;
-  correctionCount90d: number;
-};
-
 const parseArgs = (): CliArgs => {
   const parsedArgs = parseCliArgs(process.argv.slice(2));
   return {
