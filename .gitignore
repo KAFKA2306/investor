@@ -17,8 +17,11 @@ wheels/
 !.env.example
 ts-agent/.env
 edinet2dataset/.env
+copcon/
+ts-agent/src/dashboard/package-lock.json
 
 # Virtual environments
+
 .venv/
 *module*
 
