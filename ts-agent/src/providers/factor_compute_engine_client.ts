@@ -4,7 +4,7 @@ import { core } from "../system/app_runtime_core.ts";
 
 export interface ComputeFactor {
   id: string;
-  ast: Record<string, unknown>;
+  formula: string;
 }
 
 export interface ComputeMarketData {

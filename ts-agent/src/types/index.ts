@@ -2,11 +2,9 @@
  * ✨ プロジェクト共通の型定義（Types）だよっ！ ✨
  */
 
-import type { FactorAST } from "../schemas/financial_domain_schemas.ts";
-
 export interface AlphaFactor {
   id: string;
-  ast: FactorAST;
+  formula: string;
   description: string;
   reasoning: string;
   parentId?: string;
