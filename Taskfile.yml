@@ -520,6 +520,11 @@ tasks:
       - rm -rf logs/unified/*
       - rm -rf ts-agent/logs/cache/*
 
+  research:qlib:eval:
+    desc: "Test qlib formula evaluator"
+    cmds:
+      - echo '{"market_data":[{"symbol":"6501.T","date":"2024-01-02","close":100,"open":99,"high":101,"low":98,"volume":1000,"macro_iip":0.5},{"symbol":"6501.T","date":"2024-01-03","close":102,"open":100,"high":103,"low":99,"volume":1200,"macro_iip":0.6}],"factors":[{"id":"TEST-1","formula":"Ref($close,1)/$close-1"}]}' | uv run python ts-agent/src/research/qlib_factor_eval.py
+
   research:qlib:benchmark:
     desc: run Qlib benchmark with LightGBM
     vars:

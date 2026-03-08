@@ -54,7 +54,7 @@ export class ComputeEngineClient {
   private readonly venvPython: string;
 
   constructor() {
-    this.enginePath = join(import.meta.dir, "..", "compute", "engine.py");
+    this.enginePath = join(import.meta.dir, "../research/qlib_factor_eval.py");
 
     this.venvPython = core.getVenvPythonPath();
   }

@@ -16,34 +16,34 @@ def eval_formula(formula: str, df: pd.DataFrame) -> pd.Series:
         if pd.api.types.is_numeric_dtype(df[col]):
             ns[f"__{col}"] = df[col].astype(float)
 
-    def _ref(s: pd.Series, n) -> pd.Series:
+    def _ref(s, n):  # type: ignore[return]
         return s.shift(int(n))
 
-    def _mean(s: pd.Series, n) -> pd.Series:
+    def _mean(s, n):  # type: ignore[return]
         return s.rolling(int(n)).mean()
 
-    def _std(s: pd.Series, n) -> pd.Series:
+    def _std(s, n):  # type: ignore[return]
         return s.rolling(int(n)).std()
 
-    def _sum(s: pd.Series, n) -> pd.Series:
+    def _sum(s, n):  # type: ignore[return]
         return s.rolling(int(n)).sum()
 
-    def _max(s: pd.Series, n) -> pd.Series:
+    def _max(s, n):  # type: ignore[return]
         return s.rolling(int(n)).max()
 
-    def _min(s: pd.Series, n) -> pd.Series:
+    def _min(s, n):  # type: ignore[return]
         return s.rolling(int(n)).min()
 
-    def _corr(s1: pd.Series, s2: pd.Series, n) -> pd.Series:
+    def _corr(s1, s2, n):  # type: ignore[return]
         return s1.rolling(int(n)).corr(s2)
 
-    def _rank(s: pd.Series) -> pd.Series:
+    def _rank(s):  # type: ignore[return]
         return s.rank(pct=True)
 
-    def _abs(s: pd.Series) -> pd.Series:
+    def _abs(s):  # type: ignore[return]
         return s.abs()
 
-    def _log(s: pd.Series) -> pd.Series:
+    def _log(s):  # type: ignore[return]
         return np.log(s.clip(lower=1e-9))
 
     ns.update({
@@ -115,20 +115,20 @@ def evaluate_factors(request: dict) -> dict:
             for date, row in aligned.iterrows():
                 scores_by_symbol.append({
                     "symbol": symbol,
-                    "date": str(date.date()),
-                    "score": float(row["signal"]),
+                    "date": str(date),  # type: ignore[union-attr]
+                    "score": float(row["signal"]),  # type: ignore[arg-type]
                 })
 
         ic = 0.0
         if len(scores_by_symbol) > 0:
             scores_series = pd.Series([s["score"] for s in scores_by_symbol])
             rets = pd.Series([
-                float(group["close"].pct_change().shift(-1).dropna().iloc[-1])
+                float(group["close"].pct_change().shift(-1).dropna().iloc[-1])  # type: ignore[arg-type]
                 for _, group in df.groupby("symbol")
                 if len(group) > 1
             ])
             if len(rets) == len(scores_series):
-                ic = float(scores_series.corr(rets))
+                ic = float(scores_series.corr(rets))  # type: ignore[arg-type]
                 if pd.isna(ic):
                     ic = 0.0
 
