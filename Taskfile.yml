@@ -545,3 +545,36 @@ tasks:
       CSV_PATH: '{{default "ts-agent/data/qlib_export.csv" .CSV_PATH}}'
     cmds:
       - uv run python ts-agent/src/research/qlib_benchmark.py --csv {{.CSV_PATH}}
+
+  polymarket:install:
+    desc: install Polymarket SDK dependencies
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun add @polymarket/clob-client ethers
+
+  polymarket:arb:
+    desc: run Polymarket arbitrage bot (use DRY_RUN=true for simulation)
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun src/agents/polymarket_arb_agent.ts
+
+
+
+  polymarket:extract-targets:
+    desc: extract real-time top profit traders from Polymarket leaderboard
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun src/scripts/extract_polymarket_targets.ts
+
+  polymarket:imitate:
+    desc: Real-time quantitative imitation of top Polymarket walets
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun src/agents/quant_imitation_agent.ts
+
+  polymarket:validate:
+    desc: validate Polymarket data via Zod schema enforcement
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bash -lc "set -a; [ -f ../.env ] && . ../.env; set +a; bun src/scripts/validate_polymarket_data.ts {{.CLI_ARGS}}"
+
