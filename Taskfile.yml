@@ -16,10 +16,20 @@ tasks:
   deps:
     desc: install TS and dashboard dependencies
     cmds:
-      - cmd: bun install
-        dir: "{{.TS_DIR}}"
-      - cmd: npm install
-        dir: "{{.DASHBOARD_DIR}}"
+      - task: deps:ts
+      - task: deps:dashboard
+
+  deps:ts:
+    desc: install TS dependencies
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun install
+
+  deps:dashboard:
+    desc: install dashboard dependencies
+    dir: "{{.DASHBOARD_DIR}}"
+    cmds:
+      - npm install
 
   setup:
     desc: setup
