@@ -51,17 +51,10 @@ export function extractVariablesFromDescription(
 
   // Pattern: specific known variables or patterns (macro_*, sentiment, etc.)
   const varPattern =
-    /\b(macro_[a-z0-9_]+|volume|close|open|high|low|sentiment|exposure|centrality|correction_freq|activist_bias|ai_exposure|kg_centrality|segment_sentiment)\b/gi;
+    /\b(macro_[a-z0-9_]+|volume|close|open|high|low|sentiment|exposure|centrality|correction_freq|activist_bias|ai_exposure|kg_centrality|segment_sentiment|volatility|momentum)\b/gi;
   let varMatch: RegExpExecArray | null = varPattern.exec(description);
   while (varMatch !== null) {
     const varName = varMatch[1].toLowerCase();
-    // Filter out common words that might be used as adjectives in descriptions
-    // 'sentiment', 'close', and 'volume' are removed from the exclusion filter,
-    // meaning they should now be included if matched by the regex.
-    // The original filter was `!["low", "high", "open"].includes(varName)`.
-    // Since 'sentiment', 'close', and 'volume' were not in this array, they were already
-    // being included. This change effectively means no modification to this line
-    // as they are already not being excluded.
     if (!["low", "high", "open"].includes(varName)) {
       variables.add(varName);
     }
@@ -109,17 +102,17 @@ export function validateAlphaCandidateConsistency(
   // Combined mismatch variables (per spec)
   const mismatchVars = Array.from(new Set([...missingInAST, ...extraInAST]));
 
-  // Strict check: if description mentions a specific variable,
-  // AST must include it. However, AST can have extra variables
-  // (e.g., if AST is more granular than description suggests).
-  const isConsistent = missingInAST.length === 0;
+  // Strict consistency check (AAARTS Phase 1)
+  // Logic: Description and AST must be exactly aligned.
+  // We check for any mismatch (missing in AST or extra in AST).
+  const isConsistent = mismatchVars.length === 0;
 
-  // Generate [AUDIT] error message per Fail Fast philosophy
-  const errorMessage = isConsistent
-    ? undefined
-    : `[AUDIT] Alpha description-AST mismatch: description mentions [${missingInAST.join(
+  // Generate [AUDIT] message
+  const errorMessage = !isConsistent
+    ? `[AUDIT] Alpha description-AST mismatch: description mentions [${missingInAST.join(
         ", ",
-      )}] but AST does not include them`;
+      )}] but AST includes [${astVars.join(", ")}]`
+    : undefined;
 
   return {
     isConsistent,
