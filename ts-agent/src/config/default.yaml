@@ -169,3 +169,13 @@ database:
 dashboard:
   port: 5173
   apiPort: 8787
+
+quant:
+  polygonscan_api_url: "https://api.polygonscan.com/api"
+  imitation_delay_ms: 1000
+  target_addresses:
+    - "0x019782cab5d844f02bafb71f512758be78579f3c" # majorexploiter
+    - "0x2a2C53bD278c04DA9962Fcf96490E17F3DfB9Bc1" # 0x2a2C...Bc1
+    - "0x5e524f43357198fa815e6766f02fe686b444b064" # beachboy4 (placeholder address, need to verify)
+    - "0x572c8005aa033237175f16de725969b044cd0383" # HorizonSplendidView (placeholder)
+    - "0xaab29084bcc42daff9e11b4a5a4cc55cda3eb306" # 432614799197 (placeholder)
