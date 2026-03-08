@@ -8,7 +8,8 @@ import numpy as np
 
 def eval_formula(formula: str, df: pd.DataFrame) -> pd.Series:
     # Replace $col → __col (valid Python identifier)
-    normalized = re.sub(r"\$(\w+)", r"__\1", formula)
+    # Using more robust regex to handle various column names
+    normalized = re.sub(r"\$([a-zA-Z0-9_]+)", r"__\1", formula)
 
     # Build local namespace with numeric column Series and supported ops
     ns: dict = {}
@@ -60,6 +61,7 @@ def eval_formula(formula: str, df: pd.DataFrame) -> pd.Series:
 
 
 def _eval_node(node: ast.expr, ns: dict):
+    epsilon = 1e-9
     if isinstance(node, ast.Constant):
         return node.value
     if isinstance(node, ast.Name):
@@ -77,7 +79,10 @@ def _eval_node(node: ast.expr, ns: dict):
         if isinstance(op, ast.Mult):
             return left * right
         if isinstance(op, ast.Div):
-            return left / right
+            # Stability: protect against division by zero/inf
+            if isinstance(right, pd.Series):
+                return left / (right.replace(0, np.nan).fillna(epsilon))
+            return left / (right if right != 0 else epsilon)
         raise ValueError(f"Unsupported binary op: {type(op).__name__}")
     if isinstance(node, ast.UnaryOp):
         operand = _eval_node(node.operand, ns)
@@ -105,32 +110,43 @@ def evaluate_factors(request: dict) -> dict:
     for factor in factors:
         fid = factor["id"]
         formula = factor["formula"]
+        
+        pooled_signals = []
+        pooled_returns = []
         scores_by_symbol = []
+
         for symbol, group in df.groupby("symbol"):
             group = group.set_index("date")
-            signal = eval_formula(formula, group).dropna()
-            forward = group["close"].pct_change().shift(-1)
-            aligned = pd.concat([signal, forward], axis=1).dropna()
-            aligned.columns = ["signal", "ret"]
-            for date, row in aligned.iterrows():
-                scores_by_symbol.append({
-                    "symbol": symbol,
-                    "date": str(date),  # type: ignore[union-attr]
-                    "score": float(row["signal"]),  # type: ignore[arg-type]
-                })
+            try:
+                signal = eval_formula(formula, group)
+                # Next-day return calculation
+                forward_ret = group["close"].pct_change().shift(-1)
+                
+                # Align signal with forward return
+                aligned = pd.concat([signal, forward_ret], axis=1).dropna()
+                aligned.columns = ["signal", "ret"]
+                
+                for date, row in aligned.iterrows():
+                    val = float(row["signal"])
+                    if not np.isfinite(val):
+                        continue
+                        
+                    pooled_signals.append(val)
+                    pooled_returns.append(float(row["ret"]))
+                    scores_by_symbol.append({
+                        "symbol": symbol,
+                        "date": str(date.date() if hasattr(date, "date") else date), # type: ignore
+                        "score": val,
+                    })
+            except Exception as e:
+                # Log or handle formula errors per factor
+                print(f"Error evaluating factor {fid} for {symbol}: {e}", file=sys.stderr)
 
         ic = 0.0
-        if len(scores_by_symbol) > 0:
-            scores_series = pd.Series([s["score"] for s in scores_by_symbol])
-            rets = pd.Series([
-                float(group["close"].pct_change().shift(-1).dropna().iloc[-1])  # type: ignore[arg-type]
-                for _, group in df.groupby("symbol")
-                if len(group) > 1
-            ])
-            if len(rets) == len(scores_series):
-                ic = float(scores_series.corr(rets))  # type: ignore[arg-type]
-                if pd.isna(ic):
-                    ic = 0.0
+        if len(pooled_signals) > 1:
+            ic = float(np.corrcoef(pooled_signals, pooled_returns)[0, 1])
+            if np.isnan(ic):
+                ic = 0.0
 
         results.append({
             "factor_id": fid,
@@ -143,6 +159,9 @@ def evaluate_factors(request: dict) -> dict:
 
 
 if __name__ == "__main__":
-    request = json.load(sys.stdin)
-    result = evaluate_factors(request)
-    print(json.dumps(result))
+    try:
+        request = json.load(sys.stdin)
+        result = evaluate_factors(request)
+        print(json.dumps(result))
+    except Exception as e:
+        print(json.dumps({"status": "error", "message": str(e)}))

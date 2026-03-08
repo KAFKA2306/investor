@@ -383,12 +383,7 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
     const engineRequestMarketData = marketData.map((d) => ({
       symbol: d.symbol,
       date: d.date,
-      open: d.values.open ?? 0,
-      high: d.values.high ?? 0,
-      low: d.values.low ?? 0,
-      close: d.values.close ?? 0,
-      volume: d.values.volume ?? 0,
-      turnover_value: d.values.turnover_value ?? 0,
+      ...d.values,
     }));
 
     const response = await client.evaluateFactors({
