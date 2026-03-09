@@ -1,39 +1,21 @@
-import type { Market } from "../../agents/polymarket/types.ts";
+import type { Market } from "../../schemas/polymarket_schemas.ts";
 
 const POLYMARKET_API_BASE = "https://clob.polymarket.com";
-
-interface RawMarket {
-  id: string;
-  title: string;
-  prices?: { yes?: number; no?: number };
-  pool?: { totalValue?: number };
-  liquidity?: number;
-  closingTime?: string;
-}
-
-interface ApiResponse {
-  markets?: RawMarket[];
-}
-
-interface HistoryData {
-  history?: Array<{ t: number; p: number }>;
-}
 
 export async function getMarkets(limit: number = 50): Promise<Market[]> {
   const response = await fetch(`${POLYMARKET_API_BASE}/markets?limit=${limit}`);
   if (!response.ok) {
     throw new Error(`Polymarket API error: ${response.status}`);
   }
-  const data = (await response.json()) as ApiResponse;
-  const markets = data.markets || data;
-  return (markets as RawMarket[]).map((m) => ({
+  const data = await response.json();
+  return data.markets.map((m: any) => ({
     id: m.id,
     title: m.title,
-    prices: { yes: m.prices?.yes || 0.5, no: m.prices?.no || 0.5 },
-    spread: (m.prices?.no || 0.5) - (m.prices?.yes || 0.5),
-    liquidity: m.pool?.totalValue || m.liquidity || 0,
+    prices: { yes: m.prices.yes, no: m.prices.no },
+    spread: m.prices.no - m.prices.yes,
+    liquidity: m.pool.totalValue,
     timeToClose: Math.floor(
-      (new Date(m.closingTime || Date.now()).getTime() - Date.now()) / 1000,
+      (new Date(m.closingTime).getTime() - Date.now()) / 1000,
     ),
   }));
 }
@@ -50,8 +32,8 @@ export async function getPriceHistory(
   if (!response.ok) {
     throw new Error(`Polymarket API error: ${response.status}`);
   }
-  const data = (await response.json()) as HistoryData;
-  return data.history || [];
+  const data = await response.json();
+  return data.history;
 }
 
 export async function getOrderbook(marketId: string) {

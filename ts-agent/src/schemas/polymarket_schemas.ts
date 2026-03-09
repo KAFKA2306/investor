@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// Core market and pricing schemas
 export const TokenSchema = z.object({
   token_id: z.string(),
   outcome: z.string(),
@@ -17,7 +16,6 @@ export const OrderbookSchema = z.object({
   asks: z.array(OrderSummarySchema),
 });
 
-// Market schema with validation
 export const MarketSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -30,7 +28,6 @@ export const MarketSchema = z.object({
   timeToClose: z.number().min(0),
 });
 
-// Scan result schema
 export const ScanResultSchema = z.object({
   marketId: z.string(),
   liquidityScore: z.number().min(0).max(1),
@@ -39,14 +36,12 @@ export const ScanResultSchema = z.object({
   passedFilter: z.boolean(),
 });
 
-// Research result schema
 export const ResearchResultSchema = z.object({
   marketId: z.string(),
   sentimentScore: z.number().min(0).max(1),
   narrative: z.string(),
 });
 
-// Prediction result schema
 export const PredictionResultSchema = z.object({
   marketId: z.string(),
   pModelXgb: z.number().min(0).max(1),
@@ -55,7 +50,6 @@ export const PredictionResultSchema = z.object({
   confidence: z.enum(["HIGH", "MEDIUM", "LOW"]),
 });
 
-// Risk validation schema
 export const RiskValidationSchema = z.object({
   marketId: z.string(),
   kellyCriterion: z.number(),
@@ -65,7 +59,6 @@ export const RiskValidationSchema = z.object({
   reasoning: z.string(),
 });
 
-// Signal schema for trading signals
 export const SignalSchema = z.object({
   marketId: z.string(),
   direction: z.enum(["YES", "NO"]),
@@ -75,7 +68,6 @@ export const SignalSchema = z.object({
   reasoning: z.string(),
 });
 
-// Backtest output schema
 export const BacktestOutputSchema = z.object({
   timestamp: z.string(),
   window: z.string(),
@@ -92,7 +84,6 @@ export const BacktestOutputSchema = z.object({
   }),
 });
 
-// Legacy arbitrage opportunity interface
 export interface ArbOpportunity {
   marketId: string;
   question: string;
@@ -103,7 +94,6 @@ export interface ArbOpportunity {
   timestamp: number;
 }
 
-// Type exports from schemas
 export type Market = z.infer<typeof MarketSchema>;
 export type ScanResult = z.infer<typeof ScanResultSchema>;
 export type ResearchResult = z.infer<typeof ResearchResultSchema>;

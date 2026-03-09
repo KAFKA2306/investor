@@ -9,4 +9,4 @@ export type {
   RiskValidation,
   ScanResult,
   Signal,
-} from "./types.ts";
+} from "../../schemas/polymarket_schemas.ts";
