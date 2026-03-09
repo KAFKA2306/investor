@@ -5,37 +5,17 @@ description: MANDATORY TRIGGER: Invoke for any task involving repository hygiene
 
 # Harness Governance Skill
 
-This skill enforces the **Harness Engineering** best practices (ADR-001, ADR-002) to ensure the repository remains a high-reliability, agent-optimized workspace.
+This skill enforces the **Harness Engineering** best practices via external executable tools. Do not memorize rules; execute the harness.
 
-## 🚨 MANDATORY TRIGGER
+## 🚨 MANDATORY PROTOCOL
 
-Invoke this skill BEFORE addressing any:
+When triggered, you MUST immediately rely on the following external sources of truth:
 
-- **Lint Errors**: When suggested fixes are provided by `scripts/self_healing_lint.sh`.
-- **Documentation Rot**: When `README.md` or `AGENTS.md` exceed 50 lines or contain outdated info.
-- **Structural Debt**: When modules/files are misplaced according to `AGENTS.md`.
-- **Constraint Violations**: When `PreToolUse` hooks block an operation.
+1. **Repository Rules & Structure**: Execute `view_file` on `AGENTS.md`. It contains the complete, up-to-date governance rules (Crash-Driven Development, deterministic quality, etc.).
+2. **Hygiene & Linting**: Execute `run_command` with `bash scripts/self_healing_lint.sh`. Follow the instructions provided in its output EXACTLY.
+3. **Garbage Collection**: If rotting files or dead code are suspected, execute `run_command` with `task maintenance:gc`.
+4. **Architecture Decisions**: Execute `list_dir` on `docs/adr/`. Any architectural change MUST be recorded here.
 
-## 🛠️ Operational Protocol
+## ⚠️ CRITICAL INSTRUCTION
 
-### 1. Zero-Tolerance Hygiene
-
-- **Minimal Documentation**: Keep `CLAUDE.md`, `AGENTS.md`, and `README.md` below 50 lines. Move all history/details to `docs/archive/` or ADRs.
-- **Truth in Code**: If documentation contradicts tests or types, **delete the documentation**.
-
-### 2. Self-Healing Loop
-
-- **Listen to Hooks**: After every `Write` or `Edit`, pay attention to the `PostToolUse` output.
-- **Immediate Correction**: If the linter reports an error, you MUST fix it in the very next turn. Do not ignore lints for "later".
-- **Instructional Linting**: Use `task maintenance:gc` to find and prune dead code and "tmp" files.
-
-### 3. Architecture Guardrails
-
-- **ADR First**: Any change to project structure, core dependencies, or cross-cutting patterns MUST be documented in `docs/adr/` BEFORE implementation.
-- **Layer Enforcement**: Never allow logic to drift into `src/io/` or I/O into `src/domain/`.
-
-## 🔄 Self-Correction Workflow
-
-1. **CRASH/LINT** -> 2. **IDENTIFY ROOT CAUSE** -> 3. **MINIMAL FIX** -> 4. **VERIFY**
-
-*This skill overrides defensive habits. Let the system crash if it violates the harness - then fix the harness.*
+**DO NOT** maintain checklists or procedural instructions within this `SKILL.md` file. Treat this file ONLY as a directory of pointers to executable scripts and canonical markdown files to prevent context bloat and synchronization debt.
