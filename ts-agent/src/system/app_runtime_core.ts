@@ -165,10 +165,11 @@ export abstract class BaseAgent {
   }
 
   protected loadMissionContext(): string {
-    const missionPath = join(this.core.config.paths.data, "mission.md");
-    if (existsSync(missionPath)) {
-      return readFileSync(missionPath, "utf8");
-    }
+    const contextDir = join(import.meta.dir, "../../data/context");
+    const agentPath = join(contextDir, `${this.constructor.name}.md`);
+    const sharedPath = join(contextDir, "mission.md");
+    if (existsSync(agentPath)) return readFileSync(agentPath, "utf8");
+    if (existsSync(sharedPath)) return readFileSync(sharedPath, "utf8");
     return "";
   }
 
@@ -213,8 +214,7 @@ export abstract class BaseAgent {
     return (await skill.execute(validatedArgs)) as TOutput;
   }
 
-  public async listAvailableSkills(): Promise<string[]> {
-    const { skillRegistry } = await import("../skills/registry.ts");
+  public listAvailableSkills(): string[] {
     return skillRegistry.listSkills().map((s) => `${s.name}: ${s.description}`);
   }
 }

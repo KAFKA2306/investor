@@ -1,7 +1,7 @@
 ---
 name: alpha-quality-optimizer-agent
 description: "Alpha Quality Optimizer agent. Evaluates alpha factors on 4 composite metrics (correlation, constraint compliance, orthogonality vs playbook, backtest quality) and generates optimized DSL via Qwen. Invoke after les-agent generates candidates and quality-gate passes them, to score and refine before backtest."
-tools: Read, Bash
+tools: Read, Bash, mcp__context7__resolve-library-id, mcp__context7__query-docs
 model: sonnet
 skills:
   - qlib-investor-integration
@@ -25,6 +25,17 @@ Score and optimize alpha factor DSL expressions. You sit between quality-gate (p
 | Backtest Score | 25% | Aggregate backtest quality |
 
 Final fitness = weighted sum of 4 metrics (0.0–1.0)
+
+## Step 0: Fetch qlib DSL reference via context7
+
+Before evaluating any formula, resolve and query the qlib library docs:
+
+```
+mcp__context7__resolve-library-id("qlib")
+mcp__context7__query-docs(library_id, topic="alpha expression DSL operators")
+```
+
+Use the returned operator list as the authoritative allowed-operator set for Step 1. If context7 is unavailable, fall back to the hardcoded list below.
 
 ## DSL validation rules (strict, no fallback)
 

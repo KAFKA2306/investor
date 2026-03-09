@@ -39,6 +39,7 @@ See `DATA_STRUCTURE.md` for the unified architecture mappings.
 - `.claude/skills/` is a **symlink** to `.agent/skills/` — physically the same directory
 - **Edit only** `.agent/skills/` — `.claude/skills/` reflects changes instantly
 - Each SKILL.md requires YAML frontmatter: `name` + English `description` with trigger phrases
+- **TypeScript runtime skills** (different from above): `ts-agent/src/skills/` — see `typescript-agent-skills` SKILL.md
 
 ---
 *For task-specific commands and setup, see [OPERATIONS.md](file:///home/kafka/finance/investor/docs/OPERATIONS.md).*

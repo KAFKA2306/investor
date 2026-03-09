@@ -123,46 +123,49 @@ def evaluate_factors(request: dict) -> dict:
     for factor in factors:
         fid = factor["id"]
         formula = factor["formula"]
-        
-        pooled_signals = []
-        pooled_returns = []
-        scores_by_symbol = []
+
+        signal_records: list[dict] = []
 
         for symbol, group in df.groupby("symbol"):
             group = group.set_index("date")
-            try:
-                signal = eval_formula(formula, group)
-                # Next-day return calculation
-                forward_ret = group["close"].pct_change().shift(-1)
-                
-                # Align signal with forward return
-                aligned = pd.concat([signal, forward_ret], axis=1).dropna()
-                aligned.columns = ["signal", "ret"]
-                
-                for date, row in aligned.iterrows():
-                    val = float(row["signal"])
-                    if not np.isfinite(val):
-                        continue
-                        
-                    pooled_signals.append(val)
-                    pooled_returns.append(float(row["ret"]))
-                    scores_by_symbol.append({
-                        "symbol": symbol,
-                        "date": str(date.date() if hasattr(date, "date") else date), # type: ignore
-                        "score": val,
-                    })
-            except Exception as e:
-                # Log or handle formula errors per factor
-                print(f"Error evaluating factor {fid} for {symbol}: {e}", file=sys.stderr)
+            signal = eval_formula(formula, group)
+            forward_ret = group["close"].pct_change().shift(-1)
+            aligned = pd.concat([signal, forward_ret], axis=1).dropna()
+            aligned.columns = ["signal", "ret"]
+            for date, row in aligned.iterrows():
+                val = float(row["signal"])
+                if not np.isfinite(val):
+                    continue
+                signal_records.append({
+                    "symbol": symbol,
+                    "date": date,
+                    "signal": val,
+                    "ret": float(row["ret"]),
+                })
+
+        scores_by_symbol = [
+            {
+                "symbol": r["symbol"],
+                "date": str(r["date"].date() if hasattr(r["date"], "date") else r["date"]),
+                "score": r["signal"],
+            }
+            for r in signal_records
+        ]
 
         ic = 0.0
-        if len(pooled_signals) > 1:
-            try:
-                ic = float(np.corrcoef(pooled_signals, pooled_returns)[0, 1])
-                if np.isnan(ic):
-                    ic = 0.0
-            except Exception:
-                ic = 0.0
+        if signal_records:
+            panel = pd.DataFrame(signal_records)
+            daily_ics: list[float] = []
+            for _date, day in panel.groupby("date"):
+                if len(day) < 5:
+                    continue
+                sig_cs = day["signal"].rank(pct=True)
+                ret_cs = day["ret"].rank(pct=True)
+                corr = float(sig_cs.corr(ret_cs))
+                if np.isfinite(corr):
+                    daily_ics.append(corr)
+            if daily_ics:
+                ic = float(np.mean(daily_ics))
 
         results.append({
             "factor_id": fid,
@@ -175,9 +178,6 @@ def evaluate_factors(request: dict) -> dict:
 
 
 if __name__ == "__main__":
-    try:
-        request = json.load(sys.stdin)
-        result = evaluate_factors(request)
-        print(json.dumps(result))
-    except Exception as e:
-        print(json.dumps({"status": "error", "message": str(e)}))
+    request = json.load(sys.stdin)
+    result = evaluate_factors(request)
+    print(json.dumps(result))

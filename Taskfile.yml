@@ -568,6 +568,12 @@ tasks:
     cmds:
       - bun src/agents/polymarket_arb_agent.ts
 
+  polymarket:bot:
+    desc: run the Quant-level Polymarket Trading Bot Swarm
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun src/agents/polymarket_trading_bot.ts
+
 
 
   polymarket:extract-targets:

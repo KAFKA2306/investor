@@ -19,6 +19,8 @@ ts-agent/.env
 edinet2dataset/.env
 copcon/
 ts-agent/src/dashboard/package-lock.json
+artifacts/
+artifact/
 
 # Virtual environments
 

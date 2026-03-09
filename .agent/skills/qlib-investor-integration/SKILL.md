@@ -34,6 +34,70 @@ Use this skill to decide whether qlib belongs in the current task, where it fits
 - Use rolling or walk-forward evaluation as a secondary validation layer because fixed-window backtests are prone to overfitting and market-regime bias.
 - Keep qlib as a secondary research harness because the primary "Alpha Factory" remains centered on the autonomous TS loop.
 
+## NO SYNTHETIC DATA — Hard Rule
+
+**NEVER inject synthetic/mock values for any column used in factor evaluation.**
+
+This rule applies to all columns without exception:
+
+| Column | Forbidden substitute | Required source |
+|---|---|---|
+| `$macro_cpi` | `np.cumsum(np.random.normal(...))` | 内閣府 e-Stat CPI 月次実績 |
+| `$macro_iip` | `np.cumsum(np.random.normal(...))` | 経済産業省 IIP 月次実績 |
+| `$macro_leverage_trend` | random walk scalar | OFR Hedge Fund Monitor（全銘柄スカラー → 使用禁止） |
+| `$segment_sentiment` | `np.random.normal(0.55, ...)` | `/mnt/d/investor_all_cached_data/edinet/edinet_10k_intelligence_map.json` → `sentiment` |
+| `$kg_centrality` | `np.random.uniform(5, 36, ...)` | `/mnt/d/investor_all_cached_data/edinet/edinet_10k_intelligence_map.json` → `kgCentrality` |
+| `$ai_exposure` | any random value | `/mnt/d/investor_all_cached_data/edinet/edinet_10k_intelligence_map.json` → `aiExposure` |
+
+## Real EDINET Alt-Data — How to Load
+
+**Source**: `/mnt/d/investor_all_cached_data/edinet/edinet_10k_intelligence_map.json`
+
+- **Coverage**: 646 銘柄, 年次更新（有価証券報告書ベース）
+- **Fields**: `sentiment` (0.0–1.0), `kgCentrality` (0–36), `aiExposure` (0–11)
+- **Join key**: stock code (string, no `.T` suffix) × report date
+
+**Loading pattern** (forward-fill to daily):
+
+```python
+import json, pandas as pd
+
+with open("/mnt/d/investor_all_cached_data/edinet/edinet_10k_intelligence_map.json") as f:
+    intel = json.load(f)
+
+rows = []
+for code, dates in intel.items():
+    for date, vals in dates.items():
+        # J-Quants uses 5-digit code (TSE 4-digit × 10); EDINET uses 4-digit
+        rows.append({"Code": int(code) * 10, "edinet_date": pd.Timestamp(date),
+                     "segment_sentiment": vals["sentiment"],
+                     "kg_centrality": vals["kgCentrality"],
+                     "ai_exposure": vals["aiExposure"]})
+edinet_df = pd.DataFrame(rows).sort_values("edinet_date").reset_index(drop=True)
+
+# merge_asof requires global sort by key (not per-group); by="Code" handles grouping
+price_df = price_df.sort_values("date").reset_index(drop=True)
+merged = pd.merge_asof(price_df, edinet_df, left_on="date", right_on="edinet_date", by="Code")
+```
+
+**Critical notes**:
+- Report date = publication date → safe to use as-is (no look-ahead bias)
+- **Code conversion**: EDINET 4-digit code × 10 = J-Quants 5-digit code (e.g., 1333 → 13330)
+- `$macro_leverage_trend` is a macro-scalar: do NOT use as cross-sectional factor; redesign as firm-level debt/equity from EDINET financials if needed
+- Stocks not in the 646-stock EDINET universe get NaN → drop from factor evaluation, do not fill with synthetic values
+- `Rank()` in `qlib_factor_eval.py` computes time-series rank per symbol, NOT cross-sectional rank — cross-sectional factors require groupby-date ranking before passing to eval
+
+**Why this matters:**
+- Synthetic data produces IC/Sharpe estimates that have zero predictive validity for live trading
+- Macro scalars (same value for all stocks at a timestamp) provide zero cross-sectional discrimination
+- Negative IC from synthetic data is noise, not a signal — it misleads PIVOT decisions
+- CDD principle: let the evaluation crash on missing real data rather than silently succeeding on fake data
+
+**Correct behavior when real data is unavailable:**
+- Remove the factor from the evaluation batch
+- Report "evaluation deferred — real data required" to cqo-agent
+- Do NOT substitute random values or synthetic time series
+
 ## Do not use qlib for
 - Replacing J-Quants, EDINET, or e-Stat ingestion because the existing TS gateway is already optimized for Japanese regulatory APIs and rate limits.
 - Replacing the TS orchestration end-to-end because the "Knowledgebase" logic is highly specialized for LLM-driven alpha mining.

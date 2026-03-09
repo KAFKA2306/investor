@@ -54,16 +54,6 @@ export const EdinetDocumentTypeLabel: Record<EdinetDocumentType, string> = {
   5: "CSV",
 };
 
-// --- 金融ドメイン固有の DSL / 構造 ---
-
-export interface FactorAST {
-  type: "variable" | "constant" | "operator";
-  name?: string;
-  value?: number;
-  left?: FactorAST;
-  right?: FactorAST;
-}
-
 export interface FactorGenerationOptions {
   count?: number;
 }

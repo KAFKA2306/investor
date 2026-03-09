@@ -91,12 +91,12 @@ export class LesAgent extends BaseAgent {
       }
     }
 
-    const cols = [
-      "close",
-      "open",
-      "high",
-      "low",
-      "volume",
+    const useBasicCols =
+      this.getConfig("alpha.les.useBasicColumnsOnly", false) ||
+      process.env.UQTL_ALPHA_LES_USE_BASIC_COLUMNS_ONLY === "true" ||
+      process.env.ALPHA_LES_USE_BASIC_COLUMNS_ONLY === "true";
+    const basicCols = ["close", "open", "high", "low", "volume"];
+    const customCols = [
       "correction_freq",
       "activist_bias",
       "macro_iip",
@@ -106,6 +106,8 @@ export class LesAgent extends BaseAgent {
       "ai_exposure",
       "kg_centrality",
     ];
+
+    const cols = useBasicCols ? basicCols : [...basicCols, ...customCols];
 
     const generateQlibFormula = (
       depth: number,
@@ -126,8 +128,8 @@ export class LesAgent extends BaseAgent {
         "Mean",
         "Std",
         "Corr",
-        "ratio",
-        "zscore",
+        "DIV_PATTERN",
+        "ZSCORE_PATTERN",
       ] as const);
       switch (op) {
         case "Ref":
@@ -138,12 +140,12 @@ export class LesAgent extends BaseAgent {
           return `Std(${pickCol()},${pickN()})`;
         case "Corr":
           return `Corr(${pickCol()},${pickCol()},${pickN()})`;
-        case "ratio": {
+        case "DIV_PATTERN": {
           const a = generateQlibFormula(depth - 1, biasCols);
           const b = generateQlibFormula(depth - 1, biasCols);
           return `(${a})/(${b})`;
         }
-        case "zscore": {
+        case "ZSCORE_PATTERN": {
           const col = pickCol();
           const n = pickN();
           return `(${col}-Mean(${col},${n}))/Std(${col},${n})`;
@@ -158,18 +160,29 @@ export class LesAgent extends BaseAgent {
           ? formulaA
           : formulaB;
 
-    const themes = [...PromptFactory.BASE_THEMES];
+    const themes = PromptFactory.BASE_THEMES.map(t => ({
+      ...t,
+      terms: useBasicCols ? t.terms.filter(term => basicCols.includes(term)) : t.terms
+    })).filter(t => t.terms.length > 0);
+
     if (missionContext.trim().length > 0) {
-      themes.push({
-        name: "Mission Specific Strategy",
-        terms: [
-          "segment_sentiment",
-          "ai_exposure",
-          "kg_centrality",
-          "drift",
-          "itemization",
-        ],
-      });
+      const missionTerms = [
+        "segment_sentiment",
+        "ai_exposure",
+        "kg_centrality",
+        "drift",
+        "itemization",
+      ];
+      const filteredMissionTerms = useBasicCols
+        ? missionTerms.filter(t => basicCols.includes(t))
+        : missionTerms;
+
+      if (filteredMissionTerms.length > 0 || !useBasicCols) {
+        themes.push({
+          name: "Mission Specific Strategy",
+          terms: filteredMissionTerms.length > 0 ? filteredMissionTerms : ["close", "volume"],
+        });
+      }
     }
 
     const recentSuccesses: string[] = [];
@@ -226,26 +239,32 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
     });
 
     const openAIThemeName = `${openAIProposal.theme} (${openAIProposal.model})`;
+
+    const proposalTerms = openAIProposal.featureSignature.length > 0
+      ? openAIProposal.featureSignature
+      : leverageCtx.isRiskOff
+        ? [
+          "macro_leverage_trend",
+          "correction_freq",
+          "macro_cpi",
+          "volume",
+          "close",
+        ]
+        : [
+          "volume",
+          "close",
+          "macro_iip",
+          "macro_cpi",
+          "segment_sentiment",
+        ];
+
+    const filteredProposalTerms = useBasicCols
+      ? proposalTerms.filter(t => basicCols.includes(t))
+      : proposalTerms;
+
     themes.unshift({
       name: openAIThemeName,
-      terms:
-        openAIProposal.featureSignature.length > 0
-          ? openAIProposal.featureSignature
-          : leverageCtx.isRiskOff
-            ? [
-                "macro_leverage_trend",
-                "correction_freq",
-                "macro_cpi",
-                "volume",
-                "close",
-              ]
-            : [
-                "volume",
-                "close",
-                "macro_iip",
-                "macro_cpi",
-                "segment_sentiment",
-              ],
+      terms: filteredProposalTerms.length > 0 ? filteredProposalTerms : ["close", "open", "volume"],
     });
 
     const count = _options.count || 2;
@@ -325,6 +344,12 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
       } else {
         formula = generateQlibFormula(depth, bias);
       }
+
+      const formulaValid = !useBasicCols || !customCols.some(c => formula.includes(`$${c}`));
+      if (!formulaValid) {
+        continue;
+      }
+
 
       candidates.push({
         id,
