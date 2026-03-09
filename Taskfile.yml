@@ -50,10 +50,13 @@ tasks:
       - bun run lint
 
   check:
-    desc: reliability gate
+    desc: run all checks
     cmds:
       - task: lint
-      - task: test:ts
+      - task: format
+      - task: typecheck
+      - task: test
+      - bash scripts/self_healing_lint.sh
       - task: check:python
 
   check:python:
@@ -99,6 +102,13 @@ tasks:
     dir: "{{.TS_DIR}}"
     cmds:
       - bun run lint
+
+  maintenance:gc:
+    desc: "Autonomous Garbage Collector: Cleaning up unused files and rot ✨"
+    cmds:
+      - bash -lc 'find . -name "*.tmp" -mtime +1 -delete'
+      - bash -lc 'find . -type f -empty -not -path "*/.*" -delete'
+      - task: check
 
   validate:runtime:
     desc: runtime config validation
