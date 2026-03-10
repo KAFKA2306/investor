@@ -31,11 +31,17 @@
 REV-VOL (mean-reversion × vol rank) matches confirmed alpha F3-REV5D-MAXAMP pattern.
 Multi-factor signals outperform single-factor by significant margin.
 
-### Next Phase
-- [ ] Create evals.json for Skills 2, 3, 4
-- [ ] Run parallel tests (Skills 2, 3, 4)
-- [ ] Integrate 4-skill pipeline
-- [ ] Deploy to CqoAgent → Pipeline orchestrator
+### Phase 2: Implementation + Integration Testing
+- [✅] Create evals.json for Skills 2, 3, 4
+- [🔄] Run 4-skill integration pipeline test (agent: aaf2d15d56726bd0f)
+- [ ] Verify all 4 skills execute correctly end-to-end
+- [ ] Deploy to CqoAgent → pipeline_orchestrator integration
+
+### Phase 3 (Next): Pipeline Orchestrator Integration
+- Integrate mixseek-competitive-framework into `src/agents/latent_economic_signal_agent.ts`
+- LesAgent generates 2+ candidates → mixseek evaluates → CqoAgent audits
+- Update `src/system/pipeline_orchestrator.ts` to invoke new skill chain
+- Test full alpha discovery loop with new framework
 
 ### Architecture Notes
 - Skills live in `.agent/skills/<name>/SKILL.md`
