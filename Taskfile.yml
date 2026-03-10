@@ -103,6 +103,12 @@ tasks:
     cmds:
       - bun run lint
 
+  typecheck:
+    desc: type check TS
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run typecheck
+
   maintenance:gc:
     desc: "Autonomous Garbage Collector: Cleaning up unused files and rot ✨"
     cmds:
