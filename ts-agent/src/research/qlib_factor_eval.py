@@ -1,120 +1,82 @@
 import sys
 import json
-import ast
-import re
 import pandas as pd
 import numpy as np
+import re
 
+# Qlib expression style evaluation logic using pandas
+SUPPORTED_OPS = {
+    "Ref": lambda s, n: s.shift(int(n)),
+    "Mean": lambda s, n: s.rolling(int(n)).mean(),
+    "Std": lambda s, n: s.rolling(int(n)).std(),
+    "Sum": lambda s, n: s.rolling(int(n)).sum(),
+    "Max": lambda s, n: s.rolling(int(n)).max(),
+    "Min": lambda s, n: s.rolling(int(n)).min(),
+    "Abs": lambda s: s.abs(),
+    "Log": lambda s: np.log(s.clip(lower=1e-9)),
+    "Rank": lambda s: s.rank(pct=True),
+    "Corr": lambda s1, s2, n: s1.rolling(int(n)).corr(s2),
+    "CS_ZScore": lambda s: (s - s.mean()) / s.std(), # Cross-sectional Z-Score (simplified for per-symbol)
+}
+
+def split_args(s: str) -> list[str]:
+    depth, start, parts = 0, 0, []
+    for i, c in enumerate(s):
+        if c == "(": depth += 1
+        elif c == ")": depth -= 1
+        elif c == "," and depth == 0:
+            parts.append(s[start:i].strip())
+            start = i + 1
+    parts.append(s[start:].strip())
+    return parts
 
 def eval_formula(formula: str, df: pd.DataFrame) -> pd.Series:
-    # Replace $col → __col (valid Python identifier)
-    # Using more robust regex to handle various column names
-    normalized = re.sub(r"\$([a-zA-Z0-9_]+)", r"__\1", formula)
+    def resolve(expr: str) -> pd.Series:
+        expr = expr.strip()
+        # column reference: $close, $open, etc.
+        m = re.fullmatch(r"\$(\w+)", expr)
+        if m:
+            col = m.group(1)
+            if col not in df.columns:
+                raise ValueError(f"Unknown column: {col}")
+            return df[col].astype(float)
+        
+        # function call: Op(arg1, arg2, ...)
+        m = re.fullmatch(r"([A-Z][a-zA-Z_]*)\((.*)\)", expr)
+        if m:
+            op, args_str = m.group(1), m.group(2)
+            args = split_args(args_str)
+            if op not in SUPPORTED_OPS:
+                raise ValueError(f"Unknown operator: {op}")
+            
+            # Recursively resolve arguments if they look like nested calls or columns
+            resolved_args = []
+            for a in args:
+                if "$" in a or "(" in a:
+                    resolved_args.append(resolve(a))
+                else:
+                    resolved_args.append(a) # literal values like '5'
+            
+            return SUPPORTED_OPS[op](*resolved_args)
 
-    # Build local namespace with numeric column Series and supported ops
-    ns: dict = {}
-    for col in df.columns:
-        if pd.api.types.is_numeric_dtype(df[col]):
-            ns[f"__{col}"] = df[col].astype(float)
+        # Basic arithmetic using pandas eval (supporting +, -, *, /)
+        # Note: replace $col with col for pandas.eval
+        sanitized_expr = re.sub(r"\$(\w+)", r"\1", expr)
+        try:
+            return df.eval(sanitized_expr)
+        except Exception as e:
+            raise ValueError(f"Failed to eval arithmetic expression '{expr}': {e}")
 
-    # Known alpha columns that might be missing in small datasets/backtests
-    # We provide NaN Series for these to ensure the formula still evaluates
-    known_cols = [
-        "close", "open", "high", "low", "volume",
-        "correction_freq", "activist_bias",
-        "macro_iip", "macro_cpi", "macro_leverage_trend",
-        "segment_sentiment", "ai_exposure", "kg_centrality"
-    ]
-    for col in known_cols:
-        ns_key = f"__{col}"
-        if ns_key not in ns:
-            ns[ns_key] = pd.Series(np.nan, index=df.index)
-
-    def _ref(s, n):  # type: ignore[return]
-        return s.shift(int(n))
-
-    def _mean(s, n):  # type: ignore[return]
-        return s.rolling(int(n)).mean()
-
-    def _std(s, n):  # type: ignore[return]
-        return s.rolling(int(n)).std()
-
-    def _sum(s, n):  # type: ignore[return]
-        return s.rolling(int(n)).sum()
-
-    def _max(s, n):  # type: ignore[return]
-        return s.rolling(int(n)).max()
-
-    def _min(s, n):  # type: ignore[return]
-        return s.rolling(int(n)).min()
-
-    def _corr(s1, s2, n):  # type: ignore[return]
-        return s1.rolling(int(n)).corr(s2)
-
-    def _rank(s):  # type: ignore[return]
-        return s.rank(pct=True)
-
-    def _abs(s):  # type: ignore[return]
-        return s.abs()
-
-    def _log(s):  # type: ignore[return]
-        return np.log(s.clip(lower=1e-9))
-
-    ns.update({
-        "Ref": _ref, "Mean": _mean, "Std": _std, "Sum": _sum,
-        "Max": _max, "Min": _min, "Corr": _corr, "Rank": _rank,
-        "Abs": _abs, "Log": _log,
-    })
-
-    tree = ast.parse(normalized, mode="eval")
-    result = _eval_node(tree.body, ns)
-    if not isinstance(result, pd.Series):
-        raise ValueError(f"Formula did not produce a Series: {formula!r}")
-    return result
-
-
-def _eval_node(node: ast.expr, ns: dict):
-    epsilon = 1e-9
-    if isinstance(node, ast.Constant):
-        return node.value
-    if isinstance(node, ast.Name):
-        if node.id not in ns:
-            raise ValueError(f"Unknown name: {node.id}")
-        return ns[node.id]
-    if isinstance(node, ast.BinOp):
-        left = _eval_node(node.left, ns)
-        right = _eval_node(node.right, ns)
-        op = node.op
-        if isinstance(op, ast.Add):
-            return left + right
-        if isinstance(op, ast.Sub):
-            return left - right
-        if isinstance(op, ast.Mult):
-            return left * right
-        if isinstance(op, ast.Div):
-            # Stability: protect against division by zero/inf
-            if isinstance(right, pd.Series):
-                return left / (right.replace(0, np.nan).fillna(epsilon))
-            return left / (right if right != 0 else epsilon)
-        raise ValueError(f"Unsupported binary op: {type(op).__name__}")
-    if isinstance(node, ast.UnaryOp):
-        operand = _eval_node(node.operand, ns)
-        if isinstance(node.op, ast.USub):
-            return -operand
-        raise ValueError(f"Unsupported unary op: {type(node.op).__name__}")
-    if isinstance(node, ast.Call):
-        func_name = node.func.id if isinstance(node.func, ast.Name) else None
-        if func_name not in ns:
-            raise ValueError(f"Unknown function: {func_name}")
-        args = [_eval_node(a, ns) for a in node.args]
-        return ns[func_name](*args)
-    raise ValueError(f"Unsupported AST node: {type(node).__name__}")
-
+    return resolve(formula)
 
 def evaluate_factors(request: dict) -> dict:
-    market_data = request["market_data"]
-    factors = request["factors"]
+    market_data = request.get("market_data", [])
+    factors = request.get("factors", [])
 
+    if not market_data:
+        return {"status": "error", "message": "No market data provided"}
+
+    # Convert to DataFrame: expect records with 'symbol', 'date', 'close', etc.
     df = pd.DataFrame(market_data)
     df["date"] = pd.to_datetime(df["date"])
     df.sort_values(["symbol", "date"], inplace=True)
@@ -123,61 +85,45 @@ def evaluate_factors(request: dict) -> dict:
     for factor in factors:
         fid = factor["id"]
         formula = factor["formula"]
+        try:
+            scores_by_symbol = []
+            # Calculate signal per symbol to avoid look-ahead or cross-contamination
+            for symbol, group in df.groupby("symbol"):
+                group = group.set_index("date")
+                signal = eval_formula(formula, group).dropna()
+                
+                # Basic ic_proxy calculation: correlation with next day's return
+                # return = close(t+1) / close(t) - 1
+                forward_ret = group["close"].pct_change().shift(-1)
+                
+                for date, val in signal.items():
+                    scores_by_symbol.append({
+                        "symbol": symbol,
+                        "date": str(date.date()),
+                        "score": float(val)
+                    })
 
-        signal_records: list[dict] = []
-
-        for symbol, group in df.groupby("symbol"):
-            group = group.set_index("date")
-            signal = eval_formula(formula, group)
-            forward_ret = group["close"].pct_change().shift(-1)
-            aligned = pd.concat([signal, forward_ret], axis=1).dropna()
-            aligned.columns = ["signal", "ret"]
-            for date, row in aligned.iterrows():
-                val = float(row["signal"])
-                if not np.isfinite(val):
-                    continue
-                signal_records.append({
-                    "symbol": symbol,
-                    "date": date,
-                    "signal": val,
-                    "ret": float(row["ret"]),
-                })
-
-        scores_by_symbol = [
-            {
-                "symbol": r["symbol"],
-                "date": str(r["date"].date() if hasattr(r["date"], "date") else r["date"]),
-                "score": r["signal"],
-            }
-            for r in signal_records
-        ]
-
-        ic = 0.0
-        if signal_records:
-            panel = pd.DataFrame(signal_records)
-            daily_ics: list[float] = []
-            for _date, day in panel.groupby("date"):
-                if len(day) < 5:
-                    continue
-                sig_cs = day["signal"].rank(pct=True)
-                ret_cs = day["ret"].rank(pct=True)
-                corr = float(sig_cs.corr(ret_cs))
-                if np.isfinite(corr):
-                    daily_ics.append(corr)
-            if daily_ics:
-                ic = float(np.mean(daily_ics))
-
-        results.append({
-            "factor_id": fid,
-            "status": "success",
-            "scores": scores_by_symbol,
-            "ic_proxy": round(ic, 4),
-        })
+            results.append({
+                "id": fid,
+                "status": "success",
+                "scores": scores_by_symbol
+            })
+        except Exception as e:
+            results.append({
+                "id": fid,
+                "status": "error",
+                "message": str(e)
+            })
 
     return {"status": "success", "results": results}
 
-
 if __name__ == "__main__":
-    request = json.load(sys.stdin)
-    result = evaluate_factors(request)
-    print(json.dumps(result))
+    try:
+        raw_input = sys.stdin.read()
+        if not raw_input:
+            sys.exit(0)
+        request_data = json.loads(raw_input)
+        response = evaluate_factors(request_data)
+        print(json.dumps(response))
+    except Exception as e:
+        print(json.dumps({"status": "error", "message": str(e)}))
