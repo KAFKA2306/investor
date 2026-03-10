@@ -1,59 +1,55 @@
-*cache*
-*.sqlite
-*.sqlite-journal
-*.sqlite-wal
+# Dependency directories
+node_modules/
+.venv/
+venv/
+
+# Build and output directories
 build/
 dist/
 wheels/
-*info*
-*.lock
-!uv.lock
-!ts-agent/uv.lock
-!**/bun.lock
 
-# Secrets and local env files
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+
+# General caches and temporary files
+.cache/
+.bun/
+.worktrees/
+*.sqlite
+*.sqlite3
+
+# Environment and secrets
 .env
 .env.*
 !.env.example
-ts-agent/.env
-edinet2dataset/.env
 copcon/
-ts-agent/src/dashboard/package-lock.json
-artifacts/
-artifact/
+gha-creds-*.json
 
-# Virtual environments
-
-.venv/
-*module*
-
-# Git worktrees (isolated development workspaces)
-.worktrees/
-
-# Verification plot offline wheelhouse/lock artifacts
-!ts-agent/vendor/
-!ts-agent/vendor/wheels/
-!ts-agent/vendor/wheels/README.md
-!ts-agent/vendor/wheels/*.whl
-
-# Logs and agent outputs
+# Logs, artifacts, and agent outputs
 logs/
 .agent/logs/
-/root/.gemini/antigravity/brain/
-ts-agent/data/*.png
+artifacts/
+artifact/
+.gemini/
+.claude/
+.serena/
 
-# Large data files
-edinet2dataset/data/
+# Data and models
+**/data/
 edinet2dataset/edinet_corpus/
 llm/*/models/
 llm/*/downloads/
-llm/*/.venv/
 *.safetensors
 *.bin
 *.pt
 *.gguf
 *.awq
-ts-agent/data/
 
-.gemini/
-gha-creds-*.json
+# OS & Editor
+.vscode/
+.idea/
+.DS_Store
