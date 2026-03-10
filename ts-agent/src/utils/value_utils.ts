@@ -1,6 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
-import { mathUtils } from "./math_utils.ts";
+import { clamp } from "./math_utils.ts";
 
 /**
  * ✨ プロジェクト全体の「値の魔術師」value_utils.ts だよっ！ ✨
@@ -175,10 +173,10 @@ export function parseIntelligenceMap(filePath: string): IntelligenceMap {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) continue;
       if (!result[symbol]) result[symbol] = {};
       result[symbol][isoDate] = {
-        sentiment: mathUtils.clamp(toFiniteNumber(point.sentiment, 0.5), 0, 1),
+        sentiment: clamp(toFiniteNumber(point.sentiment, 0.5), 0, 1),
         aiExposure: Math.max(0, toFiniteNumber(point.aiExposure, 0)),
         kgCentrality: Math.max(0, toFiniteNumber(point.kgCentrality, 0)),
-        correctionFlag: mathUtils.clamp(
+        correctionFlag: clamp(
           Math.floor(toFiniteNumber(point.correctionFlag, 0)),
           0,
           1,
@@ -232,34 +230,5 @@ export function normalizeBars(
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-// ── 公開オブジェクト (Public Objects) ────────────────────────────────────────
-
-export const valueNormalizers = {
-  toSymbol4,
-  normalizeSymbol,
-  toIsoDate,
-  toYmd,
-  toFiniteNumber,
-  getNumberByKeys,
-  parseIntelligenceMap,
-  normalizeBars,
-  parseBool: parseBoolLike,
-};
-
-export const valueFormatters = {
-  number: formatNumber,
-  percent: formatPercent,
-  currency: formatCurrency,
-  date: formatDate,
-};
-
-export const valueUtils = {
-  normalizers: valueNormalizers,
-  formatters: valueFormatters,
-  array: arrayUtils,
-  id: idUtils,
-  ...valueNormalizers,
-  ...valueFormatters,
-  ...arrayUtils,
-  ...idUtils,
-};
+// ── 公開 API ─────────────────────────────────────────────────────────────
+// 個別の関数を export しているので、これらの集約オブジェクトは廃止するよっ！✨

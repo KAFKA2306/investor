@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
-import { normalizeSymbol, toYmd, valueUtils } from "../utils/value_utils.ts";
+import { normalizeSymbol, parseBoolLike, toYmd } from "../utils/value_utils.ts";
 import { core } from "./app_runtime_core.ts";
 import { paths } from "./path_registry.ts";
 
@@ -74,8 +74,8 @@ export class DataPipelineRuntime {
 
       // valueUtils.normalizers.toBool was missing, so we should either use cliArgs.parseBool or add it to valueUtils.
       // For now, I've added parseBool to value_utils, so use that.
-      if (predIdx >= 0 && !valueUtils.normalizers.parseBool?.(pred)) continue;
-      if (uniIdx >= 0 && !valueUtils.normalizers.parseBool?.(uni)) continue;
+      if (predIdx >= 0 && !parseBoolLike(pred)) continue;
+      if (uniIdx >= 0 && !parseBoolLike(uni)) continue;
 
       selected.push(code);
       if (selected.length >= maxSymbols) break;
@@ -170,7 +170,7 @@ export class QuantResearchRuntime {
    * Loads market data and normalizes it! 💹✨
    */
   public async loadNormalizedBars(
-    gateway: import("../providers/unified_market_data_gateway.ts").MarketdataLocalGateway,
+    gateway: import("../io/market/unified_market_data_gateway.ts").MarketdataLocalGateway,
     symbol: string,
   ): Promise<import("../utils/value_utils.ts").NormalizedBar[]> {
     const { normalizeBars } = await import("../utils/value_utils.ts");

@@ -21,8 +21,8 @@ import {
   UnifiedLogSchema,
 } from "../schemas/financial_domain_schemas.ts";
 import { skillRegistry } from "../skills/registry.ts";
-import { dateUtils } from "../utils/date_utils.ts";
-import { fsUtils } from "../utils/fs_utils.ts";
+import { nowIso, todayYmd } from "../utils/date_utils.ts";
+import { readJsonFile, writeValidatedJson } from "../utils/fs_utils.ts";
 import { logger } from "../utils/logger.ts";
 import { type Config, loadRuntimeConfig } from "./runtime_config.ts";
 import { withTelemetry } from "./telemetry_logger.ts";
@@ -100,7 +100,7 @@ export abstract class BaseAgent {
     metadata: Record<string, object | string | number | boolean> = {},
   ) {
     const id = randomUUID();
-    const timestamp = dateUtils.nowIso();
+    const timestamp = nowIso();
     const event = {
       id,
       timestamp,
@@ -145,9 +145,7 @@ export abstract class BaseAgent {
     if (fromEnv.length > 0) return { text: fromEnv, source: "ENV" };
     const filePath = this.core.getEnv("UQTL_NL_INPUT_FILE").trim();
     if (filePath.length > 0 && existsSync(filePath)) {
-      const content = fsUtils.readJsonFile<{ text?: string } | string>(
-        filePath,
-      );
+      const content = readJsonFile<{ text?: string } | string>(filePath);
       const text = typeof content === "string" ? content : content.text || "";
       if (text.length > 0) return { text, source: "FILE" };
     }
@@ -173,11 +171,26 @@ export abstract class BaseAgent {
     return "";
   }
 
+  /**
+   * Loads domain-specific knowledge from .agent/skills/{domain}/SKILL.md
+   */
+  protected loadSkillKnowledge(domain: string): string {
+    const rootDir = join(import.meta.dir, "../../../");
+    const skillPath = join(rootDir, ".agent/skills", domain, "SKILL.md");
+    if (existsSync(skillPath)) {
+      return readFileSync(skillPath, "utf8");
+    }
+    logger.warn(
+      `[${this.constructor.name}] Skill knowledge not found for domain: ${domain}`,
+    );
+    return "";
+  }
+
   protected writeStandardOutcome(outcome: StandardOutcome): void {
     const validated = StandardOutcomeSchema.parse(outcome);
     writeCanonicalLog({
       schema: "investor.investment-outcome.v1",
-      generatedAt: validated.timestamp || dateUtils.nowIso(),
+      generatedAt: validated.timestamp || nowIso(),
       report: validated,
     });
 
@@ -232,8 +245,8 @@ export function writeCanonicalLog(data: UnifiedLog): void {
   const validated = UnifiedLogSchema.parse(data);
   writeCanonicalEnvelope({
     kind: CanonicalLogKind.ALPHA_DISCOVERY,
-    asOfDate: dateUtils.todayYmd(),
-    generatedAt: validated.generatedAt || dateUtils.nowIso(),
+    asOfDate: todayYmd(),
+    generatedAt: validated.generatedAt || nowIso(),
     payload: validated,
   });
 }
@@ -246,8 +259,8 @@ export function writeCanonicalEnvelope(input: {
   producerComponent?: string;
   producerVersion?: string;
 }): string {
-  const generatedAt = input.generatedAt || dateUtils.nowIso();
-  const asOfDate = input.asOfDate || dateUtils.todayYmd();
+  const generatedAt = input.generatedAt || nowIso();
+  const asOfDate = input.asOfDate || todayYmd();
   const canonical = {
     schema: "investor.log-envelope.v2",
     id: randomUUID(),
@@ -259,6 +272,6 @@ export function writeCanonicalEnvelope(input: {
     payload: input.payload,
   };
   const canonicalPath = createLogPath("unified", `log_${Date.now()}.json`);
-  fsUtils.writeValidatedJson(canonicalPath, canonical);
+  writeValidatedJson(canonicalPath, canonical);
   return canonicalPath;
 }

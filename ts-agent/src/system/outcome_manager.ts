@@ -3,7 +3,7 @@ import {
   StandardOutcomeSchema,
 } from "../schemas/financial_domain_schemas.ts";
 import { writeCanonicalLog } from "../system/app_runtime_core.ts";
-import { dateUtils } from "../utils/date_utils.ts";
+import { nowIso } from "../utils/date_utils.ts";
 import { logger } from "../utils/logger.ts";
 
 /**
@@ -24,7 +24,7 @@ export class OutcomeManager {
 
     writeCanonicalLog({
       schema: "investor.investment-outcome.v1",
-      generatedAt: validated.timestamp || dateUtils.nowIso(),
+      generatedAt: validated.timestamp || nowIso(),
       report: validated,
     });
 
@@ -45,7 +45,7 @@ export class OutcomeManager {
     this.persist({
       strategyId,
       strategyName: strategyId, // Default
-      timestamp: dateUtils.nowIso(),
+      timestamp: nowIso(),
       summary,
       ...extra,
     });

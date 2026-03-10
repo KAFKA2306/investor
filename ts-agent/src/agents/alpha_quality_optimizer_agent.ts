@@ -10,7 +10,6 @@ import { logIO, logMetric } from "../system/telemetry_logger.ts";
 import { logger } from "../utils/logger.ts";
 import { computeBacktestScore } from "./metrics/backtest_scorer.ts";
 import { computeConstraintScore } from "./metrics/constraint_scorer.ts";
-import { computeCorrelationScore } from "./metrics/correlation_scorer.ts";
 import {
   computeOrthogonalityScore,
   extractFactorsFromDSL,
@@ -163,7 +162,7 @@ export class AlphaQualityOptimizerAgent extends BaseAgent {
     // Step 4: Compute all 4 metrics
 
     // 4.1 Correlation Score: measure correlation between factors and returns
-    const returnsArray = input.marketData.returns[0] || [];
+    const _returnsArray = input.marketData.returns[0] || [];
     // REAL DATA: Correlation should be 0 or calculated from actual factor extraction.
     // We remove the misleading "mockFactorValues = [returnsArray]" which yielded a fake perfect correlation.
     const correlationScore = 0.0;

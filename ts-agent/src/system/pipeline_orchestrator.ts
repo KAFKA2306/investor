@@ -7,8 +7,8 @@ import {
   ContextPlaybook,
   MemoryCenter,
 } from "../context/unified_context_services.ts";
+import { MarketdataLocalGateway } from "../io/market/unified_market_data_gateway.ts";
 import { MarketdataDbCache } from "../providers/cache_providers.ts";
-import { MarketdataLocalGateway } from "../providers/unified_market_data_gateway.ts";
 import { validateQlibFormula } from "../schemas/alpha_consistency_schema.ts";
 import {
   type AceBullet,
@@ -26,7 +26,7 @@ import type {
   BacktestResult,
   ComputeMarketData,
 } from "../types/index.ts";
-import { dateUtils } from "../utils/date_utils.ts";
+import { nowIso } from "../utils/date_utils.ts";
 import { logger } from "../utils/logger.ts";
 import { BaseAgent, core } from "./app_runtime_core.ts";
 import {
@@ -222,13 +222,13 @@ export interface IStateMonitor {
 // 📌 ACE Failure Contextualization: Record detailed analysis of failures
 export interface ContextualizedRejection {
   reason:
-  | "SHARPE_TOO_LOW"
-  | "IC_ZERO"
-  | "HIGH_DRAWDOWN"
-  | "DATA_FAILURE"
-  | "ORDER_GATE_REJECTED"
-  | "EXECUTION_CONSTRAINT"
-  | "EXECUTION_QUALITY";
+    | "SHARPE_TOO_LOW"
+    | "IC_ZERO"
+    | "HIGH_DRAWDOWN"
+    | "DATA_FAILURE"
+    | "ORDER_GATE_REJECTED"
+    | "EXECUTION_CONSTRAINT"
+    | "EXECUTION_QUALITY";
   metrics?: {
     sharpe?: number;
     maxDD?: number;
@@ -416,7 +416,9 @@ export class PipelineOrchestrator extends BaseAgent {
         60,
       );
       if (!bars || bars.length <= 1) {
-        throw new Error(`Market data unavailable for ${symbol}. Synthetic fallback is forbidden. 💢`);
+        throw new Error(
+          `Market data unavailable for ${symbol}. Synthetic fallback is forbidden. 💢`,
+        );
       }
 
       // Calculate returns from bars
@@ -430,8 +432,7 @@ export class PipelineOrchestrator extends BaseAgent {
 
       // Calculate volatility
       if (returns[i].length > 0) {
-        const mean =
-          returns[i].reduce((a, b) => a + b, 0) / returns[i].length;
+        const mean = returns[i].reduce((a, b) => a + b, 0) / returns[i].length;
         const variance =
           returns[i].reduce((sum, r) => sum + (r - mean) ** 2, 0) /
           returns[i].length;
@@ -507,7 +508,9 @@ export class PipelineOrchestrator extends BaseAgent {
     });
   }
 
-  private async selectMixseekWinner(candidates: IdeaCandidate[]): Promise<string> {
+  private async selectMixseekWinner(
+    candidates: IdeaCandidate[],
+  ): Promise<string> {
     if (candidates.length === 0) {
       throw new Error("No candidates available for mixseek selection");
     }
@@ -1105,8 +1108,8 @@ export class PipelineOrchestrator extends BaseAgent {
           cycleResults.map((r) =>
             Math.abs(
               (r as any).alpha?.pValue ?? // Changed from informationCoefficient to pValue
-              (r.metrics as any)?.pValue ?? // Changed from ic to pValue
-              0,
+                (r.metrics as any)?.pValue ?? // Changed from ic to pValue
+                0,
             ),
           ),
         ),
@@ -1142,10 +1145,10 @@ export class PipelineOrchestrator extends BaseAgent {
             cycleResults[idx].verdict === "ADOPTED" ? "SELECTED" : "REJECTED",
           scores: cycleResults[idx].scores
             ? {
-              fitness: cycleResults[idx].scores!.fitnessScore,
-              stability: cycleResults[idx].scores!.stabilityScore,
-              adoption: cycleResults[idx].scores!.adoptionScore,
-            }
+                fitness: cycleResults[idx].scores!.fitnessScore,
+                stability: cycleResults[idx].scores!.stabilityScore,
+                adoption: cycleResults[idx].scores!.adoptionScore,
+              }
             : undefined,
         })),
         universe: requirement.universe,
@@ -1266,9 +1269,9 @@ export class ElderBridge implements IElder {
         knowledge.length > 0
           ? knowledge
           : [
-            "Volatility spikes often lead to mean reversion.",
-            "PEAD is stronger in small-cap.",
-          ],
+              "Volatility spikes often lead to mean reversion.",
+              "PEAD is stronger in small-cap.",
+            ],
     };
   }
 
@@ -1375,7 +1378,7 @@ export class ElderBridge implements IElder {
 
     core.eventStore.appendEvent({
       id: crypto.randomUUID(),
-      timestamp: dateUtils.nowIso(),
+      timestamp: nowIso(),
       type: "OUTCOME_GENERATED",
       agentId: "ElderBridge",
       payload: {
@@ -1545,10 +1548,10 @@ export class ElderBridge implements IElder {
       metrics:
         sharpe !== undefined || pValue !== undefined || maxDD !== undefined
           ? {
-            sharpe,
-            pValue,
-            maxDD,
-          }
+              sharpe,
+              pValue,
+              maxDD,
+            }
           : undefined,
       hypothesis,
       avoidanceHint,
@@ -1588,9 +1591,9 @@ export class ElderBridge implements IElder {
         const factorMatch = bullet.content.match(/\[([^\]]+)\]/);
         const factorSet = factorMatch
           ? factorMatch[1]
-            .split(",")
-            .map((f) => f.trim())
-            .filter(Boolean)
+              .split(",")
+              .map((f) => f.trim())
+              .filter(Boolean)
           : [];
 
         return factorSet.length > 0 ? { factorSet, fitnessScore } : null;
@@ -1902,11 +1905,11 @@ export class DataEngineerBridge implements IDataEngineer {
     const qualityScore = Math.min(
       0.99,
       deliveryMetrics.coverageRate * 0.4 +
-      (1 - deliveryMetrics.missingRate) * 0.25 +
-      deliveryMetrics.latencyScore * 0.15 +
-      deliveryMetrics.leakFreeScore * 0.1 +
-      deliveryMetrics.sourceConsistency * 0.1 +
-      attemptLift,
+        (1 - deliveryMetrics.missingRate) * 0.25 +
+        deliveryMetrics.latencyScore * 0.15 +
+        deliveryMetrics.leakFreeScore * 0.1 +
+        deliveryMetrics.sourceConsistency * 0.1 +
+        attemptLift,
     );
 
     const dataset = {
@@ -2099,7 +2102,9 @@ export class QuantResearcherBridge implements IQuantResearcher {
       // Map scores with symbol|date key
       const scoresBySymbolDate = new Map<string, number>();
       for (const scoreEntry of scores) {
-        const dateStr = String((scoreEntry as any).date || "").replaceAll("-", "").slice(0, 8);
+        const dateStr = String((scoreEntry as any).date || "")
+          .replaceAll("-", "")
+          .slice(0, 8);
         const key = `${scoreEntry.symbol}|${dateStr}`;
         scoresBySymbolDate.set(key, scoreEntry.score);
       }
@@ -2126,7 +2131,9 @@ export class QuantResearcherBridge implements IQuantResearcher {
           if (!nextPrice || !currPrice) continue;
 
           // Retrieve score by date (fallback if no date info)
-          const barDateStr = String(currBar.date).replaceAll("-", "").slice(0, 8);
+          const barDateStr = String(currBar.date)
+            .replaceAll("-", "")
+            .slice(0, 8);
           const scoreKey = `${symbol}|${barDateStr}`;
           const score = scoresBySymbolDate.get(scoreKey) ?? 0;
 

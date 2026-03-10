@@ -310,30 +310,5 @@ export function resampleOHLC<
   return result;
 }
 
-/**
- * 数字の「きゅーとな相棒」mathUtilsだよっ！🔢💖
- */
-export const mathUtils = {
-  clamp,
-  clamp01,
-  mean,
-  stdDev,
-  zScore,
-  calculateCorr,
-  calculateGaussCorr,
-  computeMaxDrawdown,
-  calculateTStat,
-  calculatePValue,
-  calculateSharpeRatio,
-  calculateInformationRatio,
-  calculateSortinoRatio,
-  calculateAnnualizedReturn,
-  calculateRMSE,
-  calculateSMAPE,
-  calculateDA,
-  gaussRank,
-  invNormalCdf,
-  pickOne,
-  randomInt,
-  resampleOHLC,
-};
+// ── 公開 API ─────────────────────────────────────────────────────────────
+// 個別の関数を export しているので、この mathUtils オブジェクトは廃止するよっ！✨

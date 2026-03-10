@@ -1,4 +1,4 @@
-import { mathUtils } from "../utils/math_utils.ts";
+import { pickOne } from "../utils/math_utils.ts";
 
 /**
  * ✨ エージェントたちの知恵の源、プロンプト工場だよっ！ ✨
@@ -78,7 +78,7 @@ export namespace PromptFactory {
    * ランダムなペルソナを一つ選ぶよっ！🎭
    */
   export function pickPersona(): string {
-    return mathUtils.pickOne(PERSONAS);
+    return pickOne(PERSONAS);
   }
 
   /**
@@ -89,7 +89,7 @@ export namespace PromptFactory {
     terms: string[];
     persona: string;
   }): string {
-    const template = mathUtils.pickOne(REASONING_TEMPLATES);
+    const template = pickOne(REASONING_TEMPLATES);
     let reasoning = template.replace("{0}", params.themeName);
     for (let i = 0; i < 4; i++) {
       reasoning = reasoning.replace(`{${i + 1}}`, params.terms[i] || "N/A");

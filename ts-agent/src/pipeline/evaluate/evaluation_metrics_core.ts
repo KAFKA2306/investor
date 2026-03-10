@@ -5,8 +5,21 @@ import {
   type DailyScenarioLogSchema,
   UnifiedLogSchema,
 } from "../../schemas/financial_domain_schemas.ts";
-import { fsUtils } from "../../utils/fs_utils.ts";
-import { mathUtils } from "../../utils/math_utils.ts";
+import { readJsonFile } from "../../utils/fs_utils.ts";
+import {
+  calculateAnnualizedReturn as mathCalculateAnnualizedReturn,
+  calculateCorr as mathCalculateCorr,
+  calculateDA as mathCalculateDA,
+  calculateGaussCorr as mathCalculateGaussCorr,
+  calculatePValue as mathCalculatePValue,
+  calculateRMSE as mathCalculateRMSE,
+  calculateSharpeRatio as mathCalculateSharpeRatio,
+  calculateSMAPE as mathCalculateSMAPE,
+  calculateTStat as mathCalculateTStat,
+  computeMaxDrawdown as mathComputeMaxDrawdown,
+  mean as mathMean,
+  stdDev as mathStdDev,
+} from "../../utils/math_utils.ts";
 
 const EPS = 1e-12;
 
@@ -35,13 +48,13 @@ export type EvaluationResult = z.infer<typeof EvaluationResultSchema>;
 export const PerformanceMetricsSchema = EvaluationResultSchema;
 export type PerformanceMetrics = z.infer<typeof PerformanceMetricsSchema>;
 
-export const mean = mathUtils.mean;
+export const mean = mathMean;
 
-export const std = mathUtils.stdDev;
+export const std = mathStdDev;
 
-export const computeMaxDrawdown = mathUtils.computeMaxDrawdown;
+export const computeMaxDrawdown = mathComputeMaxDrawdown;
 
-export const calculateCorrelation = mathUtils.calculateCorr;
+export const calculateCorrelation = mathCalculateCorr;
 
 export function evaluate(
   logs: readonly DailyLog[],
@@ -60,20 +73,20 @@ export function evaluate(
       volatility: 0,
     });
   const cumulative = returns.reduce((acc, r) => acc * (1 + r), 1) - 1;
-  const avg = mean(returns),
-    vol = std(returns);
+  const avg = mathMean(returns),
+    vol = mathStdDev(returns);
   const sharpe = vol < EPS ? 0 : (avg / vol) * Math.sqrt(252);
   const cagr = (1 + cumulative) ** (252 / returns.length) - 1;
   const winRate = returns.filter((r) => r > 0).length / returns.length;
-  const maxDrawdown = computeMaxDrawdown(returns);
+  const maxDrawdown = mathComputeMaxDrawdown(returns);
   const benchmarks = logs
     .map((l) => l.benchmarkReturn)
     .filter((b): b is number => b !== undefined);
   let informationRatio: number | undefined;
   if (benchmarks.length === returns.length) {
     const diffs = returns.map((r, i) => r - (benchmarks[i] ?? 0));
-    const muDiff = mean(diffs),
-      volDiff = std(diffs);
+    const muDiff = mathMean(diffs),
+      volDiff = mathStdDev(diffs);
     informationRatio = volDiff < EPS ? 0 : (muDiff / volDiff) * Math.sqrt(252);
   }
   const positives = returns.filter((r) => r > 0),
@@ -141,7 +154,7 @@ export function loadPerformanceLedgerRows(
   const files = fs.readdirSync(logsDir).filter((f) => f.endsWith(".json"));
   const rows: PerformanceLedgerRow[] = [];
   for (const file of files) {
-    const raw = fsUtils.readJsonFile<any>(path.join(logsDir, file));
+    const raw = readJsonFile<any>(path.join(logsDir, file));
     // CanonicalLogEnvelopeSchema が見当たらないので、直接 payload を見るよっ！🛡️
     const envelope = raw;
     if (!envelope || envelope.kind !== "daily_decision") continue;
@@ -177,13 +190,13 @@ export function loadPerformanceLedgerRows(
 }
 
 export namespace QuantMetrics {
-  export const mean = mathUtils.mean;
-  export const calculateCorr = mathUtils.calculateGaussCorr;
-  export const calculateTStat = mathUtils.calculateTStat;
-  export const calculatePValue = mathUtils.calculatePValue;
-  export const calculateRMSE = mathUtils.calculateRMSE;
-  export const calculateSMAPE = mathUtils.calculateSMAPE;
-  export const calculateDA = mathUtils.calculateDA;
-  export const calculateSharpeRatio = mathUtils.calculateSharpeRatio;
-  export const calculateAnnualizedReturn = mathUtils.calculateAnnualizedReturn;
+  export const mean = mathMean;
+  export const calculateCorr = mathCalculateGaussCorr;
+  export const calculateTStat = mathCalculateTStat;
+  export const calculatePValue = mathCalculatePValue;
+  export const calculateRMSE = mathCalculateRMSE;
+  export const calculateSMAPE = mathCalculateSMAPE;
+  export const calculateDA = mathCalculateDA;
+  export const calculateSharpeRatio = mathCalculateSharpeRatio;
+  export const calculateAnnualizedReturn = mathCalculateAnnualizedReturn;
 }

@@ -76,9 +76,9 @@ alpha = `;
  */
 export async function generateAlphaDSLWithQwen(
   prompt: string,
-  modelId: string = "qwen:latest",
+  _modelId: string = "qwen:latest",
 ): Promise<string> {
-  const aiConfig = core.config.providers.ai;
+  const _aiConfig = core.config.providers.ai;
   const apiKey = core.getProviderCredential("ai", "apiKey", "OPENAI_API_KEY");
   const baseUrl = core.getEnv("OPENAI_BASE_URL", "https://api.openai.com/v1");
   const model = core.getEnv("OPENAI_MODEL", "gemini-3-flash");
@@ -87,7 +87,9 @@ export async function generateAlphaDSLWithQwen(
   logger.debug(`[Qwen] Prompt (first 200 chars): ${prompt.slice(0, 200)}...`);
 
   if (!apiKey) {
-    logger.warn("[Qwen] No API key found. Falling back to default mock factor.");
+    logger.warn(
+      "[Qwen] No API key found. Falling back to default mock factor.",
+    );
     return "alpha = Rank($volatility) * -1 + Rank($momentum) * 0.3";
   }
 
@@ -112,14 +114,19 @@ export async function generateAlphaDSLWithQwen(
   if (!response.ok) {
     const errorText = await response.text();
     logger.error(`[Qwen] API error: ${response.status} ${errorText}`);
-    throw new Error(`Qwen API error: ${response.status} ${response.statusText}`);
+    throw new Error(
+      `Qwen API error: ${response.status} ${response.statusText}`,
+    );
   }
 
-  const data = await response.json() as any;
+  const data = (await response.json()) as any;
   const content = data.choices[0]?.message?.content?.trim() || "";
 
   // Clean up code blocks if LLM included them
-  const cleaned = content.replace(/```[a-z]*\n?/g, "").replace(/\n?```/g, "").trim();
+  const cleaned = content
+    .replace(/```[a-z]*\n?/g, "")
+    .replace(/\n?```/g, "")
+    .trim();
 
   return cleaned;
 }

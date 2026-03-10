@@ -108,11 +108,5 @@ export class EdinetItemizer {
   }
 }
 
-/**
- * EDINETの便利ツール、edinetUtilsだよっ！🎀✨
- */
-export const edinetUtils = {
-  ids: edinetIds,
-  paths: edinetPaths,
-  Itemizer: EdinetItemizer,
-};
+// ── 公開 API ─────────────────────────────────────────────────────────────
+// 個別の関数を export しているので、この edinetUtils オブジェクトは廃止するよっ！✨

@@ -61,15 +61,5 @@ export function fileTimestamp(): string {
     .split("Z")[0]!;
 }
 
-/**
- * 日付操作の「きゅーとな相棒」dateUtilsだよっ！📅💖
- */
-export const dateUtils = {
-  nowIso,
-  nowYmd,
-  todayYmd,
-  formatDateISO,
-  fileTimestamp,
-  sleep,
-  startTimer,
-};
+// ── 公開 API ─────────────────────────────────────────────────────────────
+// 個別の関数を export しているので、この dateUtils オブジェクトは廃止するよっ！✨

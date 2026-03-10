@@ -45,11 +45,5 @@ export function countRows(db: Database, table: string, where?: string): number {
   return Number(row?.count ?? 0);
 }
 
-/**
- * データベース操作の頼れる相棒、dbUtilsだよっ！💎✨
- */
-export const dbUtils = {
-  create: createDb,
-  getHttpCacheValue,
-  count: countRows,
-};
+// ── 公開 API ─────────────────────────────────────────────────────────────
+// 個別の関数を export しているので、この dbUtils オブジェクトは廃止するよっ！✨

@@ -110,18 +110,5 @@ export function generateTimestampedName(base: string, ext: string): string {
   return `${base}_${ts}.${ext}`;
 }
 
-/**
- * ファイル操作の可愛い相棒、fsUtilsだよっ！📁💖
- */
-export const fsUtils = {
-  ensureParentDir,
-  writeJsonl,
-  readJsonl,
-  writeValidatedJson,
-  readJsonFile,
-  readValidatedJson,
-  readCsv,
-  requirePrerequisites,
-  writeReport,
-  generateTimestampedName,
-};
+// ── 公開 API ─────────────────────────────────────────────────────────────
+// 個別の関数を export しているので、この fsUtils オブジェクトは廃止するよっ！✨

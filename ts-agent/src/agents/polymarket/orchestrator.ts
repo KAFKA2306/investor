@@ -17,7 +17,7 @@ export class SwarmOrchestrator extends BaseAgent {
   }
 
   private executeOrchestrationPipeline(
-    marketIds: string[],
+    _marketIds: string[],
     window: string,
   ): BacktestOutput {
     const timestamp = new Date().toISOString();
