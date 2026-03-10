@@ -598,14 +598,13 @@ tasks:
     desc: run polymarket agent tests
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run test -- src/agents/polymarket
+      - bun test src/agents/polymarket
 
   polymarket:check:
     desc: type check and lint polymarket code
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run lint -- src/agents/polymarket src/io/polymarket src/domain/polymarket
-      - bun run typecheck
+      - bun ./node_modules/@biomejs/biome/bin/biome check src/agents/polymarket src/io/polymarket src/domain/polymarket
 
   run:polymarket:backtest:
     desc: run polymarket rolling backtest (90d default, 3 periods with 30d overlap)

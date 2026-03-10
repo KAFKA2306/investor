@@ -6,6 +6,7 @@
     "lint": "bun ./node_modules/@biomejs/biome/bin/biome check src tests",
     "format": "bun ./node_modules/@biomejs/biome/bin/biome format src tests --write",
     "test": "bun test tests",
+    "typecheck": "tsc --noEmit",
     "start": "bun src/index.ts",
     "start:api": "bun src/providers/uqtl_event_api_server.ts",
     "verify:api": "bun src/system/app_runtime_core.ts",

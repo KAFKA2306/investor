@@ -47,6 +47,19 @@ async function main() {
   );
   console.log(`Stability: ${result.summary.stability ? "✓" : "✗"}`);
 
+  if (result.periods.length > 0 && result.periods[0].backtest.signals.length > 0) {
+    console.log("\n[Example Signals from Period 1]");
+    result.periods[0].backtest.signals.slice(0, 3).forEach((s, i) => {
+      console.log(`  Signal ${i + 1}:`);
+      console.log(`    Market: ${s.marketId}`);
+      console.log(`    Direction: ${s.direction}`);
+      console.log(`    Bet Size: ${s.betSize} USDC`);
+      console.log(`    Edge: ${(s.edge * 100).toFixed(2)}%`);
+      console.log(`    Confidence: ${s.confidence}`);
+      console.log(`    Reasoning: ${s.reasoning}`);
+    });
+  }
+
   process.exit(result.finalVerdict === "GO" ? 0 : 1);
 }
 

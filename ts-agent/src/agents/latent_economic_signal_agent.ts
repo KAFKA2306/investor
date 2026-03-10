@@ -160,10 +160,12 @@ export class LesAgent extends BaseAgent {
           ? formulaA
           : formulaB;
 
-    const themes = PromptFactory.BASE_THEMES.map(t => ({
+    const themes = PromptFactory.BASE_THEMES.map((t) => ({
       ...t,
-      terms: useBasicCols ? t.terms.filter(term => basicCols.includes(term)) : t.terms
-    })).filter(t => t.terms.length > 0);
+      terms: useBasicCols
+        ? t.terms.filter((term) => basicCols.includes(term))
+        : t.terms,
+    })).filter((t) => t.terms.length > 0);
 
     if (missionContext.trim().length > 0) {
       const missionTerms = [
@@ -174,13 +176,16 @@ export class LesAgent extends BaseAgent {
         "itemization",
       ];
       const filteredMissionTerms = useBasicCols
-        ? missionTerms.filter(t => basicCols.includes(t))
+        ? missionTerms.filter((t) => basicCols.includes(t))
         : missionTerms;
 
       if (filteredMissionTerms.length > 0 || !useBasicCols) {
         themes.push({
           name: "Mission Specific Strategy",
-          terms: filteredMissionTerms.length > 0 ? filteredMissionTerms : ["close", "volume"],
+          terms:
+            filteredMissionTerms.length > 0
+              ? filteredMissionTerms
+              : ["close", "volume"],
         });
       }
     }
@@ -240,31 +245,29 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
 
     const openAIThemeName = `${openAIProposal.theme} (${openAIProposal.model})`;
 
-    const proposalTerms = openAIProposal.featureSignature.length > 0
-      ? openAIProposal.featureSignature
-      : leverageCtx.isRiskOff
-        ? [
-          "macro_leverage_trend",
-          "correction_freq",
-          "macro_cpi",
-          "volume",
-          "close",
-        ]
-        : [
-          "volume",
-          "close",
-          "macro_iip",
-          "macro_cpi",
-          "segment_sentiment",
-        ];
+    const proposalTerms =
+      openAIProposal.featureSignature.length > 0
+        ? openAIProposal.featureSignature
+        : leverageCtx.isRiskOff
+          ? [
+              "macro_leverage_trend",
+              "correction_freq",
+              "macro_cpi",
+              "volume",
+              "close",
+            ]
+          : ["volume", "close", "macro_iip", "macro_cpi", "segment_sentiment"];
 
     const filteredProposalTerms = useBasicCols
-      ? proposalTerms.filter(t => basicCols.includes(t))
+      ? proposalTerms.filter((t) => basicCols.includes(t))
       : proposalTerms;
 
     themes.unshift({
       name: openAIThemeName,
-      terms: filteredProposalTerms.length > 0 ? filteredProposalTerms : ["close", "open", "volume"],
+      terms:
+        filteredProposalTerms.length > 0
+          ? filteredProposalTerms
+          : ["close", "open", "volume"],
     });
 
     const count = _options.count || 2;
@@ -345,11 +348,11 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
         formula = generateQlibFormula(depth, bias);
       }
 
-      const formulaValid = !useBasicCols || !customCols.some(c => formula.includes(`$${c}`));
+      const formulaValid =
+        !useBasicCols || !customCols.some((c) => formula.includes(`$${c}`));
       if (!formulaValid) {
         continue;
       }
-
 
       candidates.push({
         id,

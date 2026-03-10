@@ -319,41 +319,41 @@ export function buildPathRegistry(
   const outputsRoot = env.UQTL_VERIFICATION_ROOT
     ? verificationRoot
     : resolveConfiguredPath(
-      configDir,
-      config.paths.outputsRoot ?? config.paths.verification,
-    );
+        configDir,
+        config.paths.outputsRoot ?? config.paths.verification,
+      );
   const marketdataListCsv = env.UQTL_DATA_ROOT
     ? join(
-      dataRoot,
-      basename(config.paths.marketdataListCsv ?? "stock_list.csv"),
-    )
+        dataRoot,
+        basename(config.paths.marketdataListCsv ?? "stock_list.csv"),
+      )
     : config.paths.marketdataListCsv
       ? resolveConfiguredPath(configDir, config.paths.marketdataListCsv)
       : join(dataRoot, "stock_list.csv");
   const marketdataPricesCsv = env.UQTL_DATA_ROOT
     ? join(
-      dataRoot,
-      basename(config.paths.marketdataPricesCsv ?? "raw_stock_price.csv"),
-    )
+        dataRoot,
+        basename(config.paths.marketdataPricesCsv ?? "raw_stock_price.csv"),
+      )
     : config.paths.marketdataPricesCsv
       ? resolveConfiguredPath(configDir, config.paths.marketdataPricesCsv)
       : join(dataRoot, "raw_stock_price.csv");
   const marketdataFinCsv = env.UQTL_DATA_ROOT
     ? join(
-      dataRoot,
-      basename(config.paths.marketdataFinCsv ?? "raw_stock_fin.csv"),
-    )
+        dataRoot,
+        basename(config.paths.marketdataFinCsv ?? "raw_stock_fin.csv"),
+      )
     : config.paths.marketdataFinCsv
       ? resolveConfiguredPath(configDir, config.paths.marketdataFinCsv)
       : join(dataRoot, "raw_stock_fin.csv");
   const verificationJson = env.UQTL_VERIFICATION_ROOT
     ? join(
-      verificationRoot,
-      basename(
-        config.paths.outputsVerificationJson ??
-        "standard_verification_data.json",
-      ),
-    )
+        verificationRoot,
+        basename(
+          config.paths.outputsVerificationJson ??
+            "standard_verification_data.json",
+        ),
+      )
     : config.paths.outputsVerificationJson
       ? resolveConfiguredPath(configDir, config.paths.outputsVerificationJson)
       : join(verificationRoot, "standard_verification_data.json");
