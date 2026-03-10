@@ -8,7 +8,13 @@ export async function getMarkets(limit: number = 50): Promise<Market[]> {
     throw new Error(`Polymarket API error: ${response.status}`);
   }
   const data = await response.json();
-  return data.markets.map((m: any) => ({
+  return data.markets.map((m: {
+    id: string;
+    title: string;
+    prices: { yes: number; no: number };
+    pool: { totalValue: number };
+    closingTime: string
+  }) => ({
     id: m.id,
     title: m.title,
     prices: { yes: m.prices.yes, no: m.prices.no },

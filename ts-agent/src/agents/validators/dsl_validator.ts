@@ -16,7 +16,20 @@
  * Whitelisted functions allowed in DSL expressions.
  * These are the only functions that Qwen is allowed to use.
  */
-const ALLOWED_FUNCTIONS = ["rank", "scale", "abs", "sign", "log", "max", "min"];
+const ALLOWED_FUNCTIONS = [
+  "rank",
+  "scale",
+  "abs",
+  "sign",
+  "log",
+  "max",
+  "min",
+  "corr",
+  "ref",
+  "mean",
+  "std",
+  "sum",
+];
 
 /**
  * Whitelisted factors that can be referenced in DSL expressions.
@@ -32,6 +45,19 @@ const ALLOWED_FACTORS = [
   "dividend",
   "low_vol",
   "low_volatility",
+  "close",
+  "open",
+  "high",
+  "low",
+  "volume",
+  "correction_freq",
+  "activist_bias",
+  "macro_iip",
+  "macro_cpi",
+  "macro_leverage_trend",
+  "segment_sentiment",
+  "ai_exposure",
+  "kg_centrality",
 ];
 
 /**
@@ -45,7 +71,7 @@ const ALLOWED_FACTORS = [
  *
  * Note: Forward slash (/) is allowed for division but we'll validate against // comments separately
  */
-const DSL_REGEX = /^alpha\s*=\s*[a-z0-9_+\-*/.()\s]+$/i;
+const DSL_REGEX = /^alpha\s*=\s*[a-z0-9_+\-*/.(),$\s]+$/i;
 
 /**
  * Validates a DSL expression string for correctness and safety.
@@ -108,9 +134,8 @@ export function isValidDSL(dsl: string): boolean {
   }
 
   // Extract and validate factor references
-  // Match all identifiers within parentheses (factors)
-  // Pattern: look for word characters inside parentheses that aren't function names
-  const factorMatches = dsl.matchAll(/\(([a-z_][a-z0-9_]*)\s*\)/gi);
+  // Match all identifiers starting with $ (factors)
+  const factorMatches = dsl.matchAll(/\$(\w+)/gi);
   for (const match of factorMatches) {
     const factorName = match[1].toLowerCase();
     // Check if factor is in whitelist
@@ -140,9 +165,9 @@ export function isValidDSL(dsl: string): boolean {
  *   repairDSL("rank(momentum) * -1") -> "alpha = rank(momentum) * -1"
  *   repairDSL("invalid_func(momentum)") -> null (unfixable)
  */
-export function repairDSL(dsl: string): string | null {
+export function repairDSL(dsl: string): string | undefined {
   if (!dsl || dsl.trim().length === 0) {
-    return null;
+    return undefined;
   }
 
   const trimmed = dsl.trim();
@@ -164,7 +189,7 @@ export function repairDSL(dsl: string): string | null {
   // (already handled by trim above)
 
   // Cannot repair - either invalid functions, factors, or syntax
-  return null;
+  return undefined;
 }
 
 /**
@@ -206,7 +231,7 @@ export function validateDSL(dsl: string): {
     return {
       valid: false,
       errors,
-      repaired: null,
+      repaired: undefined,
     };
   }
 
@@ -252,7 +277,7 @@ export function validateDSL(dsl: string): {
   }
 
   // Check for invalid factors
-  const factorMatches = trimmed.matchAll(/\(([a-z_][a-z0-9_]*)\s*\)/gi);
+  const factorMatches = trimmed.matchAll(/\$(\w+)/gi);
   const invalidFactors = new Set<string>();
   for (const match of factorMatches) {
     const factorName = match[1].toLowerCase();
@@ -266,13 +291,12 @@ export function validateDSL(dsl: string): {
     );
   }
 
-  // If validation failed, attempt repair
+  // No repairs allowed anymore.
   if (errors.length > 0) {
-    const repaired = repairDSL(trimmed);
     return {
       valid: false,
       errors,
-      repaired,
+      repaired: undefined,
     };
   }
 

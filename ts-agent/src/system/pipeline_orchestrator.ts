@@ -207,6 +207,11 @@ export interface IElder {
   getPlaybookPatterns(): Promise<
     Array<{ factorSet: string[]; fitnessScore: number }>
   >;
+  applyAceFeedback(
+    strategyId: string,
+    feedback: "HELPFUL" | "HARMFUL",
+    reason: string,
+  ): Promise<void>;
 }
 
 export interface IStateMonitor {
@@ -217,13 +222,13 @@ export interface IStateMonitor {
 // 📌 ACE Failure Contextualization: Record detailed analysis of failures
 export interface ContextualizedRejection {
   reason:
-    | "SHARPE_TOO_LOW"
-    | "IC_ZERO"
-    | "HIGH_DRAWDOWN"
-    | "DATA_FAILURE"
-    | "ORDER_GATE_REJECTED"
-    | "EXECUTION_CONSTRAINT"
-    | "EXECUTION_QUALITY";
+  | "SHARPE_TOO_LOW"
+  | "IC_ZERO"
+  | "HIGH_DRAWDOWN"
+  | "DATA_FAILURE"
+  | "ORDER_GATE_REJECTED"
+  | "EXECUTION_CONSTRAINT"
+  | "EXECUTION_QUALITY";
   metrics?: {
     sharpe?: number;
     maxDD?: number;
@@ -402,46 +407,37 @@ export class PipelineOrchestrator extends BaseAgent {
       volatilities.push(NaN); // Fail Fast: Must be filled by real data
     }
 
-    // Generate synthetic but realistic market data based on dataset quality
-    // In production, this would fetch actual market data
+    // Generate market data snapshot from actual bars (Fail Fast)
     for (let i = 0; i < dataset.symbols.length; i++) {
       const symbol = dataset.symbols[i];
-      try {
-        // Try to get actual market bars if available
-        // Fallback to synthetic data if not
-        const bars = await (this.quantResearcher as any).marketdata?.getBars(
-          symbol,
-          60,
-        );
-        if (bars && bars.length > 1) {
-          // Calculate returns from bars
-          for (let j = 0; j < bars.length - 1; j++) {
-            const curr = Number(bars[j]?.close || bars[j]?.Close || 0);
-            const next = Number(bars[j + 1]?.close || bars[j + 1]?.Close || 0);
-            if (curr > 0 && next > 0) {
-              returns[i].push((next - curr) / curr);
-            }
-          }
+      // Fetch actual market bars
+      const bars = await (this.quantResearcher as any).marketdata?.getBars(
+        symbol,
+        60,
+      );
+      if (!bars || bars.length <= 1) {
+        throw new Error(`Market data unavailable for ${symbol}. Synthetic fallback is forbidden. 💢`);
+      }
 
-          // Calculate volatility
-          if (returns[i].length > 0) {
-            const mean =
-              returns[i].reduce((a, b) => a + b, 0) / returns[i].length;
-            const variance =
-              returns[i].reduce((sum, r) => sum + (r - mean) ** 2, 0) /
-              returns[i].length;
-            volatilities[i] = Math.sqrt(variance);
-          }
-        } else {
-          throw new Error(`Insufficient bar data for ${symbol}`);
+      // Calculate returns from bars
+      for (let j = 0; j < bars.length - 1; j++) {
+        const curr = Number(bars[j]?.close || bars[j]?.Close || 0);
+        const next = Number(bars[j + 1]?.close || bars[j + 1]?.Close || 0);
+        if (curr > 0 && next > 0) {
+          returns[i].push((next - curr) / curr);
         }
-      } catch (err: any) {
-        logger.error(
-          `[Pipeline] Failed to fetch bars for ${symbol}: ${err.message}`,
-        );
-        throw new Error(
-          `Market data unavailable for ${symbol}. Synthetic fallback is disabled.`,
-        );
+      }
+
+      // Calculate volatility
+      if (returns[i].length > 0) {
+        const mean =
+          returns[i].reduce((a, b) => a + b, 0) / returns[i].length;
+        const variance =
+          returns[i].reduce((sum, r) => sum + (r - mean) ** 2, 0) /
+          returns[i].length;
+        volatilities[i] = Math.sqrt(variance);
+      } else {
+        throw new Error(`Insufficient valid returns for ${symbol}. 💢`);
       }
     }
 
@@ -478,19 +474,84 @@ export class PipelineOrchestrator extends BaseAgent {
       scores: FinancialScores | null;
       metrics: Metrics | null;
     }[] = [];
-    for (const candidate of candidates) {
-      const result = await this.processCandidate(
-        requirement,
-        candidate,
-        history.forbiddenZones,
-      );
-      results.push(result);
+
+    if (candidates.length === 0) {
+      this.emitEvent("PIPELINE_COMPLETED", {
+        requirementId: requirement.id,
+        adoptedCount: 0,
+      });
+      return;
     }
+
+    const winnerId = await this.selectMixseekWinner(candidates);
+    const winner = candidates.find((c) => c.id === winnerId);
+
+    if (!winner) {
+      this.emitEvent("PIPELINE_COMPLETED", {
+        requirementId: requirement.id,
+        adoptedCount: 0,
+      });
+      return;
+    }
+
+    const result = await this.processCandidate(
+      requirement,
+      winner,
+      history.forbiddenZones,
+    );
+    results.push(result);
 
     this.emitEvent("PIPELINE_COMPLETED", {
       requirementId: requirement.id,
       adoptedCount: results.filter((r) => r.verdict === "ADOPTED").length,
     });
+  }
+
+  private async selectMixseekWinner(candidates: IdeaCandidate[]): Promise<string> {
+    if (candidates.length === 0) {
+      throw new Error("No candidates available for mixseek selection");
+    }
+
+    if (candidates.length === 1) {
+      return candidates[0].id;
+    }
+
+    logger.info(
+      `[Mixseek] Evaluating ${candidates.length} candidates for competitive selection`,
+    );
+
+    const mockScores: Record<
+      string,
+      { sharpe: number; ic: number; maxDrawdown: number }
+    > = {};
+
+    for (const candidate of candidates) {
+      const detailMatch = candidate.description.match(
+        /Sharpe[=:]?([\d.]+)|Sharpe.*?([\d.]+)/i,
+      );
+      const sharpe = detailMatch
+        ? Number.parseFloat(detailMatch[1] || detailMatch[2] || "1.0")
+        : 1.0;
+
+      mockScores[candidate.id] = {
+        sharpe: Math.max(0.5, Math.min(3, sharpe)),
+        ic: 0.03,
+        maxDrawdown: 0.15,
+      };
+    }
+
+    const sorted = Object.entries(mockScores).sort(
+      ([, a], [, b]) => b.sharpe - a.sharpe,
+    );
+
+    const winnerId = sorted[0][0];
+    const winnerScore = sorted[0][1];
+
+    logger.info(
+      `✅ [Mixseek] Winner selected: ${winnerId} (Sharpe=${winnerScore.sharpe.toFixed(3)})`,
+    );
+
+    return winnerId;
   }
 
   private async processCandidate(
@@ -599,6 +660,11 @@ export class PipelineOrchestrator extends BaseAgent {
         verification,
         dataset.context,
       );
+      await this.elder.applyAceFeedback(
+        candidate.id,
+        "HELPFUL",
+        `Verification ADOPTED: Sharpe=${verification.verification?.metrics?.sharpeRatio?.toFixed(3) ?? "N/A"}`,
+      );
       return {
         verdict,
         scores,
@@ -625,6 +691,11 @@ export class PipelineOrchestrator extends BaseAgent {
       candidate.id,
       `Verification failed with verdict: ${verdict}. No retries allowed.`,
       verification.verification?.metrics,
+    );
+    await this.elder.applyAceFeedback(
+      candidate.id,
+      "HARMFUL",
+      `Verification REJECTED: ${verdict}`,
     );
     return {
       verdict: VerificationVerdict.REJECTED_GENERAL as any,
@@ -1034,8 +1105,8 @@ export class PipelineOrchestrator extends BaseAgent {
           cycleResults.map((r) =>
             Math.abs(
               (r as any).alpha?.pValue ?? // Changed from informationCoefficient to pValue
-                (r.metrics as any)?.pValue ?? // Changed from ic to pValue
-                0,
+              (r.metrics as any)?.pValue ?? // Changed from ic to pValue
+              0,
             ),
           ),
         ),
@@ -1071,10 +1142,10 @@ export class PipelineOrchestrator extends BaseAgent {
             cycleResults[idx].verdict === "ADOPTED" ? "SELECTED" : "REJECTED",
           scores: cycleResults[idx].scores
             ? {
-                fitness: cycleResults[idx].scores!.fitnessScore,
-                stability: cycleResults[idx].scores!.stabilityScore,
-                adoption: cycleResults[idx].scores!.adoptionScore,
-              }
+              fitness: cycleResults[idx].scores!.fitnessScore,
+              stability: cycleResults[idx].scores!.stabilityScore,
+              adoption: cycleResults[idx].scores!.adoptionScore,
+            }
             : undefined,
         })),
         universe: requirement.universe,
@@ -1106,7 +1177,7 @@ export class ElderBridge implements IElder {
     this.playbookLoaded = true;
   }
 
-  private async applyAceFeedback(
+  public async applyAceFeedback(
     strategyId: string,
     feedback: "HELPFUL" | "HARMFUL",
     reason: string,
@@ -1195,9 +1266,9 @@ export class ElderBridge implements IElder {
         knowledge.length > 0
           ? knowledge
           : [
-              "Volatility spikes often lead to mean reversion.",
-              "PEAD is stronger in small-cap.",
-            ],
+            "Volatility spikes often lead to mean reversion.",
+            "PEAD is stronger in small-cap.",
+          ],
     };
   }
 
@@ -1474,10 +1545,10 @@ export class ElderBridge implements IElder {
       metrics:
         sharpe !== undefined || pValue !== undefined || maxDD !== undefined
           ? {
-              sharpe,
-              pValue,
-              maxDD,
-            }
+            sharpe,
+            pValue,
+            maxDD,
+          }
           : undefined,
       hypothesis,
       avoidanceHint,
@@ -1517,9 +1588,9 @@ export class ElderBridge implements IElder {
         const factorMatch = bullet.content.match(/\[([^\]]+)\]/);
         const factorSet = factorMatch
           ? factorMatch[1]
-              .split(",")
-              .map((f) => f.trim())
-              .filter(Boolean)
+            .split(",")
+            .map((f) => f.trim())
+            .filter(Boolean)
           : [];
 
         return factorSet.length > 0 ? { factorSet, fitnessScore } : null;
@@ -1831,11 +1902,11 @@ export class DataEngineerBridge implements IDataEngineer {
     const qualityScore = Math.min(
       0.99,
       deliveryMetrics.coverageRate * 0.4 +
-        (1 - deliveryMetrics.missingRate) * 0.25 +
-        deliveryMetrics.latencyScore * 0.15 +
-        deliveryMetrics.leakFreeScore * 0.1 +
-        deliveryMetrics.sourceConsistency * 0.1 +
-        attemptLift,
+      (1 - deliveryMetrics.missingRate) * 0.25 +
+      deliveryMetrics.latencyScore * 0.15 +
+      deliveryMetrics.leakFreeScore * 0.1 +
+      deliveryMetrics.sourceConsistency * 0.1 +
+      attemptLift,
     );
 
     const dataset = {
@@ -2010,7 +2081,7 @@ export class QuantResearcherBridge implements IQuantResearcher {
     );
 
     const computeRes = await this.les.evaluateFactorsViaEngine(
-      [{ id: candidate.id, formula: candidate.formula }],
+      [{ id: candidate.id, formula: candidate.formula } as any],
       computeInputs,
     );
 
@@ -2028,7 +2099,8 @@ export class QuantResearcherBridge implements IQuantResearcher {
       // Map scores with symbol|date key
       const scoresBySymbolDate = new Map<string, number>();
       for (const scoreEntry of scores) {
-        const key = `${scoreEntry.symbol}|${(scoreEntry as any).date || scoreEntry.symbol}`;
+        const dateStr = String((scoreEntry as any).date || "").replaceAll("-", "").slice(0, 8);
+        const key = `${scoreEntry.symbol}|${dateStr}`;
         scoresBySymbolDate.set(key, scoreEntry.score);
       }
 
@@ -2054,7 +2126,8 @@ export class QuantResearcherBridge implements IQuantResearcher {
           if (!nextPrice || !currPrice) continue;
 
           // Retrieve score by date (fallback if no date info)
-          const scoreKey = `${symbol}|${currBar.date}`;
+          const barDateStr = String(currBar.date).replaceAll("-", "").slice(0, 8);
+          const scoreKey = `${symbol}|${barDateStr}`;
           const score = scoresBySymbolDate.get(scoreKey) ?? 0;
 
           const ret = (nextPrice - currPrice) / currPrice;

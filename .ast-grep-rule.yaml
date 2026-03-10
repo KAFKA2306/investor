@@ -1,0 +1,175 @@
+---
+# Architecture Rules: Enforce layer boundaries using ast-grep
+# Rules prevent cross-layer dependencies and enforce CDD principles
+
+rules:
+  # Rule 1: Domain layer cannot import from IO/providers/DB layers
+  - id: domain-no-io-imports
+    pattern: |
+      import { $$$ } from $PATH
+    where:
+      $PATH:
+        regex: '/(io|providers|db)/'
+    file:
+      pattern: 'src/domain/.*\.ts'
+    message: "Domain layer cannot import from IO/providers/db. Use dependency injection with provider interfaces instead."
+    severity: error
+    fix: |
+      import { $$$ } from "../providers/[interface_name]"
+
+  # Rule 2: Business logic (agents/pipeline) cannot have try-catch
+  - id: agents-no-try-catch
+    pattern: |
+      try {
+        $$$
+      } catch ($PARAM) {
+        $$$
+      }
+    file:
+      pattern: 'src/(agents|pipeline)/.*\.ts'
+    message: "try-catch is forbidden in business logic. Let exceptions propagate. Use infrastructure layers (DB/HTTP clients) for resilience."
+    severity: error
+
+  # Rule 3: Defensive null returns forbidden in logic layers
+  - id: logic-no-defensive-null
+    pattern: 'return null;'
+    file:
+      pattern: 'src/(agents|domain|pipeline)/.*\.ts'
+    message: "Defensive null returns forbidden. Throw an error instead: throw new Error('...')"
+    severity: error
+    fix: 'throw new Error("Expected value, got null");'
+
+  # Rule 4: Defensive undefined returns forbidden
+  - id: logic-no-defensive-undefined
+    pattern: 'return undefined;'
+    file:
+      pattern: 'src/(agents|domain|pipeline)/.*\.ts'
+    message: "Defensive undefined returns forbidden. Throw an error instead."
+    severity: error
+    fix: 'throw new Error("Expected value, got undefined");'
+
+  # Rule 5: Defensive empty object returns
+  - id: logic-no-empty-object-return
+    pattern: 'return {};'
+    file:
+      pattern: 'src/(agents|domain|pipeline)/.*\.ts'
+    message: "Defensive {} return forbidden. If error case, throw. If success, return actual object."
+    severity: error
+
+  # Rule 6: Defensive empty array returns
+  - id: logic-no-empty-array-return
+    pattern: 'return [];'
+    file:
+      pattern: 'src/(agents|domain|pipeline)/.*\.ts'
+    message: "Defensive [] return forbidden. Return data or throw error."
+    severity: error
+
+  # Rule 7: || with null/undefined defaults
+  - id: logic-no-or-defaults
+    pattern: $VAR || $DEFAULT
+    where:
+      $DEFAULT:
+        regex: '(null|undefined|0|"")'
+    file:
+      pattern: 'src/(agents|domain|pipeline)/.*\.ts'
+    message: "Defensive || pattern forbidden. Use explicit error handling."
+    severity: error
+
+  # Rule 8: ?? nullish coalescing in logic (warning)
+  - id: logic-nullish-coalescing
+    pattern: $VAR ?? $DEFAULT
+    file:
+      pattern: 'src/(agents|domain)/.*\.ts'
+    message: "Nullish coalescing in domain logic. Verify this is not a defensive pattern."
+    severity: warning
+
+  # Rule 9: mock/stub/fake declarations in production code
+  - id: no-mock-declarations
+    pattern: |
+      const $NAME = $$$
+    where:
+      $NAME:
+        regex: '(mock|stub|fake)'
+    file:
+      pattern: 'src/.*\.ts'
+      negative: '\.test\.|\.spec\.'
+    message: "mock/stub/fake declarations forbidden in production code. Use real data."
+    severity: error
+
+  # Rule 10: Math.random() in deterministic logic
+  - id: math-random-non-deterministic
+    pattern: 'Math.random()'
+    file:
+      pattern: 'src/(agents|domain|pipeline)/.*\.ts'
+    message: "Math.random() forbidden in deterministic business logic. Use explicit seeding or @randomized annotation."
+    severity: error
+
+  # Rule 11: Console.log in agents (use logger instead)
+  - id: agents-use-logger
+    pattern: 'console.log($$)'
+    file:
+      pattern: 'src/agents/.*\.ts'
+    message: "Use logger.info() instead of console.log(). Enables structured logging and observability."
+    severity: warning
+    fix: 'logger.info($$)'
+
+  # Rule 12: Hardcoded file paths (use PathRegistry)
+  - id: use-path-registry
+    pattern: |
+      "[A-Za-z0-9/_\-.]+"
+    regex: '(/mnt/|/home/|/tmp/|C:\\)'
+    file:
+      pattern: 'src/(agents|domain|providers)/.*\.ts'
+    message: "Hardcoded paths forbidden. Use PathRegistry from src/system/path_registry.ts"
+    severity: error
+
+  # Rule 13: SQL queries must use parametrized queries
+  - id: sql-parametrized
+    pattern: |
+      db.query(`SELECT ... ${$VAR}`)
+    file:
+      pattern: 'src/(db|providers)/.*\.ts'
+    message: "SQL injection risk. Use parametrized queries: db.query('SELECT ... ?', [param])"
+    severity: error
+
+  # Rule 14: Zod validation at boundaries only
+  - id: zod-at-boundaries
+    pattern: |
+      .parse($$$)
+    file:
+      pattern: 'src/domain/.*\.ts'
+    message: "Zod validation belongs at IO boundaries, not domain logic."
+    severity: warning
+
+  # Rule 15: No eval or new Function (security)
+  - id: no-eval
+    pattern: 'eval($$)'
+    message: "eval() is forbidden (security risk). Use safer alternatives."
+    severity: error
+
+  - id: no-new-function
+    pattern: 'new Function($$)'
+    message: "new Function() is forbidden (security risk)."
+    severity: error
+
+constraints:
+  # Constraint 1: All imports must be absolute or relative with proper structure
+  - name: import-structure
+    description: "Enforce consistent import patterns"
+    pattern: |
+      import { $$$ } from $PATH
+    where:
+      $PATH:
+        negative:
+          - regex: '^[\./]' # relative imports OK
+          - regex: '^@/' # absolute imports OK
+    message: "Use relative (./path) or absolute (@/path) imports only."
+
+globals:
+  # File-level annotations that suppress warnings
+  - annotation: "@cdd-exception"
+    description: "Suppress CDD checks for this specific block"
+  - annotation: "@randomized"
+    description: "Suppress Math.random() check - intentional randomization"
+  - annotation: "@infra-only"
+    description: "This code is infrastructure layer (try-catch allowed)"

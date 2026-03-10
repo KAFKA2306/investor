@@ -122,8 +122,7 @@ export class EdinetSearchProvider {
     }
 
     if (content.length === 0) {
-      const fallback = [filerName, docDescription].filter(Boolean).join(" ");
-      content = fallback.trim();
+      throw new Error(`No content found for docID ${docID}. Fallback is forbidden. 💢`);
     }
 
     if (content.length === 0) {
@@ -139,9 +138,9 @@ export class EdinetSearchProvider {
     const rows: Array<{ sectionName: string; content: string }> =
       sections.length > 0
         ? sections.map((section) => ({
-            sectionName: section.title,
-            content: section.content,
-          }))
+          sectionName: section.title,
+          content: section.content,
+        }))
         : [{ sectionName: "全文", content }];
 
     const insert = this.db.prepare(`

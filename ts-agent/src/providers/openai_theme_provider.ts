@@ -19,7 +19,7 @@ export type ThemeProposal = {
   noveltyRationale: string;
   ideaHashHint: string;
   model: string;
-  source: "OPENAI" | "FALLBACK";
+  source: "OPENAI";
 };
 
 const DEFAULT_MODEL = "gpt-5-nano";

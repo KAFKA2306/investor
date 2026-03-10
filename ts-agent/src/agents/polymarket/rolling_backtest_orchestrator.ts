@@ -62,7 +62,7 @@ export class RollingBacktestOrchestrator {
 
       const appliedLearnings = [...cumulativeLearnings];
 
-      const newLearnings = backtest.learningUpdates?.lessonsLearned || [];
+      const newLearnings = backtest.learningUpdates.lessonsLearned;
       cumulativeLearnings.push(...newLearnings);
 
       const verdict = this.evaluateMetrics(metrics, i);
@@ -112,10 +112,10 @@ export class RollingBacktestOrchestrator {
 
   private calculateMetrics(backtest: BacktestOutput): PeriodResult["metrics"] {
     return {
-      sharpeRatio: backtest.metrics?.sharpeRatio || 0,
-      winRate: backtest.metrics?.winRate || 0,
-      maxDrawdown: backtest.metrics?.maxDrawdown || 0,
-      signalsGenerated: backtest.signals?.length || 0,
+      sharpeRatio: backtest.metrics.sharpeRatio,
+      winRate: backtest.metrics.winRate,
+      maxDrawdown: backtest.metrics.maxDrawdown,
+      signalsGenerated: backtest.signals.length,
     };
   }
 

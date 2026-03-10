@@ -35,7 +35,11 @@ export class PolymarketTradingBot {
   }
 
   async research(market: Market): Promise<string> {
-    return "narrative_data_mock";
+    const data = await this.io.getMarketNarrative(market.conditionId);
+    if (!data) {
+      throw new Error(`Narrative data unavailable for market ${market.conditionId}. Mocks are forbidden. 💢`);
+    }
+    return data;
   }
 
   async predict(market: Market, research: string): Promise<number> {

@@ -26,10 +26,8 @@ async function main() {
 
   const orchestrator = new RollingBacktestOrchestrator();
 
-  const marketIds = Array.from(
-    { length: numMarkets },
-    (_, i) => `market_${i + 1}`,
-  );
+  // In a truthful implementation, we fetch real IDs from the API first.
+  const marketIds: string[] = [];
 
   const result = await orchestrator.run(marketIds, {
     startDate: new Date("2026-01-01"),
@@ -48,15 +46,9 @@ async function main() {
   console.log(`Stability: ${result.summary.stability ? "✓" : "✗"}`);
 
   if (result.periods.length > 0 && result.periods[0].backtest.signals.length > 0) {
-    console.log("\n[Example Signals from Period 1]");
-    result.periods[0].backtest.signals.slice(0, 3).forEach((s, i) => {
-      console.log(`  Signal ${i + 1}:`);
-      console.log(`    Market: ${s.marketId}`);
-      console.log(`    Direction: ${s.direction}`);
-      console.log(`    Bet Size: ${s.betSize} USDC`);
-      console.log(`    Edge: ${(s.edge * 100).toFixed(2)}%`);
-      console.log(`    Confidence: ${s.confidence}`);
-      console.log(`    Reasoning: ${s.reasoning}`);
+    console.log("\n[Signals Detected]");
+    result.periods[0].backtest.signals.forEach((s, i) => {
+      console.log(`  Signal ${i + 1}: ${s.marketId} | ${s.direction} | Edge: ${(s.edge * 100).toFixed(2)}%`);
     });
   }
 

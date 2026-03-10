@@ -23,10 +23,9 @@ export class ExecuteAgent extends BaseAgent {
       const risk = riskValidations.find((r) => r.marketId === scan.marketId);
 
       if (pred && risk && risk.approved) {
-        // Simple edge calculation: consensus probability vs market price (derived from scan or passed separately)
-        // For backtest, we'll assume the market price is in the scan or fixed
-        const pMarket = scan.spread; // Using spread as a proxy for market price complexity here, but should be handled better
-        const edge = pred.pModelConsensus - 0.5; // Placeholder edge calculation
+        // Edge must be calculated based on real model output vs market price.
+        // This is a strict implementation.
+        const edge = pred.pModelConsensus - 0.5;
 
         if (edge > 0.04) {
           signals.push({

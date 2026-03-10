@@ -18,16 +18,16 @@ export class PolymarketIO {
       chainId,
       wallet as any,
       {
-        apiKey,
-        apiSecret,
-        apiPassphrase,
-      },
+        apiKey: apiKey,
+        apiSecret: apiSecret,
+        apiPassphrase: apiPassphrase,
+      } as any,
     );
   }
 
   async scanMarkets(): Promise<Market[]> {
-    const response: any = await this.client.getMarkets();
-    const markets = response.data || response;
+    const response = await this.client.getMarkets();
+    const markets = response.data; // Remove fallback to 'response'
     return markets.map((m: any) =>
       MarketSchema.parse({
         conditionId: m.condition_id,
@@ -49,10 +49,17 @@ export class PolymarketIO {
     side: "BUY" | "SELL",
   ) {
     return await this.client.createOrder({
-      token_id: tokenId,
+      tokenID: tokenId,
       price: price,
       size: size,
       side: side as any,
     });
+  }
+
+  async getMarketNarrative(conditionId: string): Promise<string | null> {
+    // In a real system, this would fetch from a narrative service or news API
+    // For now, we fetch the market detail and use its description/question
+    const market = await this.client.getMarket(conditionId);
+    return market?.description || market?.question || null;
   }
 }

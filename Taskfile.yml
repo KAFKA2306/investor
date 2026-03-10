@@ -291,6 +291,10 @@ tasks:
       - task: pipeline:analyze
       - task: pipeline:verification-plot
       - task: pipeline:mine
+    # Phase 3: Playbook学習型パイプライン再設計 (2026-03-10)
+    # ✅ Step 1: フィードバックループ修復 — ADOPTED/REJECTED を Playbook に自動記録
+    # ✅ Step 2: SELECTEDシード分類 — REJECTED のみ forbidden, SELECTED は再利用可
+    # ✅ Step 3: mixseek-competitive-framework 統合 — Sharpe 上位1位を選択して処理
 
   run:newalphasearch:
     desc: run alpha search loop

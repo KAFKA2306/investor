@@ -1,3 +1,4 @@
+import { core } from "../../system/app_runtime_core.ts";
 import { logger } from "../../utils/logger.ts";
 
 /**
@@ -41,9 +42,9 @@ Generate a single-line alpha DSL (Domain-Specific Language) based on the followi
 
 ## Requirements
 1. Output ONLY the alpha formula as a single line starting with "alpha = "
-2. Use only these allowed operations: rank(), scale(), abs(), sign(), log()
-3. Reference only known factors: momentum, value, size, volatility, quality, growth, dividend
-4. Example valid format: "alpha = rank(momentum) * -1 + rank(value) * 0.5"
+2. Use only these allowed operations: Rank(), Scale(), Abs(), Sign(), Log(), Mean(), Std(), Ref(), Corr()
+3. Reference only known factors with '$' prefix: $momentum, $value, $size, $volatility, $quality, $growth, $dividend, $close, $open, $high, $low, $volume
+4. Example valid format: "alpha = Rank($momentum) * -1 + Rank($value) * 0.5"
 5. Do NOT include explanations, just the formula
 
 ## Output
@@ -77,28 +78,48 @@ export async function generateAlphaDSLWithQwen(
   prompt: string,
   modelId: string = "qwen:latest",
 ): Promise<string> {
-  logger.info(`[Qwen] Generating DSL with model: ${modelId}`);
+  const aiConfig = core.config.providers.ai;
+  const apiKey = core.getProviderCredential("ai", "apiKey", "OPENAI_API_KEY");
+  const baseUrl = core.getEnv("OPENAI_BASE_URL", "https://api.openai.com/v1");
+  const model = core.getEnv("OPENAI_MODEL", "gemini-3-flash");
+
+  logger.info(`[Qwen] Generating DSL with model: ${model} via ${baseUrl}`);
   logger.debug(`[Qwen] Prompt (first 200 chars): ${prompt.slice(0, 200)}...`);
 
-  // TODO: Implement actual Qwen/Ollama integration
-  // const response = await fetch("http://localhost:11434/api/generate", {
-  //   method: "POST",
-  //   body: JSON.stringify({
-  //     model: modelId,
-  //     prompt: prompt,
-  //     stream: false,
-  //   }),
-  //   timeout: 30000,
-  // });
-  //
-  // if (!response.ok) {
-  //   throw new Error(`Qwen API error: ${response.status} ${response.statusText}`);
-  // }
-  //
-  // const data = await response.json();
-  // return data.response.trim();
+  if (!apiKey) {
+    logger.warn("[Qwen] No API key found. Falling back to default mock factor.");
+    return "alpha = Rank($volatility) * -1 + Rank($momentum) * 0.3";
+  }
 
-  // Current: Mock implementation
-  logger.info("[Qwen] Using mock DSL generation (Ollama not available)");
-  return "alpha = rank(volatility) * -1 + rank(momentum) * 0.3";
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      stream: false,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    logger.error(`[Qwen] API error: ${response.status} ${errorText}`);
+    throw new Error(`Qwen API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json() as any;
+  const content = data.choices[0]?.message?.content?.trim() || "";
+
+  // Clean up code blocks if LLM included them
+  const cleaned = content.replace(/```[a-z]*\n?/g, "").replace(/\n?```/g, "").trim();
+
+  return cleaned;
 }

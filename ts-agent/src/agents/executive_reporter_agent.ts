@@ -44,28 +44,21 @@ Synthesize data from all available market sources to provide a high-level strate
 Ensure that your long/short ideas represent high-conviction opportunities.
 `;
 
-    try {
-      const report = await this.llm.chat(systemPrompt, userPrompt);
+    const report = await this.llm.chat(systemPrompt, userPrompt);
 
-      logger.info(
-        "✅ [ExecutiveReporterAgent] Executive report generated successfully!",
-      );
+    logger.info(
+      "✅ [ExecutiveReporterAgent] Executive report generated successfully!",
+    );
 
-      console.log(`\n${"=".repeat(60)}`);
-      console.log("🎁 WEEKLY EXECUTIVE BRIEFING 🎁");
-      console.log("=".repeat(60));
-      console.log(report);
-      console.log(`${"=".repeat(60)}\n`);
+    console.log(`\n${"=".repeat(60)}`);
+    console.log("🎁 WEEKLY EXECUTIVE BRIEFING 🎁");
+    console.log("=".repeat(60));
+    console.log(report);
+    console.log(`${"=".repeat(60)}\n`);
 
-      this.emitEvent("EXECUTIVE_REPORT_GENERATED", {
-        agent: "ExecutiveReporterAgent",
-        summary: "Weekly comprehensive market briefing",
-      });
-    } catch (error) {
-      logger.error(
-        `❌ [ExecutiveReporterAgent] Report generation failed: ${String(error)}`,
-      );
-      throw error;
-    }
+    this.emitEvent("EXECUTIVE_REPORT_GENERATED", {
+      agent: "ExecutiveReporterAgent",
+      summary: "Weekly comprehensive market briefing",
+    });
   }
 }

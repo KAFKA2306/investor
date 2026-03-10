@@ -82,7 +82,10 @@ export class LesAgent extends BaseAgent {
         const themeName = match?.[1]?.trim().toLowerCase();
 
         if (themeName) {
-          if (bullet.section === "strategies_and_hard_rules") {
+          if (
+            bullet.section === "strategies_and_hard_rules" &&
+            bullet.metadata?.status === "REJECTED"
+          ) {
             forbiddenThemes.add(themeName);
           } else {
             existingThemes.add(themeName);
@@ -114,12 +117,12 @@ export class LesAgent extends BaseAgent {
       biasCols?: string[],
     ): string => {
       const pool =
-        biasCols && biasCols.length > 0 && Math.random() > 0.5
+        biasCols && biasCols.length > 0 && (depth % 2 === 0)
           ? biasCols
           : cols;
-      const pickCol = () => `$${mathUtils.pickOne(pool)}`;
+      const pickCol = () => `$${pool[depth % pool.length]}`;
       const pickN = (min = 3, max = 20) =>
-        String(Math.floor(Math.random() * (max - min)) + min);
+        String(min + (depth % (max - min)));
 
       if (depth <= 0) return pickCol();
 
@@ -153,10 +156,10 @@ export class LesAgent extends BaseAgent {
       }
     };
 
-    const crossoverFormulas = (formulaA: string, formulaB: string): string =>
-      Math.random() > 0.5
+    const crossoverFormulas = (formulaA: string, formulaB: string, index: number): string =>
+      index % 3 === 0
         ? `(${formulaA}+${formulaB})/2`
-        : Math.random() > 0.5
+        : index % 3 === 1
           ? formulaA
           : formulaB;
 
@@ -250,12 +253,12 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
         ? openAIProposal.featureSignature
         : leverageCtx.isRiskOff
           ? [
-              "macro_leverage_trend",
-              "correction_freq",
-              "macro_cpi",
-              "volume",
-              "close",
-            ]
+            "macro_leverage_trend",
+            "correction_freq",
+            "macro_cpi",
+            "volume",
+            "close",
+          ]
           : ["volume", "close", "macro_iip", "macro_cpi", "segment_sentiment"];
 
     const filteredProposalTerms = useBasicCols
@@ -281,11 +284,11 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
     while (candidates.length < count && attempts < 50) {
       attempts++;
 
-      const gender = Math.random() > 0.5 ? "MALE" : "FEMALE";
+      const gender = attempts % 2 === 0 ? "MALE" : "FEMALE";
       const isEvolution =
-        seeds.length > 0 && Math.random() > (gender === "MALE" ? 0.3 : 0.6);
+        seeds.length > 0 && (attempts % 10 < 7); // 70% evolution rate, deterministic
       const seed = isEvolution
-        ? seeds[Math.floor(Math.random() * seeds.length)]
+        ? seeds[attempts % seeds.length]
         : null;
 
       const theme = mathUtils.pickOne(themes);
@@ -307,8 +310,8 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
       const id = `ALPHA-${persona.split(" ")[0]!.toUpperCase()}-${uuidPart.toUpperCase()}`;
       const depth =
         gender === "MALE"
-          ? 2 + Math.floor(Math.random() * 2)
-          : 1 + Math.floor(Math.random() * 2);
+          ? 2 + (attempts % 2)
+          : 1 + (attempts % 2);
 
       let description = `${theme.name} Hypothesis (${persona})`;
       let generation = 1;
@@ -333,7 +336,7 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
             | undefined;
           formula =
             seedFormula && partnerFormula
-              ? crossoverFormulas(seedFormula, partnerFormula)
+              ? crossoverFormulas(seedFormula, partnerFormula, attempts)
               : generateQlibFormula(depth, bias);
         } else if (gender === "MALE") {
           mutationType = "STRUCTURAL_SHIFT";
@@ -411,6 +414,11 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
     const engineRequestMarketData = marketData.map((d) => ({
       symbol: d.symbol,
       date: d.date,
+      open: d.values?.open || 0,
+      high: d.values?.high || 0,
+      low: d.values?.low || 0,
+      close: d.values?.close || 0,
+      volume: d.values?.volume || 0,
       ...d.values,
     }));
 
@@ -419,7 +427,7 @@ CRITICAL: Avoid factors that return constant values (e.g., A - A = 0)
         id: f.id,
         formula: f.formula,
       })),
-      market_data: engineRequestMarketData,
+      market_data: engineRequestMarketData as any,
       ...(baselineScores ? { baseline_scores: baselineScores } : {}),
     });
 
