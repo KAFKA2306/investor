@@ -594,3 +594,54 @@ tasks:
     cmds:
       - bash -lc "set -a; [ -f ../.env ] && . ../.env; set +a; bun src/scripts/validate_polymarket_data.ts {{.CLI_ARGS}}"
 
+  polymarket:test:
+    desc: run polymarket agent tests
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run test -- src/agents/polymarket
+
+  polymarket:check:
+    desc: type check and lint polymarket code
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run lint -- src/agents/polymarket src/io/polymarket src/domain/polymarket
+      - bun run typecheck
+
+  run:polymarket:backtest:
+    desc: run polymarket rolling backtest (90d default, 3 periods with 30d overlap)
+    dir: "{{.TS_DIR}}"
+    vars:
+      WINDOW_DAYS: '{{.WINDOW_DAYS | default "90"}}'
+      OVERLAP_DAYS: '{{.OVERLAP_DAYS | default "30"}}'
+      NUM_MARKETS: '{{.NUM_MARKETS | default "50"}}'
+    cmds:
+      - cmd: >
+          bash -lc 'set -euo pipefail;
+          window_days="${WINDOW_DAYS:-90}";
+          overlap_days="${OVERLAP_DAYS:-30}";
+          num_markets="${NUM_MARKETS:-50}";
+          echo "[run:polymarket:backtest] Starting rolling backtest...";
+          echo "  Window: ${window_days} days";
+          echo "  Overlap: ${overlap_days} days";
+          echo "  Markets: ${num_markets}";
+          bun run src/agents/polymarket/run_backtest.ts \
+            --window-days "$window_days" \
+            --overlap-days "$overlap_days" \
+            --num-markets "$num_markets"'
+
+  run:polymarket:backtest:quick:
+    desc: run quick polymarket backtest (30d, 1 period)
+    dir: "{{.TS_DIR}}"
+    cmds:
+      - bun run src/agents/polymarket/run_backtest.ts \
+          --window-days 30 \
+          --overlap-days 0 \
+          --num-markets 20
+
+  run:polymarket:
+    desc: full polymarket workflow (test → check → backtest)
+    cmds:
+      - task: polymarket:test
+      - task: polymarket:check
+      - task: run:polymarket:backtest
+
