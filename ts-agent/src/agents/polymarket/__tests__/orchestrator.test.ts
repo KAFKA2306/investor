@@ -1,6 +1,5 @@
-import { describe, expect, test, beforeEach } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import { SwarmOrchestrator } from "../orchestrator";
-import type { BacktestOutput } from "../../../schemas/polymarket_schemas";
 
 describe("SwarmOrchestrator", () => {
   let orchestrator: SwarmOrchestrator;
