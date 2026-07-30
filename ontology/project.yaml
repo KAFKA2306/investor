@@ -1,0 +1,78 @@
+project:
+  id: kafka:investor
+  name: AAARTS Autonomous Alpha Research System
+  repository: https://github.com/KAFKA2306/investor
+  pages: null
+  version: 0.1.0
+  updated: 2026-07-30
+  core_ontology: https://raw.githubusercontent.com/KAFKA2306/know/main/ontology/causal-evidence-core.yaml
+  schema: https://raw.githubusercontent.com/KAFKA2306/know/main/ontology/project.schema.json
+
+purpose:
+  problem: Convert financial data and research hypotheses into reproducible alpha research without conflating discovery, validation, and execution.
+  intended_decisions: [register, test, promote, reject, retire, hold]
+  success_conditions:
+    - Every hypothesis has an owner, timestamp, data boundary, formula or procedure, and evaluation plan.
+    - Research, backtest, paper-trading, and live-execution states remain distinct.
+    - Promotion requires chronological out-of-sample evidence and reproducible artifacts.
+  falsification_conditions:
+    - Future information leaks into training or feature construction.
+    - A result is promoted from in-sample performance alone.
+    - An execution claim lacks fills, timestamps, costs, or broker evidence.
+
+scope:
+  included: [hypotheses, datasets, features, models, backtests, OOS tests, portfolios, orders, fills, audit artifacts]
+  excluded: [unsupported market narratives, unverifiable performance claims, guaranteed-return claims]
+  temporal: Observation time, publication time, feature availability time, decision time, and execution time are explicit.
+  abstraction_level: Research-to-execution lifecycle with evidence gates.
+
+competency_questions:
+  - Which data and information were available when a decision was made?
+  - Which hypothesis, model version, and parameters generated a signal?
+  - Was the reported result in-sample, out-of-sample, simulated, paper-traded, or live?
+  - Which costs, constraints, and failure conditions were included?
+  - What evidence supports promotion, rejection, or retirement?
+
+domain_mapping:
+  System: QuantitativeResearchAndExecutionSystem
+  State: [hypothesis state, dataset state, model state, portfolio state, order state, execution state]
+  Action: [register hypothesis, train, test, rebalance, submit order, cancel order, retire model]
+  Process: [data ingestion, feature generation, backtest, OOS evaluation, portfolio construction, execution, audit]
+  Observation: [market data, filing data, model output, order event, fill event, performance metric]
+  Model: [alpha model, risk model, transaction-cost model, portfolio optimizer]
+  Requirement: [temporal integrity, reproducibility, cost inclusion, risk constraints, evidence lineage]
+  Claim: [predictive signal, robust alpha, executable strategy, realized performance]
+  Evidence: [frozen dataset hash, code commit, run manifest, metric report, order log, fill record]
+  Decision: [register, test, promote, reject, retire, hold]
+
+claims_and_evidence:
+  assertion_types: [ObservedFact, CalculatedValue, ModelEstimate, Forecast, Hypothesis, SimulatedResult, LiveResult, DecisionAssertion]
+  required_evidence:
+    ObservedFact: [source, timestamp, availability time]
+    CalculatedValue: [formula, input IDs, code version]
+    SimulatedResult: [data split, costs, parameters, run manifest]
+    LiveResult: [broker or venue record, order and fill timestamps, fees]
+  unknown_policy: Missing temporal lineage, costs, run artifacts, or execution records produces UNKNOWN and blocks promotion.
+
+decision_rules:
+  - id: research-promotion
+    when: Frozen chronological OOS evidence, cost assumptions, risk constraints, and reproducible artifacts pass.
+    result: promote
+  - id: leakage-or-unreproducible
+    when: Temporal leakage or missing run lineage is detected.
+    result: reject
+  - id: live-claim-gate
+    when: Orders, fills, costs, and broker evidence are present.
+    result: accepted_live_result
+
+provenance:
+  sources: [market data providers, regulatory filings, company disclosures, repository datasets]
+  generated_artifacts: [features, model artifacts, backtest reports, OOS reports, orders, fills, dashboards]
+  agents: [research scripts, model runners, broker adapters, GitHub Actions, human reviewer]
+  lineage: Every signal and performance claim links to data availability, code commit, model version, parameters, and run ID.
+
+validation:
+  structural: Validate manifests, IDs, timestamps, parameter sets, and artifact references.
+  semantic: Separate discovery, validation, paper-trading, and live states and enforce temporal availability.
+  evidence: Verify dataset hashes, run manifests, cost assumptions, order logs, and fill records.
+  publication: Documentation must not present simulated or unverified results as live performance.
