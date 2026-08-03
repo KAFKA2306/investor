@@ -1,8 +1,15 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { Store } from "./store.js";
 import { downloadEdinetCsvZip, fetchEdinetDocumentList, fetchTheShashiBundle, parseEdinetCsvZip } from "./sources.js";
-import { normalizeSecurityCode, sha256Hex } from "./normalization.js";
+import {
+  extractExecutives,
+  extractSegmentFacts,
+  extractShareholders,
+  extractTimelineEntries,
+  normalizeSecurityCode,
+  sha256Hex
+} from "./normalization.js";
 
 const args = process.argv.slice(2);
 const command = args.shift();
@@ -11,6 +18,7 @@ const option = (name, fallback = "") => {
   return index >= 0 ? args[index + 1] : fallback;
 };
 const listOption = (name, fallback = "") => option(name, fallback).split(",").map((item) => item.trim()).filter(Boolean);
+const rawRoot = resolve(process.env.COMPANY_RAW_DIR ?? "../../data/company-intelligence/raw");
 
 const store = new Store();
 
@@ -37,9 +45,18 @@ async function ingestTheShashi(codes) {
           payload: data.payload,
           contentSha256: data.sha256,
           exportAllowed: false,
-          metadata: { redistribution: "disabled_by_default" }
+          metadata: { redistribution: "disabled_by_default", api_schema: "adaptive" }
         });
         if (data.facts.length > 0) inserted += await store.saveSecondaryFacts({ companyId, sourceKey: "THE_SHASHI", rawDocumentId, facts: data.facts });
+        if (["timeline", "history", "decisions"].includes(resource)) {
+          inserted += await store.replaceTimeline({ companyId, sourceKey: "THE_SHASHI", rawDocumentId, entries: extractTimelineEntries(data.payload), exportAllowed: false });
+        } else if (resource === "executives") {
+          inserted += await store.replaceExecutives({ companyId, sourceKey: "THE_SHASHI", rawDocumentId, executives: extractExecutives(data.payload), exportAllowed: false });
+        } else if (resource === "shareholders") {
+          inserted += await store.replaceShareholders({ companyId, sourceKey: "THE_SHASHI", rawDocumentId, shareholders: extractShareholders(data.payload), exportAllowed: false });
+        } else if (["segments", "regions"].includes(resource)) {
+          inserted += await store.replaceSegments({ companyId, sourceKey: "THE_SHASHI", rawDocumentId, facts: extractSegmentFacts(data.payload), exportAllowed: false });
+        }
       }
     }
     await store.finishRun(run.ingestion_run_id, errors.length ? "partial" : "succeeded", { fetched, inserted }, errors);
@@ -67,6 +84,9 @@ async function ingestEdinet(date, codes) {
         const companyId = await store.companyId(secCode);
         const zip = await downloadEdinetCsvZip(doc.docID, apiKey);
         const sha = await sha256Hex(zip);
+        const storagePath = resolve(rawRoot, "edinet", date, `${doc.docID}-${sha.slice(0, 12)}.zip`);
+        await mkdir(dirname(storagePath), { recursive: true });
+        await writeFile(storagePath, Buffer.from(zip));
         const rawDocumentId = await store.saveRawDocument({
           sourceKey: "EDINET_V2",
           companyId,
@@ -76,6 +96,8 @@ async function ingestEdinet(date, codes) {
           canonicalUrl: `https://disclosure2.edinet-fsa.go.jp/WZEK0040.aspx?S100=${doc.docID}`,
           payload: { document: doc, zip_sha256: sha },
           contentSha256: sha,
+          contentType: "application/zip",
+          storagePath,
           exportAllowed: true
         });
         const sourceId = await store.sourceId("EDINET_V2");
@@ -88,11 +110,11 @@ async function ingestEdinet(date, codes) {
         const facts = parseEdinetCsvZip(zip);
         for (const fact of facts) {
           const concept = fact.conceptKey ? await store.query(`select fact_concept_id from company_intelligence.fact_concept where concept_key=$1`, [fact.conceptKey]) : { rows: [] };
-          await store.query(`
+          const result = await store.query(`
             insert into company_intelligence.fact(company_id,source_id,filing_id,raw_document_id,fact_concept_id,element_id,label,context_id,period_start,period_end,instant_date,accounting_standard,consolidated,relative_fiscal_year,unit_id,unit_label,value_numeric,value_text,quality_flag,source_priority,metadata)
             values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,'official',1,$19)
-            on conflict do nothing`, [companyId, sourceId, filingId, rawDocumentId, concept.rows[0]?.fact_concept_id ?? null, fact.elementId, fact.label, fact.contextId, fact.periodStart, fact.periodEnd, fact.instantDate, null, fact.consolidated, fact.relativeFiscalYear, fact.unitId, fact.unitLabel, fact.valueNumeric, fact.valueText, { ...fact.metadata, source_path: fact.sourcePath }]);
-          inserted += 1;
+            on conflict do nothing returning fact_id`, [companyId, sourceId, filingId, rawDocumentId, concept.rows[0]?.fact_concept_id ?? null, fact.elementId, fact.label, fact.contextId, fact.periodStart, fact.periodEnd, fact.instantDate, null, fact.consolidated, fact.relativeFiscalYear, fact.unitId, fact.unitLabel, fact.valueNumeric, fact.valueText, { ...fact.metadata, source_path: fact.sourcePath }]);
+          inserted += result.rowCount;
         }
         fetched += 1;
       } catch (error) { errors.push({ docID: doc.docID, message: error.message }); }
