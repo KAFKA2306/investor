@@ -16,7 +16,6 @@ jobs:
       UQTL_VERIFICATION_ROOT: ${{ github.workspace }}/verification
       UQTL_EDINET_ROOT: ${{ github.workspace }}/edinet
       UQTL_PREPROCESSED_ROOT: ${{ github.workspace }}/preprocessed
-      UV_NO_SYNC: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,21 +29,13 @@ jobs:
       - name: Setup Task
         uses: arduino/setup-task@v2
 
-      - name: Setup CI dependencies
+      - name: Setup
         run: |
           mkdir -p data logs cache verification edinet preprocessed
-          task deps
-          uv venv
-          uv pip install ruff pyright
+          task setup
 
-      - name: TypeScript quality
-        working-directory: ts-agent
-        run: |
-          bun run lint
-          bun run typecheck
-          bun run test
+      - name: Validate runtime config
+        run: task validate:runtime
 
-      - name: Python quality
-        run: |
-          uv run ruff check .
-          uv run pyright
+      - name: Run quality gate
+        run: task check
