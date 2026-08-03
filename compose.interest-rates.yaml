@@ -1,0 +1,28 @@
+name: investor-interest-rates
+
+services:
+  interest-rates-db:
+    image: postgres:18.4-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${CANONICAL_DB_NAME:-investor}
+      POSTGRES_USER: ${CANONICAL_DB_USER:-investor}
+      POSTGRES_PASSWORD: ${CANONICAL_DB_PASSWORD:?set CANONICAL_DB_PASSWORD in .env}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+    ports:
+      - "${CANONICAL_DB_PORT:-5432}:5432"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    volumes:
+      # PostgreSQL 18+ official images define VOLUME at /var/lib/postgresql.
+      - interest_rate_pgdata:/var/lib/postgresql
+      - ./db/interest_rates:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  interest_rate_pgdata:
