@@ -1,0 +1,87 @@
+series_key,observed_on,observed_at,value,revision,quality_flag,source_document_url,metadata
+US_NOMINAL_1M,2026-07-31,,3.78,0,official,,{}
+US_NOMINAL_1P5M,2026-07-31,,3.8,0,official,,{}
+US_NOMINAL_2M,2026-07-31,,3.85,0,official,,{}
+US_NOMINAL_3M,2026-07-31,,3.83,0,official,,{}
+US_NOMINAL_4M,2026-07-31,,3.92,0,official,,{}
+US_NOMINAL_6M,2026-07-31,,3.98,0,official,,{}
+US_NOMINAL_1Y,2026-07-31,,4.08,0,official,,{}
+US_NOMINAL_2Y,2026-07-31,,4.28,0,official,,{}
+US_NOMINAL_3Y,2026-07-31,,4.34,0,official,,{}
+US_NOMINAL_5Y,2026-07-31,,4.45,0,official,,{}
+US_NOMINAL_7Y,2026-07-31,,4.59,0,official,,{}
+US_NOMINAL_10Y,2026-07-31,,4.75,0,official,,{}
+US_NOMINAL_20Y,2026-07-31,,5.28,0,official,,{}
+US_NOMINAL_30Y,2026-07-31,,5.27,0,official,,{}
+US_REAL_5Y,2026-07-31,,2.19,0,official,,{}
+US_REAL_7Y,2026-07-31,,2.32,0,official,,{}
+US_REAL_10Y,2026-07-31,,2.47,0,official,,{}
+US_REAL_20Y,2026-07-31,,2.82,0,official,,{}
+US_REAL_30Y,2026-07-31,,3.03,0,official,,{}
+JP_NOMINAL_1Y,2026-07-31,,1.255,0,official,,{}
+JP_NOMINAL_2Y,2026-07-31,,1.507,0,official,,{}
+JP_NOMINAL_3Y,2026-07-31,,1.658,0,official,,{}
+JP_NOMINAL_4Y,2026-07-31,,1.876,0,official,,{}
+JP_NOMINAL_5Y,2026-07-31,,2.044,0,official,,{}
+JP_NOMINAL_6Y,2026-07-31,,2.19,0,official,,{}
+JP_NOMINAL_7Y,2026-07-31,,2.343,0,official,,{}
+JP_NOMINAL_8Y,2026-07-31,,2.517,0,official,,{}
+JP_NOMINAL_9Y,2026-07-31,,2.658,0,official,,{}
+JP_NOMINAL_10Y,2026-07-31,,2.801,0,official,,{}
+JP_NOMINAL_15Y,2026-07-31,,3.382,0,official,,{}
+JP_NOMINAL_20Y,2026-07-31,,3.69,0,official,,{}
+JP_NOMINAL_25Y,2026-07-31,,3.987,0,official,,{}
+JP_NOMINAL_30Y,2026-07-31,,3.982,0,official,,{}
+JP_NOMINAL_40Y,2026-07-31,,3.967,0,official,,{}
+JP_REAL_第22回,2026-07-30,2026-07-30 15:00:00+09,-2.072784,0,calculated,,"{""remaining_years"":0.610541,""clean_price"":101.35}"
+JP_REAL_第23回,2026-07-30,2026-07-30 15:00:00+09,-0.638415,0,calculated,,"{""remaining_years"":1.612594,""clean_price"":101.2}"
+JP_REAL_第24回,2026-07-30,2026-07-30 15:00:00+09,-0.242979,0,calculated,,"{""remaining_years"":2.61191,""clean_price"":100.9}"
+JP_REAL_第25回,2026-07-30,2026-07-30 15:00:00+09,-0.78016,0,calculated,,"{""remaining_years"":3.611225,""clean_price"":103.6}"
+JP_REAL_第26回,2026-07-30,2026-07-30 15:00:00+09,-0.317455,0,calculated,,"{""remaining_years"":4.610541,""clean_price"":101.5}"
+JP_REAL_第27回,2026-07-30,2026-07-30 15:00:00+09,-0.057234,0,calculated,,"{""remaining_years"":5.612594,""clean_price"":100.35}"
+JP_REAL_第28回,2026-07-30,2026-07-30 15:00:00+09,0.218315,0,calculated,,"{""remaining_years"":6.61191,""clean_price"":98.6}"
+JP_REAL_第29回,2026-07-30,2026-07-30 15:00:00+09,0.555692,0,calculated,,"{""remaining_years"":7.611225,""clean_price"":95.9}"
+JP_REAL_第30回,2026-07-30,2026-07-30 15:00:00+09,0.650627,0,calculated,,"{""remaining_years"":8.610541,""clean_price"":94.6}"
+JP_REAL_第31回,2026-07-30,2026-07-30 15:00:00+09,0.789366,0,calculated,,"{""remaining_years"":9.612594,""clean_price"":98.25}"
+JP_REAL_5Y_INTERP,2026-07-31,,-0.216317,0,interpolated,,"{""source_market_date"":""2026-07-30""}"
+USJP_REAL_SPREAD_5Y,2026-07-31,,2.406317,0,calculated,,"{""us_value"":2.19,""jp_value"":-0.216317}"
+JP_REAL_7Y_INTERP,2026-07-31,,0.349337,0,interpolated,,"{""source_market_date"":""2026-07-30""}"
+USJP_REAL_SPREAD_7Y,2026-07-31,,1.970663,0,calculated,,"{""us_value"":2.32,""jp_value"":0.349337}"
+JP_REAL_10Y_PROXY,2026-07-31,,0.789366,0,proxy,,"{""source_market_date"":""2026-07-30""}"
+USJP_REAL_SPREAD_10Y,2026-07-31,,1.680634,0,calculated,,"{""us_value"":2.47,""jp_value"":0.789366}"
+USDJPY_MONTHLY_AVG,2025-08-01,,147.64,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2025-08-01,,2.8769,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2025-08-01,,2.6923,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2025-09-01,,147.93,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2025-09-01,,2.6828,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2025-09-01,,2.498,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2025-10-01,,151.32,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2025-10-01,,2.5924,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2025-10-01,,2.3908,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2025-11-01,,155.08,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2025-11-01,,2.6033,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2025-11-01,,2.35,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2025-12-01,,155.85,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2025-12-01,,2.4242,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2025-12-01,,2.1647,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2026-01-01,,156.79,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2026-01-01,,2.3268,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2026-01-01,,2.0171,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2026-02-01,,155.23,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2026-02-01,,2.2026,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2026-02-01,,1.9315,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2026-03-01,,158.64,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2026-03-01,,2.419,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2026-03-01,,1.996,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2026-04-01,,159.28,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2026-04-01,,2.413,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2026-04-01,,1.894,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2026-05-01,,158.34,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2026-05-01,,2.5986,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2026-05-01,,1.8504,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2026-06-01,,160.69,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2026-06-01,,2.7016,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2026-06-01,,1.8164,0,calculated,,"{""period"":""month""}"
+USDJPY_MONTHLY_AVG,2026-07-01,,162.4543,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_2Y_MONTHLY,2026-07-01,,2.7692,0,calculated,,"{""period"":""month""}"
+USJP_NOMINAL_SPREAD_10Y_MONTHLY,2026-07-01,,1.8198,0,calculated,,"{""period"":""month""}"
