@@ -33,8 +33,12 @@ services:
       PORT: 8080
       NODE_ENV: production
       EDINET_API_KEY: ${EDINET_API_KEY:-}
+      COMPANY_RAW_DIR: /var/lib/company-intelligence/raw
     ports:
       - "${COMPANY_API_PORT:-8080}:8080"
+    volumes:
+      - company_intelligence_raw:/var/lib/company-intelligence/raw
 
 volumes:
   company_intelligence_pgdata:
+  company_intelligence_raw:
