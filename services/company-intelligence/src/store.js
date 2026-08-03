@@ -62,15 +62,15 @@ export class Store {
     return result.rows;
   }
 
-  async timeline(code, limit = 500) {
+  async timeline(code, limit = 500, includeRestricted = false) {
     const normalized = normalizeSecurityCode(code);
     const result = await this.query(`
       select t.event_date, t.event_year, t.event_type, t.title, t.description, t.significance, t.source_url, s.source_key
       from company_intelligence.timeline_event t
       join company_intelligence.company c using(company_id)
       join company_intelligence.source s using(source_id)
-      where c.sec_code = $1 and (t.export_allowed or s.redistribution_allowed)
-      order by event_date nulls last, event_year nulls last limit $2`, [normalized, limit]);
+      where c.sec_code = $1 and ($3 or t.export_allowed or s.redistribution_allowed)
+      order by event_date nulls last, event_year nulls last limit $2`, [normalized, limit, includeRestricted]);
     return result.rows;
   }
 
@@ -82,7 +82,7 @@ export class Store {
 
   async factProvenance(factId) {
     const fact = await this.query(`
-      select h.*, rd.canonical_url, rd.content_sha256, rd.retrieved_at, rd.resource_type
+      select h.*, rd.canonical_url, rd.content_sha256, rd.retrieved_at, rd.resource_type, rd.storage_path
       from company_intelligence.v_financial_history h
       left join company_intelligence.fact f on f.fact_id = h.fact_id
       left join company_intelligence.raw_document rd on rd.raw_document_id = f.raw_document_id
@@ -128,14 +128,14 @@ export class Store {
     await this.query(`update company_intelligence.ingestion_run set completed_at=now(), status=$2, fetched_count=$3, inserted_count=$4, updated_count=$5, error_count=$6, error_detail=$7 where ingestion_run_id=$1`, [runId, status, counters.fetched ?? 0, counters.inserted ?? 0, counters.updated ?? 0, errors.length, errors]);
   }
 
-  async saveRawDocument({ sourceKey, companyId, runId, externalId, resourceType, canonicalUrl, payload, contentSha256, exportAllowed = false, metadata = {} }) {
+  async saveRawDocument({ sourceKey, companyId, runId, externalId, resourceType, canonicalUrl, payload = null, contentSha256, contentType = "application/json", storagePath = null, exportAllowed = false, metadata = {} }) {
     const sourceId = await this.sourceId(sourceKey);
     const sha = contentSha256 ?? await sha256Hex(JSON.stringify(payload));
     const result = await this.query(`
-      insert into company_intelligence.raw_document(source_id, company_id, ingestion_run_id, external_id, resource_type, canonical_url, content_sha256, content_type, payload, export_allowed, metadata)
-      values($1,$2,$3,$4,$5,$6,$7,'application/json',$8,$9,$10)
-      on conflict(source_id, external_id, content_sha256) do update set retrieved_at=now(), ingestion_run_id=excluded.ingestion_run_id
-      returning raw_document_id`, [sourceId, companyId, runId, externalId, resourceType, canonicalUrl, sha, payload, exportAllowed, metadata]);
+      insert into company_intelligence.raw_document(source_id, company_id, ingestion_run_id, external_id, resource_type, canonical_url, content_sha256, content_type, payload, storage_path, export_allowed, metadata)
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      on conflict(source_id, external_id, content_sha256) do update set retrieved_at=now(), ingestion_run_id=excluded.ingestion_run_id, storage_path=coalesce(excluded.storage_path, company_intelligence.raw_document.storage_path)
+      returning raw_document_id`, [sourceId, companyId, runId, externalId, resourceType, canonicalUrl, sha, contentType, payload, storagePath, exportAllowed, metadata]);
     return result.rows[0].raw_document_id;
   }
 
@@ -144,10 +144,65 @@ export class Store {
     let inserted = 0;
     for (const fact of facts) {
       const concept = fact.conceptKey ? await this.query(`select fact_concept_id from company_intelligence.fact_concept where concept_key=$1`, [fact.conceptKey]) : { rows: [] };
-      await this.query(`
+      const result = await this.query(`
         insert into company_intelligence.fact(company_id, source_id, raw_document_id, fact_concept_id, element_id, label, fiscal_year, period_end, value_numeric, value_text, quality_flag, source_priority, metadata)
         values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'secondary',50,$11)
-        on conflict do nothing`, [companyId, sourceId, rawDocumentId, concept.rows[0]?.fact_concept_id ?? null, fact.elementId, fact.label, fiscalYear, periodEnd, fact.valueNumeric, fact.valueText ?? null, fact.metadata ?? {}]);
+        on conflict do nothing returning fact_id`, [companyId, sourceId, rawDocumentId, concept.rows[0]?.fact_concept_id ?? null, fact.elementId, fact.label, fact.fiscalYear ?? fiscalYear, fact.periodEnd ?? periodEnd, fact.valueNumeric, fact.valueText ?? null, fact.metadata ?? {}]);
+      inserted += result.rowCount;
+    }
+    return inserted;
+  }
+
+  async replaceTimeline({ companyId, sourceKey, rawDocumentId, entries, exportAllowed = false }) {
+    const sourceId = await this.sourceId(sourceKey);
+    await this.query(`delete from company_intelligence.timeline_event where raw_document_id=$1`, [rawDocumentId]);
+    let inserted = 0;
+    for (const entry of entries) {
+      await this.query(`
+        insert into company_intelligence.timeline_event(company_id,source_id,raw_document_id,event_date,event_year,event_type,title,description,significance,source_url,export_allowed,metadata)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`, [companyId, sourceId, rawDocumentId, entry.eventDate, entry.eventYear, entry.eventType, entry.title, entry.description, entry.significance, entry.sourceUrl, exportAllowed, { ...entry.metadata, source_event_key: entry.sourceEventKey }]);
+      inserted += 1;
+    }
+    return inserted;
+  }
+
+  async replaceExecutives({ companyId, sourceKey, rawDocumentId, executives, exportAllowed = false }) {
+    const sourceId = await this.sourceId(sourceKey);
+    await this.query(`delete from company_intelligence.executive_snapshot where raw_document_id=$1`, [rawDocumentId]);
+    let inserted = 0;
+    for (const executive of executives) {
+      await this.query(`
+        insert into company_intelligence.executive_snapshot(company_id,source_id,raw_document_id,as_of_date,person_name,position,birth_date,career,export_allowed)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        on conflict(company_id,source_id,as_of_date,person_name,position) do update set raw_document_id=excluded.raw_document_id,birth_date=excluded.birth_date,career=excluded.career,export_allowed=excluded.export_allowed`, [companyId, sourceId, rawDocumentId, executive.asOfDate, executive.personName, executive.position, executive.birthDate, executive.career, exportAllowed]);
+      inserted += 1;
+    }
+    return inserted;
+  }
+
+  async replaceShareholders({ companyId, sourceKey, rawDocumentId, shareholders, exportAllowed = false }) {
+    const sourceId = await this.sourceId(sourceKey);
+    await this.query(`delete from company_intelligence.shareholder_snapshot where raw_document_id=$1`, [rawDocumentId]);
+    let inserted = 0;
+    for (const holder of shareholders) {
+      await this.query(`
+        insert into company_intelligence.shareholder_snapshot(company_id,source_id,raw_document_id,as_of_date,holder_name,shares,ownership_pct,rank,export_allowed)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        on conflict(company_id,source_id,as_of_date,holder_name) do update set raw_document_id=excluded.raw_document_id,shares=excluded.shares,ownership_pct=excluded.ownership_pct,rank=excluded.rank,export_allowed=excluded.export_allowed`, [companyId, sourceId, rawDocumentId, holder.asOfDate, holder.holderName, holder.shares, holder.ownershipPct, holder.rank, exportAllowed]);
+      inserted += 1;
+    }
+    return inserted;
+  }
+
+  async replaceSegments({ companyId, sourceKey, rawDocumentId, facts, exportAllowed = false }) {
+    const sourceId = await this.sourceId(sourceKey);
+    await this.query(`delete from company_intelligence.segment_fact where raw_document_id=$1`, [rawDocumentId]);
+    let inserted = 0;
+    for (const fact of facts) {
+      await this.query(`
+        insert into company_intelligence.segment_fact(company_id,source_id,raw_document_id,fiscal_year,segment_name,metric_key,value_numeric,unit,dimensions,quality_flag)
+        values($1,$2,$3,$4,$5,$6,$7,$8,$9,'secondary')
+        on conflict(company_id,source_id,filing_id,fiscal_year,segment_name,metric_key,dimensions) do update set raw_document_id=excluded.raw_document_id,value_numeric=excluded.value_numeric,unit=excluded.unit,quality_flag=excluded.quality_flag`, [companyId, sourceId, rawDocumentId, fact.fiscalYear, fact.segmentName, fact.metricKey, fact.valueNumeric, fact.unit, { ...fact.metadata, export_allowed: exportAllowed }]);
       inserted += 1;
     }
     return inserted;
