@@ -1,0 +1,94 @@
+name: Company intelligence
+
+on:
+  pull_request:
+    paths:
+      - compose.company-intelligence.yaml
+      - db/company_intelligence/**
+      - services/company-intelligence/**
+      - docs/adr/company-intelligence-platform.md
+      - .github/workflows/company-intelligence.yml
+  push:
+    branches: [main]
+    paths:
+      - compose.company-intelligence.yaml
+      - db/company_intelligence/**
+      - services/company-intelligence/**
+      - docs/adr/company-intelligence-platform.md
+      - .github/workflows/company-intelligence.yml
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4-bookworm
+        env:
+          POSTGRES_DB: investor
+          POSTGRES_USER: investor
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U investor -d investor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGDATABASE: investor
+      PGUSER: investor
+      PGPASSWORD: test-only-password
+      DATABASE_URL: postgresql://investor:test-only-password@localhost:5432/investor
+      CANONICAL_DB_NAME: investor
+      CANONICAL_DB_USER: investor
+      CANONICAL_DB_PASSWORD: test-only-password
+      COMPANY_DB_PORT: 55433
+      PORT: 8080
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: services/company-intelligence/package.json
+
+      - name: Validate Compose
+        run: docker compose -f compose.company-intelligence.yaml config --quiet
+
+      - name: Apply schema and seed twice
+        run: |
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/001_schema.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/002_views.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/001_schema.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/002_views.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/900_smoke_test.sql
+
+      - name: Install and test service
+        working-directory: services/company-intelligence
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+          node --check src/server.js
+          node --check src/cli.js
+
+      - name: API smoke test
+        working-directory: services/company-intelligence
+        run: |
+          node src/server.js > /tmp/company-api.log 2>&1 &
+          API_PID=$!
+          trap 'kill $API_PID || true' EXIT
+          for i in {1..20}; do
+            curl -fsS http://localhost:8080/v1/health && break
+            sleep 1
+          done
+          curl -fsS http://localhost:8080/api/companies.json | grep '2801'
+          curl -fsS http://localhost:8080/api/2801/manifest.json | grep 'financials'
+          curl -fsS http://localhost:8080/openapi.yaml | grep 'Investor Company Intelligence API'
