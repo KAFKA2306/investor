@@ -37,8 +37,14 @@ jobs:
           uv venv
           uv pip install ruff pyright
 
-      - name: Validate runtime config
-        run: task validate:runtime
+      - name: TypeScript quality
+        working-directory: ts-agent
+        run: |
+          bun run lint
+          bun run typecheck
+          bun run test
 
-      - name: Run quality gate
-        run: task check
+      - name: Python quality
+        run: |
+          uv run ruff check .
+          uv run pyright
