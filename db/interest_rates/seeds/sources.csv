@@ -1,0 +1,7 @@
+source_key,source_name,authority,source_url,access_method,metadata
+US_TREASURY_NOMINAL,U.S. Treasury Daily Par Yield Curve Rates,U.S. Department of the Treasury,https://home.treasury.gov/resource-center/data-chart-center/interest-rates,official_download,{}
+US_TREASURY_REAL,U.S. Treasury Daily Par Real Yield Curve Rates,U.S. Department of the Treasury,https://home.treasury.gov/resource-center/data-chart-center/interest-rates,official_download,"{""security_type"":""TIPS""}"
+JP_MOF_NOMINAL,国債金利情報,財務省,https://www.mof.go.jp/jgbs/reference/interest_rate/,official_download,"{""curve_method"":""constant_maturity""}"
+JP_JSDA_ILJGB,公社債店頭売買参考統計値,日本証券業協会,https://market.jsda.or.jp/shijyo/saiken/baibai/baisanchi/,official_download,"{""security_type"":""inflation_linked_jgb""}"
+BOJ_FX,外国為替市況（日次）,日本銀行,https://www.boj.or.jp/statistics/market/forex/fxdaily/,official_download,"{""fixing"":""Tokyo interbank 17:00 midpoint""}"
+DERIVED_OFFICIAL,公式市場データからの派生系列,KAFKA2306/investor,https://github.com/KAFKA2306/investor/tree/main/db/interest_rates,repository_calculation,"{""requires_lineage"":true}"
