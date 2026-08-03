@@ -1,0 +1,66 @@
+name: Interest-rate database
+
+on:
+  pull_request:
+    paths:
+      - compose.interest-rates.yaml
+      - db/interest_rates/**
+      - .github/workflows/interest-rate-db.yml
+  push:
+    branches: [main]
+    paths:
+      - compose.interest-rates.yaml
+      - db/interest_rates/**
+      - .github/workflows/interest-rate-db.yml
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-smoke:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4-bookworm
+        env:
+          POSTGRES_DB: investor
+          POSTGRES_USER: investor
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U investor -d investor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGDATABASE: investor
+      PGUSER: investor
+      PGPASSWORD: test-only-password
+      CANONICAL_DB_NAME: investor
+      CANONICAL_DB_USER: investor
+      CANONICAL_DB_PASSWORD: test-only-password
+      CANONICAL_DB_PORT: 55432
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Compose configuration
+        run: docker compose -f compose.interest-rates.yaml config --quiet
+
+      - name: Apply schema, seed, and views
+        run: |
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/001_schema.sql
+          bash db/interest_rates/002_load_seed.sh
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/003_views.sql
+
+      - name: Verify idempotent reload
+        run: |
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/001_schema.sql
+          bash db/interest_rates/002_load_seed.sh
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/003_views.sql
+
+      - name: Run database smoke test
+        run: psql -v ON_ERROR_STOP=1 -f db/interest_rates/900_smoke_test.sql
