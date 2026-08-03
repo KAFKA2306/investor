@@ -1,0 +1,19 @@
+{
+  "name": "@investor/company-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test",
+    "ingest": "node src/cli.js ingest",
+    "reconcile": "node src/cli.js reconcile",
+    "export-static": "node src/cli.js export-static"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.2.5",
+    "fflate": "^0.8.2",
+    "pg": "^8.16.3"
+  }
+}

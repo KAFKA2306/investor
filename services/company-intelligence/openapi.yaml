@@ -1,0 +1,123 @@
+openapi: 3.1.0
+info:
+  title: Investor Company Intelligence API
+  version: 1.0.0
+  description: >-
+    EDINET-first company history and financial intelligence API. Every normalized fact retains
+    source, filing, XBRL element, context, unit, revision and lineage metadata. The /api paths
+    provide The社史-style static JSON compatibility; /v1 adds provenance, comparisons and reconciliation.
+servers:
+  - url: http://localhost:8080
+paths:
+  /v1/health:
+    get:
+      summary: Database and API health
+      responses:
+        '200': { description: Healthy }
+  /v1/companies:
+    get:
+      summary: Search companies
+      parameters:
+        - { name: q, in: query, schema: { type: string } }
+        - { name: industry, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, maximum: 500, default: 100 } }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+      responses:
+        '200': { description: Company list }
+  /v1/companies/{code}:
+    get:
+      summary: Company profile
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Company profile }
+        '404': { description: Company not found }
+  /v1/companies/{code}/financials:
+    get:
+      summary: Latest standardized financials with source-level facts
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+        - { name: history, in: query, schema: { type: boolean, default: false } }
+        - { name: concept, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Latest financials and optional history }
+  /v1/companies/{code}/facts:
+    get:
+      summary: Auditable normalized and raw financial facts
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+        - { name: concept, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, maximum: 5000 } }
+      responses:
+        '200': { description: Facts }
+  /v1/companies/{code}/filings:
+    get:
+      summary: EDINET filings and document metadata
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Filings }
+  /v1/companies/{code}/timeline:
+    get:
+      summary: Export-permitted company timeline
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Timeline }
+  /v1/companies/{code}/reconciliation:
+    get:
+      summary: EDINET versus secondary-source comparison results
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Reconciliation issues }
+  /v1/compare:
+    get:
+      summary: Compare 2-20 companies using canonical concepts
+      parameters:
+        - { name: codes, in: query, required: true, schema: { type: string }, example: '2801,2897' }
+        - { name: concepts, in: query, schema: { type: string }, example: 'revenue,operating_profit,total_assets' }
+      responses:
+        '200': { description: Comparable facts }
+        '400': { description: Invalid code count }
+  /v1/facts/{factId}/provenance:
+    get:
+      summary: Fact source document and derivation lineage
+      parameters:
+        - { name: factId, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: Provenance }
+        '404': { description: Fact not found }
+  /api/companies.json:
+    get:
+      summary: Static-JSON-compatible company index
+      responses:
+        '200': { description: Company list }
+  /api/{code}/manifest.json:
+    get:
+      summary: Static-JSON-compatible resource manifest
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Resource manifest }
+  /api/{code}/financials.json:
+    get:
+      summary: Static-JSON-compatible latest financials
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Latest financials }
+  /api/{code}/financials-longterm.json:
+    get:
+      summary: Static-JSON-compatible long-term facts
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Long-term facts }
+  /api/{code}/timeline.json:
+    get:
+      summary: Static-JSON-compatible export-permitted timeline
+      parameters:
+        - { name: code, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Timeline }
