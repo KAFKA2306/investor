@@ -1,6 +1,6 @@
 const CONCEPT_PATTERNS = [
   ["revenue", /(?:^|:)(?:NetSales|Revenue|OperatingRevenue)|売上(?:高|収益)/i],
-  ["operating_profit", /(?:OperatingIncome|OperatingProfitLoss)|営業利益/i],
+  ["operating_profit", /(?:OperatingIncome|OperatingProfit(?:Loss)?)|営業利益/i],
   ["profit_attributable_to_owners", /(?:ProfitLossAttributableToOwnersOfParent|NetIncomeLossAttributableToOwnersOfParent)|親会社.*(?:利益|純利益)/i],
   ["total_assets", /(?:^|:)(?:Assets|TotalAssets)$|資産合計/i],
   ["inventory", /Inventor|棚卸資産|商品及び製品|原材料及び貯蔵品/i],
