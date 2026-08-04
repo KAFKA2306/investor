@@ -1,13 +1,13 @@
 import type React from "react";
 import { useState } from "react";
 import { TAB_IDS } from "./config";
-import { BacktestAnalysis } from "./features/BacktestAnalysis";
-import { DataInspector } from "./features/DataInspector";
 import { EvidenceRoom } from "./features/EvidenceRoom";
-import { ResearchLog } from "./features/ResearchLog";
+import { ProfessionalDataInspector } from "./features/ProfessionalDataInspector";
+import { ProfessionalResearchLog } from "./features/ProfessionalResearchLog";
+import { ProfessionalSecuritiesView } from "./features/ProfessionalSecuritiesView";
+import { ProfessionalSystemHealth } from "./features/ProfessionalSystemHealth";
+import { ProfessionalValidationView } from "./features/ProfessionalValidationView";
 import { StatusBar } from "./features/StatusBar";
-import { StockAnalysis } from "./features/StockAnalysis";
-import { SystemHealth } from "./features/SystemHealth";
 import { useDashboardData } from "./hooks/useDashboardData";
 
 const App: React.FC = () => {
@@ -25,20 +25,34 @@ const App: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState(TAB_IDS.EVIDENCE);
 
+  // Public GitHub Pages is an observation surface. Execution controls must be
+  // explicitly enabled for a separately authenticated deployment.
+  // @ts-expect-error - ImportMeta env typing is supplied by Vite at build time.
+  const executionControlsAvailable =
+    (import.meta.env.VITE_ENABLE_EXECUTION_CONTROLS as string | undefined) ===
+    "true";
+
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
   };
 
   const handleKill = async () => {
+    if (!executionControlsAvailable) {
+      alert(
+        "この静的デプロイでは執行制御を利用できません。認証済みの運用環境を使用してください。",
+      );
+      return;
+    }
+
     if (
       !window.confirm(
-        "緊急停止（KILL SWITCH）を実行しますか？全注文がキャンセルされ、新規発注が停止されます。",
+        "緊急停止を実行します。新規発注を停止し、キャンセル可能な注文の取消要求を送信します。続行しますか？",
       )
     ) {
       return;
     }
 
-    // @ts-expect-error - ImportMeta type issue in this env
+    // @ts-expect-error - ImportMeta env typing is supplied by Vite at build time.
     const token = (import.meta.env.VITE_API_TOKEN as string) ?? "";
     const res = await fetch("/api/kill", {
       method: "POST",
@@ -46,11 +60,11 @@ const App: React.FC = () => {
     }).catch(() => undefined);
 
     if (res?.ok) {
-      alert("緊急停止シグナルを送信しました。全プロセスを終了します。");
+      alert("緊急停止要求を送信しました。運用環境の状態を確認してください。");
       return;
     }
     alert(
-      "緊急停止に失敗しました。APIサーバーの接続状態か、認証トークンを確認してください。",
+      "緊急停止要求を送信できませんでした。API接続、認証、運用環境を確認してください。",
     );
   };
 
@@ -65,14 +79,14 @@ const App: React.FC = () => {
           gap: "1rem",
           alignItems: "center",
           justifyContent: "center",
-          fontFamily: "var(--display)",
-          fontSize: "1.2rem",
-          color: "var(--brand)",
-          background: "var(--bg-panel)",
+          fontFamily: "var(--sans)",
+          fontSize: "1rem",
+          color: "var(--ink)",
+          background: "var(--bg)",
         }}
       >
-        <div className="spinner" />
-        証拠台帳 (Evidence Ledger) を読み込み中だよぉ…✨
+        <div className="spinner" aria-hidden="true" />
+        <span role="status">証拠台帳と検証データを読み込んでいます</span>
       </div>
     );
   }
@@ -97,13 +111,14 @@ const App: React.FC = () => {
         activeTab={activeTab}
         timeline={timeline}
         activeDate={activeDate}
+        executionControlsAvailable={executionControlsAvailable}
         onTabChange={setActiveTab}
         onDateChange={setActiveDate}
         onRefresh={refresh}
         onKill={handleKill}
       />
 
-      <div style={{ marginTop: "1rem" }}>
+      <main style={{ marginTop: "1rem" }}>
         {activeTab === TAB_IDS.EVIDENCE && (
           <EvidenceRoom
             verificationData={verificationData}
@@ -112,31 +127,31 @@ const App: React.FC = () => {
           />
         )}
         {activeTab === TAB_IDS.INSPECTOR && (
-          <DataInspector verificationData={verificationData} />
+          <ProfessionalDataInspector verificationData={verificationData} />
         )}
         {activeTab === TAB_IDS.RESEARCH && (
-          <ResearchLog
+          <ProfessionalResearchLog
             alphaDiscovery={alphaByDate}
             activeDate={activeDate}
             onSelectDate={setActiveDate}
           />
         )}
         {activeTab === TAB_IDS.HEALTH && (
-          <SystemHealth
+          <ProfessionalSystemHealth
             qualityGate={activeQualityGate}
             history={qualityGateByDate}
           />
         )}
         {activeTab === TAB_IDS.BACKTEST && (
-          <BacktestAnalysis
+          <ProfessionalValidationView
             verificationData={verificationData}
             historicalOutcomes={unifiedByDate}
           />
         )}
         {activeTab === TAB_IDS.STOCKS && (
-          <StockAnalysis verificationData={verificationData} />
+          <ProfessionalSecuritiesView verificationData={verificationData} />
         )}
-      </div>
+      </main>
     </div>
   );
 };

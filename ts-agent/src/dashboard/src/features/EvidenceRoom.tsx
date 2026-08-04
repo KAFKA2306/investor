@@ -28,30 +28,97 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
 }) => {
   if (!verificationData) {
     return (
-      <div className="empty">
-        検証データが見つからないよぉ…バックテストを先にやってみてねっ！🎀
+      <div className="main" role="status" aria-live="polite">
+        <div className="section-head">
+          <div>
+            <h2>Evidence overview</h2>
+            <span>Current publication state and required evidence</span>
+          </div>
+          <span className="pill risk">EVIDENCE: NOT PUBLISHED</span>
+        </div>
+
+        <section className="panel section evidence-empty-state">
+          <div>
+            <span className="pill">STAGE: UNKNOWN</span>
+            <h1 className="hero-title" style={{ marginTop: "0.8rem" }}>
+              No current verification artifact
+            </h1>
+            <p className="hero-subtitle">
+              The dashboard did not receive a schema-valid
+              <span className="mono"> verification/standard_verification_data.json</span>.
+              Performance, stability, and readiness claims are therefore withheld.
+            </p>
+          </div>
+
+          <div className="uqtl-grid" style={{ marginTop: "1rem" }}>
+            <div className="kpi-card">
+              <div className="label">Verification artifact</div>
+              <div className="value mono">NOT PUBLISHED</div>
+            </div>
+            <div className="kpi-card">
+              <div className="label">Research claims</div>
+              <div className="value mono">UNKNOWN</div>
+            </div>
+            <div className="kpi-card">
+              <div className="label">Execution state</div>
+              <div className="value mono">OBSERVE ONLY</div>
+            </div>
+            <div className="kpi-card">
+              <div className="label">Deployment readiness</div>
+              <div className="value mono">NOT ESTABLISHED</div>
+            </div>
+          </div>
+
+          <div className="evidence-empty-actions">
+            <button
+              type="button"
+              className="button"
+              onClick={() => onNavigate?.("research")}
+            >
+              Review research ledger
+            </button>
+            <button
+              type="button"
+              className="button"
+              onClick={() => onNavigate?.("health")}
+            >
+              Review system status
+            </button>
+          </div>
+
+          <div className="metadata" style={{ marginTop: "1rem" }}>
+            <strong>Publication contract</strong>
+            <p>
+              Generate the verification artifact, validate it against the current
+              schema, and publish it with code, data, run, environment, and as-of
+              identifiers. Until then, the absence is treated as evidence, not
+              replaced by stale or synthetic results.
+            </p>
+          </div>
+        </section>
       </div>
     );
   }
 
-  // Find the selected alpha candidate if any
   const selectedAlpha = alphaDiscovery
-    ?.flatMap((d) => d.candidates)
-    .find((c) => c.status === "SELECTED");
+    ?.flatMap((discovery) => discovery.candidates)
+    .find((candidate) => candidate.status === "SELECTED");
 
-  // Prepare Rolling IC data
-  const dailyReturns = verificationData.strategyCum.map((c, i) =>
-    i === 0 ? 0 : c / (verificationData.strategyCum[i - 1] ?? c) - 1,
+  const dailyReturns = verificationData.strategyCum.map((cumulative, index) =>
+    index === 0
+      ? 0
+      : cumulative /
+          (verificationData.strategyCum[index - 1] ?? cumulative) -
+        1,
   );
 
-  // Try to find a factor series in individualData if available, otherwise use lagged return as proxy
-  let factorSeries = dailyReturns.map((_, i) =>
-    i === 0 ? 0 : dailyReturns[i - 1],
+  let factorSeries = dailyReturns.map((_, index) =>
+    index === 0 ? 0 : dailyReturns[index - 1],
   );
-  let factorSource = "遅延リターン（プロキシだよっ！✨）";
+  let factorSource = "Previous-day return proxy";
   let proxySpec: ProxySpec = {
     kind: "prev_day_return",
-    note: "本物のファクターが見つからないから、昨日のリターンを代わりにするねっ！💖",
+    note: "Direct factor observations are unavailable. Previous-day return is used as an explicit proxy.",
     sourcePaths: ["strategyCum"],
   };
 
@@ -59,7 +126,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
     const firstStock = Object.values(verificationData.individualData)[0];
     if (firstStock?.factors) {
       factorSeries = firstStock.factors;
-      factorSource = `${firstStock.symbol} からのファクターだよっ！`;
+      factorSource = `${firstStock.symbol} factor observations`;
       proxySpec = { kind: "none" };
     }
   }
@@ -83,10 +150,17 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
     environment: verificationData.audit.environment,
   };
 
+  const hasDirectFactorEvidence = proxySpec.kind === "none";
+
   return (
     <div className="main">
       <div className="section-head">
-        <h2>証拠の部屋 🏛️✨</h2>
+        <div>
+          <h2>Evidence overview</h2>
+          <span>
+            Research evidence only. No live-trading readiness is implied.
+          </span>
+        </div>
         <SourceBadge
           codeFingerprint={verificationData.audit.commitHash}
           dataFingerprint={verificationData.audit.dataFingerprint}
@@ -94,17 +168,30 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
         />
       </div>
 
-      <div className="hero panel hero-uqtl">
+      {!hasDirectFactorEvidence && (
+        <div className="panel section" role="alert">
+          <strong>PROVISIONAL METRIC:</strong> Rolling IC is calculated from an
+          explicit proxy because direct factor observations are unavailable.
+          Source: {factorSource}.
+        </div>
+      )}
+
+      <section className="hero panel hero-uqtl" aria-labelledby="strategy-title">
         <div className="hero-content">
           <div className="hero-meta">
-            <span className="pill">戦略：{verificationData.strategyName}</span>
+            <span className="pill">STAGE: RESEARCH / VALIDATION</span>
+            <span className="pill">
+              STRATEGY: {verificationData.strategyName}
+            </span>
           </div>
-          <h1 className="hero-title">{verificationData.strategyId}</h1>
+          <h1 id="strategy-title" className="hero-title">
+            {verificationData.strategyId}
+          </h1>
           <p className="hero-subtitle">{verificationData.description}</p>
 
-          <div className="uqtl-grid" style={{ marginTop: "1.5rem" }}>
+          <div className="uqtl-grid" style={{ marginTop: "1.25rem" }}>
             <MetricCard
-              label="フィットネス (Fitness) 💪"
+              label="Fitness"
               value={((verificationData.metrics?.fitness ?? 0) * 100).toFixed(
                 1,
               )}
@@ -117,7 +204,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
               onClick={() => onNavigate?.("backtest")}
             />
             <MetricCard
-              label="安定性 (Stability) 🛡️"
+              label="Stability"
               value={((verificationData.metrics?.stability ?? 0) * 100).toFixed(
                 1,
               )}
@@ -129,7 +216,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
               }
             />
             <MetricCard
-              label="採用度 (Adoption) 🌟"
+              label="Adoption score"
               value={((verificationData.metrics?.adoption ?? 0) * 100).toFixed(
                 1,
               )}
@@ -139,136 +226,94 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
                   ? "up"
                   : "neutral"
               }
-              onClick={() => onNavigate?.("backtest")}
+              onClick={() => onNavigate?.("research")}
             />
           </div>
         </div>
 
-        <div className="hero-side">
-          <div
-            className="panel section"
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid var(--line)",
-            }}
-          >
-            <h3
-              className="quick-title"
-              style={{
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                borderBottom: "1px solid var(--line)",
-                paddingBottom: "0.4rem",
-                marginBottom: "0.8rem",
-              }}
-            >
-              運用コストの内訳 💸
-            </h3>
-            <div
-              className="health-row"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "0.4rem",
-                fontSize: "0.75rem",
-              }}
-            >
-              <span style={{ color: "var(--ink-soft)" }}>売買手数料 (Bps)</span>
-              <span className="pill" style={{ fontFamily: "var(--mono)" }}>
+        <aside className="hero-side" aria-label="Estimated trading costs">
+          <div className="panel section">
+            <h3 className="quick-title">Estimated trading costs</h3>
+            <div className="health-row">
+              <span>Fees</span>
+              <span className="pill mono">
                 {formatBpsNullable(verificationData.costs?.feeBps)}
               </span>
             </div>
-            <div
-              className="health-row"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "0.4rem",
-                fontSize: "0.75rem",
-              }}
-            >
-              <span style={{ color: "var(--ink-soft)" }}>推定スリッページ</span>
-              <span className="pill" style={{ fontFamily: "var(--mono)" }}>
+            <div className="health-row">
+              <span>Slippage</span>
+              <span className="pill mono">
                 {formatBpsNullable(verificationData.costs?.slippageBps)}
               </span>
             </div>
-            <div
-              className="health-row"
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                paddingTop: "0.4rem",
-                borderTop: "1px dashed var(--line)",
-                fontSize: "0.8rem",
-                fontWeight: "bold",
-              }}
-            >
-              <span>合計コスト</span>
-              <span
-                className="pill"
-                style={{
-                  background: "var(--brand-soft)",
-                  color: "var(--brand)",
-                }}
-              >
+            <div className="health-row">
+              <strong>Total modeled cost</strong>
+              <span className="pill mono">
                 {formatBpsNullable(verificationData.costs?.totalCostBps)}
               </span>
             </div>
+            <p className="quick-insight">
+              Modeled costs are validation inputs, not broker execution
+              evidence.
+            </p>
           </div>
-        </div>
-      </div>
+        </aside>
+      </section>
 
       <div className="split">
-        <div className="panel section">
-          <h3 className="quick-title">資産推移の履歴 📈</h3>
+        <section className="panel section" aria-labelledby="cumulative-title">
+          <h3 id="cumulative-title" className="quick-title">
+            Cumulative return
+          </h3>
           <CumulativeReturnChart
             dates={verificationData.dates}
             strategyCum={verificationData.strategyCum}
             benchmarkCum={verificationData.benchmarkCum}
           />
-        </div>
-        <div className="panel section">
+        </section>
+        <section className="panel section" aria-labelledby="rolling-ic-title">
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "baseline",
+              gap: "0.75rem",
+              flexWrap: "wrap",
             }}
           >
-            <h3 className="quick-title">
-              移動IC推移 (30日窓) 📐{" "}
-              {proxySpec.kind !== "none" && (
-                <span style={{ color: "var(--danger)", fontSize: "0.6rem" }}>
-                  [PROXY使用中]
+            <h3 id="rolling-ic-title" className="quick-title">
+              Rolling IC — 30-day window
+              {!hasDirectFactorEvidence && (
+                <span style={{ color: "var(--danger)", marginLeft: "0.5rem" }}>
+                  PROXY
                 </span>
               )}
             </h3>
-            <span style={{ fontSize: "0.6rem", color: "var(--ink-soft)" }}>
-              ソース：{factorSource}
+            <span className="mono" style={{ fontSize: "0.68rem" }}>
+              SOURCE: {factorSource}
             </span>
           </div>
           <RollingICChart data={rollingICPoints} />
-        </div>
+        </section>
       </div>
 
       <div className="section-head" style={{ marginTop: "1rem" }}>
-        <h3>アルファ・パスポート鑑定書 🎫✨</h3>
+        <h3>Candidate evidence record</h3>
         {selectedAlpha && (
           <button
             type="button"
             className="drilldown-link"
             style={{
-              fontSize: "0.7rem",
+              fontSize: "0.72rem",
               fontFamily: "var(--mono)",
               background: "none",
               border: "none",
               padding: 0,
               cursor: "pointer",
-              color: "var(--brand)",
             }}
             onClick={() => onNavigate?.("research")}
           >
-            → 発見の歴史（タイムライン）を見るっ！📜
+            Open candidate lineage
           </button>
         )}
       </div>
@@ -285,14 +330,17 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
         />
       ) : (
         <div className="panel section empty">
-          現在、このセッションで採択されたアルファは見つかりませんでした😢
+          SELECTED candidate not found for this observation date. Review the
+          research log for rejection or incomplete-evidence records.
         </div>
       )}
 
-      <div className="panel section">
-        <h3 className="quick-title">最大ドローダウンの推移 📉</h3>
+      <section className="panel section" aria-labelledby="drawdown-title">
+        <h3 id="drawdown-title" className="quick-title">
+          Drawdown
+        </h3>
         <DrawdownChart data={drawdownPoints} />
-      </div>
+      </section>
 
       <RawDataToggle
         data={verificationData}

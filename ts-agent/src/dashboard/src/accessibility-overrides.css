@@ -1,0 +1,189 @@
+/* Final accessibility and KAFKA Evidence UI constraints. */
+
+:root {
+  --bg: #f7f6f2;
+  --bg-soft: #f0f2f5;
+  --bg-panel: #ffffff;
+  --panel: #ffffff;
+  --ink: #17243a;
+  --ink-soft: #56657a;
+  --line: #d6dce5;
+  --line-strong: #9da9b9;
+  --brand: #243653;
+  --brand-soft: #e8edf4;
+  --success: #21623f;
+  --success-soft: #eaf4ed;
+  --warning: #83530f;
+  --warning-soft: #fff4dd;
+  --danger: #a1263d;
+  --danger-soft: #f9e9ed;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: minmax(230px, 320px) minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.brand {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.tab-nav {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.tab-btn {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.topbar-right {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.evidence-empty-state {
+  display: flex;
+  min-height: 340px;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.evidence-empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+button,
+select,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.button,
+.tab-btn {
+  min-height: 44px;
+}
+
+button,
+.button,
+.tab-btn,
+select,
+input {
+  font-size: max(0.75rem, 12px);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: 20px;
+  height: 20px;
+}
+
+.pill {
+  min-height: 32px;
+}
+
+.kpi-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.8rem;
+  background: var(--bg-panel);
+  box-shadow: none;
+}
+
+.kpi-card .label {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.kpi-card .value {
+  margin-top: 0.35rem;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+  }
+
+  .brand,
+  .tab-nav,
+  .topbar-right {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .brand {
+    grid-row: 1;
+  }
+
+  .tab-nav {
+    grid-row: 2;
+  }
+
+  .topbar-right {
+    grid-row: 3;
+    justify-content: flex-start;
+  }
+
+  .evidence-empty-state {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .button,
+  .tab-btn,
+  select,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+    min-height: 48px;
+  }
+
+  .tab-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+
+  .tab-btn {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .topbar-right > .pill,
+  .topbar-right > .button {
+    flex: 1 1 150px;
+  }
+
+  .evidence-empty-actions .button {
+    width: 100%;
+  }
+}
