@@ -52,6 +52,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
     return parsed.toLocaleString("ja-JP");
   };
 
+  const evidencePublished = Boolean(generatedAt);
+
   return (
     <header className="topbar" aria-label="AAARTS system header">
       <div className="brand">
@@ -74,64 +76,93 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       </nav>
 
       <div className="topbar-right">
-        {timeline.length > 0 && (
-          <label className="pill" htmlFor="evidence-date">
-            <span className="mono">Observation</span>
-            <select
-              id="evidence-date"
-              className="input-select"
-              value={activeDate}
-              onChange={(event) => onDateChange(event.target.value)}
-              aria-label="Evidence observation date"
-            >
-              {timeline.map((date) => (
-                <option key={date} value={date}>
-                  {date}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
+        <span className={`pill ${evidencePublished ? "ready" : "risk"}`}>
+          EVIDENCE: {evidencePublished ? "AVAILABLE" : "NOT PUBLISHED"}
+        </span>
         <span className="pill mono" title="Data generation timestamp">
-          DATA AS OF: {formatGeneratedAt()}
+          AS OF: {formatGeneratedAt()}
         </span>
-        <span className="pill mono" title="Browser refresh timestamp">
-          VIEW: {lastUpdated}
-        </span>
-        <span className="pill mono">ENV: {environment || "UNKNOWN"}</span>
-        <span className="pill mono">RUN: {runId || "UNKNOWN"}</span>
-        <span className="pill mono">
-          CODE: {commitHash ? commitHash.slice(0, 10) : "UNKNOWN"}
-        </span>
-        <span className="pill mono">
-          DATA: {dataFingerprint ? dataFingerprint.slice(0, 10) : "UNKNOWN"}
-        </span>
-        <span className={`pill ${status === "emergency" ? "risk" : "ready"}`}>
-          {status === "active" ? "SYSTEM: OPERATIONAL" : "SYSTEM: EMERGENCY"}
-        </span>
-
-        <button className="button" type="button" onClick={onRefresh}>
-          Refresh data
-        </button>
-
-        <button
-          className="button button-danger"
-          type="button"
-          onClick={onKill}
-          disabled={!executionControlsAvailable}
-          aria-describedby="execution-control-state"
-          title={
-            executionControlsAvailable
-              ? "Send an emergency-stop request to the authenticated execution environment"
-              : "Execution controls are unavailable in this static deployment"
-          }
-        >
-          Emergency stop
-        </button>
         <span id="execution-control-state" className="pill mono">
           EXECUTION: {executionControlsAvailable ? "CONTROL ENABLED" : "OBSERVE ONLY"}
         </span>
+
+        <button className="button" type="button" onClick={onRefresh}>
+          Refresh
+        </button>
+
+        <details className="audit-details">
+          <summary>Audit details</summary>
+          <div className="audit-panel">
+            {timeline.length > 0 && (
+              <label className="audit-field" htmlFor="evidence-date">
+                <span>Observation</span>
+                <select
+                  id="evidence-date"
+                  className="input-select"
+                  value={activeDate}
+                  onChange={(event) => onDateChange(event.target.value)}
+                  aria-label="Evidence observation date"
+                >
+                  {timeline.map((date) => (
+                    <option key={date} value={date}>
+                      {date}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <dl className="audit-grid">
+              <div>
+                <dt>View refreshed</dt>
+                <dd className="mono">{lastUpdated}</dd>
+              </div>
+              <div>
+                <dt>Environment</dt>
+                <dd className="mono">{environment || "UNKNOWN"}</dd>
+              </div>
+              <div>
+                <dt>Run</dt>
+                <dd className="mono">{runId || "UNKNOWN"}</dd>
+              </div>
+              <div>
+                <dt>Code</dt>
+                <dd className="mono">
+                  {commitHash ? commitHash.slice(0, 10) : "UNKNOWN"}
+                </dd>
+              </div>
+              <div>
+                <dt>Data</dt>
+                <dd className="mono">
+                  {dataFingerprint ? dataFingerprint.slice(0, 10) : "UNKNOWN"}
+                </dd>
+              </div>
+              <div>
+                <dt>Application</dt>
+                <dd className="mono">
+                  {status === "active" ? "AVAILABLE" : "EMERGENCY"}
+                </dd>
+              </div>
+            </dl>
+
+            <div className="audit-actions">
+              <button
+                className="button button-danger"
+                type="button"
+                onClick={onKill}
+                disabled={!executionControlsAvailable}
+                aria-describedby="execution-control-state"
+                title={
+                  executionControlsAvailable
+                    ? "Send an emergency-stop request to the authenticated execution environment"
+                    : "Execution controls are unavailable in this static deployment"
+                }
+              >
+                Emergency stop
+              </button>
+            </div>
+          </div>
+        </details>
       </div>
     </header>
   );
