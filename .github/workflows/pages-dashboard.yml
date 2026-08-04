@@ -12,6 +12,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  issues: write
 
 concurrency:
   group: "pages"
@@ -87,3 +88,25 @@ jobs:
           done
           echo "Public Pages did not expose the expected AAARTS document identity"
           exit 1
+
+      - name: Record public deployment evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          marker='<!-- pages-public-verification -->'
+          verified_at="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          body="${marker}
+          **Public Pages verification: PASSED**
+
+          - URL: ${PAGE_URL}
+          - Commit: \`${GITHUB_SHA}\`
+          - Verified document identity: \`AAARTS Research Console\`
+          - Verified at: ${verified_at}"
+
+          comment_id="$(gh api "repos/${GITHUB_REPOSITORY}/issues/8/comments" --paginate --jq '.[] | select(.body | contains("<!-- pages-public-verification -->")) | .id' | tail -n 1)"
+          if [ -n "$comment_id" ]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${comment_id}" -f body="$body" >/dev/null
+          else
+            gh issue comment 8 --repo "$GITHUB_REPOSITORY" --body "$body" >/dev/null
+          fi
