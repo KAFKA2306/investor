@@ -9,6 +9,7 @@ fi
 mapfile -t files < <(
   git diff --name-only --diff-filter=ACMR "$base" HEAD -- \
     'ts-agent/src/**' 'ts-agent/tests/**' 'ts-agent/scripts/**' \
+    'ts-agent/tsconfig.json' \
   | grep -E '^ts-agent/.*\.(ts|tsx|js|jsx|mjs|cjs|json)$' || true
 )
 
