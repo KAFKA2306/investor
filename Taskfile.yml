@@ -116,10 +116,10 @@ tasks:
       - task: check
 
   validate:runtime:
-    desc: runtime config validation
+    desc: validate required runtime directories and permissions
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run validate:runtime
+      - bun scripts/validate_runtime_config.ts
 
   test:
     desc: test
@@ -133,12 +133,12 @@ tasks:
       - bun run test
 
   smoke:
-    desc: workflow smoke checks
+    desc: run lightweight TypeScript repository checks
     dir: "{{.TS_DIR}}"
     cmds:
-      - bun run smoke:proof-layers
-      - bun run smoke:dynamic-universe
-      - bun run smoke:verification-contract
+      - bun run typecheck
+      - bun run lint
+      - bun test tests
 
   api:
     desc: start API
