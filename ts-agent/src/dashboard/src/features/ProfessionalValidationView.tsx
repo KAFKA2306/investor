@@ -32,6 +32,7 @@ export const ProfessionalValidationView: React.FC<
       collectStageMetricRows(payload).map((row) => ({
         date,
         stage: row.stage,
+        status: row.status,
         metric: row.key,
         value: row.value,
       })),
@@ -42,9 +43,15 @@ export const ProfessionalValidationView: React.FC<
   const benchmarkStart = verificationData.benchmarkCum[0];
   const benchmarkEnd = verificationData.benchmarkCum.at(-1);
   const strategyReturn =
-    strategyStart && strategyEnd ? strategyEnd / strategyStart - 1 : undefined;
+    strategyStart !== undefined &&
+    strategyEnd !== undefined &&
+    strategyStart !== 0
+      ? strategyEnd / strategyStart - 1
+      : undefined;
   const benchmarkReturn =
-    benchmarkStart && benchmarkEnd
+    benchmarkStart !== undefined &&
+    benchmarkEnd !== undefined &&
+    benchmarkStart !== 0
       ? benchmarkEnd / benchmarkStart - 1
       : undefined;
 
@@ -105,7 +112,10 @@ export const ProfessionalValidationView: React.FC<
       </section>
 
       <div className="split">
-        <section className="panel section table-wrap" aria-label="Performance metrics">
+        <section
+          className="panel section table-wrap"
+          aria-label="Performance metrics"
+        >
           <div className="section-head">
             <h3>Performance metrics</h3>
             <span>Recorded or derived from the verification artifact</span>
@@ -165,7 +175,10 @@ export const ProfessionalValidationView: React.FC<
           </table>
         </section>
 
-        <section className="panel section table-wrap" aria-label="Modeled costs">
+        <section
+          className="panel section table-wrap"
+          aria-label="Modeled costs"
+        >
           <div className="section-head">
             <h3>Modeled trading costs</h3>
             <span>Not broker fill evidence</span>
@@ -201,7 +214,10 @@ export const ProfessionalValidationView: React.FC<
         </section>
       </div>
 
-      <section className="panel section table-wrap" aria-label="Historical validation metrics">
+      <section
+        className="panel section table-wrap"
+        aria-label="Historical validation metrics"
+      >
         <div className="section-head">
           <h3>Historical stage metrics</h3>
           <span>Most recent observations first</span>
@@ -211,6 +227,7 @@ export const ProfessionalValidationView: React.FC<
             <tr>
               <th>Observation</th>
               <th>Stage</th>
+              <th>Status</th>
               <th>Metric</th>
               <th>Value</th>
             </tr>
@@ -220,8 +237,13 @@ export const ProfessionalValidationView: React.FC<
               <tr key={`${row.date}-${row.stage}-${row.metric}-${index}`}>
                 <td className="mono">{row.date}</td>
                 <td>{row.stage}</td>
+                <td>{row.status}</td>
                 <td>{row.metric}</td>
-                <td className="mono">{row.value.toFixed(6)}</td>
+                <td className="mono">
+                  {row.value === undefined
+                    ? "MISSING"
+                    : row.value.toFixed(6)}
+                </td>
               </tr>
             ))}
           </tbody>
