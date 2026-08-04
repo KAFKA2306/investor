@@ -28,8 +28,74 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
 }) => {
   if (!verificationData) {
     return (
-      <div className="empty" role="status">
-        検証データなし — standard_verification_data.json を生成し、証拠台帳を更新してください。
+      <div className="main" role="status" aria-live="polite">
+        <div className="section-head">
+          <div>
+            <h2>Evidence overview</h2>
+            <span>Current publication state and required evidence</span>
+          </div>
+          <span className="pill risk">EVIDENCE: NOT PUBLISHED</span>
+        </div>
+
+        <section className="panel section evidence-empty-state">
+          <div>
+            <span className="pill">STAGE: UNKNOWN</span>
+            <h1 className="hero-title" style={{ marginTop: "0.8rem" }}>
+              No current verification artifact
+            </h1>
+            <p className="hero-subtitle">
+              The dashboard did not receive a schema-valid
+              <span className="mono"> verification/standard_verification_data.json</span>.
+              Performance, stability, and readiness claims are therefore withheld.
+            </p>
+          </div>
+
+          <div className="uqtl-grid" style={{ marginTop: "1rem" }}>
+            <div className="kpi-card">
+              <div className="label">Verification artifact</div>
+              <div className="value mono">NOT PUBLISHED</div>
+            </div>
+            <div className="kpi-card">
+              <div className="label">Research claims</div>
+              <div className="value mono">UNKNOWN</div>
+            </div>
+            <div className="kpi-card">
+              <div className="label">Execution state</div>
+              <div className="value mono">OBSERVE ONLY</div>
+            </div>
+            <div className="kpi-card">
+              <div className="label">Deployment readiness</div>
+              <div className="value mono">NOT ESTABLISHED</div>
+            </div>
+          </div>
+
+          <div className="evidence-empty-actions">
+            <button
+              type="button"
+              className="button"
+              onClick={() => onNavigate?.("research")}
+            >
+              Review research ledger
+            </button>
+            <button
+              type="button"
+              className="button"
+              onClick={() => onNavigate?.("health")}
+            >
+              Review system status
+            </button>
+          </div>
+
+          <div className="metadata" style={{ marginTop: "1rem" }}>
+            <strong>Publication contract</strong>
+            <p>
+              Generate the verification artifact, validate it against the current
+              schema, and publish it with code, data, run, environment, and as-of
+              identifiers. Until then, the absence is treated as evidence, not
+              replaced by stale or synthetic results.
+            </p>
+          </div>
+        </section>
       </div>
     );
   }
