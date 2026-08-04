@@ -29,72 +29,88 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
   if (!verificationData) {
     return (
       <div className="main" role="status" aria-live="polite">
-        <div className="section-head">
+        <div className="section-head evidence-section-head">
           <div>
             <h2>Evidence overview</h2>
-            <span>Current publication state and required evidence</span>
+            <span>Publication state and next required actions</span>
           </div>
-          <span className="pill risk">EVIDENCE: NOT PUBLISHED</span>
+          <span className="pill risk">NOT PUBLISHED</span>
         </div>
 
         <section className="panel section evidence-empty-state">
-          <div>
-            <span className="pill">STAGE: UNKNOWN</span>
-            <h1 className="hero-title" style={{ marginTop: "0.8rem" }}>
-              No current verification artifact
-            </h1>
+          <div className="evidence-empty-copy">
+            <span className="evidence-kicker">Claims withheld</span>
+            <h1 className="hero-title">No current verification artifact</h1>
             <p className="hero-subtitle">
-              The dashboard did not receive a schema-valid
-              <span className="mono"> verification/standard_verification_data.json</span>.
-              Performance, stability, and readiness claims are therefore withheld.
+              A schema-valid
+              <span className="mono"> verification/standard_verification_data.json</span>
+              was not published. The console therefore does not show performance,
+              stability, or readiness claims.
             </p>
+
+            <dl className="evidence-state-list">
+              <div>
+                <dt>Evidence</dt>
+                <dd className="risk-text">Not published</dd>
+              </div>
+              <div>
+                <dt>Research claims</dt>
+                <dd>Withheld</dd>
+              </div>
+              <div>
+                <dt>Execution</dt>
+                <dd>Observe only</dd>
+              </div>
+            </dl>
+
+            <div className="evidence-empty-actions">
+              <button
+                type="button"
+                className="button button-primary"
+                onClick={() => onNavigate?.("research")}
+              >
+                Review research ledger
+              </button>
+              <button
+                type="button"
+                className="button"
+                onClick={() => onNavigate?.("health")}
+              >
+                Review system status
+              </button>
+            </div>
           </div>
 
-          <div className="uqtl-grid" style={{ marginTop: "1rem" }}>
-            <div className="kpi-card">
-              <div className="label">Verification artifact</div>
-              <div className="value mono">NOT PUBLISHED</div>
-            </div>
-            <div className="kpi-card">
-              <div className="label">Research claims</div>
-              <div className="value mono">UNKNOWN</div>
-            </div>
-            <div className="kpi-card">
-              <div className="label">Execution state</div>
-              <div className="value mono">OBSERVE ONLY</div>
-            </div>
-            <div className="kpi-card">
-              <div className="label">Deployment readiness</div>
-              <div className="value mono">NOT ESTABLISHED</div>
-            </div>
-          </div>
-
-          <div className="evidence-empty-actions">
-            <button
-              type="button"
-              className="button"
-              onClick={() => onNavigate?.("research")}
-            >
-              Review research ledger
-            </button>
-            <button
-              type="button"
-              className="button"
-              onClick={() => onNavigate?.("health")}
-            >
-              Review system status
-            </button>
-          </div>
-
-          <div className="metadata" style={{ marginTop: "1rem" }}>
-            <strong>Publication contract</strong>
-            <p>
-              Generate the verification artifact, validate it against the current
-              schema, and publish it with code, data, run, environment, and as-of
-              identifiers. Until then, the absence is treated as evidence, not
-              replaced by stale or synthetic results.
+          <aside className="publication-gate" aria-labelledby="publication-gate-title">
+            <h3 id="publication-gate-title">Publication gate</h3>
+            <ol className="publication-steps">
+              <li>
+                <span className="step-number">1</span>
+                <div>
+                  <strong>Generate</strong>
+                  <p>Create the current verification artifact.</p>
+                </div>
+              </li>
+              <li>
+                <span className="step-number">2</span>
+                <div>
+                  <strong>Validate</strong>
+                  <p>Pass the current schema and evidence checks.</p>
+                </div>
+              </li>
+              <li>
+                <span className="step-number">3</span>
+                <div>
+                  <strong>Publish provenance</strong>
+                  <p>Include as-of, run, environment, code, and data identifiers.</p>
+                </div>
+              </li>
+            </ol>
+            <p className="publication-note">
+              Missing evidence is displayed explicitly. Stale or synthetic results
+              are not substituted.
             </p>
-          </div>
+          </aside>
         </section>
       </div>
     );
