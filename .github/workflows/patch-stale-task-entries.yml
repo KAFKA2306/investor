@@ -1,0 +1,77 @@
+name: Patch stale Taskfile entries
+
+on:
+  push:
+    branches:
+      - agent/japanese-human-readme
+    paths:
+      - .github/workflows/patch-stale-task-entries.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/japanese-human-readme
+      - name: Replace stale task entries
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("Taskfile.yml")
+          text = path.read_text(encoding="utf-8")
+
+          old_validate = '''  validate:runtime:
+              desc: runtime config validation
+              dir: "{{.TS_DIR}}"
+              cmds:
+                - bun run validate:runtime
+          '''
+          new_validate = '''  validate:runtime:
+              desc: validate required runtime directories and permissions
+              dir: "{{.TS_DIR}}"
+              cmds:
+                - bun scripts/validate_runtime_config.ts
+          '''
+
+          old_smoke = '''  smoke:
+              desc: workflow smoke checks
+              dir: "{{.TS_DIR}}"
+              cmds:
+                - bun run smoke:proof-layers
+                - bun run smoke:dynamic-universe
+                - bun run smoke:verification-contract
+          '''
+          new_smoke = '''  smoke:
+              desc: run lightweight TypeScript repository checks
+              dir: "{{.TS_DIR}}"
+              cmds:
+                - bun run typecheck
+                - bun run lint
+                - bun test tests
+          '''
+
+          replacements = ((old_validate, new_validate), (old_smoke, new_smoke))
+          for old, new in replacements:
+              if new in text:
+                  continue
+              if old not in text:
+                  raise SystemExit("expected stale Taskfile block was not found")
+              text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding="utf-8")
+          PY
+      - name: Commit the Taskfile change
+        run: |
+          if git diff --quiet -- Taskfile.yml; then
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add Taskfile.yml
+          git commit -m "Replace stale Taskfile validation entries"
+          git push origin HEAD:agent/japanese-human-readme
