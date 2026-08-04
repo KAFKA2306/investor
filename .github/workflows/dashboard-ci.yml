@@ -34,13 +34,8 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Enforce UI copy contract when available
-        run: |
-          if bun run --silent check:copy >/dev/null 2>&1; then
-            bun run check:copy
-          else
-            echo "check:copy is not defined on this branch; skipping copy contract"
-          fi
+      - name: Enforce UI copy contract
+        run: bun run check:copy
 
       - name: Build dashboard
         run: bun run build
