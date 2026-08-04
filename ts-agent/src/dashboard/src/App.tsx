@@ -1,13 +1,13 @@
 import type React from "react";
 import { useState } from "react";
 import { TAB_IDS } from "./config";
-import { BacktestAnalysis } from "./features/BacktestAnalysis";
-import { DataInspector } from "./features/DataInspector";
 import { EvidenceRoom } from "./features/EvidenceRoom";
-import { ResearchLog } from "./features/ResearchLog";
+import { ProfessionalDataInspector } from "./features/ProfessionalDataInspector";
+import { ProfessionalResearchLog } from "./features/ProfessionalResearchLog";
+import { ProfessionalSecuritiesView } from "./features/ProfessionalSecuritiesView";
+import { ProfessionalSystemHealth } from "./features/ProfessionalSystemHealth";
+import { ProfessionalValidationView } from "./features/ProfessionalValidationView";
 import { StatusBar } from "./features/StatusBar";
-import { StockAnalysis } from "./features/StockAnalysis";
-import { SystemHealth } from "./features/SystemHealth";
 import { useDashboardData } from "./hooks/useDashboardData";
 
 const App: React.FC = () => {
@@ -127,29 +127,29 @@ const App: React.FC = () => {
           />
         )}
         {activeTab === TAB_IDS.INSPECTOR && (
-          <DataInspector verificationData={verificationData} />
+          <ProfessionalDataInspector verificationData={verificationData} />
         )}
         {activeTab === TAB_IDS.RESEARCH && (
-          <ResearchLog
+          <ProfessionalResearchLog
             alphaDiscovery={alphaByDate}
             activeDate={activeDate}
             onSelectDate={setActiveDate}
           />
         )}
         {activeTab === TAB_IDS.HEALTH && (
-          <SystemHealth
+          <ProfessionalSystemHealth
             qualityGate={activeQualityGate}
             history={qualityGateByDate}
           />
         )}
         {activeTab === TAB_IDS.BACKTEST && (
-          <BacktestAnalysis
+          <ProfessionalValidationView
             verificationData={verificationData}
             historicalOutcomes={unifiedByDate}
           />
         )}
         {activeTab === TAB_IDS.STOCKS && (
-          <StockAnalysis verificationData={verificationData} />
+          <ProfessionalSecuritiesView verificationData={verificationData} />
         )}
       </main>
     </div>
