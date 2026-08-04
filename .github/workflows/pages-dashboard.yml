@@ -70,3 +70,20 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify public Pages deployment
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          for attempt in $(seq 1 24); do
+            if html="$(curl --fail --silent --show-error --location --max-time 15 "${PAGE_URL}?revision=${GITHUB_SHA}")"; then
+              if grep -Fq "<title>AAARTS Research Console</title>" <<<"$html"; then
+                echo "Verified AAARTS Research Console at ${PAGE_URL}"
+                exit 0
+              fi
+            fi
+            echo "Public Pages verification attempt ${attempt}/24 did not match the deployed title"
+            sleep 5
+          done
+          echo "Public Pages did not expose the expected AAARTS document identity"
+          exit 1
