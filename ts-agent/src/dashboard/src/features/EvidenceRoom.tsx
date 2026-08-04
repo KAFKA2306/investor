@@ -34,7 +34,6 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             <h2>Evidence overview</h2>
             <span>Publication state and next required actions</span>
           </div>
-          <span className="pill risk">NOT PUBLISHED</span>
         </div>
 
         <section className="panel section evidence-empty-state">
@@ -42,10 +41,11 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             <span className="evidence-kicker">Claims withheld</span>
             <h1 className="hero-title">No current verification artifact</h1>
             <p className="hero-subtitle">
-              A schema-valid
-              <span className="mono"> verification/standard_verification_data.json</span>
-              was not published. The console therefore does not show performance,
-              stability, or readiness claims.
+              A current verification artifact was not published at
+              {" "}
+              <span className="mono">verification/standard_verification_data.json</span>.
+              The console therefore does not show performance, stability, or
+              readiness claims.
             </p>
 
             <dl className="evidence-state-list">
