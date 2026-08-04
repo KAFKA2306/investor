@@ -48,7 +48,14 @@ jobs:
 
       - name: Render desktop and mobile evidence
         run: |
-          bun run preview -- --host 127.0.0.1 --port 4173 > /tmp/dashboard-preview.log 2>&1 &
+          rm -rf preview-root
+          mkdir -p preview-root/investor
+          cp -R dist/. preview-root/investor/
+
+          python3 -m http.server 4173 \
+            --bind 127.0.0.1 \
+            --directory preview-root \
+            > /tmp/dashboard-preview.log 2>&1 &
           preview_pid=$!
           trap 'kill "$preview_pid" >/dev/null 2>&1 || true' EXIT
 
