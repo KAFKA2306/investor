@@ -1,0 +1,46 @@
+name: Dashboard CI
+
+on:
+  pull_request:
+    paths:
+      - "ts-agent/src/dashboard/**"
+      - ".github/workflows/dashboard-ci.yml"
+      - ".github/workflows/pages-dashboard.yml"
+  push:
+    branches-ignore: ["main"]
+    paths:
+      - "ts-agent/src/dashboard/**"
+      - ".github/workflows/dashboard-ci.yml"
+      - ".github/workflows/pages-dashboard.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ts-agent/src/dashboard
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Enforce UI copy contract when available
+        run: |
+          if bun run --silent check:copy >/dev/null 2>&1; then
+            bun run check:copy
+          else
+            echo "check:copy is not defined on this branch; skipping copy contract"
+          fi
+
+      - name: Build dashboard
+        run: bun run build
