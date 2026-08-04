@@ -16,9 +16,12 @@ jobs:
       UQTL_VERIFICATION_ROOT: ${{ github.workspace }}/verification
       UQTL_EDINET_ROOT: ${{ github.workspace }}/edinet
       UQTL_PREPROCESSED_ROOT: ${{ github.workspace }}/preprocessed
+      CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -31,5 +34,11 @@ jobs:
           mkdir -p data logs cache verification edinet preprocessed
           task deps
 
-      - name: Run smoke checks
-        run: task smoke
+      - name: Typecheck
+        run: task typecheck
+
+      - name: Reject new TypeScript formatting or lint debt
+        run: bash scripts/lint_changed_ts.sh
+
+      - name: Run tests
+        run: task test
