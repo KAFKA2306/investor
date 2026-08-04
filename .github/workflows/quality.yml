@@ -16,9 +16,12 @@ jobs:
       UQTL_VERIFICATION_ROOT: ${{ github.workspace }}/verification
       UQTL_EDINET_ROOT: ${{ github.workspace }}/edinet
       UQTL_PREPROCESSED_ROOT: ${{ github.workspace }}/preprocessed
+      CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -37,13 +40,16 @@ jobs:
       - name: Validate runtime config
         run: task validate:runtime
 
-      - name: Run TypeScript quality gates
+      - name: Reject new TypeScript formatting or lint debt
+        run: bash scripts/lint_changed_ts.sh
+
+      - name: Run TypeScript type and test gates
         run: |
-          task lint
-          task format
           task typecheck
           task test
-          bash scripts/self_healing_lint.sh
+
+      - name: Report existing repository-wide lint debt
+        run: bash scripts/self_healing_lint.sh
 
       - name: Run Python quality gates
         run: |
