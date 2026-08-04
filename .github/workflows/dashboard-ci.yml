@@ -1,3 +1,4 @@
+# Dashboard changes must be validated as rendered output, not source code alone.
 name: Dashboard CI
 
 on:
