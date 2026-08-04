@@ -29,13 +29,19 @@ for (const name of requiredRoots) {
     }
     accessSync(value, constants.R_OK | constants.W_OK);
   } catch (error) {
-    failures.push(`${name} is not readable and writable: ${value} (${String(error)})`);
+    failures.push(
+      `${name} is not readable and writable: ${value} (${String(error)})`,
+    );
   }
 }
 
 if (failures.length > 0) {
-  console.error(`Runtime configuration is invalid:\n- ${failures.join("\n- ")}`);
+  console.error(
+    `Runtime configuration is invalid:\n- ${failures.join("\n- ")}`,
+  );
   process.exit(1);
 }
 
-console.log(`Runtime configuration is valid for ${requiredRoots.length} roots.`);
+console.log(
+  `Runtime configuration is valid for ${requiredRoots.length} roots.`,
+);
