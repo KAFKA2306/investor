@@ -23,16 +23,13 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v6
-
       - name: Setup Task
         uses: arduino/setup-task@v2
 
-      - name: Setup
+      - name: Setup TypeScript dependencies
         run: |
           mkdir -p data logs cache verification edinet preprocessed
-          task setup
+          task deps
 
       - name: Run smoke checks
         run: task smoke
