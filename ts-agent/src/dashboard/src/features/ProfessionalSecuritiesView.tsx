@@ -18,7 +18,11 @@ export const ProfessionalSecuritiesView: React.FC<
         const firstPrice = data.prices[0];
         const latestPrice = data.prices[latestIndex];
         const periodReturn =
-          firstPrice && latestPrice ? latestPrice / firstPrice - 1 : undefined;
+          firstPrice !== undefined &&
+          latestPrice !== undefined &&
+          firstPrice !== 0
+            ? latestPrice / firstPrice - 1
+            : undefined;
         const averageFactor =
           data.factors.length > 0
             ? data.factors.reduce((sum, value) => sum + value, 0) /
@@ -52,7 +56,7 @@ export const ProfessionalSecuritiesView: React.FC<
     securities.find((security) => security.symbol === selectedSymbol) ??
     securities[0];
 
-  if (!verificationData?.individualData || securities.length === 0) {
+  if (!verificationData?.individualData || !active) {
     return (
       <div className="empty">
         Security-level observations are unavailable in the current validation
@@ -80,7 +84,10 @@ export const ProfessionalSecuritiesView: React.FC<
         <span className="pill mono">UNIVERSE: {securities.length}</span>
       </div>
 
-      <section className="panel section table-wrap" aria-label="Security universe">
+      <section
+        className="panel section table-wrap"
+        aria-label="Security universe"
+      >
         <div className="section-head">
           <h3>Universe summary</h3>
           <span>Sorted by absolute latest modeled position</span>
@@ -174,7 +181,10 @@ export const ProfessionalSecuritiesView: React.FC<
         </div>
       </section>
 
-      <section className="panel section table-wrap" aria-label="Selected security observations">
+      <section
+        className="panel section table-wrap"
+        aria-label="Selected security observations"
+      >
         <div className="section-head">
           <h3>Observation history</h3>
           <span>Most recent 100 rows</span>
