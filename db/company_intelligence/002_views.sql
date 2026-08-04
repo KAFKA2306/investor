@@ -13,7 +13,9 @@ SELECT
     c.industry_code,
     c.listed_market,
     c.active,
-    max(f.period_end) AS latest_period_end,
+    max(coalesce(f.period_end, f.instant_date)) FILTER (
+        WHERE coalesce(f.dimensions ->> 'scenario', 'actual') = 'actual'
+    ) AS latest_period_end,
     count(DISTINCT f.filing_id) FILTER (WHERE f.filing_id IS NOT NULL) AS filing_count,
     count(DISTINCT f.fact_id) AS fact_count,
     count(DISTINCT t.timeline_event_id) AS timeline_event_count
@@ -74,7 +76,9 @@ SELECT
     s.source_key,
     f.element_id,
     f.context_id,
-    f.fact_id
+    f.fact_id,
+    f.dimensions,
+    f.metadata AS fact_metadata
 FROM company_intelligence.v_best_fact f
 JOIN company_intelligence.company c USING (company_id)
 JOIN company_intelligence.source s USING (source_id)
@@ -87,6 +91,7 @@ WITH ranked AS (
         dense_rank() OVER (PARTITION BY h.sec_code ORDER BY coalesce(h.period_end, h.instant_date) DESC) AS period_rank
     FROM company_intelligence.v_financial_history h
     WHERE h.consolidated IS DISTINCT FROM false
+      AND coalesce(h.dimensions ->> 'scenario', 'actual') = 'actual'
 )
 SELECT
     sec_code,
@@ -108,8 +113,20 @@ SELECT
         'source', source_key,
         'fact_id', fact_id,
         'element_id', element_id,
-        'context_id', context_id
-    )) FILTER (WHERE concept_key IS NOT NULL) AS facts
+        'context_id', context_id,
+        'dimensions', dimensions
+    )) FILTER (WHERE concept_key IS NOT NULL) AS facts,
+    max(value_numeric) FILTER (WHERE concept_key = 'business_profit') AS business_profit,
+    max(value_numeric) FILTER (WHERE concept_key = 'profit_before_tax') AS profit_before_tax,
+    max(value_numeric) FILTER (WHERE concept_key = 'profit_for_period') AS profit_for_period,
+    max(value_numeric) FILTER (WHERE concept_key = 'order_intake') AS order_intake,
+    max(value_numeric) FILTER (WHERE concept_key = 'order_backlog') AS order_backlog,
+    max(value_numeric) FILTER (WHERE concept_key = 'basic_eps') AS basic_eps,
+    max(value_numeric) FILTER (WHERE concept_key = 'owners_equity_ratio') AS owners_equity_ratio,
+    max(value_numeric) FILTER (WHERE concept_key = 'accounts_receivable') AS accounts_receivable,
+    max(value_numeric) FILTER (WHERE concept_key = 'contract_assets') AS contract_assets,
+    max(value_numeric) FILTER (WHERE concept_key = 'contract_liabilities') AS contract_liabilities,
+    max(value_numeric) FILTER (WHERE concept_key = 'net_interest_bearing_debt') AS net_interest_bearing_debt
 FROM ranked
 WHERE period_rank = 1
 GROUP BY sec_code, edinet_code, legal_name_ja;

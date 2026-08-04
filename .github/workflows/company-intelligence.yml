@@ -66,9 +66,11 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/001_schema.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/002_views.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/004_mhi_fy2026_q1.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/001_schema.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/002_views.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/004_mhi_fy2026_q1.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/900_smoke_test.sql
 
       - name: Install and test service
@@ -90,5 +92,8 @@ jobs:
             sleep 1
           done
           curl -fsS http://localhost:8080/api/companies.json | grep '2801'
+          curl -fsS http://localhost:8080/api/companies.json | grep '7011'
           curl -fsS http://localhost:8080/api/2801/manifest.json | grep 'financials'
+          curl -fsS http://localhost:8080/api/7011/financials.json | grep 'business_profit'
+          curl -fsS 'http://localhost:8080/v1/companies/7011/facts?concept=order_backlog' | grep '14103000000000'
           curl -fsS http://localhost:8080/openapi.yaml | grep 'Investor Company Intelligence API'
