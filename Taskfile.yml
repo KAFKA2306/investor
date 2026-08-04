@@ -32,10 +32,9 @@ tasks:
       - npm install
 
   setup:
-    desc: setup
+    desc: setup the standard CPU development environment
     cmds:
-      - task: deps
-      - task: python:uv:sync
+      - bash scripts/setup_cpu.sh
 
   python:uv:sync:
     desc: sync Python environment with uv
