@@ -1,3 +1,4 @@
+# Dashboard changes must be validated as rendered output, not source code alone.
 name: Dashboard CI
 
 on:
@@ -39,3 +40,54 @@ jobs:
 
       - name: Build dashboard
         run: bun run build
+
+      - name: Start production preview
+        run: |
+          bun run preview -- --host 127.0.0.1 --port 4173 > /tmp/dashboard-preview.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:4173/investor/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/dashboard-preview.log
+          exit 1
+
+      - name: Capture desktop and mobile screenshots
+        run: |
+          chrome="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$chrome" ]; then
+            echo "Chromium-compatible browser not found"
+            exit 1
+          fi
+          mkdir -p artifacts
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --hide-scrollbars \
+            --force-device-scale-factor=1 \
+            --virtual-time-budget=5000 \
+            --window-size=1440,1100 \
+            --screenshot=artifacts/dashboard-desktop.png \
+            http://127.0.0.1:4173/investor/
+          "$chrome" \
+            --headless=new \
+            --no-sandbox \
+            --disable-gpu \
+            --hide-scrollbars \
+            --force-device-scale-factor=1 \
+            --virtual-time-budget=5000 \
+            --window-size=375,812 \
+            --screenshot=artifacts/dashboard-mobile-375.png \
+            http://127.0.0.1:4173/investor/
+          test -s artifacts/dashboard-desktop.png
+          test -s artifacts/dashboard-mobile-375.png
+
+      - name: Upload dashboard screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-screenshots
+          path: ts-agent/src/dashboard/artifacts/*.png
+          if-no-files-found: error
+          retention-days: 14
