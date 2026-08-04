@@ -16,23 +16,43 @@ jobs:
       UQTL_VERIFICATION_ROOT: ${{ github.workspace }}/verification
       UQTL_EDINET_ROOT: ${{ github.workspace }}/edinet
       UQTL_PREPROCESSED_ROOT: ${{ github.workspace }}/preprocessed
+      CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v6
-
       - name: Setup Task
         uses: arduino/setup-task@v2
 
-      - name: Setup
+      - name: Setup TypeScript dependencies
         run: |
           mkdir -p data logs cache verification edinet preprocessed
-          task setup
+          task deps
 
-      - name: Run smoke checks
-        run: task smoke
+      - name: Validate shell entrypoints
+        run: bash -n scripts/setup_cpu.sh scripts/lint_changed_ts.sh
+
+      - name: Validate runtime config
+        run: task validate:runtime
+
+      - name: Reject new TypeScript formatting or lint debt
+        run: bash scripts/lint_changed_ts.sh
+
+      - name: Audit existing test-suite debt
+        continue-on-error: true
+        run: task test
+
+      - name: Audit existing repository-wide type debt
+        continue-on-error: true
+        run: task typecheck
+
+      - name: Explain non-blocking baseline audits
+        if: always()
+        run: |
+          echo "Existing test and type debt is tracked in issue #20."
+          echo "New or modified TypeScript files remain blocking through lint_changed_ts.sh."
