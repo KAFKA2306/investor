@@ -19,6 +19,7 @@ const activeSurfaceFiles = [
 ];
 
 const forbiddenPhrases = [
+  "アルファ進化ダッシュボード",
   "だよぉ",
   "だよっ",
   "もんっ",
