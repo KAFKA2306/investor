@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TAB_IDS } from "./config";
 import { EvidenceRoom } from "./features/EvidenceRoom";
 import { ProfessionalDataInspector } from "./features/ProfessionalDataInspector";
@@ -9,6 +9,8 @@ import { ProfessionalSystemHealth } from "./features/ProfessionalSystemHealth";
 import { ProfessionalValidationView } from "./features/ProfessionalValidationView";
 import { StatusBar } from "./features/StatusBar";
 import { useDashboardData } from "./hooks/useDashboardData";
+
+const RELEASE = "kafka-signal-v1.0.0";
 
 const App: React.FC = () => {
   const {
@@ -23,7 +25,36 @@ const App: React.FC = () => {
     refresh,
   } = useDashboardData();
 
-  const [activeTab, setActiveTab] = useState(TAB_IDS.EVIDENCE);
+  const knownTabs = useMemo(() => new Set<string>(Object.values(TAB_IDS)), []);
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    return requested && knownTabs.has(requested) ? requested : TAB_IDS.EVIDENCE;
+  });
+
+  useEffect(() => {
+    const requestedDate = new URLSearchParams(window.location.search).get("date");
+    if (requestedDate && requestedDate !== activeDate) setActiveDate(requestedDate);
+  }, [activeDate, setActiveDate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("tab", activeTab);
+    if (activeDate) params.set("date", activeDate);
+    else params.delete("date");
+    window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
+  }, [activeDate, activeTab]);
+
+  useEffect(() => {
+    const restore = () => {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get("tab");
+      if (tab && knownTabs.has(tab)) setActiveTab(tab);
+      const date = params.get("date");
+      if (date) setActiveDate(date);
+    };
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, [knownTabs, setActiveDate]);
 
   // Public GitHub Pages is an observation surface. Execution controls must be
   // explicitly enabled for a separately authenticated deployment.
@@ -32,9 +63,7 @@ const App: React.FC = () => {
     (import.meta.env.VITE_ENABLE_EXECUTION_CONTROLS as string | undefined) ===
     "true";
 
-  const handleNavigate = (tab: string) => {
-    setActiveTab(tab);
-  };
+  const handleNavigate = (tab: string) => setActiveTab(tab);
 
   const handleKill = async () => {
     if (!executionControlsAvailable) {
@@ -43,14 +72,11 @@ const App: React.FC = () => {
       );
       return;
     }
-
     if (
       !window.confirm(
         "緊急停止を実行します。新規発注を停止し、キャンセル可能な注文の取消要求を送信します。続行しますか？",
       )
-    ) {
-      return;
-    }
+    ) return;
 
     // @ts-expect-error - ImportMeta env typing is supplied by Vite at build time.
     const token = (import.meta.env.VITE_API_TOKEN as string) ?? "";
@@ -58,7 +84,6 @@ const App: React.FC = () => {
       method: "POST",
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     }).catch(() => undefined);
-
     if (res?.ok) {
       alert("緊急停止要求を送信しました。運用環境の状態を確認してください。");
       return;
@@ -152,6 +177,7 @@ const App: React.FC = () => {
           <ProfessionalSecuritiesView verificationData={verificationData} />
         )}
       </main>
+      <p className="kafka-signal-build">KAFKA SIGNAL {RELEASE} · 6cceef70</p>
     </div>
   );
 };
