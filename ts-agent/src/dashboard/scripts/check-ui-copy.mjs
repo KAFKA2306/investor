@@ -6,6 +6,7 @@ const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const dashboardRoot = resolve(scriptDirectory, "..");
 
 const activeSurfaceFiles = [
+  "src/main.tsx",
   "src/App.tsx",
   "src/features/StatusBar.tsx",
   "src/features/EvidenceRoom.tsx",
