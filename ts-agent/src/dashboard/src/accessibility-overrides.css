@@ -19,6 +19,14 @@
   --danger-soft: #f9e9ed;
 }
 
+body {
+  overflow-x: hidden;
+}
+
+.topbar-right {
+  align-items: center;
+}
+
 button,
 select,
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
