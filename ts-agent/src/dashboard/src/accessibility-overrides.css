@@ -1,0 +1,86 @@
+/* Final accessibility and KAFKA Evidence UI constraints. */
+
+:root {
+  --bg: #f7f6f2;
+  --bg-soft: #f0f2f5;
+  --bg-panel: #ffffff;
+  --panel: #ffffff;
+  --ink: #17243a;
+  --ink-soft: #56657a;
+  --line: #d6dce5;
+  --line-strong: #9da9b9;
+  --brand: #243653;
+  --brand-soft: #e8edf4;
+  --success: #21623f;
+  --success-soft: #eaf4ed;
+  --warning: #83530f;
+  --warning-soft: #fff4dd;
+  --danger: #a1263d;
+  --danger-soft: #f9e9ed;
+}
+
+button,
+select,
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+.button,
+.tab-btn {
+  min-height: 44px;
+}
+
+button,
+.button,
+.tab-btn,
+select,
+input {
+  font-size: max(0.75rem, 12px);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  width: 20px;
+  height: 20px;
+}
+
+.pill {
+  min-height: 32px;
+}
+
+.kpi-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.8rem;
+  background: var(--bg-panel);
+  box-shadow: none;
+}
+
+.kpi-card .label {
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.kpi-card .value {
+  margin-top: 0.35rem;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .button,
+  .tab-btn,
+  select,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+    min-height: 48px;
+  }
+
+  .topbar-right > .pill,
+  .topbar-right > .button {
+    flex: 1 1 150px;
+  }
+}
