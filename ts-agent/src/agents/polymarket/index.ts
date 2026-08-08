@@ -8,11 +8,7 @@ export type {
   Signal,
 } from "../../schemas/polymarket_schemas.ts";
 export { ExecuteAgent } from "./execute_agent.ts";
-export {
-  PolymarketOrchestrator,
-  runPolymarketBacktest,
-  SwarmOrchestrator,
-} from "./orchestrator.ts";
+export { runPolymarketBacktest, SwarmOrchestrator } from "./orchestrator.ts";
 export type {
   PeriodResult,
   RollingBacktestResult,
