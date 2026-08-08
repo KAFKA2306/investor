@@ -28,7 +28,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
 }) => {
   if (!verificationData) {
     return (
-      <div className="main" role="status" aria-live="polite">
+      <div className="main" aria-live="polite">
         <div className="section-head evidence-section-head">
           <div>
             <h2>Evidence overview</h2>
@@ -41,10 +41,11 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             <span className="evidence-kicker">Claims withheld</span>
             <h1 className="hero-title">No current verification artifact</h1>
             <p className="hero-subtitle">
-              A current verification artifact was not published at
-              {" "}
-              <span className="mono">verification/standard_verification_data.json</span>.
-              The console therefore does not show performance, stability, or
+              A current verification artifact was not published at{" "}
+              <span className="mono">
+                verification/standard_verification_data.json
+              </span>
+              . The console therefore does not show performance, stability, or
               readiness claims.
             </p>
 
@@ -81,7 +82,10 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
             </div>
           </div>
 
-          <aside className="publication-gate" aria-labelledby="publication-gate-title">
+          <aside
+            className="publication-gate"
+            aria-labelledby="publication-gate-title"
+          >
             <h3 id="publication-gate-title">Publication gate</h3>
             <ol className="publication-steps">
               <li>
@@ -102,13 +106,15 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
                 <span className="step-number">3</span>
                 <div>
                   <strong>Publish provenance</strong>
-                  <p>Include as-of, run, environment, code, and data identifiers.</p>
+                  <p>
+                    Include as-of, run, environment, code, and data identifiers.
+                  </p>
                 </div>
               </li>
             </ol>
             <p className="publication-note">
-              Missing evidence is displayed explicitly. Stale or synthetic results
-              are not substituted.
+              Missing evidence is displayed explicitly. Stale or synthetic
+              results are not substituted.
             </p>
           </aside>
         </section>
@@ -123,8 +129,7 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
   const dailyReturns = verificationData.strategyCum.map((cumulative, index) =>
     index === 0
       ? 0
-      : cumulative /
-          (verificationData.strategyCum[index - 1] ?? cumulative) -
+      : cumulative / (verificationData.strategyCum[index - 1] ?? cumulative) -
         1,
   );
 
@@ -192,7 +197,10 @@ export const EvidenceRoom: React.FC<EvidenceRoomProps> = ({
         </div>
       )}
 
-      <section className="hero panel hero-uqtl" aria-labelledby="strategy-title">
+      <section
+        className="hero panel hero-uqtl"
+        aria-labelledby="strategy-title"
+      >
         <div className="hero-content">
           <div className="hero-meta">
             <span className="pill">STAGE: RESEARCH / VALIDATION</span>
