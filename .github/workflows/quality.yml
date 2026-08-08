@@ -47,7 +47,16 @@ jobs:
         run: bash scripts/lint_changed_ts.sh
 
       - name: Run TypeScript tests
-        run: task test
+        id: ts-tests
+        run: task test 2>&1 | tee "$RUNNER_TEMP/typescript-tests.log"
+
+      - name: Upload TypeScript test failure log
+        if: failure() && steps.ts-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-test-failure
+          path: ${{ runner.temp }}/typescript-tests.log
+          if-no-files-found: error
 
       - name: Run TypeScript typecheck
         run: task typecheck
