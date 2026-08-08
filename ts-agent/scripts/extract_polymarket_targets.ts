@@ -1,5 +1,23 @@
-import { fsUtils } from "../utils/fs_utils.ts";
-import { logger } from "../utils/logger.ts";
+import { fsUtils } from "../src/utils/fs_utils.ts";
+import { logger } from "../src/utils/logger.ts";
+
+type LeaderboardRow = {
+  rank: number;
+  proxyWallet: string;
+  userName: string;
+  pnl: number;
+};
+
+function isLeaderboardRow(value: unknown): value is LeaderboardRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.rank === "number" &&
+    typeof row.proxyWallet === "string" &&
+    typeof row.userName === "string" &&
+    typeof row.pnl === "number"
+  );
+}
 
 async function main() {
   logger.info("📡 Fetching current Polymarket leaderboard (Monthly PNL)...");
@@ -14,8 +32,12 @@ async function main() {
     );
   }
 
-  const data = await response.json();
-  const topWallets = data.map((item: any) => ({
+  const data: unknown = await response.json();
+  if (!Array.isArray(data)) {
+    throw new Error("Polymarket leaderboard response must be an array");
+  }
+
+  const topWallets = data.filter(isLeaderboardRow).map((item) => ({
     rank: item.rank,
     address: item.proxyWallet,
     userName: item.userName,
@@ -23,9 +45,9 @@ async function main() {
   }));
 
   console.log("🏆 Current Top Traders (Monthly Profit):");
-  topWallets.forEach((w: any) => {
+  topWallets.forEach((wallet) => {
     console.log(
-      `${w.rank}. ${w.userName} (${w.address}) - PNL: $${Math.round(w.pnl).toLocaleString()}`,
+      `${wallet.rank}. ${wallet.userName} (${wallet.address}) - PNL: $${Math.round(wallet.pnl).toLocaleString()}`,
     );
   });
 
