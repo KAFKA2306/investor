@@ -1,0 +1,74 @@
+name: Issue 20 Quality Audit
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/issue-20-audit.yml'
+      - 'ts-agent/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'Taskfile.yml'
+      - 'scripts/**'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      UQTL_DATA_ROOT: ${{ github.workspace }}/data
+      UQTL_LOGS_ROOT: ${{ github.workspace }}/logs
+      UQTL_CACHE_ROOT: ${{ github.workspace }}/cache
+      UQTL_VERIFICATION_ROOT: ${{ github.workspace }}/verification
+      UQTL_EDINET_ROOT: ${{ github.workspace }}/edinet
+      UQTL_PREPROCESSED_ROOT: ${{ github.workspace }}/preprocessed
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Setup Task
+        uses: arduino/setup-task@v2
+
+      - name: Setup CPU development environment
+        run: |
+          mkdir -p data logs cache verification edinet preprocessed
+          bash scripts/setup_cpu.sh
+
+      - name: TypeScript tests
+        continue-on-error: true
+        run: task test
+
+      - name: TypeScript typecheck
+        if: always()
+        continue-on-error: true
+        run: task typecheck
+
+      - name: Biome repository audit
+        if: always()
+        continue-on-error: true
+        run: |
+          cd ts-agent
+          bun ./node_modules/@biomejs/biome/bin/biome check src tests
+
+      - name: Ruff repository audit
+        if: always()
+        continue-on-error: true
+        run: .venv/bin/ruff check .
+
+      - name: Pyright repository audit
+        if: always()
+        continue-on-error: true
+        run: .venv/bin/pyright
+
+      - name: Dashboard dependency audit
+        if: always()
+        continue-on-error: true
+        run: |
+          cd ts-agent/src/dashboard
+          npm ci
+          npm audit --audit-level=high
