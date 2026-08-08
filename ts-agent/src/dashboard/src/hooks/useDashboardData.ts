@@ -17,7 +17,6 @@ import {
 
 const listUnifiedLogFiles = async (): Promise<string[]> => {
   const res = await fetch(
-    // @ts-expect-error
     `${import.meta.env.BASE_URL}${DASHBOARD_CONFIG.api.paths.logsIndex}?bucket=unified`,
   ).catch(() => undefined);
   if (!res?.ok) return [];
@@ -171,7 +170,6 @@ export const useDashboardData = () => {
     );
 
     // Fetch standard verification data
-    // @ts-expect-error
     const verifRes = await fetch(
       `${import.meta.env.BASE_URL}${DASHBOARD_CONFIG.api.paths.verificationData}`,
       { cache: "no-store" },
