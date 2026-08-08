@@ -48,7 +48,9 @@ jobs:
 
       - name: Run TypeScript tests
         id: ts-tests
-        run: task test 2>&1 | tee "$RUNNER_TEMP/typescript-tests.log"
+        run: |
+          set -o pipefail
+          task test 2>&1 | tee "$RUNNER_TEMP/typescript-tests.log"
 
       - name: Upload TypeScript test failure log
         if: failure() && steps.ts-tests.outcome == 'failure'
