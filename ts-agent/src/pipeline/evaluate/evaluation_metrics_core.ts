@@ -168,9 +168,7 @@ export function loadPerformanceLedgerRows(
 
     const payload = payloadResult.data;
 
-    const report = payload.data.report as z.infer<
-      typeof DailyScenarioLogSchema
-    >;
+    const report = payload.report as z.infer<typeof DailyScenarioLogSchema>;
     if (report.scenarioId && report.results?.backtest) {
       const b = report.results.backtest;
       rows.push({
