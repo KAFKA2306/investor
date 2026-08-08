@@ -32,7 +32,7 @@ describe("SqliteHttpCache", () => {
 
     const first = await cache.fetchJson(url, headers, 1);
     expect(first.cached).toBe(false);
-    expect(first.payload.ok).toBe(true);
+    expect((first.payload as { ok?: boolean }).ok).toBe(true);
 
     await new Promise((resolve) => setTimeout(resolve, 10));
 
@@ -44,13 +44,13 @@ describe("SqliteHttpCache", () => {
       allowStale: true,
     });
     expect(second.cached).toBe(true);
-    expect(second.payload.ok).toBe(true);
+    expect((second.payload as { ok?: boolean }).ok).toBe(true);
 
     await expect(cache.fetchJson(url, headers, 1)).rejects.toThrow(
       "network should not be called",
     );
 
     globalThis.fetch = originalFetch;
-    cache.db.close();
+    cache.rawDb.close();
   });
 });
