@@ -1,5 +1,5 @@
 import { Pool, type PoolClient, type QueryResult } from "pg";
-import type { Config } from "../system/app_runtime_core.ts";
+import type { Config } from "../system/runtime_config.ts";
 import { canonicalSchemaStatements } from "./schema.ts";
 
 type Queryable = {
