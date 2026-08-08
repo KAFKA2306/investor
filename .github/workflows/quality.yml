@@ -61,7 +61,18 @@ jobs:
           if-no-files-found: error
 
       - name: Run TypeScript typecheck
-        run: task typecheck
+        id: ts-typecheck
+        run: |
+          set -o pipefail
+          task typecheck 2>&1 | tee "$RUNNER_TEMP/typescript-typecheck.log"
+
+      - name: Upload TypeScript typecheck failure log
+        if: failure() && steps.ts-typecheck.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-typecheck-failure
+          path: ${{ runner.temp }}/typescript-typecheck.log
+          if-no-files-found: error
 
       - name: Run TypeScript lint
         run: task lint
