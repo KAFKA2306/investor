@@ -19,7 +19,7 @@ jobs:
       CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -46,24 +46,21 @@ jobs:
       - name: Reject new TypeScript formatting or lint debt
         run: bash scripts/lint_changed_ts.sh
 
-      - name: Audit existing TypeScript tests
-        continue-on-error: true
+      - name: Run TypeScript tests
         run: task test
 
-      - name: Audit existing repository-wide TypeScript debt
-        continue-on-error: true
-        run: |
-          task typecheck
-          bash scripts/self_healing_lint.sh
+      - name: Run TypeScript typecheck
+        run: task typecheck
 
-      - name: Audit existing Python quality debt
-        continue-on-error: true
-        run: |
-          .venv/bin/ruff check .
-          .venv/bin/pyright
+      - name: Run TypeScript lint
+        run: task lint
 
-      - name: Explain non-blocking baseline audits
-        if: always()
-        run: |
-          echo "Existing repository-wide test, type, lint, and Python debt is tracked in issue #20."
-          echo "CPU setup, runtime configuration, shell syntax, and changed TypeScript files remain blocking."
+      - name: Run Python lint
+        run: .venv/bin/ruff check .
+
+      - name: Run Python typecheck
+        run: .venv/bin/pyright
+
+      - name: Audit dashboard dependencies
+        working-directory: ts-agent/src/dashboard
+        run: npm audit --audit-level=high
