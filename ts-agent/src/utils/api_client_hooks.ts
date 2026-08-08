@@ -28,7 +28,7 @@ export async function apiClient<T>(
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  return (await response.json()) as T;
 }
 
 /**
