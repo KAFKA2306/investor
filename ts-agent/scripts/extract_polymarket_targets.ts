@@ -1,4 +1,4 @@
-import { fsUtils } from "../src/utils/fs_utils.ts";
+import { writeValidatedJson } from "../src/utils/fs_utils.ts";
 import { logger } from "../src/utils/logger.ts";
 
 type LeaderboardRow = {
@@ -55,7 +55,7 @@ async function main() {
   // エージェントが手動で config/default.yaml を更新するか、
   // 実行時にこのリストを読み込むようにするよっ！
   const outputPath = "ts-agent/data/current_polymarket_targets.json";
-  fsUtils.writeValidatedJson(outputPath, topWallets);
+  writeValidatedJson(outputPath, topWallets);
 
   logger.info(
     `✅ Successfully extracted ${topWallets.length} targets to ${outputPath}`,
