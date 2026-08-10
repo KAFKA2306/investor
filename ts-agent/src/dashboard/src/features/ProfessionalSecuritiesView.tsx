@@ -150,7 +150,10 @@ export const ProfessionalSecuritiesView: React.FC<
         </table>
       </section>
 
-      <section className="panel section" aria-label="Selected security identity">
+      <section
+        className="panel section"
+        aria-label="Selected security identity"
+      >
         <div className="section-head">
           <h3>Selected security</h3>
           <span className="mono">{active.symbol}</span>
@@ -205,9 +208,7 @@ export const ProfessionalSecuritiesView: React.FC<
                 <td className="mono">
                   {row.price?.toLocaleString() ?? "MISSING"}
                 </td>
-                <td className="mono">
-                  {row.factor?.toFixed(6) ?? "MISSING"}
-                </td>
+                <td className="mono">{row.factor?.toFixed(6) ?? "MISSING"}</td>
                 <td className="mono">
                   {row.position?.toFixed(6) ?? "MISSING"}
                 </td>
