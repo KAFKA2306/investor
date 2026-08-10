@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { YahooBar } from "../providers/external_market_providers";
+import type { MarketBar } from "../schemas/financial_domain_schemas.ts";
 
 export interface QlibExportRow {
   date: string;
@@ -19,9 +19,9 @@ export async function exportToQlibCsv(
     headers.join(","),
     ...data.map((row) =>
       headers
-        .map((h) => {
-          const val = row[h];
-          return typeof val === "number" && Number.isNaN(val) ? "" : val;
+        .map((header) => {
+          const value = row[header];
+          return typeof value === "number" && Number.isNaN(value) ? "" : value;
         })
         .join(","),
     ),
@@ -37,22 +37,22 @@ export async function exportToQlibCsv(
 
 export function prepareQlibRows(
   symbol: string,
-  bars: YahooBar[],
+  bars: MarketBar[],
   factors: Record<string, number[]>,
 ): QlibExportRow[] {
-  return bars.map((bar, i) => {
+  return bars.map((bar, index) => {
     const row: QlibExportRow = {
-      date: bar.Date,
+      date: bar.date,
       symbol,
-      open: bar.Open,
-      high: bar.High,
-      low: bar.Low,
-      close: bar.Close,
-      volume: bar.Volume,
+      open: bar.open,
+      high: bar.high,
+      low: bar.low,
+      close: bar.close,
+      volume: bar.volume,
     };
 
     for (const [name, series] of Object.entries(factors)) {
-      row[name] = series[i];
+      row[name] = series[index] ?? Number.NaN;
     }
 
     return row;
