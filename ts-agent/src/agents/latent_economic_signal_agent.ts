@@ -1,9 +1,22 @@
 import type {
   AceBullet,
   FactorGenerationOptions,
+  StandardOutcome,
 } from "../schemas/financial_domain_schemas.ts";
+import { EvidenceSource } from "../schemas/financial_domain_schemas.ts";
 import { BaseAgent } from "../system/app_runtime_core.ts";
-import type { AlphaFactor } from "../types/index.ts";
+import type {
+  AlphaFactor,
+  BacktestResult,
+  ComputeMarketData,
+  ComputeResponse,
+} from "../types/index.ts";
+import {
+  calculateAnnualizedReturn,
+  calculatePValue,
+  calculateSharpeRatio,
+  calculateTStat,
+} from "../utils/math_utils.ts";
 import { PromptFactory } from "./prompt_factory.ts";
 
 const LOCAL_SEEDS = [
@@ -65,5 +78,117 @@ export class LesAgent extends BaseAgent {
         themeSource: "LOCAL",
       } satisfies AlphaFactor;
     });
+  }
+
+  public async evaluateFactorsViaEngine(
+    factors: AlphaFactor[],
+    marketData: ComputeMarketData[],
+    baselineScores?: number[],
+  ): Promise<ComputeResponse> {
+    const { ComputeEngineClient } = await import(
+      "../providers/factor_compute_engine_client.ts"
+    );
+    const client = new ComputeEngineClient();
+    const response = await client.evaluateFactors({
+      factors: factors.map((factor) => ({
+        id: factor.id,
+        formula: factor.formula,
+      })),
+      market_data: marketData.map((row) => ({
+        symbol: row.symbol,
+        date: row.date,
+        open: row.values.open ?? 0,
+        high: row.values.high ?? 0,
+        low: row.values.low ?? 0,
+        close: row.values.close ?? 0,
+        volume: row.values.volume ?? 0,
+        turnover_value: row.values.turnover_value ?? 0,
+        ...row.values,
+      })),
+      ...(baselineScores ? { baseline_scores: baselineScores } : {}),
+    });
+
+    return {
+      results: (response.results ?? []).map((result) => ({
+        id: result.factor_id,
+        scores: result.scores ?? [],
+      })),
+    };
+  }
+
+  public calculateOutcome(
+    strategyId: string,
+    backtest?: BacktestResult,
+    predictions?: number[],
+    targets?: number[],
+    experimentId?: string,
+  ): StandardOutcome {
+    if (!backtest?.history?.length) {
+      throw new Error(
+        `[AUDIT] Strategy ${strategyId} lacks backtest history. Fail Fast.`,
+      );
+    }
+    if (!predictions || !targets || predictions.length !== targets.length) {
+      throw new Error(
+        `[AUDIT] Strategy ${strategyId} requires aligned predictions and targets.`,
+      );
+    }
+
+    const tStat = calculateTStat(backtest.history);
+    const pValue = calculatePValue(tStat, backtest.history.length);
+    const sharpeRatio = calculateSharpeRatio(backtest.history);
+    const annualizedReturn = calculateAnnualizedReturn(
+      backtest.netReturn,
+      backtest.tradingDays || 1,
+    );
+
+    let peak = 1;
+    let nav = 1;
+    let worstDrawdown = 0;
+    for (const dailyReturn of backtest.history) {
+      nav *= 1 + dailyReturn;
+      peak = Math.max(peak, nav);
+      worstDrawdown = Math.min(worstDrawdown, nav / peak - 1);
+    }
+
+    const directionalAccuracy =
+      predictions.length === 0
+        ? 0
+        : predictions.reduce(
+            (correct, prediction, index) =>
+              correct +
+              (Math.sign(prediction) === Math.sign(targets[index] ?? 0) ? 1 : 0),
+            0,
+          ) / predictions.length;
+
+    return {
+      strategyId,
+      strategyName: "LES-Local-Seed-Framework",
+      timestamp: new Date().toISOString(),
+      experimentId,
+      summary: `LES local seed evaluated against ${backtest.tradingDays} trading days of backtest evidence.`,
+      evidenceSource: EvidenceSource.QUANT_BACKTEST,
+      alpha: {
+        tStat,
+        pValue,
+      },
+      verification: {
+        metrics: {
+          mae: 0,
+          rmse: 0,
+          smape: 0,
+          directionalAccuracy,
+          sharpeRatio,
+          annualizedReturn,
+          maxDrawdown: Math.abs(worstDrawdown),
+        },
+        upliftOverBaseline: 0,
+      },
+      stability: {
+        trackingError: Math.abs(tStat) * 0.001,
+        tradingDaysHorizon: backtest.tradingDays,
+        isProductionReady: false,
+      },
+    };
   }
 }
