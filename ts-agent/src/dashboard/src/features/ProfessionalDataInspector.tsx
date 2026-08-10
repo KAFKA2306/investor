@@ -66,7 +66,9 @@ export const ProfessionalDataInspector: React.FC<
       <div className="section-head">
         <div>
           <h2>Market data inspector</h2>
-          <span>Observed prices, factor values, positions, and dataset scope</span>
+          <span>
+            Observed prices, factor values, positions, and dataset scope
+          </span>
         </div>
         <span className="pill mono">SYMBOLS: {symbols.length}</span>
       </div>
@@ -141,7 +143,10 @@ export const ProfessionalDataInspector: React.FC<
         </section>
       )}
 
-      <section className="panel section table-wrap" aria-label="Observation history">
+      <section
+        className="panel section table-wrap"
+        aria-label="Observation history"
+      >
         <div className="section-head">
           <h3>Observation history</h3>
           <span>Most recent 50 rows</span>
@@ -162,9 +167,7 @@ export const ProfessionalDataInspector: React.FC<
                 <td className="mono">
                   {row.price?.toLocaleString() ?? "MISSING"}
                 </td>
-                <td className="mono">
-                  {row.factor?.toFixed(6) ?? "MISSING"}
-                </td>
+                <td className="mono">{row.factor?.toFixed(6) ?? "MISSING"}</td>
                 <td className="mono">
                   {row.position?.toFixed(6) ?? "MISSING"}
                 </td>
@@ -174,7 +177,10 @@ export const ProfessionalDataInspector: React.FC<
         </table>
       </section>
 
-      <section className="panel section table-wrap" aria-label="Latest cross section">
+      <section
+        className="panel section table-wrap"
+        aria-label="Latest cross section"
+      >
         <div className="section-head">
           <h3>Latest cross section</h3>
           <span>Sorted by absolute modeled position</span>
@@ -212,9 +218,7 @@ export const ProfessionalDataInspector: React.FC<
                 <td className="mono">
                   {row.price?.toLocaleString() ?? "MISSING"}
                 </td>
-                <td className="mono">
-                  {row.factor?.toFixed(6) ?? "MISSING"}
-                </td>
+                <td className="mono">{row.factor?.toFixed(6) ?? "MISSING"}</td>
                 <td className="mono">
                   {row.position?.toFixed(6) ?? "MISSING"}
                 </td>
