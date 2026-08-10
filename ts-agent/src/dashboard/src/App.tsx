@@ -41,7 +41,11 @@ const App: React.FC = () => {
     params.set("tab", activeTab);
     if (activeDate) params.set("date", activeDate);
     else params.delete("date");
-    window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
+    window.history.replaceState(
+      null,
+      "",
+      `${window.location.pathname}?${params}`,
+    );
   }, [activeDate, activeTab]);
 
   useEffect(() => {
@@ -76,7 +80,9 @@ const App: React.FC = () => {
       !window.confirm(
         "緊急停止を実行します。新規発注を停止し、キャンセル可能な注文の取消要求を送信します。続行しますか？",
       )
-    ) return;
+    ) {
+      return;
+    }
 
     // @ts-expect-error - ImportMeta env typing is supplied by Vite at build time.
     const token = (import.meta.env.VITE_API_TOKEN as string) ?? "";
@@ -111,7 +117,7 @@ const App: React.FC = () => {
         }}
       >
         <div className="spinner" aria-hidden="true" />
-        <span role="status">証拠台帳と検証データを読み込んでいます</span>
+        <output>証拠台帳と検証データを読み込んでいます</output>
       </div>
     );
   }
