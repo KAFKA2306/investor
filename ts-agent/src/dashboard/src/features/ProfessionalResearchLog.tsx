@@ -44,8 +44,10 @@ export const ProfessionalResearchLog: React.FC<
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return records.filter((record) => {
-      if (statusFilter !== "ALL" && record.status !== statusFilter) return false;
-      if (activeDateOnly && activeDate && record.date !== activeDate) return false;
+      if (statusFilter !== "ALL" && record.status !== statusFilter)
+        return false;
+      if (activeDateOnly && activeDate && record.date !== activeDate)
+        return false;
       if (!normalizedQuery) return true;
       return [
         record.id,
@@ -69,7 +71,9 @@ export const ProfessionalResearchLog: React.FC<
       <div className="section-head">
         <div>
           <h2>Research ledger</h2>
-          <span>Candidate lineage, selection decisions, and rejection evidence</span>
+          <span>
+            Candidate lineage, selection decisions, and rejection evidence
+          </span>
         </div>
         <span className="pill mono">RECORDS: {records.length}</span>
       </div>
@@ -150,7 +154,10 @@ export const ProfessionalResearchLog: React.FC<
         </div>
       </section>
 
-      <section className="panel section table-wrap" aria-label="Candidate records">
+      <section
+        className="panel section table-wrap"
+        aria-label="Candidate records"
+      >
         <table>
           <thead>
             <tr>
