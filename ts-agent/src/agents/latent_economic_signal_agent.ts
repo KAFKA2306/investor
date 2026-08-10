@@ -157,7 +157,9 @@ export class LesAgent extends BaseAgent {
         : predictions.reduce(
             (correct, prediction, index) =>
               correct +
-              (Math.sign(prediction) === Math.sign(targets[index] ?? 0) ? 1 : 0),
+              (Math.sign(prediction) === Math.sign(targets[index] ?? 0)
+                ? 1
+                : 0),
             0,
           ) / predictions.length;
 
