@@ -297,7 +297,7 @@ export class EdinetProvider {
     docTypeCode?: string,
   ): Promise<string | null> {
     const typeFilter = docTypeCode
-      ? `AND value LIKE '%\"docTypeCode\":\"${docTypeCode}\"%'`
+      ? `AND value LIKE '%"docTypeCode":"${docTypeCode}"%'`
       : "";
     const sql = `
             SELECT 
@@ -311,7 +311,7 @@ export class EdinetProvider {
         `;
     const result = this.cache.rawDb
       .query(sql)
-      .get(`%\"secCode\":\"${secCode5}\"%`) as { date: string } | null;
+      .get(`%"secCode":"${secCode5}"%`) as { date: string } | null;
     return result?.date ?? null;
   }
 }
