@@ -55,7 +55,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   const evidencePublished = Boolean(generatedAt);
 
   return (
-    <header className="topbar" aria-label="AAARTS system header">
+    <header className="topbar">
       <div className="brand">
         <h1>AAARTS Research Console</h1>
         <p>Evidence-first investment research and validation</p>
@@ -83,7 +83,8 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           AS OF: {formatGeneratedAt()}
         </span>
         <span id="execution-control-state" className="pill mono">
-          EXECUTION: {executionControlsAvailable ? "CONTROL ENABLED" : "OBSERVE ONLY"}
+          EXECUTION:{" "}
+          {executionControlsAvailable ? "CONTROL ENABLED" : "OBSERVE ONLY"}
         </span>
 
         <button className="button" type="button" onClick={onRefresh}>
