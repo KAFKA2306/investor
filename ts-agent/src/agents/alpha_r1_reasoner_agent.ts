@@ -9,12 +9,6 @@ import {
 import { BaseAgent } from "../system/app_runtime_core.ts";
 import { logger } from "../utils/logger.ts";
 
-/**
- * Strategic screening is still part of PipelineOrchestrator's public runtime
- * contract. The March cleanup removed this implementation while leaving the
- * live consumer in place. Keep this module dependency-light so restoring the
- * contract does not resurrect deleted provider stacks.
- */
 export class StrategicReasonerAgent extends BaseAgent {
   public async reasonAboutAlpha(
     outcome: StandardOutcome,
@@ -34,10 +28,14 @@ export class StrategicReasonerAgent extends BaseAgent {
       DEFAULT_EVALUATION_CRITERIA.performance.maxDrawdown
         ? Verdict.INVALID
         : Verdict.VALID;
+    const riskEvidence = `MaxDrawdown check: ${outcome.verification?.metrics?.maxDrawdown}.`;
+
     const hunterVerdict =
       (outcome.alpha?.pValue ?? 1) < DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue
         ? Verdict.VALID
         : Verdict.UNCERTAIN;
+    const hunterEvidence = `P-Value: ${outcome.alpha?.pValue} (Target < ${DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue}).`;
+
     const regimeVerdict =
       (marketContext.includes("BULL") &&
         extractedClaim.toLowerCase().includes("momentum")) ||
@@ -46,32 +44,39 @@ export class StrategicReasonerAgent extends BaseAgent {
       marketContext.includes("UNCERTAIN")
         ? Verdict.VALID
         : Verdict.UNCERTAIN;
+    const regimeEvidence = `Alignment with ${marketContext} for ${extractedClaim}.`;
 
     const logicChecks: StrategicReasoning["logicChecks"] = [
       {
         claim: "Risk Manager Review",
         verdict: riskVerdict,
-        evidence: `MaxDrawdown check: ${outcome.verification?.metrics?.maxDrawdown}.`,
+        evidence: riskEvidence,
       },
       {
         claim: "Alpha Hunter Review",
         verdict: hunterVerdict,
-        evidence: `P-Value: ${outcome.alpha?.pValue} (Target < ${DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue}).`,
+        evidence: hunterEvidence,
       },
       {
         claim: "Regime Specialist Review",
         verdict: regimeVerdict,
-        evidence: `Alignment with ${marketContext} for ${extractedClaim}.`,
+        evidence: regimeEvidence,
       },
     ];
 
     const validCount = logicChecks.filter(
-      (check) => check.verdict === Verdict.VALID,
+      (c) => c.verdict === Verdict.VALID,
     ).length;
+    const contextAlignment = validCount / 3;
+
+    const rationale = `[Council Consensus] The alpha was reviewed by the Risk Manager, Alpha Hunter, and Regime Specialist. 
+    Final Verdict Count: ${validCount}/3 VALID. 
+    Key Critique: ${validCount < 3 ? "One or more specialists raised concerns about robustness or risk." : "Unanimous approval."}`;
+
     return {
-      rationale: `[Council Consensus] ${validCount}/3 specialist checks are VALID.`,
+      rationale,
       logicChecks,
-      contextAlignment: validCount / 3,
+      contextAlignment,
       marketRegime: marketContext,
     };
   }
@@ -80,10 +85,14 @@ export class StrategicReasonerAgent extends BaseAgent {
     outcome: StandardOutcome,
     reasoning: StrategicReasoning,
   ): Promise<AlphaScreening> {
+    logger.info(`[Alpha-R1] Screening alpha: ${outcome.strategyId}`);
+
     const sharpe = outcome.verification?.metrics?.sharpeRatio ?? 0;
-    const pValue = outcome.alpha?.pValue ?? 1;
+    const pValue = outcome.alpha?.pValue ?? 1.0;
+
     let status = AlphaStatus.ACTIVE;
-    let reason = "Alpha logic remains sound and performance is within expected range.";
+    let reason =
+      "Alpha logic remains sound and performance is within expected range.";
     let score = reasoning.contextAlignment * 0.6 + (1 - pValue) * 0.4;
 
     if (
@@ -91,7 +100,7 @@ export class StrategicReasonerAgent extends BaseAgent {
       pValue > DEFAULT_EVALUATION_CRITERIA.alpha.maxPValue * 1.5
     ) {
       status = AlphaStatus.DECAYED;
-      reason = `[REJECTED] Performance or significance too low. ${reasoning.rationale}`;
+      reason = `[REJECTED] Performance or Significance too low. ${reasoning.rationale}`;
       score *= 0.5;
     } else if (reasoning.contextAlignment < 0.3) {
       status = AlphaStatus.INACTIVE;
@@ -99,16 +108,24 @@ export class StrategicReasonerAgent extends BaseAgent {
       score *= 0.8;
     }
 
+    const screening = {
+      status,
+      reason,
+      lastUpdated: new Date().toISOString(),
+      score,
+    };
+
     this.emitEvent("STRATEGY_DECIDED", {
       strategyId: outcome.strategyId,
       verdict: status,
-      score,
-      reason,
+      score: screening.score,
+      reason: screening.reason,
     });
-    return { status, reason, lastUpdated: new Date().toISOString(), score };
+
+    return screening;
   }
 
   public async run(): Promise<void> {
-    logger.info("Alpha-R1 strategic reasoner ready");
+    logger.info("🎀 Alpha-R1: Strategic Reasoner is standing by...");
   }
 }
