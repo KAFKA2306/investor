@@ -32,8 +32,11 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
-    const requestedDate = new URLSearchParams(window.location.search).get("date");
-    if (requestedDate && requestedDate !== activeDate) setActiveDate(requestedDate);
+    const requestedDate = new URLSearchParams(window.location.search).get(
+      "date",
+    );
+    if (requestedDate && requestedDate !== activeDate)
+      setActiveDate(requestedDate);
   }, [activeDate, setActiveDate]);
 
   useEffect(() => {
