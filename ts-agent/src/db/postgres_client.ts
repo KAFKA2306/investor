@@ -1,5 +1,10 @@
-import { Pool, type PoolClient, type QueryResult } from "pg";
-import type { Config } from "../system/app_runtime_core.ts";
+import {
+  Pool,
+  type PoolClient,
+  type QueryResult,
+  type QueryResultRow,
+} from "pg";
+import type { Config } from "../system/runtime_config.ts";
 import { canonicalSchemaStatements } from "./schema.ts";
 
 type Queryable = {
@@ -56,7 +61,7 @@ export class PostgresClient {
     return this.cfg.enabled;
   }
 
-  public async query<T = unknown>(
+  public async query<T extends QueryResultRow = QueryResultRow>(
     sql: string,
     values: unknown[] = [],
   ): Promise<QueryResult<T>> {

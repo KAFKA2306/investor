@@ -20,8 +20,8 @@ export const ProfessionalSystemHealth: React.FC<
   }
 
   const providers = Object.entries(qualityGate.connectivity);
-  const components = Object.entries(qualityGate.components).sort(
-    (a, b) => a[0].localeCompare(b[0]),
+  const components = Object.entries(qualityGate.components).sort((a, b) =>
+    a[0].localeCompare(b[0]),
   );
   const historyRows = Array.from(history.entries()).sort((a, b) =>
     b[0].localeCompare(a[0]),
@@ -32,7 +32,9 @@ export const ProfessionalSystemHealth: React.FC<
       <div className="section-head">
         <div>
           <h2>System status</h2>
-          <span>Connectivity, quality-gate inputs, and historical verdicts</span>
+          <span>
+            Connectivity, quality-gate inputs, and historical verdicts
+          </span>
         </div>
         <span className={`pill ${chipClass(qualityGate.verdict)}`}>
           QUALITY GATE: {qualityGate.verdict}
@@ -67,7 +69,10 @@ export const ProfessionalSystemHealth: React.FC<
       </section>
 
       <div className="split">
-        <section className="panel section table-wrap" aria-label="Provider connectivity">
+        <section
+          className="panel section table-wrap"
+          aria-label="Provider connectivity"
+        >
           <div className="section-head">
             <h3>Provider connectivity</h3>
             <span>Current report</span>
@@ -109,7 +114,10 @@ export const ProfessionalSystemHealth: React.FC<
           </table>
         </section>
 
-        <section className="panel section table-wrap" aria-label="Quality components">
+        <section
+          className="panel section table-wrap"
+          aria-label="Quality components"
+        >
           <div className="section-head">
             <h3>Quality components</h3>
             <span>Configured component scores</span>
@@ -133,7 +141,10 @@ export const ProfessionalSystemHealth: React.FC<
         </section>
       </div>
 
-      <section className="panel section table-wrap" aria-label="Quality gate history">
+      <section
+        className="panel section table-wrap"
+        aria-label="Quality gate history"
+      >
         <div className="section-head">
           <h3>Quality-gate history</h3>
           <span>Most recent reports first</span>

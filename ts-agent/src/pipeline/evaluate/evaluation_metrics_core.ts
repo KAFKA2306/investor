@@ -147,6 +147,13 @@ export const PerformanceLedgerRowSchema = z.object({
 
 export type PerformanceLedgerRow = z.infer<typeof PerformanceLedgerRowSchema>;
 
+const PerformanceLedgerEnvelopeSchema = z.object({
+  kind: z.literal("daily_decision"),
+  asOfDate: z.string().optional(),
+  runId: z.string().optional(),
+  payload: z.unknown(),
+});
+
 export function loadPerformanceLedgerRows(
   logsDir: string,
 ): PerformanceLedgerRow[] {
@@ -154,10 +161,10 @@ export function loadPerformanceLedgerRows(
   const files = fs.readdirSync(logsDir).filter((f) => f.endsWith(".json"));
   const rows: PerformanceLedgerRow[] = [];
   for (const file of files) {
-    const raw = readJsonFile<any>(path.join(logsDir, file));
-    // CanonicalLogEnvelopeSchema が見当たらないので、直接 payload を見るよっ！🛡️
-    const envelope = raw;
-    if (!envelope || envelope.kind !== "daily_decision") continue;
+    const raw = readJsonFile<unknown>(path.join(logsDir, file));
+    const envelopeResult = PerformanceLedgerEnvelopeSchema.safeParse(raw);
+    if (!envelopeResult.success) continue;
+    const envelope = envelopeResult.data;
 
     const payloadResult = UnifiedLogSchema.safeParse(envelope.payload);
     if (
@@ -167,10 +174,7 @@ export function loadPerformanceLedgerRows(
       continue;
 
     const payload = payloadResult.data;
-
-    const report = payload.data.report as z.infer<
-      typeof DailyScenarioLogSchema
-    >;
+    const report = payload.report as z.infer<typeof DailyScenarioLogSchema>;
     if (report.scenarioId && report.results?.backtest) {
       const b = report.results.backtest;
       rows.push({

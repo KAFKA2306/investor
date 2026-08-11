@@ -131,7 +131,9 @@ export const ProfessionalValidationView: React.FC<
             <tbody>
               <tr>
                 <td>Strategy cumulative return</td>
-                <td className="mono">{formatPercentNullable(strategyReturn)}</td>
+                <td className="mono">
+                  {formatPercentNullable(strategyReturn)}
+                </td>
                 <td>Derived from strategyCum</td>
               </tr>
               <tr>
@@ -144,9 +146,7 @@ export const ProfessionalValidationView: React.FC<
               <tr>
                 <td>Recorded total return</td>
                 <td className="mono">
-                  {formatPercentNullable(
-                    verificationData.metrics?.totalReturn,
-                  )}
+                  {formatPercentNullable(verificationData.metrics?.totalReturn)}
                 </td>
                 <td>Recorded metric</td>
               </tr>
@@ -240,9 +240,7 @@ export const ProfessionalValidationView: React.FC<
                 <td>{row.status}</td>
                 <td>{row.metric}</td>
                 <td className="mono">
-                  {row.value === undefined
-                    ? "MISSING"
-                    : row.value.toFixed(6)}
+                  {row.value === undefined ? "MISSING" : row.value.toFixed(6)}
                 </td>
               </tr>
             ))}

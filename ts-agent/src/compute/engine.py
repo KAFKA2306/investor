@@ -1,11 +1,12 @@
 import json
 import sys
-import pandas as pd
+from typing import Any
+
 import numpy as np
-from typing import Dict, Any
+import pandas as pd
 
 
-def evaluate_ast(ast: Dict[str, Any], df: pd.DataFrame) -> pd.Series:
+def evaluate_ast(ast: dict[str, Any], df: pd.DataFrame) -> pd.Series:
     node_type = ast.get("type")
 
     if node_type == "variable":
@@ -60,7 +61,7 @@ def evaluate_ast(ast: Dict[str, Any], df: pd.DataFrame) -> pd.Series:
     return pd.Series(0, index=df.index)
 
 
-def process_request(req: Dict[str, Any]) -> Dict[str, Any]:
+def process_request(req: dict[str, Any]) -> dict[str, Any]:
     factors = req.get("factors", [])
     market_data = req.get("market_data", [])
 

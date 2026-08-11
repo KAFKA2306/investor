@@ -5,11 +5,10 @@
 
 import { LeverageTrendFeatureComputer } from "./leverage_trend_feature.ts";
 
-export interface EnrichedMarketData extends Record<string, number> {
+export type EnrichedMarketData = Record<string, unknown> & {
   date?: string;
   macro_leverage_trend?: number;
-  [key: string]: unknown;
-}
+};
 
 export class MarketDataEnricher {
   private leverageComputer: LeverageTrendFeatureComputer | null = null;

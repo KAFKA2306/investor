@@ -1,8 +1,9 @@
 import json
 import logging
 from typing import Any
-from vllm import LLM, SamplingParams
+
 from path_utils import ensure_model_exists, get_qwen_model_path
+from vllm import LLM, SamplingParams
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"

@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -19,51 +22,63 @@ jobs:
       CHECK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
-
       - name: Setup Task
         uses: arduino/setup-task@v2
-
       - name: Setup CPU development environment
         run: |
           mkdir -p data logs cache verification edinet preprocessed
           bash scripts/setup_cpu.sh
-
       - name: Validate shell entrypoints
         run: bash -n scripts/setup_cpu.sh scripts/lint_changed_ts.sh
-
       - name: Validate runtime config
         run: task validate:runtime
-
       - name: Reject new TypeScript formatting or lint debt
         run: bash scripts/lint_changed_ts.sh
-
-      - name: Audit existing TypeScript tests
-        continue-on-error: true
-        run: task test
-
-      - name: Audit existing repository-wide TypeScript debt
-        continue-on-error: true
+      - name: Run TypeScript tests
+        id: ts-tests
         run: |
-          task typecheck
-          bash scripts/self_healing_lint.sh
-
-      - name: Audit existing Python quality debt
-        continue-on-error: true
+          set -o pipefail
+          task test 2>&1 | tee "$RUNNER_TEMP/typescript-tests.log"
+      - name: Upload TypeScript test failure log
+        if: failure() && steps.ts-tests.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-test-failure
+          path: ${{ runner.temp }}/typescript-tests.log
+          if-no-files-found: error
+      - name: Run TypeScript typecheck
+        id: ts-typecheck
         run: |
-          .venv/bin/ruff check .
-          .venv/bin/pyright
-
-      - name: Explain non-blocking baseline audits
-        if: always()
+          set -o pipefail
+          task typecheck 2>&1 | tee "$RUNNER_TEMP/typescript-typecheck.log"
+      - name: Upload TypeScript typecheck failure log
+        if: failure() && steps.ts-typecheck.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-typecheck-failure
+          path: ${{ runner.temp }}/typescript-typecheck.log
+          if-no-files-found: error
+      - name: Run TypeScript lint
+        run: task lint
+      - name: Run Python lint
+        run: .venv/bin/ruff check .
+      - name: Run Python typecheck
+        run: .venv/bin/pyright
+      - name: Audit dashboard dependencies
+        working-directory: ts-agent/src/dashboard
+        run: npm audit --audit-level=high
+      - name: Verify clean checkout
         run: |
-          echo "Existing repository-wide test, type, lint, and Python debt is tracked in issue #20."
-          echo "CPU setup, runtime configuration, shell syntax, and changed TypeScript files remain blocking."
+          status="$(git status --porcelain --untracked-files=all)"
+          if [ -n "$status" ]; then
+            printf '%s\n' "$status"
+            git diff --stat
+            exit 1
+          fi

@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "lint": "bun ./node_modules/@biomejs/biome/bin/biome check src tests",
+    "lint": "bun ./node_modules/@biomejs/biome/bin/biome check src tests --max-diagnostics=500",
     "format": "bun ./node_modules/@biomejs/biome/bin/biome format src tests --write",
     "test": "bun test tests",
     "typecheck": "tsc --noEmit",
@@ -19,6 +19,7 @@
     "@types/bun": "latest",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.3.2",
+    "@types/pg": "^8.20.0",
     "tsx": "^4.21.0"
   },
   "dependencies": {
