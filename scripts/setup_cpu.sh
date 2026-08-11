@@ -6,8 +6,9 @@ uv_cache_dir="$cache_root/uv"
 requirements_file="$cache_root/requirements-cpu.txt"
 mkdir -p "$cache_root" "$uv_cache_dir"
 
-# TypeScript runtime and dashboard dependencies.
-task deps
+# CI/reproducible setup must never rewrite committed lockfiles.
+(cd ts-agent && bun ci)
+(cd ts-agent/src/dashboard && npm ci)
 
 # This repository is a flat workspace, not one installable Python package.
 # Compile only the base project dependencies. Optional GPU extras such as
