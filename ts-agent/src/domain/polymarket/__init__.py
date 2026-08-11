@@ -1,6 +1,6 @@
 from .risk_calculator import (
-    kelly_criterion,
     calculate_var_95,
+    kelly_criterion,
     validate_risk_constraints,
 )
 
