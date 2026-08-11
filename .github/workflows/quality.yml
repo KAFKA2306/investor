@@ -83,6 +83,16 @@ jobs:
       - name: Run Python typecheck
         run: .venv/bin/pyright
 
-      - name: Audit dashboard dependencies
+      - name: Repair and audit dashboard dependencies
         working-directory: ts-agent/src/dashboard
-        run: npm audit --audit-level=high
+        run: |
+          npm audit fix --package-lock-only --ignore-scripts
+          npm audit --audit-level=high
+
+      - name: Upload repaired dashboard lockfile
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-package-lock-repaired
+          path: ts-agent/src/dashboard/package-lock.json
+          if-no-files-found: error
