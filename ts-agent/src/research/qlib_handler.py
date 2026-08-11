@@ -1,6 +1,7 @@
+import os
+
 import pandas as pd
 from qlib.data.handler import DataHandlerLP
-import os
 
 
 class RepoDataHandler(DataHandlerLP):
@@ -29,6 +30,4 @@ class RepoDataHandler(DataHandlerLP):
 
     def _get_feature(self):
         df = self._init_raw_df()
-        # Assume all columns except those handled by Qlib internals are features
-        # In a real scenario, we might want to filter this
         return df
