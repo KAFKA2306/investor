@@ -1,6 +1,5 @@
 import json
 import sys
-from typing import Dict, List
 
 SUPPORTED_MODELS = {
     "amazon-chronos",
@@ -10,19 +9,19 @@ SUPPORTED_MODELS = {
 }
 
 
-def validate_history(history: List[float]) -> List[float]:
+def validate_history(history: list[float]) -> list[float]:
     if len(history) < 2:
         raise ValueError("history length must be >= 2")
     return [float(v) for v in history]
 
 
-def infer_next(history: List[float], horizon: int) -> List[float]:
+def infer_next(history: list[float], horizon: int) -> list[float]:
     delta = history[-1] - history[-2]
     start = history[-1]
     return [start + delta * (i + 1) for i in range(horizon)]
 
 
-def process_request(req: Dict[str, object]) -> Dict[str, object]:
+def process_request(req: dict[str, object]) -> dict[str, object]:
     model = str(req["model"])
     if model not in SUPPORTED_MODELS:
         raise ValueError(f"unsupported model: {model}")
