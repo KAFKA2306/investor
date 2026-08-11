@@ -19,19 +19,17 @@ jobs:
           ref: agent/uiux-2026-operator-queue
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-      - name: Install dependencies without committing lockfile changes
+      - name: Remove redundant strict directive
+        run: sed -i "/^[[:space:]]*'use strict';[[:space:]]*$/d" ts-agent/src/dashboard/public/operator/operator.js
+      - name: Format with Biome 2.5.6
         working-directory: ts-agent
-        run: bun install
-      - name: Apply canonical Biome fixes
-        working-directory: ts-agent
-        run: bun ./node_modules/@biomejs/biome/bin/biome check --write src/dashboard/public/operator/operator.js
+        run: bunx @biomejs/biome@2.5.6 format --write src/dashboard/public/operator/operator.js
       - name: Commit formatted file and remove one-shot workflow
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git restore ts-agent/bun.lock
           git rm .github/workflows/format-operator-once.yml
           git add ts-agent/src/dashboard/public/operator/operator.js
           git diff --cached --quiet && exit 1
-          git commit -m "fix: apply canonical Biome formatting to operator"
+          git commit -m "fix: apply canonical formatting to operator"
           git push origin HEAD:agent/uiux-2026-operator-queue
