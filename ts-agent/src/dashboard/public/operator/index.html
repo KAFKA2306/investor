@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="研究状態、次のゲート、不足証拠、リスクを優先表示するAAARTS運用レビュー画面。">
+  <meta name="theme-color" content="#f8f7f2">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>AAARTS Operator Queue</title>
+  <link rel="stylesheet" href="./operator.css">
+  <script src="./operator.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#queues">作業キューへ移動</a>
+  <header class="site-header">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">AA</span><span><strong>AAARTS</strong><small>Research Operator Queue</small></span></a>
+    <nav aria-label="主要ナビゲーション"><a href="#queues">作業キュー</a><a href="#risk">リスク</a><a href="#evidence">証拠</a><a href="/">執行ダッシュボード</a></nav>
+  </header>
+  <main>
+    <section class="hero" aria-labelledby="page-title">
+      <div><p class="eyebrow">RESEARCH STATE · RISK · EVIDENCE</p><h1 id="page-title">成績ではなく、<br>次に満たす条件を見る。</h1><p>Backtest、Frozen OOS、Paper、Liveを明示的に分離し、状態、次ゲート、未充足条件、データ時点、再現コマンド、証拠を一件ずつレビューします。</p></div>
+      <aside class="system-card"><span class="status-label" id="system-state">接続中</span><strong id="as-of">基準日時 —</strong><p id="system-message">Evidence APIを読み込んでいます。</p><a href="/" class="primary-link">執行監視へ移動 →</a></aside>
+    </section>
+
+    <section class="metrics" aria-label="研究状態集計">
+      <article><span>要対応</span><strong id="metric-attention">—</strong><small>証拠不足・古さ・失敗</small></article>
+      <article><span>OOS待ち</span><strong id="metric-oos">—</strong><small>正式評価前</small></article>
+      <article><span>レビュー可能</span><strong id="metric-review">—</strong><small>昇格条件を充足</small></article>
+      <article><span>棄却・停止</span><strong id="metric-rejected">—</strong><small>反証または停止条件</small></article>
+    </section>
+
+    <section class="controls" role="search" aria-label="仮説を絞り込む">
+      <label><span>仮説・証拠を検索</span><input id="query" type="search" placeholder="仮説名、状態、未充足条件、実行ID"></label>
+      <label><span>状態</span><select id="state-filter"><option value="all">すべて</option></select></label>
+      <label><span>キュー</span><select id="queue-filter"><option value="all">すべて</option><option value="attention">要対応</option><option value="oos">OOS待ち</option><option value="review">レビュー可能</option><option value="rejected">棄却・停止</option></select></label>
+      <label><span>データ鮮度</span><select id="freshness-filter"><option value="all">すべて</option><option value="current">現行</option><option value="stale">古い・不明</option></select></label>
+      <button type="button" id="clear-filters">条件を解除</button>
+    </section>
+    <p class="result-summary" id="result-summary" role="status">読み込み中</p>
+
+    <section id="queues" class="queue-sections" tabindex="-1">
+      <section class="queue-section queue-attention" data-queue-section="attention" aria-labelledby="attention-title"><header><div><p class="eyebrow">NEEDS ATTENTION</p><h2 id="attention-title">要対応</h2></div><span data-queue-count="attention">0件</span></header><div class="queue-grid" data-queue-grid="attention"></div></section>
+      <section class="queue-section queue-oos" data-queue-section="oos" aria-labelledby="oos-title"><header><div><p class="eyebrow">AWAITING OOS</p><h2 id="oos-title">Frozen OOS待ち</h2></div><span data-queue-count="oos">0件</span></header><div class="queue-grid" data-queue-grid="oos"></div></section>
+      <section class="queue-section queue-review" data-queue-section="review" aria-labelledby="review-title"><header><div><p class="eyebrow">ELIGIBLE FOR REVIEW</p><h2 id="review-title">レビュー可能</h2></div><span data-queue-count="review">0件</span></header><div class="queue-grid" data-queue-grid="review"></div></section>
+      <section class="queue-section queue-rejected" data-queue-section="rejected" aria-labelledby="rejected-title"><header><div><p class="eyebrow">REJECTED / RETIRED</p><h2 id="rejected-title">棄却・停止</h2></div><span data-queue-count="rejected">0件</span></header><div class="queue-grid" data-queue-grid="rejected"></div></section>
+    </section>
+
+    <section id="risk" class="risk-section" aria-labelledby="risk-title"><header><div><p class="eyebrow">RISK FIRST</p><h2 id="risk-title">共通リスクと運用境界</h2></div></header><div id="risk-grid" class="risk-grid"></div></section>
+    <section id="evidence" class="evidence-section" aria-labelledby="evidence-title"><header><div><p class="eyebrow">EVIDENCE INDEX</p><h2 id="evidence-title">最新実行と証拠</h2></div></header><div id="run-table" class="table-shell" tabindex="0" aria-label="実行証拠表。横方向にスクロールできます。"></div></section>
+  </main>
+  <template id="hypothesis-template"><article class="hypothesis-card"><div class="card-top"><span class="queue-badge"></span><span class="state-badge"></span></div><h3></h3><p class="hypothesis-summary"></p><dl class="facts"><div><dt>次のゲート</dt><dd data-field="next-gate"></dd></div><div><dt>未充足条件</dt><dd data-field="missing"></dd></div><div><dt>最終実行</dt><dd data-field="last-run"></dd></div><div><dt>データ時点</dt><dd data-field="data-as-of"></dd></div><div><dt>正式評価</dt><dd data-field="oos"></dd></div><div><dt>リスク</dt><dd data-field="risk"></dd></div></dl><details><summary>再現と証拠</summary><div class="detail-body"><div><strong>再現コマンド</strong><code data-field="command"></code></div><div><strong>証拠</strong><ul data-field="evidence"></ul></div><div><strong>反証条件</strong><ul data-field="falsifiers"></ul></div></div></details></article></template>
+  <footer>AAARTS Operator Queue · Research / Backtest / OOS / Paper / Liveを混同しません。</footer>
+</body>
+</html>

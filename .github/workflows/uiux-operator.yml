@@ -1,0 +1,33 @@
+name: Validate research operator queue
+
+on:
+  pull_request:
+    paths:
+      - "ts-agent/src/dashboard/public/operator/**"
+      - "ts-agent/src/dashboard/scripts/verify-operator.mjs"
+      - ".github/workflows/uiux-operator.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.18.0"
+
+      - name: Validate scripts
+        run: |
+          node --check ts-agent/src/dashboard/public/operator/operator.js
+          node --check ts-agent/src/dashboard/scripts/verify-operator.mjs
+
+      - name: Validate operator contract
+        working-directory: ts-agent/src/dashboard
+        run: node scripts/verify-operator.mjs
