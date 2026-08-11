@@ -19,9 +19,9 @@ jobs:
           ref: agent/uiux-2026-operator-queue
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-      - name: Install locked dependencies
+      - name: Install dependencies without committing lockfile changes
         working-directory: ts-agent
-        run: bun install --frozen-lockfile
+        run: bun install
       - name: Apply canonical Biome fixes
         working-directory: ts-agent
         run: bun ./node_modules/@biomejs/biome/bin/biome check --write src/dashboard/public/operator/operator.js
@@ -29,6 +29,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git restore ts-agent/bun.lock
           git rm .github/workflows/format-operator-once.yml
           git add ts-agent/src/dashboard/public/operator/operator.js
           git diff --cached --quiet && exit 1
