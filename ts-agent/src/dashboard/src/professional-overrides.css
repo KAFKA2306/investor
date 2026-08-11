@@ -110,7 +110,9 @@ body::after {
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: background-color 120ms ease, color 120ms ease;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
 }
 
 .tab-btn:last-child {
@@ -166,7 +168,9 @@ body::after {
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0;
-  transition: border-color 120ms ease, background-color 120ms ease;
+  transition:
+    border-color 120ms ease,
+    background-color 120ms ease;
 }
 
 .button:hover {
