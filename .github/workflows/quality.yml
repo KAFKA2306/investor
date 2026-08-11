@@ -7,35 +7,9 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  repair-bun-lock:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout canonical PR branch
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-      - name: Refresh Bun lockfile
-        working-directory: ts-agent
-        run: bun install --lockfile-only
-      - name: Persist lockfile when changed
-        run: |
-          if git diff --quiet -- ts-agent/bun.lock; then
-            echo "bun.lock already canonical"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ts-agent/bun.lock
-          git commit -m "fix(ci): refresh Bun lockfile"
-          git push origin HEAD:${{ github.head_ref }}
-
   quality:
     runs-on: ubuntu-latest
     env:
@@ -100,3 +74,5 @@ jobs:
       - name: Audit dashboard dependencies
         working-directory: ts-agent/src/dashboard
         run: npm audit --audit-level=high
+      - name: Verify clean checkout
+        run: test -z "$(git status --porcelain --untracked-files=all)"
