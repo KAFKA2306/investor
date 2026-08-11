@@ -1,0 +1,109 @@
+name: Database platform contract
+
+on:
+  pull_request:
+    paths:
+      - db/interest_rates/**
+      - db/company_intelligence/**
+      - .github/workflows/interest-rate-db.yml
+      - .github/workflows/company-intelligence.yml
+      - .github/workflows/database-platform-contract.yml
+      - docs/adr/database-platform-boundaries.md
+  push:
+    branches: [main]
+    paths:
+      - db/interest_rates/**
+      - db/company_intelligence/**
+      - .github/workflows/interest-rate-db.yml
+      - .github/workflows/company-intelligence.yml
+      - .github/workflows/database-platform-contract.yml
+      - docs/adr/database-platform-boundaries.md
+
+permissions:
+  contents: read
+
+jobs:
+  combined-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:18.4-bookworm
+        env:
+          POSTGRES_DB: investor
+          POSTGRES_USER: investor
+          POSTGRES_PASSWORD: test-only-password
+          POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U investor -d investor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGDATABASE: investor
+      PGUSER: investor
+      PGPASSWORD: test-only-password
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Materialize both data planes
+        run: |
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/001_schema.sql
+          bash db/interest_rates/002_load_seed.sh
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/003_views.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/001_schema.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/002_views.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/004_mhi_fy2026_q1.sql
+
+      - name: Verify combined idempotent reload
+        run: |
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/001_schema.sql
+          bash db/interest_rates/002_load_seed.sh
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/003_views.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/001_schema.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/002_views.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/004_mhi_fy2026_q1.sql
+
+      - name: Run both existing smoke suites
+        run: |
+          psql -v ON_ERROR_STOP=1 -f db/interest_rates/900_smoke_test.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/900_smoke_test.sql
+
+      - name: Verify schema coexistence
+        run: |
+          psql -v ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF to_regclass('market_data.observation') IS NULL THEN
+              RAISE EXCEPTION 'market_data.observation is missing';
+            END IF;
+            IF to_regclass('market_data.observation_lineage') IS NULL THEN
+              RAISE EXCEPTION 'market_data.observation_lineage is missing';
+            END IF;
+            IF to_regclass('company_intelligence.company') IS NULL THEN
+              RAISE EXCEPTION 'company_intelligence.company is missing';
+            END IF;
+            IF to_regclass('company_intelligence.fact') IS NULL THEN
+              RAISE EXCEPTION 'company_intelligence.fact is missing';
+            END IF;
+            IF to_regclass('company_intelligence.fact_lineage') IS NULL THEN
+              RAISE EXCEPTION 'company_intelligence.fact_lineage is missing';
+            END IF;
+          END
+          $$;
+
+          SELECT nspname
+          FROM pg_namespace
+          WHERE nspname IN ('market_data', 'company_intelligence')
+          ORDER BY nspname;
+          SQL
+
+      - name: Verify clean checkout
+        run: test -z "$(git status --porcelain --untracked-files=all)"
