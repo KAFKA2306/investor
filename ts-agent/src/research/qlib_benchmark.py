@@ -1,14 +1,14 @@
+import argparse
+import os
+
 import qlib
 from qlib.constant import REG_CN
 from qlib.utils import init_instance_by_config
 from qlib.workflow import R
-import argparse
-import os
 
 
 def run_benchmark(csv_path: str):
-    # Initialize Qlib
-    qlib.init(region=REG_CN)  # Using CN region as a placeholder for stock configs
+    qlib.init(region=REG_CN)
 
     handler_config = {
         "class": "RepoDataHandler",
@@ -53,14 +53,11 @@ def run_benchmark(csv_path: str):
         },
     }
 
-    # Mark as experiment
     with R.start(experiment_name="repo_qlib_benchmark"):
         model = init_instance_by_config(task_config["model"])
         dataset = init_instance_by_config(task_config["dataset"])
         model.fit(dataset)
         R.save_objects(trained_model=model)
-
-        # In a real scenario, we would add backtest and analysis here
         print("Qlib benchmark completed successfully!✨")
 
 
