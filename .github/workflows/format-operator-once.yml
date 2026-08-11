@@ -1,0 +1,36 @@
+name: Format operator once
+
+on:
+  push:
+    branches:
+      - agent/uiux-2026-operator-queue
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7
+        with:
+          ref: agent/uiux-2026-operator-queue
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install locked dependencies
+        working-directory: ts-agent
+        run: bun install --frozen-lockfile
+      - name: Apply canonical Biome fixes
+        working-directory: ts-agent
+        run: bun ./node_modules/@biomejs/biome/bin/biome check --write src/dashboard/public/operator/operator.js
+      - name: Commit formatted file and remove one-shot workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/format-operator-once.yml
+          git add ts-agent/src/dashboard/public/operator/operator.js
+          git diff --cached --quiet && exit 1
+          git commit -m "fix: apply canonical Biome formatting to operator"
+          git push origin HEAD:agent/uiux-2026-operator-queue
