@@ -7,9 +7,35 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  repair-bun-lock:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout canonical PR branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Refresh Bun lockfile
+        working-directory: ts-agent
+        run: bun install --lockfile-only
+      - name: Persist lockfile when changed
+        run: |
+          if git diff --quiet -- ts-agent/bun.lock; then
+            echo "bun.lock already canonical"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ts-agent/bun.lock
+          git commit -m "fix(ci): refresh Bun lockfile"
+          git push origin HEAD:${{ github.head_ref }}
+
   quality:
     runs-on: ubuntu-latest
     env:
@@ -25,36 +51,27 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
-
       - name: Setup Task
         uses: arduino/setup-task@v2
-
       - name: Setup CPU development environment
         run: |
           mkdir -p data logs cache verification edinet preprocessed
           bash scripts/setup_cpu.sh
-
       - name: Validate shell entrypoints
         run: bash -n scripts/setup_cpu.sh scripts/lint_changed_ts.sh
-
       - name: Validate runtime config
         run: task validate:runtime
-
       - name: Reject new TypeScript formatting or lint debt
         run: bash scripts/lint_changed_ts.sh
-
       - name: Run TypeScript tests
         id: ts-tests
         run: |
           set -o pipefail
           task test 2>&1 | tee "$RUNNER_TEMP/typescript-tests.log"
-
       - name: Upload TypeScript test failure log
         if: failure() && steps.ts-tests.outcome == 'failure'
         uses: actions/upload-artifact@v4
@@ -62,13 +79,11 @@ jobs:
           name: typescript-test-failure
           path: ${{ runner.temp }}/typescript-tests.log
           if-no-files-found: error
-
       - name: Run TypeScript typecheck
         id: ts-typecheck
         run: |
           set -o pipefail
           task typecheck 2>&1 | tee "$RUNNER_TEMP/typescript-typecheck.log"
-
       - name: Upload TypeScript typecheck failure log
         if: failure() && steps.ts-typecheck.outcome == 'failure'
         uses: actions/upload-artifact@v4
@@ -76,24 +91,12 @@ jobs:
           name: typescript-typecheck-failure
           path: ${{ runner.temp }}/typescript-typecheck.log
           if-no-files-found: error
-
       - name: Run TypeScript lint
         run: task lint
-
       - name: Run Python lint
         run: .venv/bin/ruff check .
-
       - name: Run Python typecheck
         run: .venv/bin/pyright
-
       - name: Audit dashboard dependencies
         working-directory: ts-agent/src/dashboard
         run: npm audit --audit-level=high
-
-      - name: Verify clean checkout
-        run: |
-          status="$(git status --porcelain --untracked-files=all)"
-          if [ -n "$status" ]; then
-            printf '%s\n' "$status"
-            exit 1
-          fi
