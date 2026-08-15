@@ -110,7 +110,7 @@ JOIN company_intelligence.raw_document rd
  AND rd.external_id = 'MHI-COMPANY-PROFILE-2026-03-31'
  AND rd.content_sha256 = 'cee695edbda33a9a09bc273a669037bc8fbdf00a4ae4c9d4ac693c82b261f45d'
 JOIN company_intelligence.fact_concept fc ON fc.concept_key = pf.concept_key
-ON CONFLICT NULLS NOT DISTINCT (
+ON CONFLICT (
     company_id, source_id, filing_id, element_id, context_id,
     period_start, period_end, instant_date, unit_id, revision
 ) DO UPDATE SET
