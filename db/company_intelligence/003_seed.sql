@@ -57,10 +57,10 @@ VALUES
     ('investing_cash_flow', 'CF', '投資活動によるキャッシュ・フロー', 'Cash flows from investing activities', 'monetary', 'JPY', 'duration', 'none', '["NetCashProvidedByUsedInInvestingActivities","CashFlowsFromUsedInInvestingActivities","投資活動によるキャッシュフロー"]'::jsonb),
     ('financing_cash_flow', 'CF', '財務活動によるキャッシュ・フロー', 'Cash flows from financing activities', 'monetary', 'JPY', 'duration', 'none', '["NetCashProvidedByUsedInFinancingActivities","CashFlowsFromUsedInFinancingActivities","財務活動によるキャッシュフロー"]'::jsonb),
     ('employees', 'WORKFORCE', '従業員数', 'Employees', 'count', 'persons', 'instant', 'none', '["NumberOfEmployees","従業員数"]'::jsonb),
-    ('average_employee_age', 'WORKFORCE', '平均年齢', 'Average employee age', 'decimal', 'years', 'instant', 'none', '["AverageAgeOfEmployees","平均年齢"]'::jsonb),
-    ('average_employee_tenure', 'WORKFORCE', '平均勤続年数', 'Average employee tenure', 'decimal', 'years', 'instant', 'none', '["AverageLengthOfServiceYears","平均勤続年数"]'::jsonb),
+    ('average_employee_age', 'WORKFORCE', '平均年齢', 'Average employee age', 'ratio', 'years', 'instant', 'none', '["AverageAgeOfEmployees","平均年齢"]'::jsonb),
+    ('average_employee_tenure', 'WORKFORCE', '平均勤続年数', 'Average employee tenure', 'ratio', 'years', 'instant', 'none', '["AverageLengthOfServiceYears","平均勤続年数"]'::jsonb),
     ('average_annual_salary', 'WORKFORCE', '平均年間給与', 'Average annual salary', 'monetary', 'JPY', 'duration', 'none', '["AverageAnnualSalary","平均年間給与"]'::jsonb),
-    ('average_annual_salary_yoy_change', 'WORKFORCE', '平均年間給与の対前事業年度増減率', 'Average annual salary year-over-year change', 'decimal', 'percent', 'duration', 'none', '["AverageAnnualSalaryYearOverYearChange","平均年間給与の対前事業年度増減率"]'::jsonb)
+    ('average_annual_salary_yoy_change', 'WORKFORCE', '平均年間給与の対前事業年度増減率', 'Average annual salary year-over-year change', 'percentage', 'percent', 'duration', 'none', '["AverageAnnualSalaryYearOverYearChange","平均年間給与の対前事業年度増減率"]'::jsonb)
 ON CONFLICT (concept_key) DO UPDATE SET
     statement_type = EXCLUDED.statement_type,
     label_ja = EXCLUDED.label_ja,
