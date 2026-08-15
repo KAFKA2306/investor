@@ -68,13 +68,16 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/004_mhi_fy2026_q1.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/005_mhi_company_profile_20260331.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/006_mhi_workforce_20260331.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/001_schema.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/002_views.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/003_seed.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/004_mhi_fy2026_q1.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/005_mhi_company_profile_20260331.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/006_mhi_workforce_20260331.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/900_smoke_test.sql
           psql -v ON_ERROR_STOP=1 -f db/company_intelligence/901_mhi_profile_smoke_test.sql
+          psql -v ON_ERROR_STOP=1 -f db/company_intelligence/902_mhi_workforce_smoke_test.sql
 
       - name: Install and test service
         working-directory: services/company-intelligence
@@ -100,4 +103,5 @@ jobs:
           curl -fsS http://localhost:8080/api/7011/financials.json | grep 'business_profit'
           curl -fsS 'http://localhost:8080/v1/companies/7011/facts?concept=order_backlog' | grep '14103000000000'
           curl -fsS 'http://localhost:8080/v1/companies/7011/facts?concept=employees' | grep '78793'
+          curl -fsS 'http://localhost:8080/v1/companies/7011/facts?concept=average_annual_salary' | grep '10724514'
           curl -fsS http://localhost:8080/openapi.yaml | grep 'Investor Company Intelligence API'
