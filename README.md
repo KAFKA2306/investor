@@ -1,5 +1,9 @@
 # Investor — 証拠優先の投資研究・企業知識基盤
 
+[![Quality](https://github.com/KAFKA2306/investor/actions/workflows/quality.yml/badge.svg)](https://github.com/KAFKA2306/investor/actions/workflows/quality.yml)
+[![Dashboard CI](https://github.com/KAFKA2306/investor/actions/workflows/dashboard-ci.yml/badge.svg)](https://github.com/KAFKA2306/investor/actions/workflows/dashboard-ci.yml)
+[![Database platform contract](https://github.com/KAFKA2306/investor/actions/workflows/database-platform-contract.yml/badge.svg)](https://github.com/KAFKA2306/investor/actions/workflows/database-platform-contract.yml)
+
 `KAFKA2306/investor`は、企業開示、金利・為替、市場データ、投資仮説、バックテスト、企業知識、公開ダッシュボードを、**出典、時点、計算、予測、実運用証拠を分離して扱うための統合研究ワークスペース**です。
 
 公開画面だけのリポジトリではありません。次の複数の責務を同じ証拠モデルの下で管理します。
