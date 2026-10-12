@@ -76,3 +76,19 @@ validation:
   semantic: Separate discovery, validation, paper-trading, and live states and enforce temporal availability.
   evidence: Verify dataset hashes, run manifests, cost assumptions, order logs, and fill records.
   publication: Documentation must not present simulated or unverified results as live performance.
+
+operational_model:
+  implementation_status: "Existing company-intelligence PostgreSQL/EDINET and alpha research lanes; public Pages are read-only."
+  canonical_sources: ["db/company_intelligence/","services/company-intelligence/","ts-agent/","db/market_data/"]
+  objects: ["Issuer","Filing","FinancialFact","Metric","Hypothesis","Backtest","OOSRun","PaperResult","ExecutionEvidence","Decision"]
+  links:
+    - ["Filing","REPORTS","FinancialFact"]
+    - ["Metric","DERIVED_FROM","FinancialFact"]
+    - ["OOSRun","TESTS","Hypothesis"]
+    - ["ExecutionEvidence","SUPPORTS","Decision"]
+  actions:
+    - id: "promote_reproducible_research"
+      preconditions: "PIT-correct source facts, frozen chronological OOS, known costs, baseline, risk constraints and exact run artifact exist; live claim requires broker evidence."
+      recorded_effect: "Promote the research hypothesis to an eligible research or paper stage, not a claim of realized live profit."
+      rollback_or_recovery: "Reject or retire on leakage, missing source, performance deterioration or absent trade/fill evidence."
+  outcome_metrics: ["point_in_time_fact_coverage","frozen_oos_survival_rate","unsupported_live_claim_count","reproduced_model_run_count"]
