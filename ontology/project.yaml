@@ -79,7 +79,7 @@ validation:
 
 operational_model:
   implementation_status: "Existing company-intelligence PostgreSQL/EDINET and alpha research lanes; public Pages are read-only."
-  canonical_sources: ["db/company_intelligence/","services/company-intelligence/","ts-agent/","db/market_data/"]
+  canonical_sources: ["db/company_intelligence/","services/company-intelligence/","ts-agent/","db/interest_rates/"]
   objects: ["Issuer","Filing","FinancialFact","Metric","Hypothesis","Backtest","OOSRun","PaperResult","ExecutionEvidence","Decision"]
   links:
     - ["Filing","REPORTS","FinancialFact"]
