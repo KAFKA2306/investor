@@ -19,7 +19,7 @@ export const listUnifiedLogFiles = async (
       return payload.filter(
         (entry): entry is string =>
           typeof entry === "string" &&
-          /^[A-Za-z0-9][A-Za-z0-9._-]*\\.json$/.test(entry) &&
+          /^[A-Za-z0-9][A-Za-z0-9._-]*\.json$/.test(entry) &&
           !entry.includes("..") &&
           entry !== "manifest.json",
       );
