@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { DASHBOARD_CONFIG } from "../config";
+import { listUnifiedLogFiles } from "../utils/listUnifiedLogFiles";
 import {
   type AlphaDiscoveryPayload,
   AlphaDiscoveryPayloadSchema,
@@ -14,17 +15,6 @@ import {
   type UnifiedLogPayload,
   UnifiedLogPayloadSchema,
 } from "../dashboard_core";
-
-const listUnifiedLogFiles = async (): Promise<string[]> => {
-  const res = await fetch(
-    `${import.meta.env.BASE_URL}${DASHBOARD_CONFIG.api.paths.logsIndex}?bucket=unified`,
-  ).catch(() => undefined);
-  if (!res?.ok) return [];
-  const payload = await res.json().catch(() => []);
-  return Array.isArray(payload)
-    ? payload.filter((item): item is string => typeof item === "string")
-    : [];
-};
 
 export const useDashboardData = () => {
   const [dailyByDate, setDailyByDate] = useState<Map<string, DailyLogEnvelope>>(
@@ -51,7 +41,10 @@ export const useDashboardData = () => {
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const files = await listUnifiedLogFiles();
+    const files = await listUnifiedLogFiles(
+      import.meta.env.BASE_URL,
+      DASHBOARD_CONFIG.api.paths,
+    );
     const nextDailyMap = new Map<string, DailyLogEnvelope>();
     const nextBenchmarkMap = new Map<string, UnifiedLogPayload>();
     const nextUnifiedMap = new Map<string, UnifiedLogPayload>();
