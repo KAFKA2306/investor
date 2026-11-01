@@ -42,7 +42,7 @@ export const useDashboardData = () => {
   const refresh = useCallback(async () => {
     setLoading(true);
     const files = await listUnifiedLogFiles(
-      import.meta.env.BASE_URL,
+      import.meta.env.BASE_URL ?? "/",
       DASHBOARD_CONFIG.api.paths,
     );
     const nextDailyMap = new Map<string, DailyLogEnvelope>();
